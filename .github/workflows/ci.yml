@@ -1,0 +1,36 @@
+name: Create development builds
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  android_development_build:
+    name: Build Android (Development)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup PNPM
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Run ESLint
+        run: pnpm run lint
+
+      - name: Run Prettier
+        run: pnpm run format:check
+
+      - name: install eas cli
+        run: npm install -g eas-cli
+
+      - name: Build Android (EAS)
+        run: eas build --platform android --profile development --non-interactive

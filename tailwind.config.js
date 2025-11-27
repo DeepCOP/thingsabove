@@ -1,20 +1,20 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   // NOTE: Update this to include the paths to all files that contain Nativewind classes.
-  content: ["./App.tsx", "./components/**/*.{js,jsx,ts,tsx}","./app/**/*.{js,jsx,ts,tsx}"],
-  presets: [require("nativewind/preset")],
+  content: ['./App.tsx', './components/**/*.{js,jsx,ts,tsx}', './app/**/*.{js,jsx,ts,tsx}'],
+  presets: [require('nativewind/preset')],
   theme: {
     extend: {
       colors: {
         icon: {
-          tint: "#1FB1F9FF"
-        }
+          tint: '#1FB1F9FF',
+        },
       },
       fontFamily: {
-            'open-sans-regular': ['OpenSansRegular'],
-            'open-sans-bold': ['OpenSansBold'],
-        },
+        'open-sans-regular': ['OpenSansRegular'],
+        'open-sans-bold': ['OpenSansBold'],
+      },
     },
   },
   plugins: [],
-}
+};
