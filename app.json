@@ -47,10 +47,11 @@
       "typedRoutes": true,
       "reactCompiler": true
     },
+    "owner": "yordi-se",
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "42f7d1d2-cfd6-44fb-9015-fbd9c2b01662"
+        "projectId": "87fe6610-bbc1-40ff-9bce-92c576c59b0a"
       }
     }
   }
