@@ -30,13 +30,13 @@ A modern Bible Devotional mobile application built with **React Native**, **Expo
 1. Install dependencies
 
    ```bash
-   npm install
+   pnpm install
    ```
 
 2. Start the app
 
    ```bash
-   npx expo start
+   pnpm start
    ```
 
 In the output, you'll find options to open the app in a

@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "devotional-app",
-    "slug": "devotional-app",
+    "name": "thingsabove",
+    "slug": "thingsabove",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "devotionalapp",
+    "scheme": "thingsabove",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
@@ -20,7 +20,7 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.yordise.devotionalapp"
+      "package": "com.yordise.thingsabove"
     },
     "web": {
       "output": "static",
