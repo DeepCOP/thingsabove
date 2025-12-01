@@ -35,3 +35,32 @@ jobs:
 
       - name: Run Prettier
         run: pnpm run prettier-check
+
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 🏗 Setup repo
+        uses: actions/checkout@v3
+
+      - name: 🏗 Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+
+      - name: 🏗 Setup PNPM
+        uses: pnpm/action-setup@v2
+        with:
+          version: 10
+
+      - name: 📦 Install dependencies
+        run: pnpm install
+
+      - name: 🏗 Setup EAS
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: 🚀 Build Development App
+        run: eas build --profile development --non-interactive --platform android --local
