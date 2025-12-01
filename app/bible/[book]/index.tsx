@@ -31,7 +31,11 @@ export default function BibleBooksChapters() {
             <View className="flex-row items-center">
               {/* Search */}
               <TouchableOpacity onPress={() => console.log('Search')} className="mr-4">
-                <Ionicons name="search-outline"  color={colorScheme === 'dark' ? "white": "dark"} size={22} />
+                <Ionicons
+                  name="search-outline"
+                  color={colorScheme === 'dark' ? 'white' : 'dark'}
+                  size={22}
+                />
               </TouchableOpacity>
             </View>
           ),
@@ -48,7 +52,9 @@ export default function BibleBooksChapters() {
               <TouchableOpacity
                 onPress={() => toggleBook(bookName)}
                 className="flex-row justify-between items-center bg-gray-100 dark:bg-black px-4 py-3 rounded-lg">
-                <Text className="text-lg font-semibold text-gray-900 dark:text-gray-200">{bookName}</Text>
+                <Text className="text-lg font-semibold text-gray-900 dark:text-gray-200">
+                  {bookName}
+                </Text>
 
                 <Ionicons name={isOpen ? 'chevron-up' : 'chevron-down'} size={22} color="#333" />
               </TouchableOpacity>

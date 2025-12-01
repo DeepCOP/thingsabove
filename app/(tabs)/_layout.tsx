@@ -4,8 +4,6 @@ import React from 'react';
 import { Image, Text, View } from 'react-native';
 import TabIcon from '@/components/TabIcon';
 
-
-
 export default function TabLayout() {
   return (
     <Tabs
@@ -25,7 +23,7 @@ export default function TabLayout() {
           overflow: 'hidden',
           borderWidth: 1,
           borderColor: '#0F0D23',
-          height: 80
+          height: 80,
         },
       }}>
       <Tabs.Screen
