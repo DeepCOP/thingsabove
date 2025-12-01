@@ -27,18 +27,6 @@ export default function BibleBooksChapters() {
         options={{
           title: 'References',
           headerShadowVisible: false,
-          headerRight: () => (
-            <View className="flex-row items-center">
-              {/* Search */}
-              <TouchableOpacity onPress={() => console.log('Search')} className="mr-4">
-                <Ionicons
-                  name="search-outline"
-                  color={colorScheme === 'dark' ? 'white' : 'dark'}
-                  size={22}
-                />
-              </TouchableOpacity>
-            </View>
-          ),
         }}
       />
       <ScrollView className="flex-1 bg-white dark:bg-black px-4 py-4">
