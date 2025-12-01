@@ -1,8 +1,7 @@
+import TabIconComponent from '@/components/TabIcon';
 import { icons } from '@/constants/icons';
 import { Tabs } from 'expo-router';
 import React from 'react';
-import { Image, Text, View } from 'react-native';
-import TabIcon from '@/components/TabIcon';
 
 export default function TabLayout() {
   return (
@@ -33,7 +32,7 @@ export default function TabLayout() {
           headerShown: false,
 
           tabBarIcon: ({ focused, color, size }) => {
-            return <TabIcon focused={focused} icon={icons.home} title="Feed" />;
+            return <TabIconComponent focused={focused} icon={icons.home} title="Feed" />;
           },
         }}
       />
@@ -44,7 +43,7 @@ export default function TabLayout() {
 
           title: 'Bible',
           tabBarIcon: ({ focused, color, size }) => {
-            return <TabIcon focused={focused} icon={icons.book} title="Bible" />;
+            return <TabIconComponent focused={focused} icon={icons.book} title="Bible" />;
           },
         }}
       />
@@ -54,7 +53,7 @@ export default function TabLayout() {
           title: 'Create',
           headerShown: false,
           tabBarIcon: ({ focused, color, size }) => {
-            return <TabIcon focused={focused} icon={icons.circlePlus} title="Create" />;
+            return <TabIconComponent focused={focused} icon={icons.circlePlus} title="Create" />;
           },
         }}
       />
@@ -64,7 +63,7 @@ export default function TabLayout() {
           title: 'Notifications',
           headerShown: false,
           tabBarIcon: ({ focused, color, size }) => {
-            return <TabIcon focused={focused} icon={icons.bell} title="Notifications" />;
+            return <TabIconComponent focused={focused} icon={icons.bell} title="Notifications" />;
           },
         }}
       />
@@ -74,7 +73,7 @@ export default function TabLayout() {
           title: 'Profile',
           headerShown: false,
           tabBarIcon: ({ focused, color, size }) => {
-            return <TabIcon focused={focused} icon={icons.person} title="Profile" />;
+            return <TabIconComponent focused={focused} icon={icons.person} title="Profile" />;
           },
         }}
       />

@@ -4,7 +4,6 @@ import * as Clipboard from 'expo-clipboard';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 
-
 import { Animated, Modal, Share, Text, TouchableOpacity, useColorScheme, View } from 'react-native';
 import { useBible } from '../context/BibleContext';
 export default function VersesScreen({

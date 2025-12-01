@@ -17,7 +17,7 @@ export function TabIcon({ focused, icon, title }: { focused: boolean; icon: any;
       speed: 12,
       bounciness: 6,
     }).start();
-  }, [focused]);
+  }, [focused, anim]);
 
   // Interpolate tint color for the icon
   const tintColor = anim.interpolate({

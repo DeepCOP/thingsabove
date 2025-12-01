@@ -2,11 +2,10 @@ import { useAppStore } from '@/store/useAppStore';
 import { Ionicons } from '@expo/vector-icons';
 import { Stack, useRouter } from 'expo-router';
 import { useState } from 'react';
-import { ScrollView, Text, TouchableOpacity, View, useColorScheme } from 'react-native';
+import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { useBible } from '../../../context/BibleContext';
 
 export default function BibleBooksChapters() {
-  const colorScheme = useColorScheme();
   const router = useRouter();
   const { bible } = useBible();
   const setSelectedBook = useAppStore((s) => s.setSelectedBook);
