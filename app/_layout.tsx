@@ -1,21 +1,45 @@
-import { Stack } from 'expo-router';
 import {
-  useFonts,
+  Merriweather_300Light,
+  Merriweather_400Regular,
+  Merriweather_700Bold,
+  Merriweather_900Black,
+} from '@expo-google-fonts/merriweather';
+import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
+
+import {
   OpenSans_400Regular,
+  OpenSans_400Regular_Italic,
   OpenSans_600SemiBold,
+  OpenSans_600SemiBold_Italic,
   OpenSans_700Bold,
+  OpenSans_700Bold_Italic,
+  useFonts,
 } from '@expo-google-fonts/open-sans';
+import { Stack } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
+import { BibleProvider } from '../context/BibleContext';
+
 import * as SplashScreen from 'expo-splash-screen';
-import '../global.css';
 import { useEffect } from 'react';
+import { useColorScheme } from 'react-native';
+import '../global.css';
 
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
+  const colorScheme = useColorScheme();
+
   const [loaded] = useFonts({
     OpenSansRegular: OpenSans_400Regular,
     OpenSansSemiBold: OpenSans_600SemiBold,
     OpenSansBold: OpenSans_700Bold,
+    MerriWeather300Light: Merriweather_300Light,
+    MerriWeather400Regular: Merriweather_400Regular,
+    MerriWeather700Bold: Merriweather_700Bold,
+    MerriWeather900Black: Merriweather_900Black,
+    OpenSansRegularItalic: OpenSans_400Regular_Italic,
+    OpenSansSemiBoldItalic: OpenSans_600SemiBold_Italic,
+    OpenSansBoldItalic: OpenSans_700Bold_Italic,
   });
 
   useEffect(() => {
@@ -24,8 +48,14 @@ export default function RootLayout() {
 
   if (!loaded) return null;
   return (
-    <Stack>
-      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-    </Stack>
+    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+      <BibleProvider>
+        <StatusBar style="auto" />
+        <Stack>
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="bible/[book]/index" />
+        </Stack>
+      </BibleProvider>
+    </ThemeProvider>
   );
 }
