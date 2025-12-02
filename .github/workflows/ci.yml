@@ -1,11 +1,13 @@
+name: build, Lint & Prettier Check
+
 on:
-  push:
-    branches: [main]
   pull_request:
-    branches: [main]
+  push:
+    branches:
+      - main
 
 jobs:
-  build:
+  build_lint_prettier:
     runs-on: ubuntu-latest
 
     steps:
@@ -25,6 +27,12 @@ jobs:
       - name: 📦 Install dependencies
         run: pnpm install
 
+      - name: Run ESLint
+        run: pnpm run lint
+
+      - name: Run Prettier
+        run: pnpm run prettier-check
+
       - name: 🏗 Setup EAS
         uses: expo/expo-github-action@v8
         with:
@@ -32,4 +40,4 @@ jobs:
           token: ${{ secrets.EXPO_TOKEN }}
 
       - name: 🚀 Build Development App
-        run: eas build --profile development --non-interactive --platform android
+        run: eas build --profile development --non-interactive --platform android --local
