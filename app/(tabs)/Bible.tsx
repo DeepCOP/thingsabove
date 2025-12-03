@@ -1,11 +1,11 @@
-import VersesScreen from '@/components/BibleScreen';
+import BibleReaderView from '@/components/BibleReaderView';
 import { Ionicons } from '@expo/vector-icons';
 import { Tabs, useRouter } from 'expo-router';
 import { useRef } from 'react';
 import { Animated, Text, TouchableOpacity, useColorScheme, View } from 'react-native';
 import { useBible } from '../../context/BibleContext';
 
-export default function BibleVersesScreen() {
+export default function BibleTab() {
   const headerY = useRef(new Animated.Value(0)).current; // 0 shown, -80 hidden
   const tabY = useRef(new Animated.Value(0)).current; // 0 shown, 80 hidden
 
@@ -123,7 +123,7 @@ export default function BibleVersesScreen() {
       />
       <AnimatedHeader headerTranslateY={headerY} />
 
-      <VersesScreen onScroll={onScroll} headerTranslateY={tabY} />
+      <BibleReaderView onScroll={onScroll} headerTranslateY={tabY} />
     </>
   );
 }

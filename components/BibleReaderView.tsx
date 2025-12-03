@@ -6,7 +6,8 @@ import { useState } from 'react';
 
 import { Animated, Modal, Share, Text, TouchableOpacity, useColorScheme, View } from 'react-native';
 import { useBible } from '../context/BibleContext';
-export default function VersesScreen({
+
+export default function BibleReaderView({
   onScroll,
   headerTranslateY,
 }: {
@@ -49,7 +50,7 @@ export default function VersesScreen({
     }
 
     // Official Bible.com link
-    const link = `https://bible.com/bible/12/${selectedBook.name
+    const link = `${process.env.EXPO_BASE_URL}/bible/12/${selectedBook.name
       .toLowerCase()
       .slice(0, 3)}.${selectedBook.chapters}.${ranges.join(',')}.ASV`;
 
@@ -60,7 +61,7 @@ export default function VersesScreen({
     if (selectedVerse.length === 0) return { header: '', ranges: [], sorted: [] };
 
     // Sort verses numerically
-    const sorted = selectedVerse.sort((a, b) => Number(a.number) - Number(b.number));
+    const sorted = [...selectedVerse].sort((a, b) => Number(a.number) - Number(b.number));
 
     // Build verse range header (1-2, 10-12, 24)
     const verseNumbers = sorted.map((v) => Number(v.number));
@@ -87,13 +88,12 @@ export default function VersesScreen({
   const chapterNumber = Number(selectedBook.chapters);
   const verses = bible[selectedBook.name as string][selectedBook?.chapters.toString()];
 
-  // Optional: Section titles (if your KJV JSON includes them)
-  const sectionTitle = verses['title']; // Adjust if your JSON uses another key
+  const sectionTitle = verses['title'];
 
   return (
     <>
       <View className="flex-1 bg-white dark:bg-black">
-        <Animated.ScrollView onScroll={onScroll} className="px-5 mb-20">
+        <Animated.ScrollView scrollEventThrottle={16} onScroll={onScroll} className="px-5 mb-20">
           <View className="justify-center items-center pb-16 gap-4">
             <Text className="text-center text-primary dark:text-gray-100 text-lg pt-28 font-MerriWeather300Light">
               {selectedBook.name}
@@ -104,8 +104,6 @@ export default function VersesScreen({
               {selectedBook.chapters}
             </Text>
           </View>
-
-          {/* BOOK NAME UNDER CHAPTER NUMBER */}
 
           {/* SECTION TITLE (IF AVAILABLE) */}
           {sectionTitle && (
@@ -132,7 +130,7 @@ export default function VersesScreen({
                     }
                   }}
                   onLongPress={() => {
-                    if (!selectedVerse.some((item) => item.text === text)) {
+                    if (!selectedVerse.some((item) => item.number === num)) {
                       setSelectedVerse((prev) => [{ number: num, text: text as string }, ...prev]);
                     }
                     setShowMenu(true);

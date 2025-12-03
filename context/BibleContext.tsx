@@ -1,7 +1,7 @@
 // /context/BibleContext.ts
 import { createContext, ReactNode, useContext, useState } from 'react';
-import asv from '../assets/bibles/asv.json';
-import kjv from '../assets/bibles/kjv.json';
+import asv from '../assets/versions/asv.json';
+import kjv from '../assets/versions/kjv.json';
 const BibleContext = createContext<any>(null);
 
 export type BibleJSON = {
