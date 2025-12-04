@@ -38,3 +38,8 @@ create policy "authors can delete their plans"
   on public.devotional_plans
   for delete
   using (auth.uid() = author_id);
+
+
+  create index if not exists idx_devotional_plans_author_id on public.devotional_plans(author_id);
+  create index if not exists idx_devotional_plans_id on public.devotional_plans(id);
+
