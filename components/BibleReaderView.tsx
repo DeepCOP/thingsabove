@@ -52,7 +52,7 @@ export default function BibleReaderView({
     // Official Bible.com link
     const link = `${process.env.EXPO_BASE_URL}/bible/12/${selectedBook.name
       .toLowerCase()
-      .slice(0, 3)}.${selectedBook.chapters}.${ranges.join(',')}.ASV`;
+      .slice(0, 3)}.${selectedBook.chapters}.${ranges.join(',')}.${version}`;
 
     return `${header}\n${body}\n${link}`;
   };

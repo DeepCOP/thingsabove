@@ -37,7 +37,7 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="Bible"
+        name="BibleTab"
         options={{
           headerShown: false,
 
@@ -48,7 +48,7 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="Create"
+        name="CreateTab"
         options={{
           title: 'Create',
           headerShown: false,
@@ -58,7 +58,7 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="Notifications"
+        name="NotificationsTab"
         options={{
           title: 'Notifications',
           headerShown: false,
@@ -68,7 +68,7 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="Profile"
+        name="ProfileTab"
         options={{
           title: 'Profile',
           headerShown: false,
