@@ -1,9 +1,9 @@
 -- Use Postgres to create a bucket.
 
--- insert into storage.buckets
---   (id, name, public)
--- values
---   ('avatars', 'avatars', true);
+insert into storage.buckets
+  (id, name, public)
+values
+  ('avatars', 'avatars', true);
 
 create policy "avatars are publicly accessible"
 on storage.objects

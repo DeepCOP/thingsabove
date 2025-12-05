@@ -4,7 +4,8 @@ create table if not exists public.devotional_days (
   day_number int not null,
   content text not null,
   created_at timestamptz default now(),
-  updated_at timestamptz default now()
+  updated_at timestamptz default now(),
+  unique (plan_id, day_number)
 );
 
 alter table public.devotional_days enable row level security;
