@@ -4,6 +4,7 @@ create table if not exists public.devotional_plans (
   title text not null,
   description text not null,
   cover_image text,
+  completions int default 0,
   tags text[] default '{}',
   total_days int not null default 1,
   author_id uuid references auth.users(id) on delete set null,

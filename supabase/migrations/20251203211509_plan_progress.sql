@@ -19,6 +19,16 @@ create policy "users can view their own progress"
   using (auth.uid() = user_id);
 
 
+create policy "users can insert their own progress"
+  on public.plan_progress
+  for insert
+  with check (auth.uid() = user_id);
+
+create policy "users can update their own progress"
+  on public.plan_progress
+  for update
+  using (auth.uid() = user_id)
+  with check (auth.uid() = user_id);
 
 create index if not exists idx_progress_user on public.plan_progress(user_id);
 create index if not exists idx_progress_plan on public.plan_progress(plan_id);

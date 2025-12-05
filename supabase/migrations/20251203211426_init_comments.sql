@@ -1,6 +1,7 @@
 create table if not exists public.comments (
   id uuid primary key default gen_random_uuid(),
   user_id uuid references auth.users(id) on delete set null,
+  content text not null,
   entity_type text check (entity_type in ('plan', 'day')),
   entity_id uuid not null,
   created_at timestamptz default now(),

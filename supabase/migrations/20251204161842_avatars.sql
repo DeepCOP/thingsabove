@@ -1,3 +1,10 @@
+-- Use Postgres to create a bucket.
+
+-- insert into storage.buckets
+--   (id, name, public)
+-- values
+--   ('avatars', 'avatars', true);
+
 create policy "avatars are publicly accessible"
 on storage.objects
 for select using (bucket_id = 'avatars');
@@ -28,9 +35,6 @@ on storage.objects
 for delete
 using (
   auth.uid() = owner
+  and bucket_id = 'avatars'
 )
-with check  (
-  bucket_id = 'avatars'
-  and auth.uid()::text = (storage.foldername(name))[1]
-);
 

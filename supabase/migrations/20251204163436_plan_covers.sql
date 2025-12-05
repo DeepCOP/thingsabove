@@ -1,3 +1,8 @@
+-- insert into storage.buckets
+--   (id, name, public)
+-- values
+--   ('plan_covers', 'plan_covers', true);
+
 create policy "plan covers publicly accessible"
 on storage.objects
 for select
