@@ -5,7 +5,7 @@ create table if not exists public.plan_reactions (
   plan_id uuid references public.devotional_plans(id) on delete cascade,
   reaction_type text check (reaction_type in ('like', 'dislike')),
   created_at timestamptz default now(),
-  unique (user_id, plan_id, reaction_type)
+  unique (user_id, plan_id)
 );
 
 
