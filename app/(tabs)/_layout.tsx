@@ -1,26 +1,7 @@
+import TabIconComponent from '@/components/TabIcon';
 import { icons } from '@/constants/icons';
 import { Tabs } from 'expo-router';
 import React from 'react';
-import { Image, Text, View } from 'react-native';
-
-const TabIcon = ({ focused, icon, title }: { focused: boolean; icon: any; title: string }) => {
-  if (focused) {
-    return (
-      <View className="flex w-full flex-1 min-w-[85px] min-h-16 mt-4 justify-center items-center overflow-hidden">
-        <Image source={icon} className="size-6" tintColor={'#1FB1F9FF'} />
-        <Text className="text-icon-tint text-xs font-[400] font-open-sans-regular">{title}</Text>
-      </View>
-    );
-  }
-  return (
-    <View className="flex w-full flex-1 min-w-[80px] min-h-16 mt-4 justify-center items-center overflow-hidden">
-      <Image source={icon} className="size-6" tintColor={'black'} />
-      <Text className="black text-xs font-[400] text-[#383838FF] font-open-sans-regular">
-        {title}
-      </Text>
-    </View>
-  );
-};
 
 export default function TabLayout() {
   return (
@@ -29,7 +10,6 @@ export default function TabLayout() {
         tabBarShowLabel: false,
         tabBarLabelStyle: {
           fontWeight: 'bold',
-          color: 'black',
         },
 
         tabBarItemStyle: {
@@ -42,6 +22,7 @@ export default function TabLayout() {
           overflow: 'hidden',
           borderWidth: 1,
           borderColor: '#0F0D23',
+          height: 80,
         },
       }}>
       <Tabs.Screen
@@ -51,47 +32,48 @@ export default function TabLayout() {
           headerShown: false,
 
           tabBarIcon: ({ focused, color, size }) => {
-            return <TabIcon focused={focused} icon={icons.home} title="Feed" />;
+            return <TabIconComponent focused={focused} icon={icons.home} title="Feed" />;
           },
         }}
       />
       <Tabs.Screen
-        name="Bible"
+        name="BibleTab"
         options={{
-          title: 'Bible',
           headerShown: false,
+
+          title: 'Bible',
           tabBarIcon: ({ focused, color, size }) => {
-            return <TabIcon focused={focused} icon={icons.book} title="Bible" />;
+            return <TabIconComponent focused={focused} icon={icons.book} title="Bible" />;
           },
         }}
       />
       <Tabs.Screen
-        name="Create"
+        name="CreateTab"
         options={{
           title: 'Create',
           headerShown: false,
           tabBarIcon: ({ focused, color, size }) => {
-            return <TabIcon focused={focused} icon={icons.circlePlus} title="Create" />;
+            return <TabIconComponent focused={focused} icon={icons.circlePlus} title="Create" />;
           },
         }}
       />
       <Tabs.Screen
-        name="Notifications"
+        name="NotificationsTab"
         options={{
           title: 'Notifications',
           headerShown: false,
           tabBarIcon: ({ focused, color, size }) => {
-            return <TabIcon focused={focused} icon={icons.bell} title="Notifications" />;
+            return <TabIconComponent focused={focused} icon={icons.bell} title="Notifications" />;
           },
         }}
       />
       <Tabs.Screen
-        name="Profile"
+        name="ProfileTab"
         options={{
           title: 'Profile',
           headerShown: false,
           tabBarIcon: ({ focused, color, size }) => {
-            return <TabIcon focused={focused} icon={icons.person} title="Profile" />;
+            return <TabIconComponent focused={focused} icon={icons.person} title="Profile" />;
           },
         }}
       />
