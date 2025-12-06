@@ -5,7 +5,6 @@ create table if not exists public.reports (
   plan_id uuid references public.devotional_plans(id) on delete cascade,
   reason text not null,
   created_at timestamptz default now(),
-  updated_at timestamptz default now()
 );
 
 

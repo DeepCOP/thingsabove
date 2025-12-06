@@ -66,3 +66,6 @@ create index if not exists idx_devotional_days_plan_id
 
 create index if not exists idx_devotional_days_day_number 
   on public.devotional_days(day_number);
+
+create index if not exists idx_devotional_days
+  on public.devotional_days(plan_id, day_number);
