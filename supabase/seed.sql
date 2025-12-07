@@ -14,7 +14,7 @@ values (
   '61ca76b6-ebc0-47e3-bd3c-d28c950b8576',
   'dem1o@example.com',
   -- raw_user_meta_data is jsonb; include a full_name to satisfy the trigger
-  '{"full_name":"Demo User"}'::jsonb
+  '{"first_name":"Demo User","last_name":"Demo"}'::jsonb
 )
 on conflict (id) do nothing;
 
@@ -23,7 +23,7 @@ values (
   '61ca76b6-ebc0-47e3-bd3c-d28c950b8571',
   'demo2@example.com',
   -- raw_user_meta_data is jsonb; include a full_name to satisfy the trigger
-  '{"full_name":"Demo User"}'::jsonb
+  '{"first_name":"Demo User","last_name":"Demo"}'::jsonb
 )
 on conflict (id) do nothing;
 insert into auth.users (id, email, raw_user_meta_data)
@@ -31,7 +31,7 @@ values (
   '61ca76b6-ebc0-47e3-bd3c-d28c950b8572',
   'demo3@example.com',
   -- raw_user_meta_data is jsonb; include a full_name to satisfy the trigger
-  '{"full_name":"Demo User"}'::jsonb
+  '{"first_name":"Demo User","last_name":"Demo"}'::jsonb
 )
 on conflict (id) do nothing;
 insert into auth.users (id, email, raw_user_meta_data)
@@ -39,7 +39,7 @@ values (
   '61ca76b6-ebc0-47e3-bd3c-d28c950b8573',
   'demo5@example.com',
   -- raw_user_meta_data is jsonb; include a full_name to satisfy the trigger
-  '{"full_name":"Demo User"}'::jsonb
+  '{"first_name":"Demo User","last_name":"Demo"}'::jsonb
 )
 on conflict (id) do nothing;
 insert into auth.users (id, email, raw_user_meta_data)
@@ -47,7 +47,7 @@ values (
   '61ca76b6-ebc0-47e3-bd3c-d28c950b8574',
   'demo0@example.com',
   -- raw_user_meta_data is jsonb; include a full_name to satisfy the trigger
-  '{"full_name":"Demo User"}'::jsonb
+  '{"first_name":"Demo User","last_name":"Demo"}'::jsonb
 )
 on conflict (id) do nothing;
 
@@ -481,5 +481,6 @@ values
 ('61ca76b6-ebc0-47e3-bd3c-d28c950b8571', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'like'),
 ('61ca76b6-ebc0-47e3-bd3c-d28c950b8574', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'like'),
 ('61ca76b6-ebc0-47e3-bd3c-d28c950b8572', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'like'),
+('61ca76b6-ebc0-47e3-bd3c-d28c950b8576', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'like'),
 ('61ca76b6-ebc0-47e3-bd3c-d28c950b8573', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'dislike')
 ;
