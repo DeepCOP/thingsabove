@@ -1,4 +1,4 @@
-create view public.plan_meta 
+create view public.plan_view 
 with(security_invoker = true)
 as select 
   p.id as plan_id,
