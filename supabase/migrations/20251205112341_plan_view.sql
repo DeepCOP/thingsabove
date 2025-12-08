@@ -1,5 +1,6 @@
-create view public.plan_meta as
-select 
+create view public.plan_meta 
+with(security_invoker = true)
+as select 
   p.id as plan_id,
   -- comments count
   (select count(*) from public.comments c 
