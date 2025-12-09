@@ -28,11 +28,11 @@ export default function TabLayout() {
       <Tabs.Screen
         name="PlansTab"
         options={{
-          title: 'Feed',
+          title: 'Devotionals',
           headerShown: false,
 
           tabBarIcon: ({ focused, color, size }) => {
-            return <TabIconComponent focused={focused} icon={icons.home} title="Feed" />;
+            return <TabIconComponent focused={focused} icon={icons.home} title="Devotionals" />;
           },
         }}
       />
