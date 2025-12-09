@@ -82,7 +82,7 @@ export default function SearchDevos() {
             searchQuery.fetchNextPage();
           }
         }}
-        onEndReachedThreshold={0.4}
+        onEndReachedThreshold={2}
         ListFooterComponent={
           searchQuery.isFetchingNextPage ? (
             <ActivityIndicator size="small" style={{ marginTop: 10 }} />

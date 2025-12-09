@@ -92,7 +92,7 @@ export default function PlansScreen() {
             plansQuery.fetchNextPage();
           }
         }}
-        onEndReachedThreshold={0.4}
+        onEndReachedThreshold={2}
         ListFooterComponent={
           plansQuery.isFetchingNextPage ? (
             <ActivityIndicator size="small" style={{ marginTop: 10 }} />
