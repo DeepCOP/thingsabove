@@ -50,7 +50,7 @@ export default function SearchDevos() {
       {isOffline && (
         <View className="items-center py-20">
           <Ionicons name="cloud-offline-outline" size={40} color="#999" />
-          <Text className="text-gray-500 mt-2">You're offline</Text>
+          <Text className="text-gray-500 mt-2">You&apos;re offline</Text>
         </View>
       )}
 

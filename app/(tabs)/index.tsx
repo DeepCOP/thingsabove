@@ -20,7 +20,10 @@ export default function PlansScreen() {
   const [sort, setSort] = useState('Recent');
   const [isGrid, setIsGrid] = useState(false);
   // flatten pages and deduplicate by `id` to avoid duplicate items
-  const flatData = plansQuery.data?.pages.flatMap((page) => page.items) || [];
+  const flatData = useMemo(() => {
+    const items = plansQuery.data?.pages.flatMap((page) => page.items) || [];
+    return items;
+  }, [plansQuery.data]);
   const sortedPlans = useMemo(() => {
     if (!flatData) return [];
     if (sort === 'Recent') {
