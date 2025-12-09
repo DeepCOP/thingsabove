@@ -1,8 +1,6 @@
 // hooks/usePlans.ts
-import { mutationQueue } from '@/lib/mutationQueue';
-import { supabase } from '@/utils/supabase';
-import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { v4 as uuidv4 } from 'uuid';
+import { supabase } from '@/lib/supabase';
+import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
 
 export const useSearchPlans = (query: string) => {
   return useInfiniteQuery({

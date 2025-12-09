@@ -22,7 +22,7 @@ import { BibleProvider } from '../context/BibleContext';
 import { AuthProvider } from '@/context/AuthContext';
 import { mutationQueue } from '@/lib/mutationQueue';
 import { QueryProviderWrapper } from '@/lib/queryClient';
-import { supabase } from '@/utils/supabase';
+import { supabase } from '@/lib/supabase';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 import { useColorScheme } from 'react-native';
