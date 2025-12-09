@@ -86,11 +86,10 @@ export default function PlansScreen() {
         renderItem={({ item }) => (isGrid ? <GridCard item={item} /> : <ListCard item={item} />)}
         onEndReached={() => {
           if (plansQuery.hasNextPage) {
-            console.log('triggered fetchNextPage');
             plansQuery.fetchNextPage();
           }
         }}
-        onEndReachedThreshold={0}
+        onEndReachedThreshold={0.4}
         ListFooterComponent={
           plansQuery.isFetchingNextPage ? (
             <ActivityIndicator size="small" style={{ marginTop: 10 }} />

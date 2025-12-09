@@ -1,6 +1,6 @@
 // hooks/usePlans.ts
 import { supabase } from '@/lib/supabase';
-import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
+import { useInfiniteQuery } from '@tanstack/react-query';
 
 export const useSearchPlans = (query: string) => {
   return useInfiniteQuery({
@@ -22,7 +22,6 @@ export const useSearchPlans = (query: string) => {
       });
 
       if (error) throw error;
-      console.log(data.length);
       const last = data?.[data.length - 1] ?? null;
 
       return {
@@ -37,8 +36,6 @@ export const useSearchPlans = (query: string) => {
 };
 
 export const usePlans = () => {
-  const queryClient = useQueryClient();
-
   const plansQuery = useInfiniteQuery({
     queryKey: ['plans'],
 
@@ -51,7 +48,7 @@ export const usePlans = () => {
       const { created_at, id } = pageParam ?? {};
 
       let query = supabase
-        .from('devotional_plans_with_meta')
+        .from('devotional_plans_view')
         .select('*')
         .order('created_at', { ascending: false })
         .order('id', { ascending: false }) // secondary key for stable ordering
@@ -67,7 +64,6 @@ export const usePlans = () => {
       if (error) throw error;
 
       // last item becomes the new cursor
-      console.log(data.length);
       const last = data[data.length - 1];
 
       return {
