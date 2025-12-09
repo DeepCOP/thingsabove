@@ -433,12 +433,12 @@ create index if not exists idx_reactions_plan_user on public.plan_reactions(plan
 
 
 
--- avatar bucket.
+avatar bucket.
 
--- insert into storage.buckets
---   (id, name, public)
--- values
---   ('avatars', 'avatars', true);
+insert into storage.buckets
+  (id, name, public)
+values
+  ('avatars', 'avatars', true);
 
 create policy "avatars are publicly accessible"
 on storage.objects
@@ -473,11 +473,11 @@ using (
   and bucket_id = 'avatars'
 );
 
--- -- plan images
--- insert into storage.buckets
---   (id, name, public)
--- values
---   ('plan_images', 'plan_images', true);
+-- plan images
+insert into storage.buckets
+  (id, name, public)
+values
+  ('plan_images', 'plan_images', true);
 
 create policy "plan images publicly accessible"
 on storage.objects

@@ -26,7 +26,7 @@ export default function TabLayout() {
         },
       }}>
       <Tabs.Screen
-        name="index"
+        name="PlansTab"
         options={{
           title: 'Feed',
           headerShown: false,
