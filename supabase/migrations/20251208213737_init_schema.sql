@@ -60,7 +60,7 @@ create table if not exists public.devotional_plans (
   description text not null,
   cover_image text,
   completions int default 0,
-  tags text[] default '{}',
+  tags text,
   total_days int not null default 1,
   author_id uuid references auth.users(id) on delete set null,
   created_at timestamptz default now(),
@@ -435,10 +435,10 @@ create index if not exists idx_reactions_plan_user on public.plan_reactions(plan
 
 -- avatar bucket.
 
-insert into storage.buckets
-  (id, name, public)
-values
-  ('avatars', 'avatars', true);
+-- insert into storage.buckets
+--   (id, name, public)
+-- values
+--   ('avatars', 'avatars', true);
 
 create policy "avatars are publicly accessible"
 on storage.objects
@@ -473,11 +473,11 @@ using (
   and bucket_id = 'avatars'
 );
 
--- plan images
-insert into storage.buckets
-  (id, name, public)
-values
-  ('plan_images', 'plan_images', true);
+-- -- plan images
+-- insert into storage.buckets
+--   (id, name, public)
+-- values
+--   ('plan_images', 'plan_images', true);
 
 create policy "plan images publicly accessible"
 on storage.objects
@@ -526,10 +526,20 @@ using (
 
 
 --plan_view
-create view public.plan_view 
+create or replace view public.devotional_plans_view
 with(security_invoker = true)
-as select 
-  p.id as plan_id,
+as select
+  p.id,
+  p.title,
+  p.total_days,
+  p.description,
+  p.cover_image,
+  p.completions,
+  p.tags,
+  p.author_id,
+  p.created_at,
+  p.updated_at,
+
   -- comments count
   (select count(*) from public.comments c 
    where c.entity_type = 'plan' and c.entity_id = p.id) as comments_count,
@@ -541,4 +551,61 @@ as select
   -- dislike count
   (select count(*) from public.plan_reactions r 
    where r.plan_id = p.id and r.reaction_type = 'dislike') as dislikes_count
+
 from public.devotional_plans p;
+
+
+--search
+create extension if not exists pg_trgm;
+
+
+create index if not exists idx_plans_title_trgm
+  on public.devotional_plans using gin (title gin_trgm_ops);
+
+create index if not exists idx_plans_description_trgm
+  on public.devotional_plans using gin (description gin_trgm_ops);
+
+CREATE INDEX IF NOT EXISTS idx_plans_tags_trgm
+ON public.devotional_plans
+USING gin (tags gin_trgm_ops);
+
+
+create or replace function search_plans(
+  search_query text,
+  limit_count int default 20,
+  cursor_created_at timestamptz default null,
+  cursor_id uuid default null
+)
+returns setof devotional_plans_view
+language sql
+as $$
+  select *
+  from devotional_plans_view
+  where
+    -- cursor filtering FIRST
+    (
+      cursor_created_at is null
+      or (
+          created_at < cursor_created_at
+          or (created_at = cursor_created_at and id < cursor_id)
+      )
+    )
+
+    and (
+      -- prefix search
+      lower(title) like lower(search_query) || '%'
+      or lower(description) like lower(search_query) || '%'
+      or lower(tags) like lower(search_query) || '%'
+
+      -- fuzzy search
+      or similarity(lower(title), lower(search_query)) > 0.2
+      or similarity(lower(description), lower(search_query)) > 0.2
+      or similarity(lower(tags), lower(search_query)) > 0.2
+    )
+
+  order by
+    created_at desc,
+    id desc
+  limit limit_count;
+$$;
+
