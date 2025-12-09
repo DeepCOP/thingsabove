@@ -79,7 +79,6 @@ export const usePlans = () => {
     getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
   });
 
-
   return {
     plansQuery,
   };
