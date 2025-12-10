@@ -19,10 +19,10 @@ import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { BibleProvider } from '../context/BibleContext';
 
+import { supabase } from '@/api/supabase';
 import { AuthProvider } from '@/context/AuthContext';
 import { mutationQueue } from '@/lib/mutationQueue';
 import { QueryProviderWrapper } from '@/lib/queryClient';
-import { supabase } from '@/lib/supabase';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 import { useColorScheme } from 'react-native';
