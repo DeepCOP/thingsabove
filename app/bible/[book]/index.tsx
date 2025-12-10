@@ -54,7 +54,7 @@ export default function BibleBooksChapters() {
                       key={ch}
                       onPress={() => {
                         setSelectedBook({ name: bookName, chapters: ch });
-                        router.push(`/Bible`);
+                        router.push(`/BibleTab`);
                       }}
                       className="bg-gray-200 dark:bg-gray-500 w-16 h-16 justify-center items-center text-center rounded-lg m-1">
                       <Text className="text-gray-700 dark:text-gray-100 font-semibold">{ch}</Text>

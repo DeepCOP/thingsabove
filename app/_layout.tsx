@@ -19,6 +19,10 @@ import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { BibleProvider } from '../context/BibleContext';
 
+import { supabase } from '@/api/supabase';
+import { AuthProvider } from '@/context/AuthContext';
+import { mutationQueue } from '@/lib/mutationQueue';
+import { QueryProviderWrapper } from '@/lib/queryClient';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 import { useColorScheme } from 'react-native';
@@ -41,7 +45,32 @@ export default function RootLayout() {
     OpenSansSemiBoldItalic: OpenSans_600SemiBold_Italic,
     OpenSansBoldItalic: OpenSans_700Bold_Italic,
   });
+  useEffect(() => {
+    mutationQueue.setExecutor(async (item) => {
+      const { key, payload } = item;
+      if (key === 'start_plan') {
+        const { plan_id, user_id } = payload;
+        await supabase.from('plan_progress').insert({
+          user_id,
+          plan_id,
+          current_day: 1,
+          completed_days: [],
+        });
+        return;
+      }
+      if (key === 'toggle_reaction') {
+        const { plan_id, user_id, type } = payload;
+        await supabase.rpc('toggle_reaction', {
+          p_plan_id: plan_id,
+          p_user_id: user_id,
+          p_reaction_type: type,
+        });
+        return;
+      }
 
+      throw new Error('Unknown queued mutation key: ' + key);
+    });
+  }, []);
   useEffect(() => {
     if (loaded) SplashScreen.hideAsync();
   }, [loaded]);
@@ -49,13 +78,21 @@ export default function RootLayout() {
   if (!loaded) return null;
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <BibleProvider>
-        <StatusBar style="auto" />
-        <Stack>
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="bible/[book]/index" />
-        </Stack>
-      </BibleProvider>
+      <AuthProvider>
+        <QueryProviderWrapper>
+          <BibleProvider>
+            <StatusBar style="auto" />
+            <Stack>
+              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+              <Stack.Screen name="bible/[book]/index" />
+              <Stack.Screen
+                name="search/devotionals/index"
+                options={{ title: 'search devotionals' }}
+              />
+            </Stack>
+          </BibleProvider>
+        </QueryProviderWrapper>
+      </AuthProvider>
     </ThemeProvider>
   );
 }
