@@ -8,7 +8,7 @@ export const useRelatedPlans = (tags: string, currentPlanId: string) => {
     queryKey: ['related-plans', currentPlanId],
     enabled: !!tags && !!currentPlanId,
 
-    queryFn: async () => searchRelatedPlans(currentPlanId, tags)
+    queryFn: async () => searchRelatedPlans(currentPlanId, tags),
   });
 };
 
