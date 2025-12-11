@@ -28,13 +28,16 @@ export default function PlansScreen() {
     if (!flatData) return [];
     if (sort === 'Recent') {
       return [...flatData].sort(
-        (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+        (a, b) => new Date(b.created_at!).getTime() - new Date(a.created_at!).getTime(),
       );
     }
 
     if (sort === 'Trending') {
       return [...flatData].sort(
-        (a, b) => b.likes_count + b.comments_count * 2 - (a.likes_count + a.comments_count * 2),
+        (a, b) =>
+          (b.likes_count || 0) +
+          (b.comments_count || 0) * 2 -
+          ((a.likes_count || 0) + (a.comments_count || 0) * 2),
       );
     }
 
@@ -81,7 +84,7 @@ export default function PlansScreen() {
       <FlatList
         showsVerticalScrollIndicator={false}
         data={sortedPlans}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item.id!}
         key={isGrid ? 'grid' : 'list'}
         numColumns={isGrid ? 2 : 1}
         columnWrapperStyle={isGrid ? { gap: 12 } : undefined}

@@ -1,11 +1,16 @@
 /* -------------------- LIST VIEW CARD --------------------- */
 
 import Stat from '@/components/Stat';
+import { useRouter } from 'expo-router';
 import { Image, Text, TouchableOpacity, View } from 'react-native';
 
 export function ListCard({ item }: { item: any }) {
+  const router = useRouter();
+
   return (
-    <TouchableOpacity className="bg-white dark:bg-neutral-900 rounded-xl p-3 mb-3 shadow-sm flex-row gap-3">
+    <TouchableOpacity
+      className="bg-white dark:bg-neutral-900 rounded-xl p-3 mb-3 shadow-sm flex-row gap-3"
+      onPress={() => router.push(`/devotional_detail/${item.id}`)}>
       <Image
         source={{ uri: item.cover_image }}
         className="w-20 h-20 rounded-lg"
@@ -35,8 +40,11 @@ export function ListCard({ item }: { item: any }) {
 /* -------------------- GRID VIEW CARD --------------------- */
 
 export function GridCard({ item }: { item: any }) {
+  const router = useRouter();
   return (
-    <TouchableOpacity className="bg-white dark:bg-neutral-900 rounded-xl p-3 mb-3 w-[48%] shadow-sm">
+    <TouchableOpacity
+      className="bg-white dark:bg-neutral-900 rounded-xl p-3 mb-3 w-[48%] shadow-sm"
+      onPress={() => router.push(`/devotional_detail/${item.id}`)}>
       <View
         className="
       rounded-lg 
