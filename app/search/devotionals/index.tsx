@@ -73,7 +73,7 @@ export default function SearchDevos() {
       {/* Results */}
       <FlatList
         data={flatData}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item.id!}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 40 }}
         renderItem={({ item }) => <ListCard item={item} />}
