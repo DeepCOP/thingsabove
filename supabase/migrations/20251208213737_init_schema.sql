@@ -433,7 +433,7 @@ create index if not exists idx_reactions_plan_user on public.plan_reactions(plan
 
 
 
-avatar bucket.
+-- avatar bucket.
 
 insert into storage.buckets
   (id, name, public)
