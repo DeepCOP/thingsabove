@@ -31,3 +31,5 @@ export type Comments = Database['public']['Tables']['comments']['Row'];
 export type CommentsInsert = Database['public']['Tables']['comments']['Insert'];
 
 export type CommentsUpdate = Database['public']['Tables']['comments']['Update'];
+
+export type DevotionalPlanView = Database['public']['Views']['devotional_plans_view']['Row'];

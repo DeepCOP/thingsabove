@@ -25,6 +25,26 @@ export default function DevotionalDetailScreen() {
     return <ActivityIndicator style={{ marginTop: 30 }} size="large" />;
   }
 
+  if (planQuery.isError) {
+    return (
+      <View className="flex-1 items-center justify-center p-4">
+        <Text className="text-center text-gray-700 dark:text-gray-300">
+          Failed to load this devotional. Please try again later.
+        </Text>
+      </View>
+    );
+  }
+
+  if (!plan) {
+    return (
+      <View className="flex-1 items-center justify-center p-4">
+        <Text className="text-center text-gray-700 dark:text-gray-300">
+          This devotional could not be found.
+        </Text>
+      </View>
+    );
+  }
+
   return (
     <>
       <Stack.Screen
@@ -52,11 +72,15 @@ export default function DevotionalDetailScreen() {
         contentContainerStyle={{ paddingBottom: 80 }}>
         {/* Cover Image */}
         <View className="px-4">
-          <Image
-            source={{ uri: plan?.cover_image || undefined }}
-            className="w-full h-60 rounded-2xl"
-            resizeMode="cover"
-          />
+          {plan?.cover_image ? (
+            <Image
+              source={{ uri: plan.cover_image }}
+              className="w-full h-60 rounded-2xl"
+              resizeMode="cover"
+            />
+          ) : (
+            <View className="w-full h-60 rounded-2xl bg-gray-300 dark:bg-neutral-800" />
+          )}
 
           {/* Completion ribbon */}
           {(plan?.completions ?? 0) > 0 && (

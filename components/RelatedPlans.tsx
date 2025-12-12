@@ -9,6 +9,8 @@ export function RelatedPlansSection({ plan }: { plan: DevotionalPlan | undefined
   const { data, isLoading } = useRelatedPlans(tags, plan?.id || '');
   const router = useRouter();
 
+  const noResults = !isLoading && (!data || data.length === 0);
+
   return (
     <View className="mt-10 px-4">
       <Text className="text-2xl font-bold mb-4 dark:text-white">Related Plans</Text>
@@ -22,6 +24,10 @@ export function RelatedPlansSection({ plan }: { plan: DevotionalPlan | undefined
             showsHorizontalScrollIndicator={false}
             renderItem={() => <RelatedPlanSkeleton />}
           />
+        ) : noResults ? (
+          <Text className="text-gray-600 dark:text-gray-400 text-base px-2">
+            No related plans found.
+          </Text>
         ) : (
           <FlatList
             horizontal

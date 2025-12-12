@@ -1,14 +1,13 @@
 // hooks/usePlans.ts
 import { fetchPlanById, fetchPlans, searchPlans, searchRelatedPlans } from '@/api/api';
-import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { v4 as uuidv4 } from 'uuid';
+import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 
 export const useRelatedPlans = (tags: string, currentPlanId: string) => {
   return useQuery({
     queryKey: ['related-plans', currentPlanId],
-    enabled: !!tags && !!currentPlanId,
+    enabled: !!tags.trim() && !!currentPlanId,
 
-    queryFn: async () => searchRelatedPlans(currentPlanId, tags),
+    queryFn: async () => searchRelatedPlans(currentPlanId, tags.trim()),
   });
 };
 
