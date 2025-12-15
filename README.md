@@ -45,3 +45,8 @@ In the output, you'll find options to open the app in a
 - [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
 - [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
 - [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+
+
+In the Terminal, you'll find command lists:
+-  example
+   - s => to switch b/n development build and expo go to run the app on a physical device or emulator
