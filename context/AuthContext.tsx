@@ -1,10 +1,11 @@
 import { supabase } from '@/api/supabase';
+import { Session } from '@supabase/supabase-js';
 import { createContext, useContext, useEffect, useState } from 'react';
 
 const AuthContext = createContext<any>(null);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [session, setSession] = useState<any>(null);
+  const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
 
   const isGuest = !session;

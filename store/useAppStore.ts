@@ -1,26 +1,41 @@
+import { DevotionalDays } from '@/types/types';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
+import { createJSONStorage, persist } from 'zustand/middleware';
 
-type BibleBook = {
+export type BibleBook = {
   name: string;
   chapters: number;
+  verseStart?: number;
+  verseEnd?: number;
 };
 
 type AppState = {
+
+  missedDays: DevotionalDays[] | null;
+  setMissedDays: (days: DevotionalDays[]) => void;
+  version: 'KJV' | 'ASV';
+  setVersion: (v: 'KJV' | 'ASV') => void;
+
+  sort: "Recent" | "Trending";
+  setSort: (s: "Recent" | "Trending") => void;
+
+
   // USER
   user: any;
   setUser: (u: any) => void;
 
-  // BIBLE DATA
-  bibleBooks: BibleBook[];
-  setBibleBooks: (books: BibleBook[]) => void;
+  itemId: string;
+  setItemId: (id: string) => void;
 
+  // BIBLE
   selectedBook: BibleBook;
   setSelectedBook: (book: BibleBook) => void;
 
   selectedChapter: number | null;
   setSelectedChapter: (chapter: number | null) => void;
 
-  // DEVOTIONAL PLAN
+  // PLAN
   currentPlan: any;
   setCurrentPlan: (plan: any) => void;
 
@@ -29,29 +44,57 @@ type AppState = {
   setTheme: (t: 'light' | 'dark') => void;
 };
 
-export const useAppStore = create<AppState>((set) => ({
-  // USER
-  user: null,
-  setUser: (user) => set({ user }),
+export const useAppStore = create<AppState>()(
+  persist(
+    (set) => ({
 
-  // BIBLE
-  bibleBooks: [],
-  setBibleBooks: (books) => set({ bibleBooks: books }),
+      missedDays: null,
+      setMissedDays: (days) => set({ missedDays: days }),
+      sort: 'Recent',
+      setSort: (s) => set({ sort: s }),
+      // USER
+      user: null,
+      setUser: (user) => set({ user }),
 
-  selectedBook: {
-    name: 'John',
-    chapters: 1,
-  },
-  setSelectedBook: (book) => set({ selectedBook: book }),
+      itemId: '',
+      setItemId: (id) => set({ itemId: id }),
 
-  selectedChapter: null,
-  setSelectedChapter: (chapter) => set({ selectedChapter: chapter }),
+      // BIBLE
+      selectedBook: {
+        name: 'John',
+        chapters: 1,
+      },
+      setSelectedBook: (book) => set({ selectedBook: book }),
 
-  // DEVOTIONAL PLAN
-  currentPlan: null,
-  setCurrentPlan: (plan) => set({ currentPlan: plan }),
+      selectedChapter: null,
+      setSelectedChapter: (chapter) => set({ selectedChapter: chapter }),
 
-  // APP THEME
-  theme: 'light',
-  setTheme: (theme) => set({ theme }),
-}));
+      // PLAN
+      currentPlan: null,
+      setCurrentPlan: (plan) => set({ currentPlan: plan }),
+
+      // THEME
+      theme: 'light',
+      setTheme: (theme) => set({ theme }),
+      // BIBLE VERSION
+      version: 'KJV',
+      setVersion: (v) => set({ version: v }),
+    }),
+    {
+      name: 'app-storage', // 🔑 storage key
+      storage: createJSONStorage(() => AsyncStorage),
+
+      // ✅ Persist only what matters
+      partialize: (state) => ({
+        user: state.user,
+        sort: state.sort,
+        version: state.version,
+        itemId: state.itemId,
+        selectedBook: state.selectedBook,
+        selectedChapter: state.selectedChapter,
+        currentPlan: state.currentPlan,
+        theme: state.theme,
+      }),
+    },
+  ),
+);

@@ -1,5 +1,6 @@
 // /context/BibleContext.ts
-import { createContext, ReactNode, useContext, useState } from 'react';
+import { useAppStore } from '@/store/useAppStore';
+import { createContext, ReactNode, useContext } from 'react';
 import asv from '../assets/versions/asv.json';
 import kjv from '../assets/versions/kjv.json';
 const BibleContext = createContext<any>(null);
@@ -13,7 +14,7 @@ export type BibleJSON = {
 };
 
 export function BibleProvider({ children }: { children: ReactNode }) {
-  const [version, setVersion] = useState('KJV');
+  const { version, setVersion } = useAppStore();
 
   const bible = version === 'KJV' ? kjv : asv;
 

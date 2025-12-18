@@ -1,6 +1,7 @@
 import { GridCard, ListCard } from '@/components/DevoCard';
 import Dropdown from '@/components/DropDown';
 import { usePlans } from '@/hooks/usePlans';
+import { useAppStore } from '@/store/useAppStore';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useMemo, useState } from 'react';
@@ -17,13 +18,24 @@ export default function PlansScreen() {
   const { plansQuery } = usePlans();
   const colorScheme = useColorScheme();
 
-  const [sort, setSort] = useState('Recent');
+  const { sort, setSort } = useAppStore();
   const [isGrid, setIsGrid] = useState(false);
   // flatten pages and deduplicate by `id` to avoid duplicate items
   const flatData = useMemo(() => {
     const items = plansQuery.data?.pages.flatMap((page) => page.items) || [];
     return items;
   }, [plansQuery.data]);
+
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+
+    await plansQuery.refetch();
+
+    setRefreshing(false);
+  };
+
   const sortedPlans = useMemo(() => {
     if (!flatData) return [];
     if (sort === 'Recent') {
@@ -68,6 +80,13 @@ export default function PlansScreen() {
             size={22}
             color={colorScheme === 'dark' ? '#fff' : '#222'}
           />
+          <TouchableOpacity onPress={() => router.push('/login')}>
+            <Ionicons
+              name="person-outline"
+              size={22}
+              color={colorScheme === 'dark' ? '#fff' : '#222'}
+            />
+          </TouchableOpacity>
         </View>
       </View>
 
@@ -75,7 +94,11 @@ export default function PlansScreen() {
       <View className="flex-row items-center mb-3">
         <Text className="text-gray-700 dark:text-gray-200 mr-2">Sort by:</Text>
 
-        <Dropdown value={sort} onChange={(v) => setSort(v)} options={['Recent', 'Trending']} />
+        <Dropdown
+          value={sort}
+          onChange={(v) => setSort(v as 'Recent' | 'Trending')}
+          options={['Recent', 'Trending']}
+        />
       </View>
 
       {plansQuery.isLoading && <ActivityIndicator style={{ marginTop: 30 }} size="large" />}
@@ -85,6 +108,8 @@ export default function PlansScreen() {
         showsVerticalScrollIndicator={false}
         data={sortedPlans}
         keyExtractor={(item) => item.id!}
+        refreshing={refreshing}
+        onRefresh={onRefresh}
         key={isGrid ? 'grid' : 'list'}
         numColumns={isGrid ? 2 : 1}
         columnWrapperStyle={isGrid ? { gap: 12 } : undefined}

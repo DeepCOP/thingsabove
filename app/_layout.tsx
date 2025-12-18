@@ -20,7 +20,7 @@ import { StatusBar } from 'expo-status-bar';
 import { BibleProvider } from '../context/BibleContext';
 
 import { supabase } from '@/api/supabase';
-import { AuthProvider } from '@/context/AuthContext';
+import { AuthProvider, useAuth } from '@/context/AuthContext';
 import { mutationQueue } from '@/lib/mutationQueue';
 import { QueryProviderWrapper } from '@/lib/queryClient';
 import * as SplashScreen from 'expo-splash-screen';
@@ -32,6 +32,22 @@ SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
+
+  return (
+    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+      <AuthProvider>
+        <QueryProviderWrapper>
+          <BibleProvider>
+            <RootLayoutContent />
+          </BibleProvider>
+        </QueryProviderWrapper>
+      </AuthProvider>
+    </ThemeProvider>
+  );
+}
+
+function RootLayoutContent() {
+  const { session, loading } = useAuth();
 
   const [loaded] = useFonts({
     OpenSansRegular: OpenSans_400Regular,
@@ -45,6 +61,7 @@ export default function RootLayout() {
     OpenSansSemiBoldItalic: OpenSans_600SemiBold_Italic,
     OpenSansBoldItalic: OpenSans_700Bold_Italic,
   });
+
   useEffect(() => {
     mutationQueue.setExecutor(async (item) => {
       const { key, payload } = item;
@@ -72,28 +89,37 @@ export default function RootLayout() {
     });
   }, []);
   useEffect(() => {
-    if (loaded) SplashScreen.hideAsync();
-  }, [loaded]);
+    if (loaded && !loading) {
+      SplashScreen.hideAsync();
+    }
+  }, [loaded, loading]);
 
-  if (!loaded) return null;
+  if (!loaded || loading) return null;
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <AuthProvider>
-        <QueryProviderWrapper>
-          <BibleProvider>
-            <StatusBar style="auto" />
-            <Stack>
-              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-              <Stack.Screen name="bible/[book]/index" />
-              <Stack.Screen
-                name="search/devotionals/index"
-                options={{ title: 'search devotionals' }}
-              />
-              <Stack.Screen name="devotional_detail/[id]" options={{ title: '' }} />
-            </Stack>
-          </BibleProvider>
-        </QueryProviderWrapper>
-      </AuthProvider>
-    </ThemeProvider>
+    <>
+      <StatusBar style="auto" />
+      <Stack>
+        {/* 🌍 PUBLIC / GUEST ROUTES */}
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="bible/[book]/index" />
+        <Stack.Screen name="search/devotionals/index" options={{ title: 'search devotionals' }} />
+        <Stack.Screen name="devotional_detail/[id]/index" options={{ title: '' }} />
+        <Stack.Screen name="login/index" options={{ presentation: 'modal' }} />
+
+        {/* 🔒 AUTH-REQUIRED ROUTES */}
+        <Stack.Protected guard={session != null}>
+          <Stack.Screen name="plan_progress/[planId]/index" options={{ title: 'plan progress' }} />
+          <Stack.Screen
+            name="plan_progress/[planId]/plan-complete/index"
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="devotional_detail/[id]/[dayId]/[itemId]"
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen name="plan_progress/[planId]/missedDays/index" options={{ title: 'Missed Days' }} />
+        </Stack.Protected>
+      </Stack>
+    </>
   );
 }
