@@ -1,3 +1,5 @@
+/* eslint-disable react-hooks/exhaustive-deps */
+
 import { Button, Input } from '@rneui/themed';
 import { Session } from '@supabase/supabase-js';
 import { useEffect, useState } from 'react';
@@ -20,7 +22,7 @@ export default function Account({ session }: { session: Session }) {
       setLoading(true);
       if (!session?.user) throw new Error('No user on the session!');
 
-      const { data, error, status } = await supabase
+      const { error, status } = await supabase
         .from('profiles')
         .select(`username, website, avatar_url`)
         .eq('id', session?.user.id)
@@ -56,13 +58,13 @@ export default function Account({ session }: { session: Session }) {
       setLoading(true);
       if (!session?.user) throw new Error('No user on the session!');
 
-      const updates = {
-        id: session?.user.id,
-        username,
-        website,
-        avatar_url,
-        updated_at: new Date(),
-      };
+      // const updates = {
+      //   id: session?.user.id,
+      //   username,
+      //   website,
+      //   avatar_url,
+      //   updated_at: new Date(),
+      // };
 
       // const { error } = await supabase.from('profiles').upsert(updates);
 
