@@ -89,6 +89,7 @@ export default function RootLayout() {
                 name="search/devotionals/index"
                 options={{ title: 'search devotionals' }}
               />
+              <Stack.Screen name="devotional_detail/[id]" options={{ title: '' }} />
             </Stack>
           </BibleProvider>
         </QueryProviderWrapper>

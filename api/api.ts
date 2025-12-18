@@ -1,5 +1,18 @@
 import { supabase } from './supabase';
 
+export const searchRelatedPlans = async (currentPlanId: string, tags: string) => {
+  const { data, error } = await supabase
+    .from('devotional_plans')
+    .select('id, title, cover_image, total_days, tags, description')
+    .neq('id', currentPlanId)
+    .textSearch('tags', tags, { type: 'websearch' })
+    .limit(10);
+  if (error) throw error;
+  // console.log("data",data)
+
+  return data;
+};
+
 export const searchPlans = async ({
   pageParam,
   query,
@@ -12,8 +25,8 @@ export const searchPlans = async ({
   const { data, error } = await supabase.rpc('search_plans', {
     search_query: query,
     limit_count: PAGE_SIZE,
-    cursor_created_at: pageParam?.created_at ?? null,
-    cursor_id: pageParam?.id ?? null,
+    cursor_created_at: pageParam?.created_at ?? undefined,
+    cursor_id: pageParam?.id ?? undefined,
   });
 
   if (error) throw error;
@@ -54,4 +67,12 @@ export const fetchPlans = async ({
     items: data,
     nextCursor: last ? { created_at: last.created_at, id: last.id } : null,
   };
+};
+
+export const fetchPlanById = async (id: string) => {
+  let { data, error } = await supabase.from('devotional_plans').select('*').eq('id', id).single();
+
+  if (error) throw error;
+
+  return data;
 };
