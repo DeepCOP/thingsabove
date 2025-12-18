@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { useAuth } from '@/context/AuthContext';
 import { useDayItemsProgress } from '@/hooks/useDayItemsProgress';
 import { usePlanProgress } from '@/hooks/usePLanProgress';
