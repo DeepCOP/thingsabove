@@ -91,7 +91,7 @@ export default function PlanProgressScreen() {
     }
 
     prevCompletedCount.current = completedCount;
-  }, [planProgress?.completed_days?.length, plan?.total_days, router, plan, planProgress]);
+  }, [planProgress?.completed_days?.length, plan?.total_days]);
 
   useEffect(() => {
     if (planProgress?.current_day) {
@@ -104,7 +104,7 @@ export default function PlanProgressScreen() {
       return;
     }
     loadItems.mutate();
-  }, [dayItemsProgressQuery, loadItems]);
+  }, [dayItemsProgressQuery]);
 
   const devotional = dayItemsProgressQuery?.items.find((item) => item.item_type === 'devotional');
 
@@ -123,7 +123,7 @@ export default function PlanProgressScreen() {
         !planProgress?.completed_days?.includes(d.day_number) && d.day_number <= plan?.total_days
       );
     });
-  }, [planProgress, currentDayData, plan, days]);
+  }, [planProgress, currentDayData, plan]);
 
   if (
     planProgressQuery.isLoading ||

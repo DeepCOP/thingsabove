@@ -26,7 +26,7 @@ const MissedDays = () => {
       return !isCompleted;
     });
     setMissedDays(newMissedDays || []);
-  }, [planProgressQuery.data, missedDays, setMissedDays]);
+  }, [planProgressQuery.data]);
   const planProgress = planProgressQuery.data;
 
   return (
