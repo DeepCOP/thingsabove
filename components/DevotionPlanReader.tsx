@@ -112,7 +112,7 @@ export default function DevotionalPlanReader({
         });
       }, 50);
     }
-  }, [selectedBook.verseStart, versePositions.current]);
+  }, [selectedBook, versePositions]);
   console.log('selectedBook:', selectedBook);
   useEffect(() => {
     didScrollRef.current = false;

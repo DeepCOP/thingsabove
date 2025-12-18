@@ -119,18 +119,28 @@ export function useDayItemsProgress({ user_id, plan_id, day_id, scripture_refs }
   });
 
   const toggleDayCompletion = useMutation({
-    mutationFn: async ({completed,user_id,plan_id,day_id}: {completed: boolean,user_id: string,plan_id: string,day_id: string}) => {
+    mutationFn: async ({
+      completed,
+      user_id,
+      plan_id,
+      day_id,
+    }: {
+      completed: boolean;
+      user_id: string;
+      plan_id: string;
+      day_id: string;
+    }) => {
       const { error } = await supabase.rpc('toggle_day_completion', {
         p_user_id: user_id,
         p_plan_id: plan_id,
         p_day_id: day_id,
         p_completed: completed,
       });
-      ``
+      ``;
 
       if (error) throw error;
-    },   
-     onSuccess: () => {
+    },
+    onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ['day_items_progress', user_id, plan_id, day_id],
       });

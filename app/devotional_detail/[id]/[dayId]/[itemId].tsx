@@ -4,17 +4,15 @@ import { useDayItemsProgress } from '@/hooks/useDayItemsProgress';
 import { usePlanDay } from '@/hooks/usePLanProgress';
 import { BibleBook, useAppStore } from '@/store/useAppStore';
 import { parseVerseRef } from '@/utils/utils';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
-import { useColorScheme } from 'react-native';
+import { ActivityIndicator } from 'react-native';
 
 export default function DevotionalDayScreen() {
   const { dayId, id: planId } = useLocalSearchParams();
-  const router = useRouter();
   const [last, setLast] = useState(false);
   const { session } = useAuth();
   const { itemId, setItemId, setSelectedBook } = useAppStore();
-  const colorScheme = useColorScheme();
 
   const { data: dayData, isLoading: dayLoading } = usePlanDay((dayId as string) ?? null);
   const { dayItemsProgressQuery, toggleMutation } = useDayItemsProgress({
@@ -75,14 +73,12 @@ export default function DevotionalDayScreen() {
   const HandlePrevious = () => {
     setLast(false);
     const currentItem = dayItemsProgressQuery?.items?.find((item) => item.id === itemId);
-    let nextItemId;
     if (currentItem?.item_type === 'devotional') {
       return;
     }
     const currentItemIdx = dayItemsProgressQuery?.scriptures?.findIndex(
       (item) => item.id === itemId,
     );
-    let previousIdx;
     if (currentItemIdx === 0) {
       setItemId(dayItemsProgressQuery?.devotional?.id || '');
       return;
@@ -95,6 +91,9 @@ export default function DevotionalDayScreen() {
     setItemId(prevItem?.id || '');
   };
   const item = dayItemsProgressQuery?.items.find((item) => item.id === itemId);
+  if (dayLoading) {
+    return <ActivityIndicator size="large" style={{ flex: 1, justifyContent: 'center' }} />;
+  }
   return (
     <>
       {item && (

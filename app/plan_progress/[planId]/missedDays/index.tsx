@@ -1,7 +1,6 @@
 import { useAuth } from '@/context/AuthContext';
 import { useDayItemsProgress } from '@/hooks/useDayItemsProgress';
 import { usePlanProgress } from '@/hooks/usePLanProgress';
-import { useFetchDevotionalPlan } from '@/hooks/usePlans';
 import { useAppStore } from '@/store/useAppStore';
 import { Ionicons } from '@expo/vector-icons';
 import dayjs from 'dayjs';
@@ -13,10 +12,7 @@ const MissedDays = () => {
   const { planId } = useLocalSearchParams();
   const { missedDays, setMissedDays } = useAppStore();
   const { session } = useAuth();
-  const { planProgressQuery, daysQuery } = usePlanProgress(
-    planId as string,
-    session?.user?.id as string,
-  );
+  const { planProgressQuery } = usePlanProgress(planId as string, session?.user?.id as string);
   const { toggleDayCompletion } = useDayItemsProgress({
     user_id: session?.user?.id || '',
     plan_id: (planId as string) || '', // Not needed for this component
@@ -30,11 +26,9 @@ const MissedDays = () => {
       return !isCompleted;
     });
     setMissedDays(newMissedDays || []);
-  }, [planProgressQuery.data]);
+  }, [planProgressQuery.data, missedDays, setMissedDays]);
   const planProgress = planProgressQuery.data;
 
-  const planQuery = useFetchDevotionalPlan(planId as string);
-  const plan = planQuery.data;
   return (
     <>
       {missedDays && missedDays.length > 0 ? (

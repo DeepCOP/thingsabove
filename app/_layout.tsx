@@ -117,7 +117,10 @@ function RootLayoutContent() {
             name="devotional_detail/[id]/[dayId]/[itemId]"
             options={{ headerShown: false }}
           />
-          <Stack.Screen name="plan_progress/[planId]/missedDays/index" options={{ title: 'Missed Days' }} />
+          <Stack.Screen
+            name="plan_progress/[planId]/missedDays/index"
+            options={{ title: 'Missed Days' }}
+          />
         </Stack.Protected>
       </Stack>
     </>

@@ -11,15 +11,13 @@ export type BibleBook = {
 };
 
 type AppState = {
-
   missedDays: DevotionalDays[] | null;
   setMissedDays: (days: DevotionalDays[]) => void;
   version: 'KJV' | 'ASV';
   setVersion: (v: 'KJV' | 'ASV') => void;
 
-  sort: "Recent" | "Trending";
-  setSort: (s: "Recent" | "Trending") => void;
-
+  sort: 'Recent' | 'Trending';
+  setSort: (s: 'Recent' | 'Trending') => void;
 
   // USER
   user: any;
@@ -47,7 +45,6 @@ type AppState = {
 export const useAppStore = create<AppState>()(
   persist(
     (set) => ({
-
       missedDays: null,
       setMissedDays: (days) => set({ missedDays: days }),
       sort: 'Recent',

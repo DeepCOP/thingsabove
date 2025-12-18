@@ -9,7 +9,7 @@ export function parseVerseRef(ref: string): ParsedVerse | null {
 
     const [, rawBook, chapter, verseStart, verseEnd] = match;
     return {
-      book: rawBook.replace(/_/g, ' '), 
+      book: rawBook.replace(/_/g, ' '),
       chapter: Number(chapter),
       verseStart: Number(verseStart),
       verseEnd: verseEnd ? Number(verseEnd) : undefined,

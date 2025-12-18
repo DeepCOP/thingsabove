@@ -21,7 +21,7 @@ export default function PlanCompleteScreen() {
     }).start(() => {
       setAnimationComplete(true);
     });
-  }, []);
+  }, [progressAnim]);
 
   return (
     <View className="flex-1 bg-white dark:bg-black">
