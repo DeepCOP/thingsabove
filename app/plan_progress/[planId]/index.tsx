@@ -114,7 +114,6 @@ export default function PlanProgressScreen() {
 
   const missedDays = useMemo(() => {
     if (!planProgress || !plan) return null;
-    console.log(plan.total_days);
     return days?.filter((d) => {
       if (currentDayData) {
         return (

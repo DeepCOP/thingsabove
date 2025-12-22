@@ -58,14 +58,12 @@ export default function DevotionalDayScreen() {
     const currentItemIdx = dayItemsProgressQuery?.scriptures?.findIndex(
       (item) => item.id === itemId,
     );
-    console.log('called', itemId, currentItemIdx, dayItemsProgressQuery?.scriptures?.length);
     if (currentItemIdx === undefined || !dayItemsProgressQuery?.scriptures) return;
     if (currentItemIdx === dayItemsProgressQuery?.scriptures?.length - 1) {
       setLast(true);
       return;
     }
     const nextItem = dayItemsProgressQuery?.scriptures?.[currentItemIdx + 1];
-    console.log('next', nextItem);
     setFromVerseRef(nextItem.ref, setSelectedBook);
 
     setItemId(nextItem?.id || '');
@@ -85,7 +83,6 @@ export default function DevotionalDayScreen() {
     }
     if (!currentItemIdx || !dayItemsProgressQuery?.scriptures) return;
     const prevItem = dayItemsProgressQuery?.scriptures?.[currentItemIdx - 1];
-    console.log(prevItem, currentItemIdx);
     setFromVerseRef(prevItem.ref, setSelectedBook);
 
     setItemId(prevItem?.id || '');

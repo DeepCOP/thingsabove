@@ -9,7 +9,6 @@ export const searchRelatedPlans = async (currentPlanId: string, tags: string) =>
     .textSearch('tags', tags, { type: 'websearch' })
     .limit(10);
   if (error) throw error;
-  // console.log("data",data)
 
   return data;
 };
@@ -227,7 +226,6 @@ export const fetchPlanDays = async ({ plan_id }: { plan_id: string }) => {
 };
 
 export const insertToPlanProgress = async (payload: PlanProgressInsert) => {
-  console.log('Inserting to plan progress:', payload);
   const { data, error } = await supabase.from('plan_progress').insert(payload).select('*').single();
 
   if (error) throw error;

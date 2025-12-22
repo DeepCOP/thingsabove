@@ -81,8 +81,6 @@ export default function DevotionalPlanReader({
     }[]
   >([]);
 
-  console.log(last);
-
   const [showMenu, setShowMenu] = useState(false);
 
   const selectedBook = useAppStore((s) => s.selectedBook);
@@ -95,16 +93,12 @@ export default function DevotionalPlanReader({
   const didScrollRef = useRef(false);
 
   useEffect(() => {
-    console.log('selectedBook changed:', selectedBook);
     if (!selectedBook?.verseStart) return;
     if (!scrollRef.current) return;
     if (didScrollRef.current) return;
 
     const y = versePositions.current[selectedBook.verseStart];
-    console.log('Verse position y:', y);
     if (y != null) {
-      console.log('Scrolling to verse:', y);
-
       didScrollRef.current = true;
 
       // wait for layout pass
