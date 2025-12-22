@@ -1,25 +1,53 @@
 // /context/BibleContext.ts
 import { useAppStore } from '@/store/useAppStore';
 import { createContext, ReactNode, useContext } from 'react';
-import asv from '../assets/versions/asv.json';
-import kjv from '../assets/versions/kjv.json';
-const BibleContext = createContext<any>(null);
+import asv from '../assets/versions/ASV.json';
+import kjv from '../assets/versions/KJV.json';
+import asvNames from '../assets/versions/asv_book_names.json';
+import kjvNames from '../assets/versions/kjv_book_names.json';
 
 export type BibleJSON = {
-  [bookName: string]: {
-    [chapter: string]: {
-      [verse: string]: string; // or { title: string, 1: "...", 2: "..." }
-    };
-  };
+  translation: string;
+  books: [
+    {
+      name: string;
+      chapters: [
+        {
+          chapter: number;
+          verses: [
+            {
+              verse: number;
+              text: string;
+            },
+          ];
+        },
+      ];
+    },
+  ];
 };
+
+type BibleContextType = {
+  bible: BibleJSON;
+  version: 'KJV' | 'ASV';
+  setVersion: (v: 'KJV' | 'ASV') => void;
+  bookNames: string[];
+};
+const BibleContext = createContext<BibleContextType>({
+  bible: kjv as BibleJSON,
+  version: 'KJV',
+  setVersion: () => {},
+  bookNames: kjvNames,
+});
 
 export function BibleProvider({ children }: { children: ReactNode }) {
   const { version, setVersion } = useAppStore();
 
-  const bible = version === 'KJV' ? kjv : asv;
-
+  const bible: BibleJSON = (version === 'KJV' ? kjv : asv) as BibleJSON;
+  const bookNames: string[] = version === 'KJV' ? kjvNames : asvNames;
   return (
-    <BibleContext.Provider value={{ bible, version, setVersion }}>{children}</BibleContext.Provider>
+    <BibleContext.Provider value={{ bible, version, setVersion, bookNames }}>
+      {children}
+    </BibleContext.Provider>
   );
 }
 

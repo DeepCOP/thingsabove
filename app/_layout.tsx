@@ -5,6 +5,7 @@ import {
   Merriweather_900Black,
 } from '@expo-google-fonts/merriweather';
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import {
   OpenSans_400Regular,
@@ -34,15 +35,17 @@ export default function RootLayout() {
   const colorScheme = useColorScheme();
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <AuthProvider>
-        <QueryProviderWrapper>
-          <BibleProvider>
-            <RootLayoutContent />
-          </BibleProvider>
-        </QueryProviderWrapper>
-      </AuthProvider>
-    </ThemeProvider>
+    <SafeAreaProvider>
+      <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+        <AuthProvider>
+          <QueryProviderWrapper>
+            <BibleProvider>
+              <RootLayoutContent />
+            </BibleProvider>
+          </QueryProviderWrapper>
+        </AuthProvider>
+      </ThemeProvider>
+    </SafeAreaProvider>
   );
 }
 
@@ -98,14 +101,15 @@ function RootLayoutContent() {
   return (
     <>
       <StatusBar style="auto" />
-      <Stack>
+      <Stack initialRouteName="(tabs)">
         {/* 🌍 PUBLIC / GUEST ROUTES */}
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="bible/[book]/index" />
         <Stack.Screen name="search/devotionals/index" options={{ title: 'search devotionals' }} />
         <Stack.Screen name="devotional_detail/[id]/index" options={{ title: '' }} />
-        <Stack.Screen name="login/index" options={{ presentation: 'modal' }} />
-
+        <Stack.Protected guard={session == null}>
+          <Stack.Screen name="login" options={{ presentation: 'modal' }} />
+        </Stack.Protected>
         {/* 🔒 AUTH-REQUIRED ROUTES */}
         <Stack.Protected guard={session != null}>
           <Stack.Screen name="plan_progress/[planId]/index" options={{ title: 'plan progress' }} />

@@ -3,12 +3,13 @@ import { useFetchDevotionalPlan } from '@/hooks/usePlans';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
-import { Animated, Image, Text, TouchableOpacity, View } from 'react-native';
+import { Animated, Image, Text, TouchableOpacity, useColorScheme, View } from 'react-native';
 
 export default function PlanCompleteScreen() {
   const { planId } = useLocalSearchParams();
   const router = useRouter();
   const { data: plan } = useFetchDevotionalPlan(planId as string);
+  const colorScheme = useColorScheme();
 
   const progressAnim = useRef(new Animated.Value(0)).current;
   const [animationComplete, setAnimationComplete] = useState(false);
@@ -28,13 +29,17 @@ export default function PlanCompleteScreen() {
       {/* HEADER */}
       <View className="flex-row items-center justify-between px-4 pt-20 pb-3">
         <TouchableOpacity onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={24} />
+          <Ionicons name="arrow-back" size={24} color={colorScheme === 'dark' ? '#fff' : '#000'} />
         </TouchableOpacity>
 
-        <Text className="text-lg font-semibold">Plan Complete</Text>
+        <Text className="text-lg font-semibold text-gray-800 dark:text-white">Plan Complete</Text>
 
         <TouchableOpacity>
-          <Ionicons name="share-social-outline" size={22} />
+          <Ionicons
+            name="share-social-outline"
+            size={22}
+            color={colorScheme === 'dark' ? '#fff' : '#000'}
+          />
         </TouchableOpacity>
       </View>
 
@@ -53,11 +58,18 @@ export default function PlanCompleteScreen() {
       {/* RATING */}
       {animationComplete ? (
         <View className="mx-4 mt-6 bg-gray-300 dark:bg-neutral-900 rounded-2xl py-6 items-center">
-          <Text className="text-lg font-semibold mb-3">You rated this Plan</Text>
+          <Text className="text-lg font-semibold mb-3 text-gray-800 dark:text-white">
+            You rated this Plan
+          </Text>
 
           <View className="flex-row gap-2">
             {[1, 2, 3, 4, 5].map((i) => (
-              <Ionicons key={i} name="star" size={26} color="#000" />
+              <Ionicons
+                key={i}
+                name="star"
+                size={26}
+                color={colorScheme === 'dark' ? '#fff' : '#000'}
+              />
             ))}
           </View>
         </View>
@@ -66,7 +78,7 @@ export default function PlanCompleteScreen() {
           <Animated.View
             style={{
               height: '100%',
-              backgroundColor: '#000',
+              backgroundColor: colorScheme === 'dark' ? '#fff' : '#000',
               transform: [
                 {
                   scaleX: progressAnim,

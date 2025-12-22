@@ -35,7 +35,7 @@ export default function DevotionalDayScreen() {
 
     setSelectedBook({
       name: parsed.book,
-      chapters: parsed.chapter,
+      chapter: parsed.chapter,
       verseEnd: parsed.verseEnd,
       verseStart: parsed.verseStart,
     });

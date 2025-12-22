@@ -7,9 +7,10 @@ import { Ionicons } from '@expo/vector-icons';
 import dayjs from 'dayjs';
 import { useLocalSearchParams } from 'expo-router';
 import React, { useEffect } from 'react';
-import { FlatList, Text, TouchableOpacity, View } from 'react-native';
+import { FlatList, Text, TouchableOpacity, useColorScheme, View } from 'react-native';
 
 const MissedDays = () => {
+  const colorScheme = useColorScheme();
   const { planId } = useLocalSearchParams();
   const { missedDays, setMissedDays } = useAppStore();
   const { session } = useAuth();
@@ -47,12 +48,16 @@ const MissedDays = () => {
                     completed: true,
                   })
                 }
-                className={`rounded-full p-1 border mr-3 ${
+                className={`rounded-full p-1 border mr-3  ${
                   planProgress?.completed_days?.includes(item?.day_number)
                     ? 'bg-black dark:bg-white'
                     : 'border-gray-500'
-                }>`}>
-                <Ionicons name="checkmark" size={12} color="white" />
+                }`}>
+                <Ionicons
+                  name="checkmark"
+                  size={12}
+                  color={colorScheme === 'dark' ? 'black' : 'white'}
+                />
               </TouchableOpacity>
               <Text className="text-gray-900 font-semibold  dark:text-gray-100">
                 {dayjs(planProgress?.created_at)

@@ -1,4 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useAuth } from '@/context/AuthContext';
 import { useDayItemsProgress } from '@/hooks/useDayItemsProgress';
@@ -22,6 +23,7 @@ import {
 } from 'react-native';
 
 export default function PlanProgressScreen() {
+  const insets = useSafeAreaInsets();
   const { planId } = useLocalSearchParams(); // plan ID
   const router = useRouter();
   const { setMissedDays } = useAppStore();
@@ -60,7 +62,7 @@ export default function PlanProgressScreen() {
 
     setSelectedBook({
       name: parsed.book,
-      chapters: parsed.chapter,
+      chapter: parsed.chapter,
       verseEnd: parsed.verseEnd,
       verseStart: parsed.verseStart,
     });
@@ -253,7 +255,11 @@ export default function PlanProgressScreen() {
                     className={`rounded-full p-1 border mr-3 ${
                       devotional?.completed ? 'bg-black dark:bg-white' : 'border-gray-500'
                     }`}>
-                    <Ionicons name="checkmark" size={12} color="white" />
+                    <Ionicons
+                      name="checkmark"
+                      size={12}
+                      color={colorScheme === 'dark' ? 'black' : 'white'}
+                    />
                   </TouchableOpacity>
                   <Text className="text-lg dark:text-white">
                     {devotional?.item_type === 'devotional'
@@ -309,7 +315,11 @@ export default function PlanProgressScreen() {
                         className={`rounded-full p-1 border mr-3 ${
                           data.completed ? 'bg-black dark:bg-white' : 'border-gray-500'
                         }`}>
-                        <Ionicons name="checkmark" size={12} color="white" />
+                        <Ionicons
+                          name="checkmark"
+                          size={12}
+                          color={colorScheme === 'dark' ? 'black' : 'white'}
+                        />
                       </TouchableOpacity>
                       <Text className="text-lg dark:text-white">
                         {data?.item_type === 'devotional'
@@ -344,6 +354,7 @@ export default function PlanProgressScreen() {
           left: 0,
           right: 0,
           zIndex: 10,
+          paddingBottom: insets.bottom,
         }}>
         {dayItemsProgressQuery?.items && dayItemsProgressQuery?.items.length > 0 && (
           <TouchableOpacity

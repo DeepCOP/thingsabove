@@ -3,61 +3,73 @@ import { Ionicons } from '@expo/vector-icons';
 import { Tabs, useRouter } from 'expo-router';
 import { useRef } from 'react';
 import { Animated, Text, TouchableOpacity, useColorScheme, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useBible } from '../../context/BibleContext';
 
 export default function BibleTab() {
+  const insets = useSafeAreaInsets();
   const headerY = useRef(new Animated.Value(0)).current; // 0 shown, -80 hidden
   const tabY = useRef(new Animated.Value(0)).current; // 0 shown, 80 hidden
+  const TAB_BAR_HEIGHT = 56;
+  const hideDistance = Math.abs(TAB_BAR_HEIGHT);
 
   const router = useRouter();
+
   const { version, setVersion } = useBible();
 
-  let last = 0;
+  const lastScrollY = useRef(0);
 
   const onScroll = (e: any) => {
     const y = e.nativeEvent.contentOffset.y;
+    const last = lastScrollY.current;
+    if (Math.abs(y - last) < 2) return;
 
-    if (y < 0.5) {
+    // TOP → always show
+    if (y <= 0) {
       Animated.timing(headerY, {
         toValue: 0,
-        duration: 180,
+        duration: 150,
         useNativeDriver: true,
       }).start();
 
       Animated.timing(tabY, {
         toValue: 0,
-        duration: 180,
+        duration: 150,
         useNativeDriver: true,
       }).start();
-    } else if (y > last) {
-      // scrolling DOWN → animate HIDE
+    }
+    // SCROLLING DOWN → hide immediately
+    else if (y > last) {
       Animated.timing(headerY, {
         toValue: -80,
-        duration: 180,
+        duration: 150,
         useNativeDriver: true,
       }).start();
 
       Animated.timing(tabY, {
-        toValue: 80,
-        duration: 180,
+        toValue: hideDistance,
+        duration: 150,
         useNativeDriver: true,
       }).start();
-    } else if (y < last) {
+    }
+    // SCROLLING UP → show
+    else if (y < last) {
       Animated.timing(headerY, {
         toValue: 0,
-        duration: 180,
+        duration: 150,
         useNativeDriver: true,
       }).start();
 
       Animated.timing(tabY, {
         toValue: 0,
-        duration: 180,
+        duration: 150,
         useNativeDriver: true,
       }).start();
     }
 
-    last = y;
+    lastScrollY.current = y;
   };
+
   const AnimatedHeader = ({
     headerTranslateY,
   }: {
@@ -113,9 +125,9 @@ export default function BibleTab() {
             transform: [{ translateY: tabY }],
             position: 'absolute',
             elevation: 0,
-            height: 80,
+            height: TAB_BAR_HEIGHT + insets.bottom,
           },
-          title: '',
+          title: 'bible',
 
           headerTitleAlign: 'center',
           headerShadowVisible: false,

@@ -1,5 +1,10 @@
 // hooks/usePlanProgress.ts
-import { supabase } from '@/api/supabase';
+import {
+  fetchPlanDays,
+  fetchPlanDayView,
+  fetchPlanProgress,
+  insertToPlanProgress,
+} from '@/api/api';
 import { PlanDayView, PlanProgressInsert } from '@/types/types';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
@@ -8,47 +13,18 @@ export function usePlanProgress(plan_id: string, user_id: string) {
 
   const planProgressQuery = useQuery({
     queryKey: ['plan_progress', plan_id, user_id],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('plan_progress')
-        .select('id, current_day, completed_days,created_at')
-        .eq('plan_id', plan_id)
-        .eq('user_id', user_id)
-        .single();
-
-      if (error && error.code !== 'PGRST116') throw error;
-      return data;
-    },
+    queryFn: async () => fetchPlanProgress({ plan_id, user_id }),
   });
 
   const daysQuery = useQuery({
     queryKey: ['devotional_days', plan_id],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('devotional_days')
-        .select('*')
-        .eq('plan_id', plan_id)
-        .order('day_number');
-
-      if (error) throw error;
-      return data;
-    },
+    queryFn: async () => fetchPlanDays({ plan_id }),
   });
 
-  const insertToPlanProgress = useMutation({
+  const insertToPlanProgressMutation = useMutation({
     mutationKey: ['start_plan'],
 
-    mutationFn: async (payload: PlanProgressInsert) => {
-      console.log('Inserting to plan progress:', payload);
-      const { data, error } = await supabase
-        .from('plan_progress')
-        .insert(payload)
-        .select('*')
-        .single();
-
-      if (error) throw error;
-      return data;
-    },
+    mutationFn: async (payload: PlanProgressInsert) => insertToPlanProgress(payload),
 
     onSuccess: (data) => {
       // Invalidate any queries that depend on the user's plan progress
@@ -56,7 +32,7 @@ export function usePlanProgress(plan_id: string, user_id: string) {
     },
   });
 
-  return { planProgressQuery, daysQuery, insertToPlanProgress };
+  return { planProgressQuery, daysQuery, insertToPlanProgress: insertToPlanProgressMutation };
 }
 
 export const usePlanDay = (day_id: string | null) => {
@@ -64,16 +40,6 @@ export const usePlanDay = (day_id: string | null) => {
     queryKey: ['plan_day', day_id],
     enabled: !!day_id,
 
-    queryFn: async () => {
-      console.log(day_id);
-      const { data, error } = await supabase
-        .from('plan_day_view')
-        .select('*')
-        .eq('day_id', day_id ?? '')
-        .single();
-
-      if (error) throw error;
-      return data;
-    },
+    queryFn: async () => fetchPlanDayView(day_id!),
   });
 };

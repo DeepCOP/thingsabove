@@ -1,5 +1,6 @@
 import { GridCard, ListCard } from '@/components/DevoCard';
 import Dropdown from '@/components/DropDown';
+import { useAuth } from '@/context/AuthContext';
 import { usePlans } from '@/hooks/usePlans';
 import { useAppStore } from '@/store/useAppStore';
 import { Ionicons } from '@expo/vector-icons';
@@ -16,6 +17,7 @@ import {
 
 export default function PlansScreen() {
   const { plansQuery } = usePlans();
+  const { session } = useAuth();
   const colorScheme = useColorScheme();
 
   const { sort, setSort } = useAppStore();
@@ -80,13 +82,15 @@ export default function PlansScreen() {
             size={22}
             color={colorScheme === 'dark' ? '#fff' : '#222'}
           />
-          <TouchableOpacity onPress={() => router.push('/login')}>
-            <Ionicons
-              name="person-outline"
-              size={22}
-              color={colorScheme === 'dark' ? '#fff' : '#222'}
-            />
-          </TouchableOpacity>
+          {!session && (
+            <TouchableOpacity onPress={() => router.push('/login/signin')}>
+              <Ionicons
+                name="person-add"
+                size={22}
+                color={colorScheme === 'dark' ? '#fff' : '#222'}
+              />
+            </TouchableOpacity>
+          )}
         </View>
       </View>
 

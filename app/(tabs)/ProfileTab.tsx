@@ -1,10 +1,13 @@
-import { Text, View } from 'react-native';
-import React from 'react';
+import { useAuth } from '@/context/AuthContext';
+import { View } from 'react-native';
+import Account from '../../components/Account';
+import Auth from '../../components/Auth';
 
-export default function Profile() {
+export default function App() {
+  const { session } = useAuth();
   return (
-    <View className="flex-1 justify-center items-center">
-      <Text>Profile</Text>
+    <View>
+      {session && session.user ? <Account key={session.user.id} session={session} /> : <Auth />}
     </View>
   );
 }

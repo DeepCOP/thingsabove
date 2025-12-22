@@ -1,5 +1,5 @@
 // hooks/useDayItemsProgress.ts
-import { supabase } from '@/api/supabase';
+import { fetchDayItems, loadDayItems, toggleDayCompletion, toggleItemCompletion } from '@/api/api';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
 
@@ -10,22 +10,6 @@ interface Params {
   scripture_refs: string[];
 }
 
-const getNumericPrefix = (key?: string | null) => {
-  if (!key) return 0;
-  const match = key.match(/^(\d+)/);
-  return match ? Number(match[0]) : 0;
-};
-
-const sortByItemKey = (a?: string | null, b?: string | null) => {
-  const na = getNumericPrefix(a);
-  const nb = getNumericPrefix(b);
-
-  if (na === nb) {
-    return (a ?? '').localeCompare(b ?? '');
-  }
-  return na - nb;
-};
-
 export function useDayItemsProgress({ user_id, plan_id, day_id, scripture_refs }: Params) {
   const queryClient = useQueryClient();
 
@@ -34,47 +18,8 @@ export function useDayItemsProgress({ user_id, plan_id, day_id, scripture_refs }
     queryKey: ['day_items_progress', user_id, plan_id, day_id],
     enabled: !!day_id && !!plan_id && !!user_id,
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('day_items_progress')
-        .select('*')
-        .eq('user_id', user_id)
-        .eq('plan_id', plan_id)
-        .eq('day_id', day_id);
-
-      if (error) throw error;
-      // Return mapped progress
-      return {
-        items: [...data].sort((a, b) => {
-          const getNumericPrefix = (key?: string | null) => {
-            if (!key) return 0;
-            const match = key.match(/^(\d+)/); // Match numerical prefix at the beginning
-            return match ? Number(match[0]) : 0;
-          };
-
-          const numericA = getNumericPrefix(a.item_key);
-          const numericB = getNumericPrefix(b.item_key);
-
-          // If the numeric prefixes are the same, fall back to lexicographical comparison
-          if (numericA === numericB) {
-            return (a.item_key ?? '').localeCompare(b.item_key ?? '');
-          }
-
-          return numericA - numericB;
-        }),
-        devotional: {
-          completed: data.find((i) => i.item_type === 'devotional' && i.item_key === 'main')
-            ?.completed,
-          id: data.find((i) => i.item_type === 'devotional' && i.item_key === 'main')?.id,
-        },
-        scriptures: [...scripture_refs]
-          .sort((a, b) => sortByItemKey(a, b))
-          .map((ref) => ({
-            ref,
-            completed: data.find((i) => i.item_type === 'scripture' && i.item_key === ref)
-              ?.completed,
-            id: data.find((i) => i.item_type === 'scripture' && i.item_key === ref)?.id,
-          })),
-      };
+      const data = await fetchDayItems({ user_id, plan_id, day_id, scripture_refs });
+      return data;
     },
   });
 
@@ -88,18 +33,7 @@ export function useDayItemsProgress({ user_id, plan_id, day_id, scripture_refs }
       item_type: 'devotional' | 'scripture';
       item_key: string;
       completed: boolean;
-    }) => {
-      const { error } = await supabase.rpc('toggle_item_completion', {
-        p_user_id: user_id,
-        p_plan_id: plan_id,
-        p_day_id: day_id,
-        p_item_type: item_type,
-        p_item_key: item_key,
-        p_completed: completed,
-      });
-
-      if (error) throw error;
-    },
+    }) => toggleItemCompletion({ item_key, item_type, completed, user_id, plan_id, day_id }),
 
     onSuccess: () => {
       queryClient.invalidateQueries({
@@ -118,7 +52,7 @@ export function useDayItemsProgress({ user_id, plan_id, day_id, scripture_refs }
     },
   });
 
-  const toggleDayCompletion = useMutation({
+  const toggleDayCompletionMutation = useMutation({
     mutationFn: async ({
       completed,
       user_id,
@@ -129,17 +63,8 @@ export function useDayItemsProgress({ user_id, plan_id, day_id, scripture_refs }
       user_id: string;
       plan_id: string;
       day_id: string;
-    }) => {
-      const { error } = await supabase.rpc('toggle_day_completion', {
-        p_user_id: user_id,
-        p_plan_id: plan_id,
-        p_day_id: day_id,
-        p_completed: completed,
-      });
-      ``;
+    }) => toggleDayCompletion({ completed, user_id, plan_id, day_id }),
 
-      if (error) throw error;
-    },
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ['day_items_progress', user_id, plan_id, day_id],
@@ -155,15 +80,7 @@ export function useDayItemsProgress({ user_id, plan_id, day_id, scripture_refs }
   });
 
   const loadItems = useMutation({
-    mutationFn: async () => {
-      const { error } = await supabase.rpc('ensure_day_items_exist', {
-        p_user_id: user_id,
-        p_plan_id: plan_id,
-        p_day_id: day_id,
-      });
-
-      if (error) throw error;
-    },
+    mutationFn: async () => loadDayItems({ user_id, plan_id, day_id }),
 
     onSuccess: () => {
       queryClient.invalidateQueries({
@@ -186,13 +103,7 @@ export function useDayItemsProgress({ user_id, plan_id, day_id, scripture_refs }
     if (!day_id || !plan_id || !user_id) return;
 
     const loadItem = async () => {
-      const { error } = await supabase.rpc('ensure_day_items_exist', {
-        p_user_id: user_id,
-        p_plan_id: plan_id,
-        p_day_id: day_id,
-      });
-
-      if (error) throw error;
+      await loadDayItems({ user_id, plan_id, day_id });
     };
 
     loadItem();
@@ -202,7 +113,7 @@ export function useDayItemsProgress({ user_id, plan_id, day_id, scripture_refs }
     dayItemsProgressQuery: dayItemsProgressQuery.data,
     isLoading: dayItemsProgressQuery.isLoading,
     toggleMutation,
-    toggleDayCompletion,
+    toggleDayCompletion: toggleDayCompletionMutation,
     toggleItem,
     loadItems,
   };

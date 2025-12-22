@@ -5,7 +5,7 @@ import { createJSONStorage, persist } from 'zustand/middleware';
 
 export type BibleBook = {
   name: string;
-  chapters: number;
+  chapter: number;
   verseStart?: number;
   verseEnd?: number;
 };
@@ -59,7 +59,7 @@ export const useAppStore = create<AppState>()(
       // BIBLE
       selectedBook: {
         name: 'John',
-        chapters: 1,
+        chapter: 1,
       },
       setSelectedBook: (book) => set({ selectedBook: book }),
 

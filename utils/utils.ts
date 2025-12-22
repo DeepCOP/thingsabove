@@ -18,3 +18,19 @@ export function parseVerseRef(ref: string): ParsedVerse | null {
     console.log(e);
   }
 }
+
+const getNumericPrefix = (key?: string | null) => {
+  if (!key) return 0;
+  const match = key.match(/^(\d+)/);
+  return match ? Number(match[0]) : 0;
+};
+
+export const sortByItemKey = (a?: string | null, b?: string | null) => {
+  const na = getNumericPrefix(a);
+  const nb = getNumericPrefix(b);
+
+  if (na === nb) {
+    return (a ?? '').localeCompare(b ?? '');
+  }
+  return na - nb;
+};
