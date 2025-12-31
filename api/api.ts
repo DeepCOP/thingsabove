@@ -205,7 +205,7 @@ export const fetchPlanProgress = async ({
 }) => {
   const { data, error } = await supabase
     .from('plan_progress')
-    .select('id, current_day, completed_days,created_at')
+    .select('id, current_day, completed_days, created_at')
     .eq('plan_id', plan_id)
     .eq('user_id', user_id)
     .single();

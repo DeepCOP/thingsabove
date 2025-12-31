@@ -621,38 +621,6 @@ select
 from devotional_days d
 order by d.day_number;
 
-create or replace function mark_day_complete(
-  p_user uuid,
-  p_plan uuid,
-  p_day int
-)
-returns void as $$
-begin
-  update plan_progress
-  set 
-    completed_days = array_append(completed_days, p_day),
-    current_day = greatest(current_day, p_day + 1),
-    updated_at = now()
-  where user_id = p_user and plan_id = p_plan;
-end;
-$$ language plpgsql;
-
-create or replace function unmark_day_complete(
-  p_user uuid,
-  p_plan uuid,
-  p_day int
-)
-returns void as $$
-begin
-  update plan_progress
-  set 
-    completed_days = array_remove(completed_days, p_day),
-    updated_at = now()
-  where user_id = p_user and plan_id = p_plan;
-end;
-$$ language plpgsql;
-
-
 
 create table if not exists public.day_items_progress (
   id uuid primary key default gen_random_uuid(),

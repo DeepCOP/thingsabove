@@ -15,7 +15,7 @@ export function parseVerseRef(ref: string): ParsedVerse | null {
       verseEnd: verseEnd ? Number(verseEnd) : undefined,
     };
   } catch (e) {
-    console.log(e);
+    return null;
   }
 }
 
