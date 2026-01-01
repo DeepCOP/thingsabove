@@ -1,4 +1,3 @@
-// hooks/usePlanProgress.ts
 import {
   fetchPlanDays,
   fetchPlanDayView,

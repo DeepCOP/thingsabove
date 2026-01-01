@@ -113,7 +113,7 @@ export default function DevotionalDetailScreen() {
           onPress={() => {
             if (isGuest) {
               router.push({
-                pathname: '/login',
+                pathname: '/login/signin',
                 params: { redirectTo: `/plan_progress/${plan?.id}/index` },
               });
               return;
