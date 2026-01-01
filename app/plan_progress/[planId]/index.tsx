@@ -3,7 +3,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useAuth } from '@/context/AuthContext';
 import { useDayItemsProgress } from '@/hooks/useDayItemsProgress';
-import { usePlanDay, usePlanProgress } from '@/hooks/usePLanProgress';
+import { usePlanDay, usePlanProgress } from '@/hooks/usePlanProgress';
 import { useFetchDevotionalPlan } from '@/hooks/usePlans';
 import { BibleBook, useAppStore } from '@/store/useAppStore';
 import { parseVerseRef } from '@/utils/utils';

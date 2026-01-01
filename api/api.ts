@@ -1,6 +1,6 @@
 import { PlanProgressInsert } from '@/types/types';
 import { sortByItemKey } from '@/utils/utils';
-import { supabase } from './supabase';
+import { supabase } from './supabaseClient';
 export const searchRelatedPlans = async (currentPlanId: string, tags: string) => {
   const { data, error } = await supabase
     .from('devotional_plans')
@@ -173,7 +173,6 @@ export const toggleDayCompletion = async ({
     p_day_id: day_id,
     p_completed: completed,
   });
-  ``;
 
   if (error) throw error;
 };

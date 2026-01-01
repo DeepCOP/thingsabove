@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useAuth } from '@/context/AuthContext';
 import { useDayItemsProgress } from '@/hooks/useDayItemsProgress';
-import { usePlanProgress } from '@/hooks/usePLanProgress';
+import { usePlanProgress } from '@/hooks/usePlanProgress';
 import { useAppStore } from '@/store/useAppStore';
 import { Ionicons } from '@expo/vector-icons';
 import dayjs from 'dayjs';

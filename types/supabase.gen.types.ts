@@ -12,37 +12,77 @@ export type Database = {
         Row: {
           content: string;
           created_at: string | null;
-          entity_id: string;
-          entity_type: string | null;
+          day_id: string;
+          group_id: string | null;
           id: string;
+          plan_id: string;
           updated_at: string | null;
           user_id: string | null;
         };
         Insert: {
           content: string;
           created_at?: string | null;
-          entity_id: string;
-          entity_type?: string | null;
+          day_id: string;
+          group_id?: string | null;
           id?: string;
+          plan_id: string;
           updated_at?: string | null;
           user_id?: string | null;
         };
         Update: {
           content?: string;
           created_at?: string | null;
-          entity_id?: string;
-          entity_type?: string | null;
+          day_id?: string;
+          group_id?: string | null;
           id?: string;
+          plan_id?: string;
           updated_at?: string | null;
           user_id?: string | null;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: 'comments_day_id_fkey';
+            columns: ['day_id'];
+            isOneToOne: false;
+            referencedRelation: 'devotional_days';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'comments_day_id_fkey';
+            columns: ['day_id'];
+            isOneToOne: false;
+            referencedRelation: 'plan_day_view';
+            referencedColumns: ['day_id'];
+          },
+          {
+            foreignKeyName: 'comments_group_id_fkey';
+            columns: ['group_id'];
+            isOneToOne: false;
+            referencedRelation: 'plan_groups';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'comments_plan_id_fkey';
+            columns: ['plan_id'];
+            isOneToOne: false;
+            referencedRelation: 'devotional_plans';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'comments_plan_id_fkey';
+            columns: ['plan_id'];
+            isOneToOne: false;
+            referencedRelation: 'devotional_plans_view';
+            referencedColumns: ['id'];
+          },
+        ];
       };
       day_items_progress: {
         Row: {
           completed: boolean | null;
           created_at: string | null;
           day_id: string | null;
+          group_id: string | null;
           id: string;
           item_key: string | null;
           item_type: string | null;
@@ -54,6 +94,7 @@ export type Database = {
           completed?: boolean | null;
           created_at?: string | null;
           day_id?: string | null;
+          group_id?: string | null;
           id?: string;
           item_key?: string | null;
           item_type?: string | null;
@@ -65,6 +106,7 @@ export type Database = {
           completed?: boolean | null;
           created_at?: string | null;
           day_id?: string | null;
+          group_id?: string | null;
           id?: string;
           item_key?: string | null;
           item_type?: string | null;
@@ -86,6 +128,13 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: 'plan_day_view';
             referencedColumns: ['day_id'];
+          },
+          {
+            foreignKeyName: 'day_items_progress_group_id_fkey';
+            columns: ['group_id'];
+            isOneToOne: false;
+            referencedRelation: 'plan_groups';
+            referencedColumns: ['id'];
           },
           {
             foreignKeyName: 'day_items_progress_plan_id_fkey';
@@ -184,13 +233,189 @@ export type Database = {
         };
         Relationships: [];
       };
+      friends: {
+        Row: {
+          created_at: string | null;
+          id: string;
+          receiver_id: string;
+          requester_id: string;
+          status: string;
+        };
+        Insert: {
+          created_at?: string | null;
+          id?: string;
+          receiver_id: string;
+          requester_id: string;
+          status: string;
+        };
+        Update: {
+          created_at?: string | null;
+          id?: string;
+          receiver_id?: string;
+          requester_id?: string;
+          status?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'friends_receiver_id_fkey';
+            columns: ['receiver_id'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'friends_requester_id_fkey';
+            columns: ['requester_id'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      notifications: {
+        Row: {
+          body: string | null;
+          created_at: string | null;
+          data: Json | null;
+          id: string;
+          is_read: boolean | null;
+          title: string;
+          type: string;
+          user_id: string;
+        };
+        Insert: {
+          body?: string | null;
+          created_at?: string | null;
+          data?: Json | null;
+          id?: string;
+          is_read?: boolean | null;
+          title: string;
+          type: string;
+          user_id: string;
+        };
+        Update: {
+          body?: string | null;
+          created_at?: string | null;
+          data?: Json | null;
+          id?: string;
+          is_read?: boolean | null;
+          title?: string;
+          type?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'notifications_user_id_fkey';
+            columns: ['user_id'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      plan_group_members: {
+        Row: {
+          group_id: string;
+          id: string;
+          joined_at: string | null;
+          status: string | null;
+          user_id: string;
+        };
+        Insert: {
+          group_id: string;
+          id?: string;
+          joined_at?: string | null;
+          status?: string | null;
+          user_id: string;
+        };
+        Update: {
+          group_id?: string;
+          id?: string;
+          joined_at?: string | null;
+          status?: string | null;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'plan_group_members_group_id_fkey';
+            columns: ['group_id'];
+            isOneToOne: false;
+            referencedRelation: 'plan_groups';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'plan_group_members_user_id_fkey';
+            columns: ['user_id'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      plan_groups: {
+        Row: {
+          completed_days: number | null;
+          created_at: string | null;
+          created_by: string;
+          id: string;
+          invite_code: string | null;
+          max_members: number | null;
+          plan_id: string;
+          start_date: string;
+        };
+        Insert: {
+          completed_days?: number | null;
+          created_at?: string | null;
+          created_by: string;
+          id?: string;
+          invite_code?: string | null;
+          max_members?: number | null;
+          plan_id: string;
+          start_date: string;
+        };
+        Update: {
+          completed_days?: number | null;
+          created_at?: string | null;
+          created_by?: string;
+          id?: string;
+          invite_code?: string | null;
+          max_members?: number | null;
+          plan_id?: string;
+          start_date?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'plan_groups_created_by_fkey';
+            columns: ['created_by'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'plan_groups_plan_id_fkey';
+            columns: ['plan_id'];
+            isOneToOne: false;
+            referencedRelation: 'devotional_plans';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'plan_groups_plan_id_fkey';
+            columns: ['plan_id'];
+            isOneToOne: false;
+            referencedRelation: 'devotional_plans_view';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       plan_progress: {
         Row: {
           completed_days: number[] | null;
           created_at: string | null;
           current_day: number;
+          group_id: string | null;
           id: string;
           plan_id: string | null;
+          start_date: string | null;
           updated_at: string | null;
           user_id: string | null;
         };
@@ -198,8 +423,10 @@ export type Database = {
           completed_days?: number[] | null;
           created_at?: string | null;
           current_day?: number;
+          group_id?: string | null;
           id?: string;
           plan_id?: string | null;
+          start_date?: string | null;
           updated_at?: string | null;
           user_id?: string | null;
         };
@@ -207,12 +434,21 @@ export type Database = {
           completed_days?: number[] | null;
           created_at?: string | null;
           current_day?: number;
+          group_id?: string | null;
           id?: string;
           plan_id?: string | null;
+          start_date?: string | null;
           updated_at?: string | null;
           user_id?: string | null;
         };
         Relationships: [
+          {
+            foreignKeyName: 'plan_progress_group_id_fkey';
+            columns: ['group_id'];
+            isOneToOne: false;
+            referencedRelation: 'plan_groups';
+            referencedColumns: ['id'];
+          },
           {
             foreignKeyName: 'plan_progress_plan_id_fkey';
             columns: ['plan_id'];
@@ -274,6 +510,7 @@ export type Database = {
           bio: string | null;
           created_at: string | null;
           email: string;
+          expo_push_token: string | null;
           first_name: string;
           id: string;
           last_name: string;
@@ -284,6 +521,7 @@ export type Database = {
           bio?: string | null;
           created_at?: string | null;
           email: string;
+          expo_push_token?: string | null;
           first_name: string;
           id: string;
           last_name: string;
@@ -294,6 +532,7 @@ export type Database = {
           bio?: string | null;
           created_at?: string | null;
           email?: string;
+          expo_push_token?: string | null;
           first_name?: string;
           id?: string;
           last_name?: string;
@@ -387,7 +626,6 @@ export type Database = {
       devotional_plans_view: {
         Row: {
           author_id: string | null;
-          comments_count: number | null;
           completions: number | null;
           cover_image: string | null;
           created_at: string | null;
@@ -402,7 +640,6 @@ export type Database = {
         };
         Insert: {
           author_id?: string | null;
-          comments_count?: never;
           completions?: number | null;
           cover_image?: string | null;
           created_at?: string | null;
@@ -417,7 +654,6 @@ export type Database = {
         };
         Update: {
           author_id?: string | null;
-          comments_count?: never;
           completions?: number | null;
           cover_image?: string | null;
           created_at?: string | null;
@@ -473,12 +709,93 @@ export type Database = {
       };
     };
     Functions: {
-      ensure_day_items_exist: {
-        Args: { p_day_id: string; p_plan_id: string; p_user_id: string };
+      accept_friend_request: {
+        Args: { p_receiver_id: string; p_requester_id: string };
         Returns: undefined;
       };
-      mark_day_complete: {
-        Args: { p_day: number; p_plan: string; p_user: string };
+      accept_plan_group_invite: {
+        Args: { p_group_id: string; p_plan_id: string; p_start_date: string };
+        Returns: undefined;
+      };
+      add_plan_day_comment: {
+        Args: {
+          p_content: string;
+          p_day_id: string;
+          p_group_id?: string;
+          p_plan_id: string;
+        };
+        Returns: undefined;
+      };
+      create_notification: {
+        Args: {
+          p_body: string;
+          p_data?: Json;
+          p_title: string;
+          p_type: string;
+          p_user_ids: string[];
+        };
+        Returns: undefined;
+      };
+      create_plan_group: {
+        Args: {
+          p_friends_ids: string[];
+          p_plan_id: string;
+          p_start_date: string;
+          p_user_id: string;
+        };
+        Returns: string;
+      };
+      ensure_day_items_exist: {
+        Args: {
+          p_day_id: string;
+          p_group_id?: string;
+          p_plan_id: string;
+          p_user_id: string;
+        };
+        Returns: undefined;
+      };
+      get_my_notifications: {
+        Args: never;
+        Returns: {
+          body: string;
+          created_at: string;
+          data: Json;
+          id: string;
+          is_read: boolean;
+          title: string;
+          type: string;
+        }[];
+      };
+      get_plan_day_comments: {
+        Args: { p_day_id: string; p_group_id?: string; p_plan_id: string };
+        Returns: {
+          avatar_url: string;
+          content: string;
+          created_at: string;
+          first_name: string;
+          group_id: string;
+          id: string;
+          last_name: string;
+          user_id: string;
+        }[];
+      };
+      get_user_by_email: {
+        Args: { p_current_user: string; p_email: string };
+        Returns: {
+          avatar_url: string;
+          email: string;
+          first_name: string;
+          friendship_status: string;
+          id: string;
+          last_name: string;
+        }[];
+      };
+      invite_friends_to_plan_group: {
+        Args: { p_group_id: string; p_user_ids: string[] };
+        Returns: undefined;
+      };
+      mark_notification_read: {
+        Args: { p_notification_id: string };
         Returns: undefined;
       };
       search_plans: {
@@ -490,7 +807,6 @@ export type Database = {
         };
         Returns: {
           author_id: string | null;
-          comments_count: number | null;
           completions: number | null;
           cover_image: string | null;
           created_at: string | null;
@@ -510,12 +826,17 @@ export type Database = {
           isSetofReturn: true;
         };
       };
+      send_friend_request: {
+        Args: { p_receiver_id: string; p_requester_id: string };
+        Returns: undefined;
+      };
       show_limit: { Args: never; Returns: number };
       show_trgm: { Args: { '': string }; Returns: string[] };
       toggle_day_completion: {
         Args: {
           p_completed: boolean;
           p_day_id: string;
+          p_group_id?: string;
           p_plan_id: string;
           p_user_id: string;
         };
@@ -525,6 +846,7 @@ export type Database = {
         Args: {
           p_completed: boolean;
           p_day_id: string;
+          p_group_id?: string;
           p_item_key: string;
           p_item_type: string;
           p_plan_id: string;
@@ -536,10 +858,7 @@ export type Database = {
         Args: { p_plan_id: string; p_reaction_type: string; p_user_id: string };
         Returns: string;
       };
-      unmark_day_complete: {
-        Args: { p_day: number; p_plan: string; p_user: string };
-        Returns: undefined;
-      };
+      unread_notifications_count: { Args: never; Returns: number };
     };
     Enums: {
       [_ in never]: never;

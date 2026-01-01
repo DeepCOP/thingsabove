@@ -1,7 +1,7 @@
 import DevotionalPlanReader from '@/components/DevotionPlanReader';
 import { useAuth } from '@/context/AuthContext';
 import { useDayItemsProgress } from '@/hooks/useDayItemsProgress';
-import { usePlanDay } from '@/hooks/usePLanProgress';
+import { usePlanDay } from '@/hooks/usePlanProgress';
 import { BibleBook, useAppStore } from '@/store/useAppStore';
 import { parseVerseRef } from '@/utils/utils';
 import { useLocalSearchParams } from 'expo-router';

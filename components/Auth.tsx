@@ -9,7 +9,7 @@ import {
   useColorScheme,
   View,
 } from 'react-native';
-import { supabase } from '../api/supabase';
+import { supabase } from '../api/supabaseClient';
 
 // Tells Supabase Auth to continuously refresh the session automatically if
 // the app is in the foreground. When this is added, you will continue to receive

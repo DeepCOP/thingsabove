@@ -3,8 +3,7 @@ import { useAppStore } from '@/store/useAppStore';
 import { createContext, ReactNode, useContext } from 'react';
 import asv from '../assets/versions/ASV.json';
 import kjv from '../assets/versions/KJV.json';
-import asvNames from '../assets/versions/asv_book_names.json';
-import kjvNames from '../assets/versions/kjv_book_names.json';
+import BookNames from '../assets/versions/book_names.json';
 
 export type BibleJSON = {
   translation: string;
@@ -36,14 +35,14 @@ const BibleContext = createContext<BibleContextType>({
   bible: kjv as BibleJSON,
   version: 'KJV',
   setVersion: () => {},
-  bookNames: kjvNames,
+  bookNames: BookNames,
 });
 
 export function BibleProvider({ children }: { children: ReactNode }) {
   const { version, setVersion } = useAppStore();
 
   const bible: BibleJSON = (version === 'KJV' ? kjv : asv) as BibleJSON;
-  const bookNames: string[] = version === 'KJV' ? kjvNames : asvNames;
+  const bookNames: string[] = BookNames;
   return (
     <BibleContext.Provider value={{ bible, version, setVersion, bookNames }}>
       {children}

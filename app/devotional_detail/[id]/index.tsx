@@ -1,6 +1,6 @@
 import { RelatedPlansSection } from '@/components/RelatedPlans';
 import { useAuth } from '@/context/AuthContext';
-import { usePlanProgress } from '@/hooks/usePLanProgress';
+import { usePlanProgress } from '@/hooks/usePlanProgress';
 import { useFetchDevotionalPlan } from '@/hooks/usePlans';
 import { Ionicons } from '@expo/vector-icons';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';

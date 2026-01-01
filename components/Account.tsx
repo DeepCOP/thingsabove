@@ -4,7 +4,7 @@ import { Button, Input } from '@rneui/themed';
 import { Session } from '@supabase/supabase-js';
 import { useEffect, useState } from 'react';
 import { Alert, StyleSheet, View } from 'react-native';
-import { supabase } from '../api/supabase';
+import { supabase } from '../api/supabaseClient';
 import Avatar from './Avatar';
 
 export default function Account({ session }: { session: Session }) {

@@ -20,7 +20,7 @@ import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { BibleProvider } from '../context/BibleContext';
 
-import { supabase } from '@/api/supabase';
+import { supabase } from '@/api/supabaseClient';
 import { AuthProvider, useAuth } from '@/context/AuthContext';
 import { mutationQueue } from '@/lib/mutationQueue';
 import { QueryProviderWrapper } from '@/lib/queryClient';
