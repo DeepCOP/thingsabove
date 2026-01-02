@@ -3,7 +3,7 @@ import { useAppStore } from '@/store/useAppStore';
 import { createContext, ReactNode, useContext } from 'react';
 import asv from '../assets/versions/ASV.json';
 import kjv from '../assets/versions/KJV.json';
-import BookNames from '../assets/versions/book_names.json';
+import BookNames from '../assets/versions/bookNames.json';
 
 export type BibleJSON = {
   translation: string;

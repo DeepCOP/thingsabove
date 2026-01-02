@@ -3,7 +3,7 @@ import {
   fetchPlanDayView,
   fetchPlanProgress,
   insertToPlanProgress,
-} from '@/api/api';
+} from '@/api/queries';
 import { PlanDayView, PlanProgressInsert } from '@/types/types';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 

@@ -1,5 +1,5 @@
 // hooks/usePlans.ts
-import { fetchPlanById, fetchPlans, searchPlans, searchRelatedPlans } from '@/api/api';
+import { fetchPlanById, fetchPlans, searchPlans, searchRelatedPlans } from '@/api/queries';
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 export const useRelatedPlans = (tags: string, currentPlanId: string) => {
   return useQuery({
