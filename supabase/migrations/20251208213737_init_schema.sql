@@ -438,7 +438,9 @@ create index if not exists idx_reactions_plan_user on public.plan_reactions(plan
 insert into storage.buckets
   (id, name, public)
 values
-  ('avatars', 'avatars', true);
+  ('avatars', 'avatars', true)
+on conflict (id) do nothing;
+
 
 create policy "avatars are publicly accessible"
 on storage.objects
@@ -477,7 +479,9 @@ using (
 insert into storage.buckets
   (id, name, public)
 values
-  ('plan_images', 'plan_images', true);
+  ('plan_images', 'plan_images', true)
+on conflict (id) do nothing;
+
 
 create policy "plan images publicly accessible"
 on storage.objects
