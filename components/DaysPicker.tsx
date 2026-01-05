@@ -4,11 +4,6 @@ import utc from 'dayjs/plugin/utc'; // Import the plugin
 import { Text, TouchableOpacity, View } from 'react-native';
 dayjs.extend(utc);
 
-type Day = {
-  id: string;
-  day_number: number;
-};
-
 type Props = {
   setSelectedDate?: (date: dayjs.Dayjs) => void;
   setSelectedDayNumber?: (dayNumber: number) => void;

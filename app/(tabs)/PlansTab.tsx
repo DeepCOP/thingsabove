@@ -143,7 +143,10 @@ function FindPlansList() {
 function MyPlansList() {
   const { session } = useAuth();
   const userPlanProgressQuery = useUserPlanProgress(session?.user.id);
-  const userPlanProgress = userPlanProgressQuery.data || [];
+  const userPlanProgress = useMemo(
+    () => userPlanProgressQuery.data ?? [],
+    [userPlanProgressQuery.data],
+  );
   const plansQuery = useFetchUserPlans(
     userPlanProgress?.map((progress) => progress?.plan_id ?? '') || [],
   );
@@ -207,7 +210,7 @@ function MyPlansList() {
       {(!plansQuery.data || plansQuery.data.length === 0 || !userPlanProgressQuery.data) && (
         <View className="items-center justify-center absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2  ">
           <Ionicons name="book-sharp" size={50} color="gray" />
-          <Text className="text-gray-700 dark:text-gray-200">You don't have plan</Text>
+          <Text className="text-gray-700 dark:text-gray-200">You don&apos;t have plan</Text>
         </View>
       )}
       <FlatList
@@ -224,7 +227,7 @@ function MyPlansList() {
           if (!plansQuery.data || plansQuery.data.length === 0 || !userPlanProgressQuery.data) {
             return (
               <View className="flex-1 items-center justify-center">
-                <Text className="text-gray-700 dark:text-gray-200">You don't have plan</Text>
+                <Text className="text-gray-700 dark:text-gray-200">You don&apos;t have plan</Text>
               </View>
             );
           }

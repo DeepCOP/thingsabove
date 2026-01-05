@@ -1,4 +1,3 @@
-import { useAuth } from '@/context/AuthContext';
 import { useComments, useRealtimeComments } from '@/hooks/useComments';
 import { Ionicons } from '@expo/vector-icons';
 import BottomSheet, {
@@ -22,7 +21,6 @@ const DayCommentsBottomSheet = forwardRef<BottomSheet, Props>(
     const snapPoints = useMemo(() => ['50%', '85%'], []);
     const colorScheme = useColorScheme();
     const [text, setText] = useState('');
-    const { session } = useAuth();
 
     const { commentsQuery, addComment } = useComments(planId, dayId, group_id);
     const comments = commentsQuery.data || [];
@@ -139,5 +137,7 @@ const DayCommentsBottomSheet = forwardRef<BottomSheet, Props>(
     );
   },
 );
+
+DayCommentsBottomSheet.displayName = 'DayCommentsBottomSheet';
 
 export default DayCommentsBottomSheet;

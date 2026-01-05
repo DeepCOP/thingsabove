@@ -33,5 +33,3 @@ export function useAcceptPlanInvite(group_id: string, plan_id: string, user_id: 
     onError: (e) => {},
   });
 }
-
-

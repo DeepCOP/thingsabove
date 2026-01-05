@@ -14,7 +14,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 dayjs.extend(utc);
 
 export default function PlanInvitation() {
-  const { groupId, invitedBy, id } = useLocalSearchParams<{
+  const { groupId, id } = useLocalSearchParams<{
     groupId: string;
     invitedBy: string;
     id: string;
@@ -24,11 +24,7 @@ export default function PlanInvitation() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
 
-  const { insertToPlanProgress, planProgressQuery } = usePlanProgress(
-    id,
-    session?.user?.id,
-    groupId,
-  );
+  const { planProgressQuery } = usePlanProgress(id, session?.user?.id, groupId);
   const acceptInvitationMutation = useAcceptPlanInvite(groupId, id, session?.user?.id);
 
   const planGroupQuery = usePlanGroup(groupId);
