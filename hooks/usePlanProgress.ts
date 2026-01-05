@@ -2,22 +2,20 @@ import {
   fetchPlanDays,
   fetchPlanDayView,
   fetchPlanProgress,
+  fetchUserPlanProgress,
   insertToPlanProgress,
 } from '@/api/queries';
 import { PlanDayView, PlanProgressInsert } from '@/types/types';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-export function usePlanProgress(plan_id: string, user_id: string) {
+export function usePlanProgress(plan_id: string, user_id: string, group_id?: string) {
   const queryClient = useQueryClient();
 
   const planProgressQuery = useQuery({
-    queryKey: ['plan_progress', plan_id, user_id],
-    queryFn: async () => fetchPlanProgress({ plan_id, user_id }),
-  });
-
-  const daysQuery = useQuery({
-    queryKey: ['devotional_days', plan_id],
-    queryFn: async () => fetchPlanDays({ plan_id }),
+    queryKey: ['plan_progress', plan_id, user_id, group_id],
+    staleTime: 0,
+    enabled: !!plan_id && !!user_id,
+    queryFn: async () => fetchPlanProgress({ plan_id, user_id, groupId: group_id }),
   });
 
   const insertToPlanProgressMutation = useMutation({
@@ -31,8 +29,29 @@ export function usePlanProgress(plan_id: string, user_id: string) {
     },
   });
 
-  return { planProgressQuery, daysQuery, insertToPlanProgress: insertToPlanProgressMutation };
+  return {
+    planProgressQuery,
+    insertToPlanProgress: insertToPlanProgressMutation,
+  };
 }
+
+export const useUserPlanProgress = (user_id: string) => {
+  const userPlanProgressQuery = useQuery({
+    queryKey: ['user_plans_progressess', user_id],
+    enabled: !!user_id,
+    queryFn: async () => fetchUserPlanProgress({ user_id }),
+  });
+  return userPlanProgressQuery;
+};
+
+export const useDevotionalDays = (plan_id: string) => {
+  const daysQuery = useQuery({
+    queryKey: ['devotional_days', plan_id],
+    enabled: !!plan_id,
+    queryFn: async () => fetchPlanDays({ plan_id }),
+  });
+  return daysQuery;
+};
 
 export const usePlanDay = (day_id: string | null) => {
   return useQuery<PlanDayView>({

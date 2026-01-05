@@ -1,12 +1,29 @@
+import { useAuth } from '@/context/AuthContext';
+import { useFriends, usePendingFriendRequests, useRealtimeFriends } from '@/hooks/useFriends';
+import { useNotifications, useRealtimeNotifications } from '@/hooks/useNotifications';
 import { Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
 import React from 'react';
-import { useColorScheme, View } from 'react-native';
+import { Text, useColorScheme, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function TabLayout() {
   const insets = useSafeAreaInsets();
   const colorScheme = useColorScheme();
+  const { notificationsQuery, notificationsCountQuery } = useNotifications();
+
+  const { session } = useAuth();
+  const friendsQuery = useFriends(session?.user.id);
+  const PandingFriendsQuery = usePendingFriendRequests();
+
+  useRealtimeNotifications(session?.user.id, () => {
+    notificationsQuery.refetch();
+    notificationsCountQuery.refetch();
+  });
+  useRealtimeFriends(session?.user.id, () => {
+    friendsQuery.refetch();
+    PandingFriendsQuery.refetch();
+  });
 
   return (
     <>
@@ -78,14 +95,43 @@ export default function TabLayout() {
           name="NotificationsTab"
           options={{
             title: 'Notifications',
-            headerShown: false,
             tabBarIcon: ({ focused, color, size }) => {
+              const count = notificationsCountQuery.data ?? 0;
+
               return (
-                <Ionicons
-                  name={`${focused ? 'notifications' : 'notifications-outline'}`}
-                  size={size}
-                  color={color}
-                />
+                <View style={{ position: 'relative', width: size, height: size }}>
+                  {count > 0 && (
+                    <View
+                      style={{
+                        position: 'absolute',
+                        top: -6,
+                        right: -10,
+                        minWidth: 18,
+                        height: 18,
+                        borderRadius: 9,
+                        backgroundColor: 'red',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        paddingHorizontal: 4,
+                        zIndex: 10,
+                      }}>
+                      <Text
+                        style={{
+                          color: 'white',
+                          fontSize: 10,
+                          fontWeight: 'bold',
+                        }}>
+                        {count > 99 ? '99+' : count}
+                      </Text>
+                    </View>
+                  )}
+
+                  <Ionicons
+                    name={focused ? 'notifications' : 'notifications-outline'}
+                    size={size}
+                    color={color}
+                  />
+                </View>
               );
             },
           }}

@@ -1,5 +1,10 @@
-// hooks/usePlans.ts
-import { fetchPlanById, fetchPlans, searchPlans, searchRelatedPlans } from '@/api/queries';
+import {
+  fetchPlanById,
+  fetchPlans,
+  fetchUserPlans,
+  searchPlans,
+  searchRelatedPlans,
+} from '@/api/queries';
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 export const useRelatedPlans = (tags: string, currentPlanId: string) => {
   return useQuery({
@@ -14,6 +19,7 @@ export const useSearchPlans = (query: string) => {
   return useInfiniteQuery({
     enabled: query.trim().length > 0,
     queryKey: ['search_plans', query],
+    staleTime: 1000 * 60 * 60 * 24,
 
     queryFn: async ({
       pageParam,
@@ -26,9 +32,11 @@ export const useSearchPlans = (query: string) => {
   });
 };
 
-export const useFetchDevotionalPlan = (id: string) => {
+export const useFetchDevotionalPlanById = (id: string) => {
   return useQuery({
     queryKey: ['plan', id],
+    enabled: !!id,
+    staleTime: 1000 * 60 * 60 * 24,
 
     queryFn: async () => fetchPlanById(id),
   });
@@ -36,17 +44,27 @@ export const useFetchDevotionalPlan = (id: string) => {
 export const usePlans = () => {
   const plansQuery = useInfiniteQuery({
     queryKey: ['plans'],
+    staleTime: 1000 * 60 * 60 * 24,
 
     queryFn: async ({
       pageParam,
     }: {
       pageParam: { created_at: string | null; id: string | null };
     }) => fetchPlans({ pageParam }),
-    initialPageParam: { created_at: null, id: null }, // PREVENTS auto-loop
+    initialPageParam: { created_at: null, id: null },
     getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
   });
 
   return {
     plansQuery,
   };
+};
+
+export const useFetchUserPlans = (planId: string[]) => {
+  return useQuery({
+    queryKey: ['user-plans', planId],
+    enabled: !!planId && planId.length > 0,
+
+    queryFn: async () => await fetchUserPlans(planId),
+  });
 };

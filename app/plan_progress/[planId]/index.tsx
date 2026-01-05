@@ -1,16 +1,23 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import DayCommentsSection from '@/components/DayComment';
 import { useAuth } from '@/context/AuthContext';
 import { useDayItemsProgress } from '@/hooks/useDayItemsProgress';
-import { usePlanDay, usePlanProgress } from '@/hooks/usePlanProgress';
-import { useFetchDevotionalPlan } from '@/hooks/usePlans';
+import { useFetchDevotionalPlanById } from '@/hooks/useDevotionalPlans';
+import { useDevotionalDays, usePlanDay, usePlanProgress } from '@/hooks/usePlanProgress';
 import { BibleBook, useAppStore } from '@/store/useAppStore';
-import { parseVerseRef } from '@/utils/utils';
+import { parseVerseRef, sortByItemKey } from '@/utils/utils';
 import { Ionicons } from '@expo/vector-icons';
 import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useMemo, useRef, useState } from 'react';
+
+import DaysPicker from '@/components/DaysPicker';
+import LoadingSpinner from '@/components/LoadingSpinner';
+import { usePlanGroupMembers } from '@/hooks/usePlanGroup';
+import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import {
   ActivityIndicator,
   Animated,
@@ -22,22 +29,25 @@ import {
   View,
 } from 'react-native';
 
+dayjs.extend(utc);
 export default function PlanProgressScreen() {
+  const commentsSheetRef = useRef<BottomSheetModal>(null);
   const insets = useSafeAreaInsets();
-  const { planId } = useLocalSearchParams(); // plan ID
+  const { planId, groupId } = useLocalSearchParams(); // plan ID
   const router = useRouter();
   const { setMissedDays } = useAppStore();
   const colorScheme = useColorScheme();
   const { session, loading: sessionLoading } = useAuth();
-
-  const { planProgressQuery, daysQuery } = usePlanProgress(
+  const { planProgressQuery } = usePlanProgress(
     planId as string,
     session?.user?.id as string,
+    groupId as string,
   );
-
+  const daysQuery = useDevotionalDays(planId as string);
+  const planGroupMembersQuery = usePlanGroupMembers(groupId as string);
   const planProgress = planProgressQuery.data;
   const days = daysQuery.data;
-  const planQuery = useFetchDevotionalPlan(planId as string);
+  const planQuery = useFetchDevotionalPlanById(planId as string);
   const plan = planQuery.data;
   const [selectedDayNumber, setSelectedDay] = useState<number | null>(1);
   const { setSelectedBook, setItemId } = useAppStore();
@@ -48,7 +58,7 @@ export default function PlanProgressScreen() {
 
   const currentDayData = days?.find(
     (d) =>
-      dayjs(planProgress?.created_at)
+      dayjs(planProgress?.start_date)
         .startOf('day')
         .add(d.day_number - 1, 'day')
         .format('MMM DD') === dayjs().startOf('day').format('MMM DD'),
@@ -67,15 +77,51 @@ export default function PlanProgressScreen() {
       verseStart: parsed.verseStart,
     });
   };
-
   const { dayItemsProgressQuery, toggleMutation, loadItems } = useDayItemsProgress({
     user_id: session?.user?.id!,
     plan_id: planId as string,
     day_id: selectedDay?.id || '',
-    scripture_refs: dayData?.scripture_refs || [],
+    group_id: groupId as string,
   });
 
+  const dayItemsProgress = useMemo(() => {
+    if (!dayItemsProgressQuery?.data) return null;
+    const data = dayItemsProgressQuery?.data;
+
+    return {
+      items: [...data].sort((a, b) => {
+        const getNumericPrefix = (key?: string | null) => {
+          if (!key) return 0;
+          const match = key.match(/^(\d+)/);
+          return match ? Number(match[0]) : 0;
+        };
+
+        const numericA = getNumericPrefix(a.item_key);
+        const numericB = getNumericPrefix(b.item_key);
+
+        if (numericA === numericB) {
+          return (a.item_key ?? '').localeCompare(b.item_key ?? '');
+        }
+
+        return numericA - numericB;
+      }),
+      devotional: {
+        completed: data.find((i) => i.item_type === 'devotional' && i.item_key === 'main')
+          ?.completed,
+        id: data.find((i) => i.item_type === 'devotional' && i.item_key === 'main')?.id,
+      },
+      scriptures: [...(dayData?.scripture_refs || [])]
+        .sort((a, b) => sortByItemKey(a, b))
+        .map((ref) => ({
+          ref,
+          completed: data.find((i) => i.item_type === 'scripture' && i.item_key === ref)?.completed,
+          id: data.find((i) => i.item_type === 'scripture' && i.item_key === ref)?.id,
+        })),
+    };
+  }, [dayItemsProgressQuery?.data, dayData?.scripture_refs]);
+
   const prevCompletedCount = useRef<number | null>(null);
+  const devotional = dayItemsProgress?.items.find((item) => item.item_type === 'devotional');
 
   useEffect(() => {
     if (!planProgress || !plan) return;
@@ -98,19 +144,15 @@ export default function PlanProgressScreen() {
   }, [planProgress?.completed_days?.length, plan?.total_days]);
 
   useEffect(() => {
-    if (planProgress?.current_day) {
-      setSelectedDay(currentDayData?.day_number || plan?.total_days || 1);
-    }
-  }, [currentDayData, planProgress, plan?.total_days]);
+    setSelectedDay(currentDayData?.day_number || 1);
+  }, [currentDayData]);
 
   useEffect(() => {
-    if (dayItemsProgressQuery?.items) {
+    if (dayItemsProgress?.items) {
       return;
     }
     loadItems.mutate();
-  }, [dayItemsProgressQuery]);
-
-  const devotional = dayItemsProgressQuery?.items.find((item) => item.item_type === 'devotional');
+  }, [dayItemsProgress]);
 
   const missedDays = useMemo(() => {
     if (!planProgress || !plan) return null;
@@ -123,7 +165,10 @@ export default function PlanProgressScreen() {
       }
 
       return (
-        !planProgress?.completed_days?.includes(d.day_number) && d.day_number <= plan?.total_days
+        !planProgress?.completed_days?.includes(d.day_number) &&
+        dayjs(planProgress.start_date)
+          .add(d.day_number - 1, 'day')
+          .diff(dayjs().utc().startOf('day'), 'day') < 0
       );
     });
   }, [planProgress, currentDayData, plan]);
@@ -135,7 +180,7 @@ export default function PlanProgressScreen() {
     sessionLoading ||
     dayLoading
   ) {
-    return <ActivityIndicator size="large" style={{ marginTop: 40 }} />;
+    return <LoadingSpinner />;
   }
 
   if (!planProgress || !days || !plan) {
@@ -167,31 +212,15 @@ export default function PlanProgressScreen() {
               {days.map((d) => {
                 const isActive = d.day_number === selectedDayNumber;
                 return (
-                  <TouchableOpacity
+                  <DaysPicker
                     key={d.id}
-                    onPress={() => setSelectedDay(d.day_number)}
-                    className={`px-4 py-3 rounded-xl border ${
-                      isActive
-                        ? 'border-black dark:border-white bg-black/10 dark:bg-white/10'
-                        : 'border-gray-300 dark:border-gray-700'
-                    }`}>
-                    {planProgress.completed_days?.includes(d.day_number) && (
-                      <View className="absolute top-1 right-1 bg-green-900 rounded-full p-1 z-10">
-                        <Ionicons name="checkmark" size={12} color="white" />
-                      </View>
-                    )}
-
-                    <Text className="text-center font-semibold dark:text-white">
-                      {d.day_number}
-                    </Text>
-                    <Text
-                      className={`text-xs ${currentDayData?.id === d.id ? 'text-white bg-black p-1 font-bold rounded-full' : 'text-gray-500'} dark:text-gray-400 `}>
-                      {dayjs(planProgress?.created_at)
-                        .startOf('day')
-                        .add(d.day_number - 1, 'day')
-                        .format('MMM DD')}
-                    </Text>
-                  </TouchableOpacity>
+                    isActive={isActive}
+                    isCurrentDay={currentDayData?.id === d.id}
+                    completed={planProgress.completed_days?.includes(d.day_number) || false}
+                    day_number={d.day_number}
+                    startDate={planProgress?.start_date!}
+                    setSelectedDayNumber={setSelectedDay}
+                  />
                 );
               })}
             </View>
@@ -203,85 +232,166 @@ export default function PlanProgressScreen() {
               Day {selectedDayNumber} of {days.length}
             </Text>
 
-            {missedDays && missedDays.length > 0 ? (
+            <View className="flex-row items-center">
               <TouchableOpacity
-                className="px-3 py-1 border rounded-full border-green-500"
-                onPress={() => {
-                  setMissedDays(missedDays);
-                  router.push(`/plan_progress/${plan.id}/missedDays`);
-                }}>
-                <Text className="text-green-600 text-xs">{missedDays.length} Missed Days</Text>
-              </TouchableOpacity>
-            ) : (
-              <TouchableOpacity className="px-3 py-1 border rounded-full border-green-500">
-                <Text className="text-green-600 text-xs">ON TRACK!</Text>
-              </TouchableOpacity>
-            )}
-          </View>
-
-          <View className="mt-4 space-y-6">
-            {/* Devotional */}
-            {devotional && (
-              <TouchableOpacity
-                className="flex-row items-center justify-between"
-                onPress={() => {
-                  toggleMutation.mutate(
-                    {
-                      item_type: devotional?.item_type as 'devotional' | 'scripture',
-                      item_key: devotional?.item_key || '',
-                      completed: true,
-                    },
-                    {
-                      onSuccess: () => {
-                        setItemId(devotional?.id || '');
-
-                        router.push(
-                          `/devotional_detail/${plan.id}/${selectedDay?.id}/${devotional?.id}`,
-                        );
-                      },
-                    },
-                  );
-                }}>
-                <View className="flex-row items-center gap-3">
-                  <TouchableOpacity
-                    onPress={() =>
-                      toggleMutation.mutate({
-                        item_type: devotional?.item_type as 'devotional' | 'scripture',
-                        item_key: devotional?.item_key || '',
-                        completed: !devotional?.completed,
-                      })
-                    }
-                    className={`rounded-full p-1 border mr-3 ${
-                      devotional?.completed ? 'bg-black dark:bg-white' : 'border-gray-500'
-                    }`}>
-                    <Ionicons
-                      name="checkmark"
-                      size={12}
-                      color={colorScheme === 'dark' ? 'black' : 'white'}
-                    />
-                  </TouchableOpacity>
-                  <Text className="text-lg dark:text-white">
-                    {devotional?.item_type === 'devotional'
-                      ? 'Devotional'
-                      : devotional?.item_key || 'Scripture'}
-                  </Text>
-                </View>
+                onPress={() => commentsSheetRef.current?.expand()}
+                className="px-4 py-2">
                 <Ionicons
-                  name="chevron-forward"
-                  size={22}
+                  name="chatbubble-ellipses"
+                  size={24}
                   color={colorScheme === 'dark' ? '#fff' : '#000'}
                 />
               </TouchableOpacity>
-            )}
+              {missedDays && missedDays.length > 0 ? (
+                <TouchableOpacity
+                  className="px-3 py-1 border rounded-full border-green-500"
+                  onPress={() => {
+                    setMissedDays(missedDays);
+                    router.push(`/plan_progress/${plan.id}/missedDays`);
+                  }}>
+                  <Text className="text-green-600 text-xs">{missedDays.length} Missed Days</Text>
+                </TouchableOpacity>
+              ) : (
+                <TouchableOpacity className="px-3 py-1 border rounded-full border-green-500">
+                  <Text className="text-green-600 text-xs">ON TRACK!</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          </View>
+          {planGroupMembersQuery.isLoading ? (
+            <ActivityIndicator size="small" />
+          ) : (
+            <View className="mt-4 flex-row items-center">
+              {planGroupMembersQuery.data?.slice(0, 6).map((member, index) => {
+                const avatarSize = 32;
+                const overlap = 10;
+
+                return (
+                  <TouchableOpacity
+                    onPress={() => {
+                      router.push({
+                        pathname: `/devotional_detail/[id]/participants`,
+                        params: {
+                          groupId: groupId,
+                          totalDays: plan.total_days,
+                          id: planId as string,
+                        },
+                      });
+                    }}
+                    key={member.id}
+                    style={{
+                      marginLeft: index === 0 ? 0 : -overlap,
+                      zIndex: 100 - index,
+                    }}>
+                    {member.profiles.avatar_url ? (
+                      <Image
+                        source={{ uri: member.profiles.avatar_url }}
+                        style={{
+                          width: avatarSize,
+                          height: avatarSize,
+                          borderRadius: avatarSize / 2,
+                          borderWidth: 2,
+                          borderColor: 'white',
+                        }}
+                      />
+                    ) : (
+                      <View
+                        style={{
+                          width: avatarSize,
+                          height: avatarSize,
+                          borderRadius: avatarSize / 2,
+                          backgroundColor: '#9CA3AF', // gray-400
+                          borderWidth: 2,
+                          borderColor: 'white',
+                        }}
+                      />
+                    )}
+                  </TouchableOpacity>
+                );
+              })}
+
+              {planGroupMembersQuery.data && planGroupMembersQuery.data.length > 6 && (
+                <View className="ml-2 px-2 py-1 rounded-full bg-gray-200 dark:bg-gray-800">
+                  <Text className="text-xs dark:text-white">
+                    +{planGroupMembersQuery.data.length - 6}
+                  </Text>
+                </View>
+              )}
+            </View>
+          )}
+
+          <View className="mt-4 space-y-6">
+            {/* Devotional */}
+
             {/* Scripture Reference */}
-            {dayItemsProgressQuery?.items.length && dayItemsProgressQuery?.items.length > 0 ? (
-              dayItemsProgressQuery?.items?.map((data, index) => {
+            {dayItemsProgressQuery.isLoading || loadItems.isPending ? (
+              <LoadingSpinner />
+            ) : dayItemsProgress?.items.length && dayItemsProgress?.items.length > 0 ? (
+              dayItemsProgress?.items?.map((data, index) => {
                 if (data.item_type === 'devotional') {
-                  return null;
+                  return (
+                    <TouchableOpacity
+                      key={data.id}
+                      className="flex-row items-center justify-between"
+                      onPress={() => {
+                        toggleMutation.mutate(
+                          {
+                            item_type: devotional?.item_type as 'devotional' | 'scripture',
+                            item_key: devotional?.item_key || '',
+                            completed: true,
+                          },
+                          {
+                            onSuccess: () => {
+                              setItemId(devotional?.id || '');
+
+                              router.push({
+                                pathname: `/devotional_detail/[id]/[dayId]/[itemId]`,
+                                params: {
+                                  groupId: groupId,
+                                  id: plan.id,
+                                  dayId: selectedDay?.id || '',
+                                  itemId: devotional?.id || '',
+                                },
+                              });
+                            },
+                          },
+                        );
+                      }}>
+                      <View className="flex-row items-center gap-3">
+                        <TouchableOpacity
+                          onPress={() =>
+                            toggleMutation.mutate({
+                              item_type: devotional?.item_type as 'devotional' | 'scripture',
+                              item_key: devotional?.item_key || '',
+                              completed: !devotional?.completed,
+                            })
+                          }
+                          className={`rounded-full p-1 border mr-3 ${
+                            devotional?.completed ? 'bg-black dark:bg-white' : 'border-gray-500'
+                          }`}>
+                          <Ionicons
+                            name="checkmark"
+                            size={12}
+                            color={colorScheme === 'dark' ? 'black' : 'white'}
+                          />
+                        </TouchableOpacity>
+                        <Text className="text-lg dark:text-white">
+                          {devotional?.item_type === 'devotional'
+                            ? 'Devotional'
+                            : devotional?.item_key || 'Scripture'}
+                        </Text>
+                      </View>
+                      <Ionicons
+                        name="chevron-forward"
+                        size={22}
+                        color={colorScheme === 'dark' ? '#fff' : '#000'}
+                      />
+                    </TouchableOpacity>
+                  );
                 }
                 return (
                   <TouchableOpacity
-                    key={index}
+                    key={data.id}
                     className="flex-row items-center justify-between"
                     onPress={() => {
                       toggleMutation.mutate(
@@ -295,9 +405,15 @@ export default function PlanProgressScreen() {
                             setItemId(data.id || '');
                             setFromVerseRef(data.item_key || '', setSelectedBook);
 
-                            router.push(
-                              `/devotional_detail/${plan.id}/${selectedDay?.id}/${data.id}`,
-                            );
+                            router.push({
+                              pathname: `/devotional_detail/[id]/[dayId]/[itemId]`,
+                              params: {
+                                groupId: groupId,
+                                id: plan.id,
+                                dayId: selectedDay?.id || '',
+                                itemId: data.id || '',
+                              },
+                            });
                           },
                         },
                       );
@@ -334,11 +450,9 @@ export default function PlanProgressScreen() {
                   </TouchableOpacity>
                 );
               })
-            ) : loadItems.isPending ? (
-              <ActivityIndicator size={'small'} />
             ) : (
               <View>
-                <Text>Items Not Found</Text>
+                <Text className="text-gray-800 dark:text-gray-200">Items Not Found</Text>
               </View>
             )}
           </View>
@@ -352,17 +466,22 @@ export default function PlanProgressScreen() {
           bottom: 0,
           left: 0,
           right: 0,
-          zIndex: 10,
           paddingBottom: insets.bottom,
         }}>
-        {dayItemsProgressQuery?.items && dayItemsProgressQuery?.items.length > 0 && (
+        {dayItemsProgress?.items && dayItemsProgress?.items.length > 0 && (
           <TouchableOpacity
             className=" mt-10 mb-5 bg-black min-w-[80%] dark:bg-white py-4 rounded-full"
             onPress={() => {
-              setItemId(dayItemsProgressQuery?.devotional.id || '');
-              router.push(
-                `/devotional_detail/${plan.id}/${selectedDay?.id}/${dayItemsProgressQuery?.devotional.id}`,
-              );
+              setItemId(dayItemsProgress?.devotional.id || '');
+              router.push({
+                pathname: `/devotional_detail/[id]/[dayId]/[itemId]`,
+                params: {
+                  groupId: groupId,
+                  id: plan.id,
+                  dayId: selectedDay?.id || '',
+                  itemId: dayItemsProgress?.devotional.id || '',
+                },
+              });
             }}>
             <Text className="text-center text-white dark:text-black font-semibold text-lg">
               Start Reading
@@ -370,6 +489,12 @@ export default function PlanProgressScreen() {
           </TouchableOpacity>
         )}
       </Animated.View>
+      <DayCommentsSection
+        ref={commentsSheetRef}
+        planId={plan.id}
+        dayId={selectedDay?.id || ''}
+        group_id={groupId as string}
+      />
     </>
   );
 }

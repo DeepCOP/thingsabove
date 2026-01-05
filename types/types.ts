@@ -46,3 +46,7 @@ export type ParsedVerse = {
   verseStart: number; // 1
   verseEnd?: number; // 4
 };
+
+export type Notifications = Database['public']['Tables']['notifications']['Row'];
+export type NotificationsInsert = Database['public']['Tables']['notifications']['Insert'];
+export type NotificationsUpdate = Database['public']['Tables']['notifications']['Update'];

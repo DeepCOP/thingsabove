@@ -6,7 +6,7 @@ import { useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 
 import { useAuth } from '@/context/AuthContext';
-import { useFetchDevotionalPlan } from '@/hooks/usePlans';
+import { useFetchDevotionalPlanById } from '@/hooks/useDevotionalPlans';
 import { PlanProgress } from '@/types/types';
 import { UseMutationResult, useQueryClient } from '@tanstack/react-query';
 import {
@@ -71,7 +71,7 @@ export default function DevotionalPlanReader({
 }) {
   const insets = useSafeAreaInsets();
   const colorScheme = useColorScheme();
-  const { data: plan } = useFetchDevotionalPlan(item?.plan_id!);
+  const { data: plan } = useFetchDevotionalPlanById(item?.plan_id!);
   const queryClient = useQueryClient();
   const { session } = useAuth();
   const [selectedVerse, setSelectedVerse] = useState<
@@ -110,7 +110,6 @@ export default function DevotionalPlanReader({
       }, 50);
     }
   }, [selectedBook.verseStart, versePositions.current]);
-  console.log('selectedBook:', selectedBook);
   useEffect(() => {
     didScrollRef.current = false;
     versePositions.current = {};

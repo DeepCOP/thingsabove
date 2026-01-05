@@ -4,7 +4,6 @@ import { QueryClient } from '@tanstack/react-query';
 import {
   PersistQueryClientProvider,
   persistQueryClient,
-  PersistedClient,
 } from '@tanstack/react-query-persist-client';
 
 import { createAsyncStoragePersister } from '@tanstack/query-async-storage-persister';
@@ -13,11 +12,10 @@ import React from 'react';
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 1000 * 60 * 60 * 24,
+      staleTime: 1000 * 60 * 60 * 2,
       retry: 1,
 
       refetchOnReconnect: 'always',
-      refetchOnWindowFocus: false,
     },
     mutations: {
       retry: 3,

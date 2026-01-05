@@ -1,11 +1,13 @@
+import LoadingSpinner from '@/components/LoadingSpinner';
 import { RelatedPlansSection } from '@/components/RelatedPlans';
 import { useAuth } from '@/context/AuthContext';
-import { usePlanProgress } from '@/hooks/usePlanProgress';
-import { useFetchDevotionalPlan } from '@/hooks/usePlans';
+import { useFetchDevotionalPlanById } from '@/hooks/useDevotionalPlans';
+import { usePlanProgress, useUserPlanProgress } from '@/hooks/usePlanProgress';
 import { Ionicons } from '@expo/vector-icons';
+import BottomSheet, { BottomSheetBackdrop, BottomSheetView } from '@gorhom/bottom-sheet';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
+import { useRef } from 'react';
 import {
-  ActivityIndicator,
   Image,
   ScrollView,
   Share,
@@ -24,22 +26,16 @@ export default function DevotionalDetailScreen() {
     id as string,
     session?.user?.id,
   );
+  const userPlanProgressQuery = useUserPlanProgress(session?.user.id);
+  const userPlanProgress = userPlanProgressQuery.data || [];
 
-  const planQuery = useFetchDevotionalPlan(id as string);
+  const bottomSheetRef = useRef<BottomSheet>(null);
+
+  const planQuery = useFetchDevotionalPlanById(id as string);
   const plan = planQuery.data;
 
   if (planQuery.isLoading || planProgressQuery.isLoading) {
-    return <ActivityIndicator style={{ marginTop: 30 }} size="large" />;
-  }
-
-  if (planQuery.isError) {
-    return (
-      <View className="flex-1 items-center justify-center p-4">
-        <Text className="text-center text-gray-700 dark:text-gray-300">
-          Failed to load this devotional. Please try again later.
-        </Text>
-      </View>
-    );
+    return <LoadingSpinner style={{ marginTop: 30 }} />;
   }
 
   if (!plan) {
@@ -111,40 +107,25 @@ export default function DevotionalDetailScreen() {
         <TouchableOpacity
           className="mt-6 mx-4 bg-black dark:bg-white py-4 rounded-full"
           onPress={() => {
-            if (isGuest) {
-              router.push({
-                pathname: '/login/signin',
-                params: { redirectTo: `/plan_progress/${plan?.id}/index` },
-              });
-              return;
-            }
-            if (planProgressQuery.data) {
-              router.push(`/plan_progress/${plan?.id}`);
-              return;
-            }
-            insertToPlanProgress.mutate(
-              {
-                current_day: 1,
-                plan_id: id as string,
-                user_id: session?.user?.id as string,
-              },
-              {
-                onSuccess: () => {
-                  router.push(`/plan_progress/${plan?.id}`);
-                },
-                onError: (e) => {
-                  console.log(e);
-                },
-              },
-            );
+            bottomSheetRef.current?.expand();
           }}
           disabled={insertToPlanProgress.isPending}>
           <Text className="text-center text-white dark:text-black font-semibold text-lg">
             Start Plan
           </Text>
         </TouchableOpacity>
+        {userPlanProgress.length > 0 && (
+          <TouchableOpacity
+            className="mt-6 mx-4 bg-black dark:bg-white py-4 rounded-full"
+            onPress={() => {
+              router.push('/PlansTab');
+            }}>
+            <Text className="text-center text-white dark:text-black font-semibold text-lg">
+              My Plans
+            </Text>
+          </TouchableOpacity>
+        )}
 
-        {/* Description */}
         <View className="px-4 mt-6">
           <Text className="text-[16px] leading-7 text-gray-800 dark:text-gray-200">
             {plan?.description}
@@ -153,6 +134,82 @@ export default function DevotionalDetailScreen() {
 
         <RelatedPlansSection plan={plan} />
       </ScrollView>
+      <BottomSheet
+        index={-1}
+        snapPoints={['50%']}
+        ref={bottomSheetRef}
+        enablePanDownToClose={true}
+        backgroundStyle={{ backgroundColor: colorScheme === 'dark' ? '#171717' : '#fff' }}
+        backdropComponent={(props) => (
+          <BottomSheetBackdrop
+            {...props}
+            opacity={0.7} // Adjust backdrop opacity
+            pressBehavior="close" // Close sheet on backdrop tap
+            disappearsOnIndex={-1} // Hide backdrop when sheet is fully closed (index -1)
+            appearsOnIndex={0} // Show backdrop when sheet opens to the first snap point (index 0)
+          />
+        )}>
+        <BottomSheetView className="flex-1 px-4 pt-4 items-center justify-center">
+          {plan?.cover_image ? (
+            <Image
+              source={{ uri: plan.cover_image }}
+              className="w-full max-w-28 h-28 rounded-2xl mb-3"
+              resizeMode="cover"
+            />
+          ) : (
+            <View className="w-full max-w-28 h-28 rounded-2xl bg-gray-300 dark:bg-neutral-800 mt-3" />
+          )}
+          <Text className="text-3xl text-center font-bold dark:text-white mb-4">
+            How Do you Want Read This Plan
+          </Text>
+
+          <View className="gap-3 w-full px-4 items-center justify-center">
+            <TouchableOpacity
+              onPress={() => {
+                if (isGuest) {
+                  router.push({
+                    pathname: '/login/signin',
+                    params: { redirectTo: `/plan_progress/${plan?.id}/index` },
+                  });
+                  return;
+                }
+                if (planProgressQuery.data) {
+                  router.push(`/plan_progress/${plan?.id}`);
+                  return;
+                }
+                insertToPlanProgress.mutate(
+                  {
+                    current_day: 1,
+                    plan_id: id as string,
+                    user_id: session?.user?.id as string,
+                  },
+                  {
+                    onSuccess: () => {
+                      router.push(`/plan_progress/${plan?.id}`);
+                    },
+                  },
+                );
+              }}
+              className="px-4 py-4 rounded-full  bg-gray-300 dark:bg-neutral-600 w-full flex-row items-center justify-center">
+              <Text className="text-gray-900 text-lg font-bold dark:text-white">By YourSelf</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              className="px-4 py-4 rounded-full  bg-gray-300 dark:bg-neutral-600 w-full flex-row items-center justify-center"
+              onPress={() => {
+                if (isGuest) {
+                  router.push({
+                    pathname: '/login/signin',
+                    params: { redirectTo: `/plan_progress/${plan?.id}/index` },
+                  });
+                  return;
+                }
+                router.push(`/devotional_detail/${plan?.id}/start-date`);
+              }}>
+              <Text className="text-gray-900 text-lg font-bold dark:text-white">With Friends</Text>
+            </TouchableOpacity>
+          </View>
+        </BottomSheetView>
+      </BottomSheet>
     </>
   );
 }

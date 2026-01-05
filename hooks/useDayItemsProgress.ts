@@ -6,24 +6,30 @@ import {
   toggleItemCompletion,
 } from '@/api/queries';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 interface Params {
   user_id: string;
   plan_id: string;
   day_id: string;
-  scripture_refs: string[];
+  group_id?: string;
 }
 
-export function useDayItemsProgress({ user_id, plan_id, day_id, scripture_refs }: Params) {
+export function useDayItemsProgress({ user_id, plan_id, day_id, group_id }: Params) {
   const queryClient = useQueryClient();
+  const [loadingItems, setLoadingItems] = useState(false);
 
   // Load completed items
   const dayItemsProgressQuery = useQuery({
-    queryKey: ['day_items_progress', user_id, plan_id, day_id],
+    queryKey: ['day_items_progress', user_id, plan_id, day_id, group_id],
     enabled: !!day_id && !!plan_id && !!user_id,
     queryFn: async () => {
-      const data = await fetchDayItems({ user_id, plan_id, day_id, scripture_refs });
+      const data = await fetchDayItems({
+        user_id,
+        plan_id,
+        day_id,
+        groupId: group_id,
+      });
       return data;
     },
   });
@@ -38,18 +44,27 @@ export function useDayItemsProgress({ user_id, plan_id, day_id, scripture_refs }
       item_type: 'devotional' | 'scripture';
       item_key: string;
       completed: boolean;
-    }) => toggleItemCompletion({ item_key, item_type, completed, user_id, plan_id, day_id }),
+    }) =>
+      toggleItemCompletion({
+        item_key,
+        item_type,
+        completed,
+        user_id,
+        plan_id,
+        day_id,
+        groupId: group_id,
+      }),
 
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ['day_items_progress', user_id, plan_id, day_id],
+        queryKey: ['day_items_progress', user_id, plan_id, day_id, group_id],
       });
 
       queryClient.invalidateQueries({
-        queryKey: ['plan_progress', plan_id, user_id],
+        queryKey: ['plan_progress', plan_id, user_id, group_id],
       });
       queryClient.invalidateQueries({
-        queryKey: ['plan', plan_id],
+        queryKey: ['user_plans_progressess', user_id],
       });
     },
     onError: (error) => {
@@ -68,38 +83,39 @@ export function useDayItemsProgress({ user_id, plan_id, day_id, scripture_refs }
       user_id: string;
       plan_id: string;
       day_id: string;
-    }) => toggleDayCompletion({ completed, user_id, plan_id, day_id }),
+    }) => toggleDayCompletion({ completed, user_id, plan_id, day_id, groupId: group_id }),
 
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ['day_items_progress', user_id, plan_id, day_id],
+        queryKey: ['day_items_progress', user_id, plan_id, day_id, group_id],
       });
 
       queryClient.invalidateQueries({
-        queryKey: ['plan_progress', plan_id, user_id],
+        queryKey: ['plan_progress', plan_id, user_id, group_id],
       });
       queryClient.invalidateQueries({
-        queryKey: ['plan', plan_id],
+        queryKey: ['user_plans_progressess', user_id],
       });
     },
   });
 
   const loadItems = useMutation({
-    mutationFn: async () => loadDayItems({ user_id, plan_id, day_id }),
+    mutationFn: async () => loadDayItems({ user_id, plan_id, day_id, groupId: group_id }),
 
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ['day_items_progress', user_id, plan_id, day_id],
+        queryKey: ['day_items_progress', user_id, plan_id, day_id, group_id],
       });
 
       queryClient.invalidateQueries({
-        queryKey: ['plan_progress', plan_id, user_id],
+        queryKey: ['plan_progress', plan_id, user_id, group_id],
       });
     },
     onError: (error) => {
       console.error('Error toggling item completion:', error);
     },
   });
+
   const toggleItem = (type: 'devotional' | 'scripture', key: string, completed: boolean) => {
     toggleMutation.mutate({ item_type: type, item_key: key, completed });
   };
@@ -108,15 +124,14 @@ export function useDayItemsProgress({ user_id, plan_id, day_id, scripture_refs }
     if (!day_id || !plan_id || !user_id) return;
 
     const loadItem = async () => {
-      await loadDayItems({ user_id, plan_id, day_id });
+      await loadDayItems({ user_id, plan_id, day_id, groupId: group_id });
     };
 
     loadItem();
   }, [day_id]);
 
   return {
-    dayItemsProgressQuery: dayItemsProgressQuery.data,
-    isLoading: dayItemsProgressQuery.isLoading,
+    dayItemsProgressQuery,
     toggleMutation,
     toggleDayCompletion: toggleDayCompletionMutation,
     toggleItem,

@@ -24,9 +24,11 @@ import { supabase } from '@/api/supabaseClient';
 import { AuthProvider, useAuth } from '@/context/AuthContext';
 import { mutationQueue } from '@/lib/mutationQueue';
 import { QueryProviderWrapper } from '@/lib/queryClient';
+import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 import { useColorScheme } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import '../global.css';
 
 SplashScreen.preventAutoHideAsync();
@@ -36,15 +38,19 @@ export default function RootLayout() {
 
   return (
     <SafeAreaProvider>
-      <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-        <AuthProvider>
-          <QueryProviderWrapper>
-            <BibleProvider>
-              <RootLayoutContent />
-            </BibleProvider>
-          </QueryProviderWrapper>
-        </AuthProvider>
-      </ThemeProvider>
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+          <AuthProvider>
+            <QueryProviderWrapper>
+              <BottomSheetModalProvider>
+                <BibleProvider>
+                  <RootLayoutContent />
+                </BibleProvider>
+              </BottomSheetModalProvider>
+            </QueryProviderWrapper>
+          </AuthProvider>
+        </ThemeProvider>
+      </GestureHandlerRootView>
     </SafeAreaProvider>
   );
 }
@@ -102,7 +108,7 @@ function RootLayoutContent() {
     <>
       <StatusBar style="auto" />
       <Stack initialRouteName="(tabs)">
-        {/* 🌍 PUBLIC / GUEST ROUTES */}
+        <Stack.Screen name="index" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="bible/[book]/index" />
         <Stack.Screen name="search/devotionals/index" options={{ title: 'search devotionals' }} />
@@ -121,10 +127,26 @@ function RootLayoutContent() {
             name="devotional_detail/[id]/[dayId]/[itemId]"
             options={{ headerShown: false }}
           />
+          <Stack.Screen name="devotional_detail/[id]/start-date" options={{ title: 'plan info' }} />
+          <Stack.Screen
+            name="devotional_detail/[id]/invite-friends"
+            options={{ title: 'Select Friends To Invite' }}
+          />
+          <Stack.Screen
+            name="devotional_detail/[id]/participants"
+            options={{ title: 'Participants' }}
+          />
+          <Stack.Screen
+            name="devotional_detail/[id]/invitation"
+            options={{ title: 'Invitation' }}
+          />
+
           <Stack.Screen
             name="plan_progress/[planId]/missedDays/index"
             options={{ title: 'Missed Days' }}
           />
+          <Stack.Screen name="add_friend/index" options={{ title: 'Add Friend' }} />
+          <Stack.Screen name="accept_friend/index" options={{ title: 'Friend Requests' }} />
         </Stack.Protected>
       </Stack>
     </>

@@ -1,7 +1,8 @@
 import { ListCard } from '@/components/DevoCard';
-import { useSearchPlans } from '@/hooks/usePlans';
+import { useSearchPlans } from '@/hooks/useDevotionalPlans';
 import { Ionicons } from '@expo/vector-icons';
 import NetInfo from '@react-native-community/netinfo';
+import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, FlatList, Text, TextInput, useColorScheme, View } from 'react-native';
 
@@ -11,6 +12,7 @@ export default function SearchDevos() {
   const [isOffline, setOffline] = useState(false);
 
   const colorScheme = useColorScheme();
+  const router = useRouter();
 
   // Debounce 400ms
   useEffect(() => {
@@ -76,7 +78,9 @@ export default function SearchDevos() {
         keyExtractor={(item) => item.id!}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 40 }}
-        renderItem={({ item }) => <ListCard item={item} />}
+        renderItem={({ item }) => (
+          <ListCard onPress={() => router.push(`/devotional_detail/${item.id}`)} item={item} />
+        )}
         onEndReached={() => {
           if (searchQuery.hasNextPage) {
             searchQuery.fetchNextPage();

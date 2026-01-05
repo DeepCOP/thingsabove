@@ -1,5 +1,5 @@
 import { RelatedPlanSkeleton } from '@/components/PlanSkeleton';
-import { useRelatedPlans } from '@/hooks/usePlans';
+import { useRelatedPlans } from '@/hooks/useDevotionalPlans';
 import { DevotionalPlan } from '@/types/types';
 import { useRouter } from 'expo-router';
 import { FlatList, Image, Text, TouchableOpacity, View } from 'react-native';

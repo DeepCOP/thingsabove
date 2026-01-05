@@ -17,9 +17,8 @@ const MissedDays = () => {
   const { planProgressQuery } = usePlanProgress(planId as string, session?.user?.id as string);
   const { toggleDayCompletion } = useDayItemsProgress({
     user_id: session?.user?.id || '',
-    plan_id: (planId as string) || '', // Not needed for this component
-    day_id: missedDays?.[0]?.id || '', // Not needed for this component
-    scripture_refs: [],
+    plan_id: (planId as string) || '',
+    day_id: missedDays?.[0]?.id || '',
   });
 
   useEffect(() => {

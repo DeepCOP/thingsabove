@@ -16,6 +16,9 @@ type AppState = {
   version: 'KJV' | 'ASV';
   setVersion: (v: 'KJV' | 'ASV') => void;
 
+  isGrid: boolean;
+  setIsGrid: (isGrid: boolean) => void;
+
   sort: 'Recent' | 'Trending';
   setSort: (s: 'Recent' | 'Trending') => void;
 
@@ -52,7 +55,10 @@ export const useAppStore = create<AppState>()(
       // USER
       user: null,
       setUser: (user) => set({ user }),
+      isGrid: false,
+      setIsGrid: (isGrid) => set({ isGrid }),
 
+      // ITEM
       itemId: '',
       setItemId: (id) => set({ itemId: id }),
 
@@ -84,6 +90,7 @@ export const useAppStore = create<AppState>()(
       // ✅ Persist only what matters
       partialize: (state) => ({
         user: state.user,
+        isGrid: state.isGrid,
         sort: state.sort,
         version: state.version,
         itemId: state.itemId,

@@ -1,5 +1,5 @@
 import { RelatedPlansSection } from '@/components/RelatedPlans';
-import { useFetchDevotionalPlan } from '@/hooks/usePlans';
+import { useFetchDevotionalPlanById } from '@/hooks/useDevotionalPlans';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
@@ -8,7 +8,7 @@ import { Animated, Image, Text, TouchableOpacity, useColorScheme, View } from 'r
 export default function PlanCompleteScreen() {
   const { planId } = useLocalSearchParams();
   const router = useRouter();
-  const { data: plan } = useFetchDevotionalPlan(planId as string);
+  const { data: plan } = useFetchDevotionalPlanById(planId as string);
   const colorScheme = useColorScheme();
 
   const progressAnim = useRef(new Animated.Value(0)).current;
