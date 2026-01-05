@@ -433,12 +433,14 @@ create index if not exists idx_reactions_plan_user on public.plan_reactions(plan
 
 
 
--- avatar bucket.
+--avatar bucket.
 
 insert into storage.buckets
   (id, name, public)
 values
-  ('avatars', 'avatars', true);
+  ('avatars', 'avatars', true)
+on conflict (id) do nothing;
+
 
 create policy "avatars are publicly accessible"
 on storage.objects
@@ -473,11 +475,13 @@ using (
   and bucket_id = 'avatars'
 );
 
--- plan images
+-- -- plan images
 insert into storage.buckets
   (id, name, public)
 values
-  ('plan_images', 'plan_images', true);
+  ('plan_images', 'plan_images', true)
+on conflict (id) do nothing;
+
 
 create policy "plan images publicly accessible"
 on storage.objects
@@ -609,3 +613,208 @@ as $$
   limit limit_count;
 $$;
 
+create or replace view public.plan_day_view as
+select 
+    d.id as day_id,
+    d.plan_id,
+    d.day_number,
+    d.content as devotional_content,
+    (select r.reference 
+     from scripture_references r
+     where r.day_id = d.id) as scripture_refs
+from devotional_days d
+order by d.day_number;
+
+
+create table if not exists public.day_items_progress (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid references auth.users(id) on delete cascade,
+  plan_id uuid references public.devotional_plans(id) on delete cascade,
+  day_id uuid references public.devotional_days(id) on delete cascade,
+  item_type text check (item_type in ('devotional', 'scripture')),
+  item_key text, -- e.g. scripture reference or 'main'
+  completed boolean default false,
+  created_at timestamptz default now(),
+  updated_at timestamptz default now(),
+  unique (user_id, plan_id, day_id, item_type, item_key)
+);
+
+
+create or replace function public.ensure_day_items_exist(
+  p_user_id uuid,
+  p_plan_id uuid,
+  p_day_id uuid
+)
+returns void
+language plpgsql
+as $$
+declare
+  refs text[];
+  ref text;
+begin
+  -- 1️⃣ Ensure devotional item
+  insert into day_items_progress (
+    user_id, plan_id, day_id, item_type, item_key
+  )
+  values (
+    p_user_id, p_plan_id, p_day_id, 'devotional', 'main'
+  )
+  on conflict do nothing;
+
+  -- 2️⃣ Load scripture references (text[])
+  select reference
+  into refs
+  from scripture_references
+  where day_id = p_day_id
+  limit 1;
+
+  if refs is null then
+    return;
+  end if;
+
+  -- 3️⃣ Ensure one item per scripture ref
+  foreach ref in array refs loop
+    insert into day_items_progress (
+      user_id, plan_id, day_id, item_type, item_key
+    )
+    values (
+      p_user_id, p_plan_id, p_day_id, 'scripture', ref
+    )
+    on conflict do nothing;
+  end loop;
+end;
+$$;
+
+
+create or replace function public.toggle_item_completion(
+  p_user_id uuid,
+  p_plan_id uuid,
+  p_day_id uuid,
+  p_item_type text,
+  p_item_key text,
+  p_completed boolean
+)
+returns void
+language plpgsql
+as $$
+declare
+  v_total_items int;
+  v_completed_items int;
+  v_day_number int;
+  v_total_days int;
+begin
+
+  perform ensure_day_items_exist(p_user_id, p_plan_id, p_day_id);
+
+  -- Upsert item progress
+  insert into day_items_progress (user_id, plan_id, day_id, item_type, item_key, completed)
+  values (p_user_id, p_plan_id, p_day_id, p_item_type, p_item_key, p_completed)
+  on conflict (user_id, plan_id, day_id, item_type, item_key)
+  do update set completed = p_completed, updated_at = now();
+
+  -- Get day number
+  select day_number into v_day_number
+  from devotional_days
+  where id = p_day_id;
+
+  -- Get total days in plan
+  select total_days into v_total_days
+  from devotional_plans
+  where id = p_plan_id;
+
+
+  -- Count total items for the day (devotional + scripture)
+  select count(*) into v_total_items
+  from day_items_progress
+  where user_id = p_user_id
+    and plan_id = p_plan_id
+    and day_id = p_day_id;
+
+  -- Count completed items
+  select count(*) into v_completed_items
+  from day_items_progress
+  where user_id = p_user_id
+    and plan_id = p_plan_id
+    and day_id = p_day_id
+    and completed = true;
+
+  -- Update plan_progress.completed_days safely
+-- Update plan_progress.completed_days safely
+if v_completed_items = v_total_items then
+  update plan_progress
+  set 
+    completed_days = case
+      when not (v_day_number = ANY(completed_days))
+        then array_append(completed_days, v_day_number)
+      else completed_days
+    end,
+    updated_at = now()
+  where user_id = p_user_id
+    and plan_id = p_plan_id;
+
+else
+  update plan_progress
+  set 
+    completed_days = array_remove(completed_days, v_day_number),
+    updated_at = now()
+  where user_id = p_user_id
+    and plan_id = p_plan_id;
+end if;
+
+
+end;
+$$;
+
+
+create or replace function public.toggle_day_completion(
+  p_user_id uuid,
+  p_plan_id uuid,
+  p_day_id uuid,
+  p_completed boolean
+)
+returns void
+language plpgsql
+as $$
+declare
+  v_day_number int;
+begin
+  -- Ensure items exist for the day
+  perform ensure_day_items_exist(p_user_id, p_plan_id, p_day_id);
+
+  -- Get day number
+  select day_number
+  into v_day_number
+  from devotional_days
+  where id = p_day_id;
+
+  -- Toggle ALL items for that day
+  update day_items_progress
+  set completed = p_completed,
+      updated_at = now()
+  where user_id = p_user_id
+    and plan_id = p_plan_id
+    and day_id = p_day_id;
+
+  -- Update completed_days array
+  if p_completed then
+    update plan_progress
+    set
+      completed_days = case
+        when not (v_day_number = any(completed_days))
+          then array_append(completed_days, v_day_number)
+        else completed_days
+      end,
+      updated_at = now()
+    where user_id = p_user_id
+      and plan_id = p_plan_id;
+  else
+    update plan_progress
+    set
+      completed_days = array_remove(completed_days, v_day_number),
+      updated_at = now()
+    where user_id = p_user_id
+      and plan_id = p_plan_id;
+  end if;
+
+end;
+$$;

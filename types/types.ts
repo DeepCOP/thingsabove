@@ -32,4 +32,17 @@ export type CommentsInsert = Database['public']['Tables']['comments']['Insert'];
 
 export type CommentsUpdate = Database['public']['Tables']['comments']['Update'];
 
+export type PlanProgress = Database['public']['Tables']['plan_progress']['Row'];
+export type PlanProgressInsert = Database['public']['Tables']['plan_progress']['Insert'];
+export type PlanProgressUpdate = Database['public']['Tables']['plan_progress']['Update'];
+
+export type PlanDayView = Database['public']['Views']['plan_day_view']['Row'];
+
 export type DevotionalPlanView = Database['public']['Views']['devotional_plans_view']['Row'];
+
+export type ParsedVerse = {
+  book: string; // "Song of Solomon"
+  chapter: number; // 2
+  verseStart: number; // 1
+  verseEnd?: number; // 4
+};

@@ -39,6 +39,11 @@ A modern Bible Devotional mobile application built with **React Native**, **Expo
    pnpm start
    ```
 
+Follow the terminal prompts to:
+
+- Sign in or continue anonymously
+- Choose how to run the app
+
 In the output, you'll find options to open the app in a
 
 - [development build](https://docs.expo.dev/develop/development-builds/introduction/)
@@ -50,3 +55,18 @@ In the output, you'll find options to open the app in a
 In the Terminal, you'll find command lists:
 -  example
    - s => to switch b/n development build and expo go to run the app on a physical device or emulator
+
+## Supabase Database Migration
+
+1. login with supabase cli
+   ```bash
+   pnpx supabase login
+   ```
+2. link your supabase project
+   ```bash
+   pnpx supabase link --project-ref YOUR_PROJECT_REF_ID
+   ```
+3. Run migrations
+   ```bash
+   pnpx supabase db reset --linked
+   ```

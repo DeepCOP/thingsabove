@@ -38,6 +38,71 @@ export type Database = {
         };
         Relationships: [];
       };
+      day_items_progress: {
+        Row: {
+          completed: boolean | null;
+          created_at: string | null;
+          day_id: string | null;
+          id: string;
+          item_key: string | null;
+          item_type: string | null;
+          plan_id: string | null;
+          updated_at: string | null;
+          user_id: string | null;
+        };
+        Insert: {
+          completed?: boolean | null;
+          created_at?: string | null;
+          day_id?: string | null;
+          id?: string;
+          item_key?: string | null;
+          item_type?: string | null;
+          plan_id?: string | null;
+          updated_at?: string | null;
+          user_id?: string | null;
+        };
+        Update: {
+          completed?: boolean | null;
+          created_at?: string | null;
+          day_id?: string | null;
+          id?: string;
+          item_key?: string | null;
+          item_type?: string | null;
+          plan_id?: string | null;
+          updated_at?: string | null;
+          user_id?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'day_items_progress_day_id_fkey';
+            columns: ['day_id'];
+            isOneToOne: false;
+            referencedRelation: 'devotional_days';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'day_items_progress_day_id_fkey';
+            columns: ['day_id'];
+            isOneToOne: false;
+            referencedRelation: 'plan_day_view';
+            referencedColumns: ['day_id'];
+          },
+          {
+            foreignKeyName: 'day_items_progress_plan_id_fkey';
+            columns: ['plan_id'];
+            isOneToOne: false;
+            referencedRelation: 'devotional_plans';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'day_items_progress_plan_id_fkey';
+            columns: ['plan_id'];
+            isOneToOne: false;
+            referencedRelation: 'devotional_plans_view';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       devotional_days: {
         Row: {
           content: string;
@@ -308,6 +373,13 @@ export type Database = {
             referencedRelation: 'devotional_days';
             referencedColumns: ['id'];
           },
+          {
+            foreignKeyName: 'scripture_references_day_id_fkey';
+            columns: ['day_id'];
+            isOneToOne: false;
+            referencedRelation: 'plan_day_view';
+            referencedColumns: ['day_id'];
+          },
         ];
       };
     };
@@ -360,8 +432,51 @@ export type Database = {
         };
         Relationships: [];
       };
+      plan_day_view: {
+        Row: {
+          day_id: string | null;
+          day_number: number | null;
+          devotional_content: string | null;
+          plan_id: string | null;
+          scripture_refs: string[] | null;
+        };
+        Insert: {
+          day_id?: string | null;
+          day_number?: number | null;
+          devotional_content?: string | null;
+          plan_id?: string | null;
+          scripture_refs?: never;
+        };
+        Update: {
+          day_id?: string | null;
+          day_number?: number | null;
+          devotional_content?: string | null;
+          plan_id?: string | null;
+          scripture_refs?: never;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'devotional_days_plan_id_fkey';
+            columns: ['plan_id'];
+            isOneToOne: false;
+            referencedRelation: 'devotional_plans';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'devotional_days_plan_id_fkey';
+            columns: ['plan_id'];
+            isOneToOne: false;
+            referencedRelation: 'devotional_plans_view';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
     };
     Functions: {
+      ensure_day_items_exist: {
+        Args: { p_day_id: string; p_plan_id: string; p_user_id: string };
+        Returns: undefined;
+      };
       search_plans: {
         Args: {
           cursor_created_at?: string;
@@ -393,6 +508,26 @@ export type Database = {
       };
       show_limit: { Args: never; Returns: number };
       show_trgm: { Args: { '': string }; Returns: string[] };
+      toggle_day_completion: {
+        Args: {
+          p_completed: boolean;
+          p_day_id: string;
+          p_plan_id: string;
+          p_user_id: string;
+        };
+        Returns: undefined;
+      };
+      toggle_item_completion: {
+        Args: {
+          p_completed: boolean;
+          p_day_id: string;
+          p_item_key: string;
+          p_item_type: string;
+          p_plan_id: string;
+          p_user_id: string;
+        };
+        Returns: undefined;
+      };
       toggle_reaction: {
         Args: { p_plan_id: string; p_reaction_type: string; p_user_id: string };
         Returns: string;

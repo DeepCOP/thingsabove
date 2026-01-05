@@ -1,5 +1,7 @@
 import { RelatedPlansSection } from '@/components/RelatedPlans';
-import { useFetchPlan } from '@/hooks/usePlans';
+import { useAuth } from '@/context/AuthContext';
+import { usePlanProgress } from '@/hooks/usePlanProgress';
+import { useFetchDevotionalPlan } from '@/hooks/usePlans';
 import { Ionicons } from '@expo/vector-icons';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import {
@@ -17,11 +19,16 @@ export default function DevotionalDetailScreen() {
   const { id } = useLocalSearchParams(); // plan ID passed from card
   const router = useRouter();
   const colorScheme = useColorScheme();
+  const { isGuest, session } = useAuth();
+  const { insertToPlanProgress, planProgressQuery } = usePlanProgress(
+    id as string,
+    session?.user?.id,
+  );
 
-  const planQuery = useFetchPlan(id as string);
+  const planQuery = useFetchDevotionalPlan(id as string);
   const plan = planQuery.data;
 
-  if (planQuery.isLoading) {
+  if (planQuery.isLoading || planProgressQuery.isLoading) {
     return <ActivityIndicator style={{ marginTop: 30 }} size="large" />;
   }
 
@@ -82,7 +89,6 @@ export default function DevotionalDetailScreen() {
             <View className="w-full h-60 rounded-2xl bg-gray-300 dark:bg-neutral-800" />
           )}
 
-          {/* Completion ribbon */}
           {(plan?.completions ?? 0) > 0 && (
             <View className="absolute bottom-0 left-4 right-4 bg-black/50 py-2 rounded-b-2xl">
               <Text className="text-center text-white font-semibold">
@@ -92,7 +98,6 @@ export default function DevotionalDetailScreen() {
           )}
         </View>
 
-        {/* Title + Days */}
         <View className="px-4 mt-5">
           <Text className="text-2xl font-bold text-gray-900 dark:text-gray-100 leading-snug">
             {plan?.title}
@@ -103,10 +108,37 @@ export default function DevotionalDetailScreen() {
           </View>
         </View>
 
-        {/* Start Plan Button */}
         <TouchableOpacity
           className="mt-6 mx-4 bg-black dark:bg-white py-4 rounded-full"
-          onPress={() => router.push(`/devotional_detail/${plan?.id}/start`)}>
+          onPress={() => {
+            if (isGuest) {
+              router.push({
+                pathname: '/login/signin',
+                params: { redirectTo: `/plan_progress/${plan?.id}/index` },
+              });
+              return;
+            }
+            if (planProgressQuery.data) {
+              router.push(`/plan_progress/${plan?.id}`);
+              return;
+            }
+            insertToPlanProgress.mutate(
+              {
+                current_day: 1,
+                plan_id: id as string,
+                user_id: session?.user?.id as string,
+              },
+              {
+                onSuccess: () => {
+                  router.push(`/plan_progress/${plan?.id}`);
+                },
+                onError: (e) => {
+                  console.log(e);
+                },
+              },
+            );
+          }}
+          disabled={insertToPlanProgress.isPending}>
           <Text className="text-center text-white dark:text-black font-semibold text-lg">
             Start Plan
           </Text>

@@ -3,21 +3,19 @@ import { Ionicons } from '@expo/vector-icons';
 import { Stack, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useBible } from '../../../context/BibleContext';
 
 export default function BibleBooksChapters() {
   const router = useRouter();
-  const { bible } = useBible();
+  const { bible, bookNames } = useBible();
   const setSelectedBook = useAppStore((s) => s.setSelectedBook);
 
   const [expandedBook, setExpandedBook] = useState<string | null>(null);
+  const insets = useSafeAreaInsets();
 
   const toggleBook = (bookName: string) => {
-    if (expandedBook === bookName) {
-      setExpandedBook(null); // collapse
-    } else {
-      setExpandedBook(bookName); // expand
-    }
+    setExpandedBook((prev) => (prev === bookName ? null : bookName));
   };
 
   return (
@@ -28,9 +26,15 @@ export default function BibleBooksChapters() {
           headerShadowVisible: false,
         }}
       />
-      <ScrollView className="flex-1 bg-white dark:bg-black px-4 py-4">
-        {Object.entries(bible).map(([bookName, chapters], index) => {
-          const chapterCount = Object.keys(chapters as string).length;
+
+      <ScrollView
+        className="flex-1 bg-white dark:bg-black px-4 py-4"
+        style={{ marginBottom: insets.bottom + 5 }}>
+        {bookNames.map((bookName) => {
+          const chapters = bible.books.find((book) => book.name === bookName)?.chapters;
+          if (!chapters) return null;
+
+          const chapterCount = chapters.length;
           const isOpen = expandedBook === bookName;
 
           return (
@@ -38,12 +42,12 @@ export default function BibleBooksChapters() {
               {/* BOOK HEADER */}
               <TouchableOpacity
                 onPress={() => toggleBook(bookName)}
-                className="flex-row justify-between items-center bg-gray-100 dark:bg-black px-4 py-3 rounded-lg">
+                className="flex-row justify-between items-center bg-gray-100 dark:bg-neutral-900 px-4 py-3 rounded-lg">
                 <Text className="text-lg font-semibold text-gray-900 dark:text-gray-200">
                   {bookName}
                 </Text>
 
-                <Ionicons name={isOpen ? 'chevron-up' : 'chevron-down'} size={22} color="#333" />
+                <Ionicons name={isOpen ? 'chevron-up' : 'chevron-down'} size={22} color="#6b7280" />
               </TouchableOpacity>
 
               {/* CHAPTER LIST */}
@@ -53,11 +57,11 @@ export default function BibleBooksChapters() {
                     <TouchableOpacity
                       key={ch}
                       onPress={() => {
-                        setSelectedBook({ name: bookName, chapters: ch });
-                        router.push(`/BibleTab`);
+                        setSelectedBook({ name: bookName, chapter: ch });
+                        router.push('/BibleTab');
                       }}
-                      className="bg-gray-200 dark:bg-gray-500 w-16 h-16 justify-center items-center text-center rounded-lg m-1">
-                      <Text className="text-gray-700 dark:text-gray-100 font-semibold">{ch}</Text>
+                      className="bg-gray-200 dark:bg-gray-700 w-16 h-16 justify-center items-center rounded-lg m-1">
+                      <Text className="text-gray-800 dark:text-gray-100 font-semibold">{ch}</Text>
                     </TouchableOpacity>
                   ))}
                 </View>

@@ -3,8 +3,8 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Clipboard from 'expo-clipboard';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-
 import { Animated, Modal, Share, Text, TouchableOpacity, useColorScheme, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useBible } from '../context/BibleContext';
 
 export default function BibleReaderView({
@@ -15,10 +15,10 @@ export default function BibleReaderView({
   headerTranslateY: Animated.AnimatedInterpolation<string | number>;
 }) {
   const colorScheme = useColorScheme();
-
+  const insets = useSafeAreaInsets();
   const [selectedVerse, setSelectedVerse] = useState<
     {
-      number: string;
+      number: number;
       text: string;
     }[]
   >([]);
@@ -29,9 +29,11 @@ export default function BibleReaderView({
   const setSelectedBook = useAppStore((s) => s.setSelectedBook);
 
   const router = useRouter();
-  const { bible, version } = useBible();
+  const bibleContext = useBible();
+  if (!bibleContext) return null;
+  const { bible, version, bookNames } = bibleContext;
 
-  const formatVerseText = (verses: { number: string; text: string }[]) => {
+  const formatVerseText = (verses: { number: number; text: string }[]) => {
     if (verses.length === 0) return '';
 
     const { header, ranges, sorted } = formatSelectedVerseTitle();
@@ -42,7 +44,7 @@ export default function BibleReaderView({
       const range = v.split('-');
 
       for (let i = Number(range[0]); i <= Number(range[range.length - 1]); i++) {
-        const verse = sorted.find((v) => v.number === i.toString());
+        const verse = sorted.find((v) => v.number === i);
         if (!verse) continue;
         body += `[${verse.number}] ${verse.text}`;
       }
@@ -52,7 +54,7 @@ export default function BibleReaderView({
     // Official Bible.com link
     const link = `${process.env.EXPO_BASE_URL}/bible/12/${selectedBook.name
       .toLowerCase()
-      .slice(0, 3)}.${selectedBook.chapters}.${ranges.join(',')}.${version}`;
+      .slice(0, 3)}.${selectedBook.chapter}.${ranges.join(',')}.${version}`;
 
     return `${header}\n${body}\n${link}`;
   };
@@ -81,19 +83,25 @@ export default function BibleReaderView({
     // Push last range
     ranges.push(start === end ? `${start}` : `${start}-${end}`);
     // Construct header: "Luke 19:1-2,10-12,24 ASV"
-    const header = `${selectedBook.name} ${selectedBook.chapters}:${ranges.join(',')} ${version}`;
+    const header = `${selectedBook.name} ${selectedBook.chapter}:${ranges.join(',')} ${version}`;
     return { header, ranges, sorted };
   };
+  const chapters = bible.books.find((book) => book.name === selectedBook.name)?.chapters;
+  const chapterCount = chapters?.length || 0;
 
-  const chapterNumber = Number(selectedBook.chapters);
-  const verses = bible[selectedBook.name as string][selectedBook?.chapters.toString()];
-
-  const sectionTitle = verses['title'];
+  const chapterNumber = Number(selectedBook.chapter);
+  const verses = bible.books.find((book) => book.name === selectedBook.name)?.chapters[
+    chapterNumber - 1
+  ]?.verses;
 
   return (
     <>
       <View className="flex-1 bg-white dark:bg-black">
-        <Animated.ScrollView scrollEventThrottle={16} onScroll={onScroll} className="px-5 mb-20">
+        <Animated.ScrollView
+          scrollEventThrottle={16}
+          onScroll={onScroll}
+          className="px-5"
+          style={{ marginBottom: insets.bottom + 80 }}>
           <View className="justify-center items-center pb-16 gap-4">
             <Text className="text-center text-primary dark:text-gray-100 text-lg pt-28 font-MerriWeather300Light">
               {selectedBook.name}
@@ -101,55 +109,45 @@ export default function BibleReaderView({
 
             {/* BIG CHAPTER NUMBER */}
             <Text className="text-center text-7xl  font-MerriWeather900Black text-gray-900 dark:text-gray-100">
-              {selectedBook.chapters}
+              {selectedBook.chapter}
             </Text>
           </View>
 
-          {/* SECTION TITLE (IF AVAILABLE) */}
-          {sectionTitle && (
-            <Text className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">
-              {sectionTitle}
-            </Text>
-          )}
-
           {/* VERSES */}
-          {Object.entries(verses)
-            .filter(([key]) => key !== 'title') // skip title key
-            .map(([num, text]) => (
-              <View key={num} className="mb-3">
-                <TouchableOpacity
-                  onPress={() => {
-                    if (!selectedVerse.some((item) => item.text === text)) {
-                      setSelectedVerse((prev) => [{ number: num, text: text as string }, ...prev]);
-                      // setShowMenu(true);
-                    } else {
-                      setSelectedVerse((prev) => {
-                        const current = prev.filter((item) => item.number !== num);
-                        return current;
-                      });
-                    }
-                  }}
-                  onLongPress={() => {
-                    if (!selectedVerse.some((item) => item.number === num)) {
-                      setSelectedVerse((prev) => [{ number: num, text: text as string }, ...prev]);
-                    }
-                    setShowMenu(true);
-                  }}
-                  className={`flex-row items-start rounded-md px-1 ${
-                    selectedVerse.some((item) => item.text === text)
-                      ? 'bg-yellow-200 dark:bg-yellow-700'
-                      : ''
-                  }`}>
-                  <Text className="text-verseNumber font-[400] mr-1 -mt-1 dark:text-gray-400">
-                    {num}
-                  </Text>
+          {verses?.map(({ verse, text }) => (
+            <View key={verse} className="mb-3">
+              <TouchableOpacity
+                onPress={() => {
+                  if (!selectedVerse.some((item) => item.text === text)) {
+                    setSelectedVerse((prev) => [{ number: verse, text: text as string }, ...prev]);
+                  } else {
+                    setSelectedVerse((prev) => {
+                      const current = prev.filter((item) => item.number !== verse);
+                      return current;
+                    });
+                  }
+                }}
+                onLongPress={() => {
+                  if (!selectedVerse.some((item) => item.number === verse)) {
+                    setSelectedVerse((prev) => [{ number: verse, text: text as string }, ...prev]);
+                  }
+                  setShowMenu(true);
+                }}
+                className={`flex-row items-start rounded-md px-1 ${
+                  selectedVerse.some((item) => item.text === text)
+                    ? 'bg-yellow-200 dark:bg-yellow-700'
+                    : ''
+                }`}>
+                <Text className="text-verseNumber font-[400] mr-1 -mt-1 dark:text-gray-400">
+                  {verse}
+                </Text>
 
-                  <Text className="flex-1 text-[17px] leading-7 text-primary dark:text-gray-100 font-semibold  font-open-sans-regular indent-5">
-                    {text as string}
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            ))}
+                <Text className="flex-1 text-[17px] leading-7 text-primary dark:text-gray-100 font-semibold  font-open-sans-regular indent-5">
+                  {text as string}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          ))}
         </Animated.ScrollView>
 
         {/* BOTTOM CHAPTER NAVIGATION */}
@@ -158,7 +156,7 @@ export default function BibleReaderView({
           style={{
             transform: [{ translateY: headerTranslateY }],
             position: 'absolute',
-            bottom: 80,
+            bottom: 56 + insets.bottom,
             left: 0,
             right: 0,
             zIndex: 10,
@@ -166,30 +164,55 @@ export default function BibleReaderView({
           <View className="flex-row bg-black px-6 py-3 rounded-full items-center">
             {/* PREVIOUS CHAPTER */}
             <TouchableOpacity
-              disabled={chapterNumber === 1}
               onPress={() => {
-                setSelectedBook({ name: selectedBook.name, chapters: chapterNumber - 1 });
+                if (chapterNumber === 1) {
+                  bookNames.forEach((bookName) => {
+                    if (bookName === selectedBook.name) {
+                      const currentBookIndex = bookNames.indexOf(selectedBook.name);
+                      if (currentBookIndex === 0) return;
+                      const prevBookName = bookNames[currentBookIndex - 1];
+                      if (prevBookName) {
+                        const prevChapters = bible.books.find(
+                          (book) => book.name === prevBookName,
+                        )?.chapters;
+                        const lastChapterNumber = prevChapters?.length || 1;
+                        setSelectedBook({ name: prevBookName, chapter: lastChapterNumber });
+                        setSelectedVerse([]);
+                      }
+                    }
+                  });
+                  return;
+                }
+                setSelectedBook({ name: selectedBook.name, chapter: chapterNumber - 1 });
                 setSelectedVerse([]);
               }}>
-              <Ionicons
-                name="chevron-back"
-                size={20}
-                color="white"
-                style={{ opacity: chapterNumber === 1 ? 0.3 : 1 }}
-              />
+              <Ionicons name="chevron-back" size={20} color="white" />
             </TouchableOpacity>
 
             {/* LABEL */}
             <TouchableOpacity onPress={() => router.push(`/bible/${selectedBook.name}`)}>
               <Text className="text-white font-semibold mx-4">
-                {selectedBook.name} {selectedBook.chapters}
+                {selectedBook.name} {selectedBook.chapter}
               </Text>
             </TouchableOpacity>
 
             {/* NEXT CHAPTER */}
             <TouchableOpacity
               onPress={() => {
-                setSelectedBook({ name: selectedBook.name, chapters: chapterNumber + 1 });
+                if (chapterNumber === chapterCount) {
+                  bookNames.forEach((bookName) => {
+                    if (bookName === selectedBook.name) {
+                      const currentBookIndex = bookNames.indexOf(selectedBook.name);
+                      const nextBookName = bookNames[currentBookIndex + 1];
+                      if (nextBookName) {
+                        setSelectedBook({ name: nextBookName, chapter: 1 });
+                        setSelectedVerse([]);
+                      }
+                    }
+                  });
+                  return;
+                }
+                setSelectedBook({ name: selectedBook.name, chapter: chapterNumber + 1 });
                 setSelectedVerse([]);
               }}>
               <Ionicons name="chevron-forward" size={20} color="white" />
