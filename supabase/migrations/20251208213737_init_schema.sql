@@ -533,8 +533,9 @@ as $$
   limit limit_count;
 $$;
 
-create or replace view public.plan_day_view as
-select 
+create or replace view public.plan_day_view 
+with(security_invoker = true)
+as select 
     d.id as day_id,
     d.plan_id,
     d.day_number,
@@ -817,6 +818,46 @@ end;
 $$;
 
 
+create or replace function public.add_user_to_existing_plan_group(
+  p_group_id uuid,
+  p_friends_ids uuid[]
+)
+returns void
+language plpgsql
+security definer
+as $$
+declare
+  v_plan_id uuid;
+begin
+  -- Ensure group exists and fetch plan data
+  select plan_id
+  into v_plan_id
+  from plan_groups
+  where id = p_group_id;
+
+  if not found then
+    raise exception 'Plan group not found';
+  end if;
+
+  insert into plan_group_members (group_id, user_id, status)
+  select p_group_id, unnest(p_friends_ids), 'pending'
+  on conflict (group_id, user_id) do nothing;
+
+    perform create_notification(
+    p_friends_ids,
+    'plan_invite',
+    'Plan Invitation',
+    'You were invited to read a plan with friends',
+    jsonb_build_object(
+      'plan_id', v_plan_id,
+      'group_id', p_group_id,
+      'invited_by', auth.uid()
+    )
+  );
+end;
+$$;
+
+
 create or replace function public.accept_plan_group_invite(
   p_group_id uuid,
   p_plan_id uuid,
@@ -855,21 +896,6 @@ begin
 end;
 $$;
 
-create or replace function public.invite_friends_to_plan_group(
-  p_group_id uuid,
-  p_user_ids uuid[]
-)
-returns void
-language plpgsql
-security definer
-as $$
-begin
-  insert into plan_group_members (group_id, user_id, status)
-  select p_group_id, unnest(p_user_ids), 'pending'
-  on conflict (group_id, user_id) do nothing;
-end;
-$$;
-
 
 -- Plan Progress
 create table if not exists public.plan_progress (
@@ -888,10 +914,27 @@ create table if not exists public.plan_progress (
 alter table public.plan_progress enable row level security;
 
 
-create policy "users can view their own progress"
-  on public.plan_progress
-  for select
-  using (auth.uid() = user_id);
+create policy "users can view own or group members progress"
+on public.plan_progress
+for select
+using (
+  -- Can always see your own progress
+  auth.uid() = user_id
+
+  OR
+
+  -- Can see progress of members in same plan group
+  (
+    group_id IS NOT NULL
+    AND exists (
+      select 1
+      from plan_group_members pgm
+      where pgm.group_id = plan_progress.group_id
+        and pgm.user_id = auth.uid()
+        and pgm.status = 'accepted'
+    )
+  )
+);
 
 
 create policy "users can insert their own progress"
@@ -1340,3 +1383,179 @@ as $$
   where user_id = auth.uid()
     and is_read = false;
 $$;
+
+
+
+alter table public.friends enable row level security;
+alter table public.day_items_progress enable row level security;
+alter table public.plan_group_members enable row level security;
+alter table public.plan_groups enable row level security;
+
+create or replace function public.is_group_member(p_group_id uuid)
+returns boolean
+language sql
+security definer
+set search_path = public
+as $$
+  select exists (
+    select 1
+    from plan_group_members
+    where group_id = p_group_id
+      and user_id = auth.uid()
+  );
+$$;
+
+
+create policy "Friends: select own friendships"
+on public.friends
+for select
+using (
+  requester_id = auth.uid()
+  or receiver_id = auth.uid()
+);
+
+
+create policy "Friends: send request"
+on public.friends
+for insert
+with check (
+  requester_id = auth.uid()
+  and requester_id <> receiver_id
+);
+
+
+create policy "Friends: update status"
+on public.friends
+for update
+using (
+  requester_id = auth.uid()
+  or receiver_id = auth.uid()
+);
+
+
+create policy "Friends: delete friendship"
+on public.friends
+for delete
+using (
+  requester_id = auth.uid()
+  or receiver_id = auth.uid()
+);
+
+
+create policy "Plan groups: view group"
+on public.plan_groups
+for select
+using (
+  created_by = auth.uid()
+  or public.is_group_member(id)
+);
+
+create policy "Plan groups: create group"
+on public.plan_groups
+for insert
+with check (
+  created_by = auth.uid()
+);
+
+
+create policy "Plan groups: update group"
+on public.plan_groups
+for update
+using (
+  created_by = auth.uid()
+);
+
+
+create policy "Plan groups: delete group"
+on public.plan_groups
+for delete
+using (
+  created_by = auth.uid()
+);
+
+
+create policy "Group members: view members"
+on public.plan_group_members
+for select
+using (
+  public.is_group_member(group_id)
+);
+
+
+create policy "Group members: join group"
+on public.plan_group_members
+for insert
+with check (
+  user_id = auth.uid()
+  or exists (
+    select 1
+    from plan_groups pg
+    where pg.id = group_id
+      and pg.created_by = auth.uid()
+  )
+);
+
+
+create policy "Group members: update status"
+on public.plan_group_members
+for update
+using (
+  user_id = auth.uid()
+  or exists (
+    select 1
+    from plan_groups pg
+    where pg.id = group_id
+      and pg.created_by = auth.uid()
+  )
+);
+
+
+create policy "Group members: leave or remove"
+on public.plan_group_members
+for delete
+using (
+  user_id = auth.uid()
+  or exists (
+    select 1
+    from plan_groups pg
+    where pg.id = group_id
+      and pg.created_by = auth.uid()
+  )
+);
+
+
+create policy "Day progress: view group progress"
+on public.day_items_progress
+for select
+using (
+  user_id = auth.uid()
+  or exists (
+    select 1
+    from plan_group_members pgm
+    where pgm.group_id = group_id
+      and pgm.user_id = auth.uid()
+      and pgm.status = 'accepted'
+  )
+);
+
+create policy "Day progress: insert own"
+on public.day_items_progress
+for insert
+with check (
+  user_id = auth.uid()
+);
+
+create policy "Day progress: update own"
+on public.day_items_progress
+for update
+using (
+  user_id = auth.uid()
+);
+
+
+create policy "Day progress: delete own"
+on public.day_items_progress
+for delete
+using (
+  user_id = auth.uid()
+);

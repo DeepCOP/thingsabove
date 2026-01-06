@@ -7,36 +7,48 @@ export const utcdayjs = dayjs.extend(utc);
 
 export function parseVerseRef(ref: string): ParsedVerse | null {
   try {
-    // Example: Song_of_Solomon 2:1-4
-    const match = ref.match(/^([\w_]+)\s+(\d+):(\d+)(?:-(\d+))?$/);
+    // Matches:
+    // "Song of Solomon 2:1-4"
+    // "1 Peter 1:3"
+    // "Song_of_Solomon 2:1"
+    const match = ref.match(/^(.+?)\s+(\d+):(\d+)(?:-(\d+))?$/);
 
     if (!match) return null;
 
     const [, rawBook, chapter, verseStart, verseEnd] = match;
+
     return {
-      book: rawBook.replace(/_/g, ' '),
+      book: rawBook.replace(/_/g, ' ').trim(),
       chapter: Number(chapter),
       verseStart: Number(verseStart),
       verseEnd: verseEnd ? Number(verseEnd) : undefined,
     };
-  } catch (e) {
+  } catch {
     return null;
   }
 }
 
-const getNumericPrefix = (key?: string | null) => {
+export const getNumericPrefix = (key?: string | null) => {
   if (!key) return 0;
   const match = key.match(/^(\d+)/);
   return match ? Number(match[0]) : 0;
 };
 
 export const sortByItemKey = (a?: string | null, b?: string | null) => {
+  const A = (a ?? '').toLowerCase();
+  const B = (b ?? '').toLowerCase();
+
+  // 'main' always comes first
+  if (A === 'main' && B !== 'main') return -1;
+  if (B === 'main' && A !== 'main') return 1;
+
   const na = getNumericPrefix(a);
   const nb = getNumericPrefix(b);
 
   if (na === nb) {
-    return (a ?? '').localeCompare(b ?? '');
+    return A.localeCompare(B);
   }
+
   return na - nb;
 };
 

@@ -510,7 +510,6 @@ export type Database = {
           bio: string | null;
           created_at: string | null;
           email: string;
-          expo_push_token: string | null;
           first_name: string;
           id: string;
           last_name: string;
@@ -521,7 +520,6 @@ export type Database = {
           bio?: string | null;
           created_at?: string | null;
           email: string;
-          expo_push_token?: string | null;
           first_name: string;
           id: string;
           last_name: string;
@@ -532,7 +530,6 @@ export type Database = {
           bio?: string | null;
           created_at?: string | null;
           email?: string;
-          expo_push_token?: string | null;
           first_name?: string;
           id?: string;
           last_name?: string;
@@ -724,6 +721,10 @@ export type Database = {
           p_group_id?: string;
           p_plan_id: string;
         };
+        Returns: undefined;
+      };
+      add_user_to_existing_plan_group: {
+        Args: { p_friends_ids: string[]; p_group_id: string };
         Returns: undefined;
       };
       create_notification: {

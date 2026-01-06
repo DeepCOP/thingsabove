@@ -5,10 +5,8 @@ import * as Clipboard from 'expo-clipboard';
 import { useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 
-import { useAuth } from '@/context/AuthContext';
 import { useFetchDevotionalPlanById } from '@/hooks/useDevotionalPlans';
-import { PlanProgress } from '@/types/types';
-import { UseMutationResult, useQueryClient } from '@tanstack/react-query';
+import { UseMutationResult } from '@tanstack/react-query';
 import {
   Animated,
   Image,
@@ -72,8 +70,6 @@ export default function DevotionalPlanReader({
   const insets = useSafeAreaInsets();
   const colorScheme = useColorScheme();
   const { data: plan } = useFetchDevotionalPlanById(item?.plan_id!);
-  const queryClient = useQueryClient();
-  const { session } = useAuth();
   const [selectedVerse, setSelectedVerse] = useState<
     {
       number: string;
@@ -340,13 +336,6 @@ export default function DevotionalPlanReader({
                     {
                       onSuccess: async () => {
                         setSelectedVerse([]);
-                        const updated: PlanProgress = await queryClient.fetchQuery({
-                          queryKey: ['plan_progress', plan?.id, session.user.id],
-                        });
-                        if (updated.completed_days?.length === plan?.total_days) {
-                          router.replace(`/plan_progress/${plan?.id}/plan-complete`);
-                          return;
-                        }
                         router.back();
                       },
                     },

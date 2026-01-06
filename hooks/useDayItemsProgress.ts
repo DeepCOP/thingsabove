@@ -1,12 +1,8 @@
 // hooks/useDayItemsProgress.ts
-import {
-  fetchDayItems,
-  loadDayItems,
-  toggleDayCompletion,
-  toggleItemCompletion,
-} from '@/api/queries';
+import { toggleDayCompletion, toggleItemCompletion } from '@/api/mutations';
+import { fetchDayItems, loadDayItems } from '@/api/queries';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 
 interface Params {
   user_id: string;
@@ -17,7 +13,6 @@ interface Params {
 
 export function useDayItemsProgress({ user_id, plan_id, day_id, group_id }: Params) {
   const queryClient = useQueryClient();
-  const [loadingItems, setLoadingItems] = useState(false);
 
   // Load completed items
   const dayItemsProgressQuery = useQuery({
@@ -123,11 +118,7 @@ export function useDayItemsProgress({ user_id, plan_id, day_id, group_id }: Para
   useEffect(() => {
     if (!day_id || !plan_id || !user_id) return;
 
-    const loadItem = async () => {
-      await loadDayItems({ user_id, plan_id, day_id, groupId: group_id });
-    };
-
-    loadItem();
+    loadItems.mutate();
   }, [day_id]);
 
   return {
@@ -136,5 +127,6 @@ export function useDayItemsProgress({ user_id, plan_id, day_id, group_id }: Para
     toggleDayCompletion: toggleDayCompletionMutation,
     toggleItem,
     loadItems,
+    loadingItems: loadItems.isPending,
   };
 }

@@ -1,4 +1,5 @@
-import { addPlanDayComment, commentsRealTimeChannel, fetchPlanDayComments } from '@/api/queries';
+import { addPlanDayComment } from '@/api/mutations';
+import { commentsRealTimeChannel, fetchPlanDayComments } from '@/api/queries';
 import { supabase } from '@/api/supabaseClient';
 import { RealtimeChannel } from '@supabase/supabase-js';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';

@@ -1,4 +1,4 @@
-import { createPlanGroup } from '@/api/queries';
+import { createPlanGroup } from '@/api/mutations';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 type CreatePlanGroupInput = {

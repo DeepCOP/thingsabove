@@ -36,8 +36,6 @@ export const useFetchDevotionalPlanById = (id: string) => {
   return useQuery({
     queryKey: ['plan', id],
     enabled: !!id,
-    staleTime: 1000 * 60 * 60 * 24,
-
     queryFn: async () => fetchPlanById(id),
   });
 };

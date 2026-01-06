@@ -1,4 +1,5 @@
 import LoadingSpinner from '@/components/LoadingSpinner';
+import { useAuth } from '@/context/AuthContext';
 import { useNotifications } from '@/hooks/useNotifications';
 import { Json } from '@/types/supabase.gen.types';
 import { Ionicons } from '@expo/vector-icons';
@@ -19,7 +20,8 @@ type friendRequestNotificationData = {
 
 export default function NotificationsScreen() {
   const router = useRouter();
-  const { notificationsQuery, markRead } = useNotifications();
+  const { session } = useAuth();
+  const { notificationsQuery, markRead } = useNotifications(session?.user?.id);
   const insets = useSafeAreaInsets();
 
   if (notificationsQuery.isLoading) {

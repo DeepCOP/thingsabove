@@ -10,13 +10,14 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 export default function TabLayout() {
   const insets = useSafeAreaInsets();
   const colorScheme = useColorScheme();
-  const { notificationsQuery, notificationsCountQuery } = useNotifications();
 
   const { session } = useAuth();
+  const { notificationsQuery, notificationsCountQuery } = useNotifications(session?.user?.id);
+
   const friendsQuery = useFriends(session?.user.id);
   const PandingFriendsQuery = usePendingFriendRequests();
 
-  useRealtimeNotifications(session?.user.id, () => {
+  useRealtimeNotifications(session?.user?.id, () => {
     notificationsQuery.refetch();
     notificationsCountQuery.refetch();
   });

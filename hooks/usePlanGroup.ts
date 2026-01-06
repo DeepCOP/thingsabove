@@ -13,6 +13,7 @@ export function usePlanGroupMembers(groupId: string) {
   return useQuery({
     queryKey: ['plan-group-members', groupId],
     enabled: !!groupId,
+    staleTime: 0,
     queryFn: async () => await fetchPlanGroupMembers({ groupId }),
   });
 }

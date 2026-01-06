@@ -3,6 +3,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useCreatePlanGroup } from '@/hooks/useCreatePlanGroup';
 import { useFriends } from '@/hooks/useFriends';
 import { useInviteFriends } from '@/hooks/useInviteFriends';
+import { usePlanGroupMembers } from '@/hooks/usePlanGroup';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
@@ -11,20 +12,24 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function InviteFriendsScreen() {
   const { session } = useAuth();
-  const { id, startDate } = useLocalSearchParams();
+  const { id, startDate, groupId } = useLocalSearchParams();
   const router = useRouter();
 
   const friendsQuery = useFriends(session!.user.id);
-  const inviteMutation = useInviteFriends(id as string);
-
+  const inviteFriendsToExistingGroup = useInviteFriends(groupId as string);
+  const planGroupMembersQuery = usePlanGroupMembers(groupId as string);
   const [selected, setSelected] = useState<string[]>([]);
   const insets = useSafeAreaInsets();
   const createPlanGroupMutation = useCreatePlanGroup();
-  if (friendsQuery.isLoading) {
+  if (friendsQuery.isLoading || planGroupMembersQuery.isLoading) {
     return (
       <LoadingSpinner style={{ marginTop: 30 }} ViewStyles={{ paddingBottom: insets.bottom }} />
     );
   }
+  const friends =
+    friendsQuery.data?.filter((friend) => {
+      return !planGroupMembersQuery.data?.some((member) => member.user_id === friend.id);
+    }) || [];
 
   const toggle = (id: string) => {
     setSelected((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
@@ -32,14 +37,14 @@ export default function InviteFriendsScreen() {
 
   return (
     <View className="flex-1 bg-white dark:bg-black px-4" style={{ paddingBottom: insets.bottom }}>
-      {(friendsQuery.data ?? []).length > 0 ? (
+      {friends.length > 0 ? (
         <>
           <View className="flex-row justify-start items-center mt-6 mb-4 gap-5 border-b border-gray-300 dark:border-gray-700">
             <TouchableOpacity
               onPress={() => {
                 if (!friendsQuery.data) return;
 
-                setSelected(friendsQuery.data.map((friend) => friend.id));
+                setSelected(friends.map((friend) => friend.id));
               }}
               className="py-3  mb-4">
               <Text className="capitalize text-gray-700 dark:text-gray-200">Select All</Text>
@@ -55,7 +60,7 @@ export default function InviteFriendsScreen() {
             )}
           </View>
           <FlatList
-            data={friendsQuery.data}
+            data={friends}
             keyExtractor={(item) => item.id}
             renderItem={({ item }) => {
               const isSelected = selected.includes(item.id);
@@ -81,8 +86,23 @@ export default function InviteFriendsScreen() {
             }}
           />
           <TouchableOpacity
-            disabled={selected.length === 0 || inviteMutation.isPending}
+            disabled={
+              selected.length === 0 ||
+              inviteFriendsToExistingGroup.isPending ||
+              createPlanGroupMutation.isPending
+            }
             onPress={() => {
+              if (groupId) {
+                inviteFriendsToExistingGroup.mutate(selected, {
+                  onSuccess: () => {
+                    router.replace({
+                      pathname: `/plan_progress/[planId]`,
+                      params: { groupId: groupId, planId: id as string },
+                    });
+                  },
+                });
+                return;
+              }
               createPlanGroupMutation.mutate(
                 {
                   plan_id: id as string,
@@ -96,9 +116,6 @@ export default function InviteFriendsScreen() {
                       pathname: `/plan_progress/[planId]`,
                       params: { groupId: groupId, planId: id as string },
                     });
-                  },
-                  onError: (e) => {
-                    console.error(e);
                   },
                 },
               );

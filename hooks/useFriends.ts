@@ -1,7 +1,5 @@
+import { acceptFriendRequest, addFriend, declineFriendRequest } from '@/api/mutations';
 import {
-  acceptFriendRequest,
-  addFriend,
-  declineFriendRequest,
   fetchPendingFriendRequests,
   fetchUserFriends,
   FriendRequestRealTime,

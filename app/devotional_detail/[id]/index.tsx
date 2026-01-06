@@ -187,11 +187,18 @@ export default function DevotionalDetailScreen() {
                     onSuccess: () => {
                       router.push(`/plan_progress/${plan?.id}`);
                     },
+                    onError: (e) => {
+                      console.log(e);
+                    },
                   },
                 );
               }}
               className="px-4 py-4 rounded-full  bg-gray-300 dark:bg-neutral-600 w-full flex-row items-center justify-center">
-              <Text className="text-gray-900 text-lg font-bold dark:text-white">By YourSelf</Text>
+              {insertToPlanProgress.isPending ? (
+                <LoadingSpinner size={'small'} />
+              ) : (
+                <Text className="text-gray-900 text-lg font-bold dark:text-white">By YourSelf</Text>
+              )}
             </TouchableOpacity>
             <TouchableOpacity
               className="px-4 py-4 rounded-full  bg-gray-300 dark:bg-neutral-600 w-full flex-row items-center justify-center"

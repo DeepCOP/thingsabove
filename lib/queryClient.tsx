@@ -12,8 +12,8 @@ import React from 'react';
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 1000 * 60 * 60 * 2,
-      retry: 1,
+      staleTime: 1000 * 60 * 60 * 24,
+      retry: 3,
 
       refetchOnReconnect: 'always',
     },

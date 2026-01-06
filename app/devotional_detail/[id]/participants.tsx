@@ -1,8 +1,10 @@
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { ProgressBar } from '@/components/ProgressBar';
 import { usePlanGroupMembers } from '@/hooks/usePlanGroup';
-import { usePlanProgress } from '@/hooks/usePlanProgress';
+import { useUsersPlanProgress } from '@/hooks/usePlanProgress';
+import { PlanProgress } from '@/types/types';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useMemo, useState } from 'react';
 import { FlatList, Image, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -15,8 +17,22 @@ export default function InviteFriendsScreen() {
   const router = useRouter();
 
   const planGroupMembersQuery = usePlanGroupMembers(groupId as string);
+  const usersIds = useMemo(() => {
+    return planGroupMembersQuery.data?.map((member) => member.user_id) || [];
+  }, [planGroupMembersQuery.data]);
+  const usersPlanProgresses = useUsersPlanProgress(usersIds);
+  const [refreshing, setRefreshing] = useState(false);
 
   const insets = useSafeAreaInsets();
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+
+    await planGroupMembersQuery.refetch();
+
+    setRefreshing(false);
+  };
+
   if (planGroupMembersQuery.isLoading) {
     return (
       <LoadingSpinner style={{ marginTop: 30 }} ViewStyles={{ paddingBottom: insets.bottom }} />
@@ -27,9 +43,11 @@ export default function InviteFriendsScreen() {
     <View className="flex-1 bg-white dark:bg-black px-4" style={{ paddingBottom: insets.bottom }}>
       <FlatList
         data={planGroupMembersQuery.data}
+        refreshing={refreshing}
+        onRefresh={onRefresh}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => {
-          return <MemberCard item={item} />;
+          return <MemberCard item={item} usersPlanProgresses={usersPlanProgresses.data || []} />;
         }}
       />
 
@@ -38,7 +56,7 @@ export default function InviteFriendsScreen() {
           router.push({
             pathname: `/devotional_detail/[id]/invite-friends`,
             params: {
-              startDate: groupId,
+              groupId: groupId,
               id: id as string,
             },
           });
@@ -52,6 +70,7 @@ export default function InviteFriendsScreen() {
 
 function MemberCard({
   item,
+  usersPlanProgresses,
 }: {
   item: {
     id: string;
@@ -65,21 +84,17 @@ function MemberCard({
       avatar_url: string | null;
     };
   };
+  usersPlanProgresses: PlanProgress[];
 }) {
-  const { id, groupId, totalDays } = useLocalSearchParams<{
+  const { totalDays } = useLocalSearchParams<{
     id: string;
     groupId: string;
     totalDays: string;
   }>();
-  const { planProgressQuery } = usePlanProgress(id as string, item.profiles.id, groupId as string);
-  const planProgress = planProgressQuery.data;
+  const planProgress = usersPlanProgresses.find((progress) => progress.user_id === item.user_id);
 
   const percentageCompletion =
     ((planProgress?.completed_days?.length || 0) / Number(totalDays || 1)) * 100;
-
-  if (planProgressQuery.isLoading) {
-    return <LoadingSpinner size={'small'} />;
-  }
 
   return (
     <View className="mb-3 p-3 rounded-xl bg-gray-100 dark:bg-neutral-900">

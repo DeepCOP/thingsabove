@@ -1,7 +1,7 @@
+import { markNotificationRead } from '@/api/mutations';
 import {
   getUserNotifications,
   getUserNotificationsCount,
-  markNotificationRead,
   notificationsRealTime,
 } from '@/api/queries';
 import { supabase } from '@/api/supabaseClient';
@@ -9,11 +9,11 @@ import { RealtimeChannel } from '@supabase/supabase-js';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
 
-export function useNotifications() {
+export function useNotifications(userId: string) {
   const queryClient = useQueryClient();
 
   const notificationsQuery = useQuery({
-    queryKey: ['notifications'],
+    queryKey: ['notifications', userId],
     staleTime: 0,
     refetchOnReconnect: 'always',
     refetchOnWindowFocus: 'always',
@@ -21,7 +21,7 @@ export function useNotifications() {
   });
 
   const notificationsCountQuery = useQuery({
-    queryKey: ['notifications-count'],
+    queryKey: ['notifications-count', userId],
     staleTime: 0,
     refetchOnReconnect: 'always',
     refetchOnWindowFocus: 'always',
