@@ -963,9 +963,18 @@ create table if not exists public.day_items_progress (
   group_id uuid references public.plan_groups(id) on delete cascade,
   completed boolean default false,
   created_at timestamptz default now(),
-  updated_at timestamptz default now(),
-  unique (user_id, plan_id, day_id, item_type, item_key, group_id)
+  updated_at timestamptz default now()
 );
+
+-- Personal plan (no group)
+create unique index uniq_day_items_personal
+on day_items_progress (user_id, plan_id, day_id, item_type, item_key)
+where group_id is null;
+
+-- Group plan
+create unique index uniq_day_items_group
+on day_items_progress (user_id, plan_id, day_id, item_type, item_key, group_id)
+where group_id is not null;
 
 
 create or replace function public.ensure_day_items_exist(
@@ -1031,73 +1040,98 @@ declare
   v_total_items int;
   v_completed_items int;
   v_day_number int;
-  v_total_days int;
 begin
+  -- Ensure all items exist
+  perform ensure_day_items_exist(
+    p_user_id,
+    p_plan_id,
+    p_day_id,
+    p_group_id
+  );
 
-  perform ensure_day_items_exist(p_user_id, p_plan_id, p_day_id, p_group_id);
+  -- Insert if missing (partial index safe)
+  insert into day_items_progress (
+    user_id, plan_id, day_id, item_type, item_key, completed, group_id
+  )
+  values (
+    p_user_id, p_plan_id, p_day_id, p_item_type, p_item_key, p_completed, p_group_id
+  )
+  on conflict do nothing;
 
-  -- Upsert item progress
-  insert into day_items_progress (user_id, plan_id, day_id, item_type, item_key, completed, group_id)
-  values (p_user_id, p_plan_id, p_day_id, p_item_type, p_item_key, p_completed, p_group_id)
-  on conflict (user_id, plan_id, day_id, item_type, item_key, group_id)
-  do update set completed = p_completed, updated_at = now();
+  -- Update item (NULL-safe)
+  update day_items_progress
+  set completed = p_completed,
+      updated_at = now()
+  where user_id = p_user_id
+    and plan_id = p_plan_id
+    and day_id = p_day_id
+    and item_type = p_item_type
+    and item_key = p_item_key
+    and (
+      (p_group_id is null and group_id is null)
+      or group_id = p_group_id
+    );
 
   -- Get day number
-  select day_number into v_day_number
+  select day_number
+  into v_day_number
   from devotional_days
   where id = p_day_id;
 
-  -- Get total days in plan
-  select total_days into v_total_days
-  from devotional_plans
-  where id = p_plan_id;
-
-
-  -- Count total items for the day (devotional + scripture)
-  select count(*) into v_total_items
-  from day_items_progress
-  where user_id = p_user_id
-    and plan_id = p_plan_id
-    and group_id = p_group_id
-    and day_id = p_day_id;
-
-  -- Count completed items
-  select count(*) into v_completed_items
+  -- Count total items
+  select count(*)
+  into v_total_items
   from day_items_progress
   where user_id = p_user_id
     and plan_id = p_plan_id
     and day_id = p_day_id
-    and group_id = p_group_id
-    and completed = true;
+    and (
+      (p_group_id is null and group_id is null)
+      or group_id = p_group_id
+    );
 
-  -- Update plan_progress.completed_days safely
--- Update plan_progress.completed_days safely
-if v_completed_items = v_total_items then
-  update plan_progress
-  set 
-    completed_days = case
-      when not (v_day_number = ANY(completed_days))
+  -- Count completed items
+  select count(*)
+  into v_completed_items
+  from day_items_progress
+  where user_id = p_user_id
+    and plan_id = p_plan_id
+    and day_id = p_day_id
+    and completed = true
+    and (
+      (p_group_id is null and group_id is null)
+      or group_id = p_group_id
+    );
+
+  -- Update completed_days
+if v_total_items > 0 and v_completed_items = v_total_items then
+    update plan_progress
+    set completed_days = case
+      when not (v_day_number = any(completed_days))
         then array_append(completed_days, v_day_number)
       else completed_days
     end,
     updated_at = now()
-  where user_id = p_user_id
-    and plan_id = p_plan_id
-    and group_id = p_group_id;
-
-else
-  update plan_progress
-  set 
-    completed_days = array_remove(completed_days, v_day_number),
-    updated_at = now()
-  where user_id = p_user_id
-    and plan_id = p_plan_id
-    and group_id = p_group_id;
-end if;
-
-
+    where user_id = p_user_id
+      and plan_id = p_plan_id
+      and (
+        (p_group_id is null and group_id is null)
+        or group_id = p_group_id
+      );
+  else
+    update plan_progress
+    set completed_days = array_remove(completed_days, v_day_number),
+        updated_at = now()
+    where user_id = p_user_id
+      and plan_id = p_plan_id
+      and (
+        (p_group_id is null and group_id is null)
+        or group_id = p_group_id
+      );
+  end if;
 end;
 $$;
+
 
 
 create or replace function public.toggle_day_completion(
@@ -1129,7 +1163,10 @@ begin
   where user_id = p_user_id
     and plan_id = p_plan_id
     and day_id = p_day_id
-    and group_id = p_group_id;
+    and  (
+        (p_group_id is null and group_id is null)
+        or group_id = p_group_id
+      );
 
 
   -- Update completed_days array
@@ -1144,7 +1181,10 @@ begin
       updated_at = now()
     where user_id = p_user_id
       and plan_id = p_plan_id
-      and group_id = p_group_id;
+      and  (
+        (p_group_id is null and group_id is null)
+        or group_id = p_group_id
+      );
   else
     update plan_progress
     set
@@ -1152,7 +1192,10 @@ begin
       updated_at = now()
     where user_id = p_user_id
       and plan_id = p_plan_id
-      and group_id = p_group_id;
+      and  (
+        (p_group_id is null and group_id is null)
+        or group_id = p_group_id
+      );
   end if;
 
 end;
@@ -1165,7 +1208,7 @@ create table if not exists public.comments (
   user_id uuid references auth.users(id) on delete set null,
   plan_id uuid not null references devotional_plans(id) on delete cascade,
   day_id uuid not null references devotional_days(id) on delete cascade,
-  group_id uuid references public.plan_groups(id) on delete cascade,
+  group_id uuid not null references public.plan_groups(id) on delete cascade,
   content text not null check (length(trim(content)) > 0),
   created_at timestamptz default now(),
   updated_at timestamptz default now()

@@ -44,12 +44,11 @@ export const useUserPlanProgress = (user_id: string) => {
   return userPlanProgressQuery;
 };
 
-export const useUsersPlanProgress = (userIds: string[]) => {
+export const useUsersPlanProgress = (userIds: string[], groupId: string) => {
   const usersPlanProgress = useQuery({
-    queryKey: ['users_plans_progressess', userIds],
-    enabled: !!userIds && userIds.length > 0,
-    staleTime: 0,
-    queryFn: async () => fetchUsersPlanProgress({ userIds }),
+    queryKey: ['users_plans_progressess', userIds, groupId],
+    enabled: !!userIds && userIds.length > 0 && !!groupId,
+    queryFn: async () => fetchUsersPlanProgress({ userIds, groupId }),
   });
   return usersPlanProgress;
 };

@@ -366,13 +366,13 @@ values (null, ARRAY['Psalm 42:1','Matthew 4:4','Luke 11:1','Isaiah 58:6','Mark 1
 -- (Each plan gets 3 realistic sample comments)
 -- =========================================================
 
-insert into public.comments (user_id, content, plan_id, day_id)
-values
--- PLAN 1: Walking in Faith
-('61ca76b6-ebc0-47e3-bd3c-d28c950b8574', 'This really helped me refocus on trusting God—thank you!', '11111111-1111-1111-1111-111111111111','11111111-1111-1112-2222-222222220000'),
-('61ca76b6-ebc0-47e3-bd3c-d28c950b8573', 'Day 3 hit me deeply. Walking by faith isn’t easy but worth it.', '11111111-1111-1111-1111-111111111111', '11111111-1111-1112-2222-222222220000'),
-('61ca76b6-ebc0-47e3-bd3c-d28c950b8572', 'Beautiful devotional. Very uplifting.', '11111111-1111-1111-1111-111111111111','11111111-1111-1112-2222-222222220000')
-;
+-- insert into public.comments (user_id, content, plan_id, day_id)
+-- values
+-- -- PLAN 1: Walking in Faith
+-- ('61ca76b6-ebc0-47e3-bd3c-d28c950b8574', 'This really helped me refocus on trusting God—thank you!', '11111111-1111-1111-1111-111111111111','11111111-1111-1112-2222-222222220000'),
+-- ('61ca76b6-ebc0-47e3-bd3c-d28c950b8573', 'Day 3 hit me deeply. Walking by faith isn’t easy but worth it.', '11111111-1111-1111-1111-111111111111', '11111111-1111-1112-2222-222222220000'),
+-- ('61ca76b6-ebc0-47e3-bd3c-d28c950b8572', 'Beautiful devotional. Very uplifting.', '11111111-1111-1111-1111-111111111111','11111111-1111-1112-2222-222222220000')
+-- ;
 
 -- -- PLAN 2: Hope in Difficult Times
 -- ('61ca76b6-ebc0-47e3-bd3c-d28c950b8573', 'Exactly what I needed today. God is close even when life is heavy.', 'plan', '22222222-2222-2222-2222-222222222222'),

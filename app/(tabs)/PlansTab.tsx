@@ -149,6 +149,7 @@ function MyPlansList() {
   );
   const plansQuery = useFetchUserPlans(
     userPlanProgress?.map((progress) => progress?.plan_id ?? '') || [],
+    session?.user.id!,
   );
 
   const flataData = useMemo(() => {

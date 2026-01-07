@@ -39,8 +39,8 @@ export function useDayItemsProgress({ user_id, plan_id, day_id, group_id }: Para
       item_type: 'devotional' | 'scripture';
       item_key: string;
       completed: boolean;
-    }) =>
-      toggleItemCompletion({
+    }) => {
+      return toggleItemCompletion({
         item_key,
         item_type,
         completed,
@@ -48,7 +48,8 @@ export function useDayItemsProgress({ user_id, plan_id, day_id, group_id }: Para
         plan_id,
         day_id,
         groupId: group_id,
-      }),
+      });
+    },
 
     onSuccess: () => {
       queryClient.invalidateQueries({
@@ -116,8 +117,14 @@ export function useDayItemsProgress({ user_id, plan_id, day_id, group_id }: Para
   };
 
   useEffect(() => {
-    if (!day_id || !plan_id || !user_id) return;
-
+    if (
+      !day_id ||
+      !plan_id ||
+      !user_id ||
+      (dayItemsProgressQuery.data ?? []).length > 0 ||
+      dayItemsProgressQuery.isLoading
+    )
+      return;
     loadItems.mutate();
   }, [day_id]);
 

@@ -20,7 +20,7 @@ export default function InviteFriendsScreen() {
   const usersIds = useMemo(() => {
     return planGroupMembersQuery.data?.map((member) => member.user_id) || [];
   }, [planGroupMembersQuery.data]);
-  const usersPlanProgresses = useUsersPlanProgress(usersIds);
+  const usersPlanProgresses = useUsersPlanProgress(usersIds, groupId as string);
   const [refreshing, setRefreshing] = useState(false);
 
   const insets = useSafeAreaInsets();
@@ -29,6 +29,7 @@ export default function InviteFriendsScreen() {
     setRefreshing(true);
 
     await planGroupMembersQuery.refetch();
+    await usersPlanProgresses.refetch();
 
     setRefreshing(false);
   };

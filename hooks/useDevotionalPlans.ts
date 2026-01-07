@@ -58,10 +58,10 @@ export const usePlans = () => {
   };
 };
 
-export const useFetchUserPlans = (planId: string[]) => {
+export const useFetchUserPlans = (planId: string[], userId: string) => {
   return useQuery({
-    queryKey: ['user-plans', planId],
-    enabled: !!planId && planId.length > 0,
+    queryKey: ['user-plans', planId, userId],
+    enabled: !!planId && planId.length > 0 && !!userId,
 
     queryFn: async () => await fetchUserPlans(planId),
   });

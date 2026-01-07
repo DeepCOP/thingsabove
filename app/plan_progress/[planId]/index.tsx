@@ -223,7 +223,6 @@ export default function PlanProgressScreen() {
         {dayItemsProgress ? (
           <DayItemsList
             items={dayItemsProgress.items}
-            devotional={devotional}
             onPressItem={handleItemPress}
             onToggle={(item) =>
               toggleMutation.mutate({
@@ -232,6 +231,7 @@ export default function PlanProgressScreen() {
                 completed: !item.completed,
               })
             }
+            toggleLoading={toggleMutation.isPending}
           />
         ) : (
           <LoadingSpinner />

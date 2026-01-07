@@ -158,8 +158,18 @@ export const fetchUserPlanProgress = async ({ user_id }: { user_id: string }) =>
   return data;
 };
 
-export const fetchUsersPlanProgress = async ({ userIds }: { userIds: string[] }) => {
-  let { data, error } = await supabase.from('plan_progress').select('*').in('user_id', userIds);
+export const fetchUsersPlanProgress = async ({
+  userIds,
+  groupId,
+}: {
+  userIds: string[];
+  groupId: string;
+}) => {
+  let { data, error } = await supabase
+    .from('plan_progress')
+    .select('*')
+    .eq('group_id', groupId)
+    .in('user_id', userIds);
   if (error && error.code !== 'PGRST116') throw error;
   return data;
 };
