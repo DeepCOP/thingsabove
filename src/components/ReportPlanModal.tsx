@@ -102,4 +102,5 @@ const ReportPlanSheet = forwardRef<BottomSheet, Props>(({ planId }, ref) => {
   );
 });
 
+ReportPlanSheet.displayName = 'ReportPlanSheet';
 export default ReportPlanSheet;
