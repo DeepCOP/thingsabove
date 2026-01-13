@@ -3,10 +3,16 @@ import { usePlanProgress, useUserPlanProgressList } from '@/src/hooks/usePlanPro
 import DevotionalDetailScreen from '@/src/screens/DevotionalDetailScreen';
 import { useAuth } from '@/src/state/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
+import { BottomSheetModal } from '@gorhom/bottom-sheet';
+import { useRef } from 'react';
+
+import { usePlanReactions, useTogglePlanReaction } from '@/src/hooks/usePlanReactions';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { Share, TouchableOpacity, useColorScheme } from 'react-native';
 
 export default function DevotionalDetail() {
+  const reportSheetRef = useRef<BottomSheetModal>(null);
+
   const { id } = useLocalSearchParams();
   const router = useRouter();
   const colorScheme = useColorScheme();
