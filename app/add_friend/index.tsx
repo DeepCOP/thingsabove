@@ -1,7 +1,7 @@
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { useAuth } from '@/context/AuthContext';
 import { useAddFriend, useGetUserByEmail } from '@/hooks/useFriends';
-import { isValidEmail, useDebounce } from '@/utils/utils';
+import { isValidEmail, useDebounce } from '@/lib/utils';
 import { useState } from 'react';
 import { Image, Text, TextInput, TouchableOpacity, View } from 'react-native';
 

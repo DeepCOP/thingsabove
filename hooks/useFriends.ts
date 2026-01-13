@@ -1,12 +1,12 @@
-import { acceptFriendRequest, addFriend, declineFriendRequest } from '@/api/mutations';
+import { acceptFriendRequest, addFriend, declineFriendRequest } from '@/lib/api/mutations';
 import {
   fetchPendingFriendRequests,
   fetchUserFriends,
   FriendRequestRealTime,
   FriendRequestRealTimeReceiver,
   getUserByEmail,
-} from '@/api/queries';
-import { supabase } from '@/api/supabaseClient';
+} from '@/lib/api/queries';
+import { supabase } from '@/lib/api/supabaseClient';
 import { RealtimeChannel } from '@supabase/supabase-js';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
@@ -95,10 +95,10 @@ export function useRealtimeFriends(userId: string, onNew: () => void) {
 
     return () => {
       if (receiverChannel) {
-        supabase.removeChannel(requesterChannel);
+        supabase.removeChannel(receiverChannel);
       }
       if (requesterChannel) {
-        supabase.removeChannel(receiverChannel);
+        supabase.removeChannel(requesterChannel);
       }
     };
   }, [userId, onNew]);

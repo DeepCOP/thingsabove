@@ -1,7 +1,7 @@
 /* -------------------- LIST VIEW CARD --------------------- */
 
 import Stat from '@/components/Stat';
-import { DevotionalPlanView } from '@/types/types';
+import { DevotionalPlanView } from '@/lib/types/types';
 import { Image, Text, TouchableOpacity, View } from 'react-native';
 import { ProgressBar } from './ProgressBar';
 

@@ -1,4 +1,4 @@
-import { supabase } from '@/api/supabaseClient';
+import { supabase } from '@/lib/api/supabaseClient';
 import { Input } from '@rneui/themed';
 import { useState } from 'react';
 import { Alert, Text, TouchableOpacity, useColorScheme, View } from 'react-native';

@@ -6,8 +6,8 @@ import { useAuth } from '@/context/AuthContext';
 import { useDayItemsProgress } from '@/hooks/useDayItemsProgress';
 import { useFetchDevotionalPlanById } from '@/hooks/useDevotionalPlans';
 import { useDevotionalDays, usePlanProgress } from '@/hooks/usePlanProgress';
+import { parseVerseRef, sortByItemKey } from '@/lib/utils';
 import { BibleBook, useAppStore } from '@/store/useAppStore';
-import { parseVerseRef, sortByItemKey } from '@/utils/utils';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
@@ -21,7 +21,7 @@ import { PlanHeader } from '@/components/planProgress/PlanHeader';
 import { PlanMetaRow } from '@/components/planProgress/PlanMetaRow';
 import { StartReadingCTA } from '@/components/planProgress/StartReadingCTA';
 import { usePlanGroupMembers } from '@/hooks/usePlanGroup';
-import { DayItemsProgress } from '@/types/types';
+import { DayItemsProgress } from '@/lib/types/types';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { ScrollView, Text, View } from 'react-native';
 

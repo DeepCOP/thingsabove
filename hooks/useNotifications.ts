@@ -1,10 +1,10 @@
-import { markNotificationRead } from '@/api/mutations';
+import { markNotificationRead } from '@/lib/api/mutations';
 import {
   getUserNotifications,
   getUserNotificationsCount,
   notificationsRealTime,
-} from '@/api/queries';
-import { supabase } from '@/api/supabaseClient';
+} from '@/lib/api/queries';
+import { supabase } from '@/lib/api/supabaseClient';
 import { RealtimeChannel } from '@supabase/supabase-js';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';

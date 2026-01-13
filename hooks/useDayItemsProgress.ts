@@ -1,6 +1,6 @@
 // hooks/useDayItemsProgress.ts
-import { toggleDayCompletion, toggleItemCompletion } from '@/api/mutations';
-import { fetchDayItems, loadDayItems } from '@/api/queries';
+import { toggleDayCompletion, toggleItemCompletion } from '@/lib/api/mutations';
+import { fetchDayItems, loadDayItems } from '@/lib/api/queries';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
 

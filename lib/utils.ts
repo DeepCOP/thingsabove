@@ -1,4 +1,4 @@
-import { ParsedVerse } from '@/types/types';
+import { ParsedVerse } from '@/lib/types/types';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import { useEffect, useState } from 'react';

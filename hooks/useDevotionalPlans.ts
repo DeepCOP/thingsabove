@@ -4,7 +4,7 @@ import {
   fetchUserPlans,
   searchPlans,
   searchRelatedPlans,
-} from '@/api/queries';
+} from '@/lib/api/queries';
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 export const useRelatedPlans = (tags: string, currentPlanId: string) => {
   return useQuery({

@@ -15,7 +15,7 @@ const tabs: Tab[] = [
   { key: 'find-plans', label: 'Find Plans' },
 ];
 
-export function PlansTopTabs({ activeTab, onChange }: Props) {
+export function MyPlansToggle({ activeTab, onChange }: Props) {
   return (
     <View className="flex-row bg-neutral-900 rounded-full p-1 mb-4">
       {tabs.map((tab) => {

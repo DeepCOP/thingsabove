@@ -1,4 +1,4 @@
-import { DayItemsProgress } from '@/types/types';
+import { DayItemsProgress } from '@/lib/types/types';
 import { Ionicons } from '@expo/vector-icons';
 import { ActivityIndicator, Text, TouchableOpacity, useColorScheme, View } from 'react-native';
 

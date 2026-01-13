@@ -1,6 +1,6 @@
-import { addPlanDayComment } from '@/api/mutations';
-import { commentsRealTimeChannel, fetchPlanDayComments } from '@/api/queries';
-import { supabase } from '@/api/supabaseClient';
+import { addPlanDayComment } from '@/lib/api/mutations';
+import { commentsRealTimeChannel, fetchPlanDayComments } from '@/lib/api/queries';
+import { supabase } from '@/lib/api/supabaseClient';
 import { RealtimeChannel } from '@supabase/supabase-js';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
@@ -8,7 +8,7 @@ import { useEffect } from 'react';
 export function useComments(planId: string, dayId: string, group_id?: string) {
   const queryClient = useQueryClient();
   const fetchComments = useQuery({
-    queryKey: ['day-comments', planId, dayId],
+    queryKey: ['day-comments', planId, dayId, group_id],
     enabled: !!planId && !!dayId,
     staleTime: 0,
     queryFn: async () => await fetchPlanDayComments({ planId, dayId, group_id }),
@@ -18,7 +18,7 @@ export function useComments(planId: string, dayId: string, group_id?: string) {
     mutationFn: async (content: string) =>
       await addPlanDayComment({ planId, dayId, content, group_id }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['day-comments', planId, dayId] });
+      queryClient.invalidateQueries({ queryKey: ['day-comments', planId, dayId, group_id] });
     },
   });
 

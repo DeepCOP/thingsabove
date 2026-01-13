@@ -3,8 +3,8 @@ import LoadingSpinner from '@/components/LoadingSpinner';
 import { useAuth } from '@/context/AuthContext';
 import { useDayItemsProgress } from '@/hooks/useDayItemsProgress';
 import { usePlanDayView } from '@/hooks/usePlanProgress';
+import { parseVerseRef, sortByItemKey } from '@/lib/utils';
 import { BibleBook, useAppStore } from '@/store/useAppStore';
-import { parseVerseRef, sortByItemKey } from '@/utils/utils';
 import { useLocalSearchParams } from 'expo-router';
 import { useMemo, useState } from 'react';
 

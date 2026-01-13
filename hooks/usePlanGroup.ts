@@ -1,4 +1,4 @@
-import { fetchPlanGroupByGroupId, fetchPlanGroupMembers } from '@/api/queries';
+import { fetchPlanGroupByGroupId, fetchPlanGroupMembers } from '@/lib/api/queries';
 import { useQuery } from '@tanstack/react-query';
 
 export function usePlanGroup(groupId: string) {

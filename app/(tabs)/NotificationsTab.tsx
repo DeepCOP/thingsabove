@@ -1,7 +1,7 @@
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { useAuth } from '@/context/AuthContext';
 import { useNotifications } from '@/hooks/useNotifications';
-import { Json } from '@/types/supabase.gen.types';
+import { Json } from '@/lib/types/supabase.gen.types';
 import { Ionicons } from '@expo/vector-icons';
 import dayjs from 'dayjs';
 import { useRouter } from 'expo-router';

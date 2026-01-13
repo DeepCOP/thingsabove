@@ -1,12 +1,12 @@
-import { insertToPlanProgress } from '@/api/mutations';
+import { insertToPlanProgress } from '@/lib/api/mutations';
 import {
   fetchPlanDays,
   fetchPlanDayView,
   fetchPlanProgress,
   fetchUserPlanProgress,
   fetchUsersPlanProgress,
-} from '@/api/queries';
-import { PlanDayView, PlanProgressInsert } from '@/types/types';
+} from '@/lib/api/queries';
+import { PlanDayView, PlanProgressInsert } from '@/lib/types/types';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 export function usePlanProgress(plan_id: string, user_id: string, group_id?: string) {

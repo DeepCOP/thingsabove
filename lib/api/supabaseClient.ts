@@ -1,4 +1,4 @@
-import { Database } from '@/types/supabase.gen.types';
+import { Database } from '@/lib/types/supabase.gen.types';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createClient } from '@supabase/supabase-js';
 import * as aesjs from 'aes-js';

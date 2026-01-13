@@ -1,4 +1,4 @@
-import { DevotionalDays } from '@/types/types';
+import { DevotionalDays } from '@/lib/types/types';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';

@@ -1,7 +1,7 @@
 import { GridCard, ListCard } from '@/components/DevoCard';
 import Dropdown from '@/components/DropDown';
 import LoadingSpinner from '@/components/LoadingSpinner';
-import { PlansTopTabs } from '@/components/PlansTopTabs';
+import { MyPlansToggle } from '@/components/MyPlansToggle';
 import { useAuth } from '@/context/AuthContext';
 import { useFetchUserPlans, usePlans } from '@/hooks/useDevotionalPlans';
 import { useUserPlanProgress } from '@/hooks/usePlanProgress';
@@ -52,7 +52,7 @@ export default function PlansScreen() {
           )}
         </View>
       </View>
-      <PlansTopTabs activeTab={activeTab} onChange={setActiveTab} />
+      <MyPlansToggle activeTab={activeTab} onChange={setActiveTab} />
 
       <View className="flex-row items-center mb-3">
         <Text className="text-gray-700 dark:text-gray-200 mr-2">Sort by:</Text>

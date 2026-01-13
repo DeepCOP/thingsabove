@@ -2,7 +2,7 @@ import LoadingSpinner from '@/components/LoadingSpinner';
 import { ProgressBar } from '@/components/ProgressBar';
 import { usePlanGroupMembers } from '@/hooks/usePlanGroup';
 import { useUsersPlanProgress } from '@/hooks/usePlanProgress';
-import { PlanProgress } from '@/types/types';
+import { PlanProgress } from '@/lib/types/types';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { FlatList, Image, Text, TouchableOpacity, View } from 'react-native';

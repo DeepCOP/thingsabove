@@ -1,4 +1,4 @@
-import { PlanProgressInsert } from '@/types/types';
+import { PlanProgressInsert } from '@/lib/types/types';
 import { supabase } from './supabaseClient';
 
 export const toggleItemCompletion = async ({
@@ -128,7 +128,7 @@ export const declineFriendRequest = async (requester_id: string) => {
   if (error) throw error;
 };
 
-export const InviteFriendsToPlanGroup = async ({
+export const inviteFriendsToPlanGroup = async ({
   groupId,
   userIds,
 }: {
@@ -143,7 +143,7 @@ export const InviteFriendsToPlanGroup = async ({
   if (error) throw error;
 };
 
-export const AccpetPlanGroupInvite = async ({
+export const accpetPlanGroupInvite = async ({
   group_id,
   plan_id,
   startDate,
