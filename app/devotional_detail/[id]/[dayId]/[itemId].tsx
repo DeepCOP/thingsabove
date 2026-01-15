@@ -1,23 +1,21 @@
-import DevotionalPlanReader from '@/components/DevotionPlanReader';
-import LoadingSpinner from '@/components/LoadingSpinner';
-import { useAuth } from '@/context/AuthContext';
-import { useDayItemsProgress } from '@/hooks/useDayItemsProgress';
-import { usePlanDayView } from '@/hooks/usePlanProgress';
-import { parseVerseRef, sortByItemKey } from '@/lib/utils';
-import { BibleBook, useAppStore } from '@/store/useAppStore';
+import DevotionalPlanReader from '@/src/components/DevotionPlanReader';
+import LoadingSpinner from '@/src/components/LoadingSpinner';
+import { useDayItemsProgress } from '@/src/hooks/useDayItemsProgress';
+import { useAuth } from '@/src/state/AuthContext';
+import { BibleBook, useAppStore } from '@/src/state/useAppStore';
+import { parseVerseRef, sortByItemKey } from '@/src/utils';
 import { useLocalSearchParams } from 'expo-router';
 import { useMemo, useState } from 'react';
+import { Text, View } from 'react-native';
 
 export default function DevotionalDayScreen() {
-  const { dayId, id: planId, groupId } = useLocalSearchParams();
+  const { dayId, id: planId, progressId, groupId } = useLocalSearchParams();
   const [last, setLast] = useState(false);
   const { session } = useAuth();
   const { itemId, setItemId, setSelectedBook } = useAppStore();
-  const { data: dayData, isLoading: dayLoading } = usePlanDayView(
-    (dayId as string) ?? null,
-    session?.user?.id as string,
-  );
+
   const { dayItemsProgressQuery, toggleMutation } = useDayItemsProgress({
+    progress_id: progressId as string,
     plan_id: planId as string,
     day_id: dayId as string,
     user_id: session?.user?.id!,
@@ -79,15 +77,22 @@ export default function DevotionalDayScreen() {
     setItemId(prevItem?.id || '');
   };
   const item = dayItemsProgress?.items.find((item) => item.id === itemId);
-  if (dayItemsProgressQuery.isLoading || dayLoading) {
+  if (dayItemsProgressQuery.isLoading) {
     return <LoadingSpinner />;
+  }
+
+  if (!dayItemsProgressQuery.data?.length) {
+    return (
+      <View className="flex-1 justify-center items-center">
+        <Text>Item Not Found</Text>
+      </View>
+    );
   }
   return (
     <>
       {item && (
         <DevotionalPlanReader
           item={item}
-          dayData={dayData}
           HandleNext={HandleNext}
           HandlePrevious={HandlePrevious}
           last={last}

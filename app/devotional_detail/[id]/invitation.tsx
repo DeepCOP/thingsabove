@@ -1,9 +1,8 @@
-import LoadingSpinner from '@/components/LoadingSpinner';
-import { useAuth } from '@/context/AuthContext';
-import { useFetchDevotionalPlanById } from '@/hooks/useDevotionalPlans';
-import { useAcceptPlanInvite } from '@/hooks/useInviteFriends';
-import { usePlanGroup, usePlanGroupMembers } from '@/hooks/usePlanGroup';
-import { usePlanProgress } from '@/hooks/usePlanProgress';
+import LoadingSpinner from '@/src/components/LoadingSpinner';
+import { useFetchDevotionalPlanById } from '@/src/hooks/useDevotionalPlans';
+import { useAcceptPlanInvite } from '@/src/hooks/useInviteFriends';
+import { usePlanGroup, usePlanGroupMembers } from '@/src/hooks/usePlanGroup';
+import { useAuth } from '@/src/state/AuthContext';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -24,7 +23,6 @@ export default function PlanInvitation() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
 
-  const { planProgressQuery } = usePlanProgress(id, session?.user?.id, groupId);
   const acceptInvitationMutation = useAcceptPlanInvite(groupId, id, session?.user?.id);
 
   const planGroupQuery = usePlanGroup(groupId);
@@ -34,7 +32,7 @@ export default function PlanInvitation() {
   const planQuery = useFetchDevotionalPlanById(id as string);
   const plan = planQuery.data;
   const currentUser = planGroupMembers?.find((member) => member.user_id === session?.user?.id);
-  if (planGroupQuery.isLoading || planQuery.isLoading || planProgressQuery.isLoading) {
+  if (planGroupQuery.isLoading || planQuery.isLoading) {
     return <LoadingSpinner />;
   }
 
@@ -158,10 +156,10 @@ export default function PlanInvitation() {
                   startDate: planGroup?.start_date || dayjs().utc().startOf('day').toISOString(),
                 },
                 {
-                  onSuccess: () => {
+                  onSuccess: (progressId) => {
                     router.replace({
-                      pathname: `/plan_progress/[planId]`,
-                      params: { groupId, planId: id as string },
+                      pathname: `/plan_progress/[progressId]`,
+                      params: { progressId: progressId as string },
                     });
                   },
                 },

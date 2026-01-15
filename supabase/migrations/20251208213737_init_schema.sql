@@ -533,18 +533,6 @@ as $$
   limit limit_count;
 $$;
 
-create or replace view public.plan_day_view 
-with(security_invoker = true)
-as select 
-    d.id as day_id,
-    d.plan_id,
-    d.day_number,
-    d.content as devotional_content,
-    (select r.reference 
-     from scripture_references r
-     where r.day_id = d.id) as scripture_refs
-from devotional_days d
-order by d.day_number;
 
 
 
@@ -714,7 +702,6 @@ create table plan_groups (
   created_by uuid not null references public.profiles(id),
   start_date date not null,
   plan_id uuid not null references devotional_plans(id) on delete cascade,
-  invite_code text unique,
   max_members int default 150,
   completed_days int default 0,
   created_at timestamptz default now()
@@ -743,23 +730,19 @@ security definer
 as $$
 declare
   v_group_id uuid;
-  v_invite_code text;
+  v_progress_id uuid;
 begin
-  -- Generate a short invite code
-  v_invite_code := substr(encode(gen_random_bytes(6), 'hex'), 1, 8);
 
   -- 1️⃣ Create plan group
   insert into plan_groups (
     plan_id,
     created_by,
-    start_date,
-    invite_code
+    start_date
   )
   values (
     p_plan_id,
     p_user_id,
-    p_start_date,
-    v_invite_code
+    p_start_date
   )
   returning id into v_group_id;
 
@@ -777,7 +760,7 @@ begin
     now()
   );
 
-  -- 3️⃣ Create plan progress for creator (group-aware)
+  -- 3️⃣ Create plan progress
   insert into plan_progress (
     user_id,
     plan_id,
@@ -796,6 +779,12 @@ begin
   )
   on conflict (user_id, plan_id, group_id) do nothing;
 
+  select id into v_progress_id
+  from plan_progress
+  where user_id = p_user_id
+    and plan_id = p_plan_id
+    and group_id = v_group_id;
+
   insert into plan_group_members (group_id, user_id, status)
   select v_group_id, unnest(p_friends_ids), 'pending'
   on conflict (group_id, user_id) do nothing;
@@ -813,9 +802,10 @@ begin
   );
 
   -- 4️⃣ Return the group id
-  return v_group_id;
+  return v_progress_id;
 end;
 $$;
+
 
 
 create or replace function public.add_user_to_existing_plan_group(
@@ -863,9 +853,11 @@ create or replace function public.accept_plan_group_invite(
   p_plan_id uuid,
   p_start_date date
 )
-returns void
+returns uuid
 language plpgsql
 as $$
+declare
+  v_progress_id uuid;
 begin
 
   update plan_group_members
@@ -893,6 +885,14 @@ begin
     p_start_date
   )
   on conflict (user_id, plan_id, group_id) do nothing;
+
+  select id into v_progress_id
+  from plan_progress
+  where user_id = auth.uid()
+    and plan_id = p_plan_id
+    and group_id = p_group_id;
+
+  return v_progress_id;
 end;
 $$;
 
@@ -952,14 +952,58 @@ create index if not exists idx_progress_user on public.plan_progress(user_id);
 create index if not exists idx_progress_plan on public.plan_progress(plan_id);
 
 
+create or replace function public.start_plan_progress(
+  p_user_id uuid,
+  p_plan_id uuid,
+  p_group_id uuid default null,
+  p_start_date timestamptz default now()
+)
+returns uuid
+language plpgsql
+security definer
+as $$
+declare
+  v_progress_id uuid;
+begin
+  -- Insert plan progress
+  insert into public.plan_progress (
+    user_id,
+    plan_id,
+    group_id,
+    current_day,
+    completed_days,
+    start_date
+  )
+  values (
+    p_user_id,
+    p_plan_id,
+    p_group_id,
+    1,
+    '{}',
+    p_start_date
+  )
+  on conflict (user_id, plan_id, group_id)
+  do update
+    set updated_at = now()
+  returning id into v_progress_id;
+
+  return v_progress_id;
+end;
+$$;
+
+
+
 
 create table if not exists public.day_items_progress (
   id uuid primary key default gen_random_uuid(),
   user_id uuid references auth.users(id) on delete cascade,
   plan_id uuid references public.devotional_plans(id) on delete cascade,
+  progress_id uuid references public.plan_progress(id) on delete cascade,
   day_id uuid references public.devotional_days(id) on delete cascade,
   item_type text check (item_type in ('devotional', 'scripture')),
   item_key text, -- e.g. scripture reference or 'main'
+  devotional_content text,
+  day_number int,
   group_id uuid references public.plan_groups(id) on delete cascade,
   completed boolean default false,
   created_at timestamptz default now(),
@@ -968,18 +1012,19 @@ create table if not exists public.day_items_progress (
 
 -- Personal plan (no group)
 create unique index uniq_day_items_personal
-on day_items_progress (user_id, plan_id, day_id, item_type, item_key)
+on day_items_progress (user_id, progress_id, day_id, item_type, item_key)
 where group_id is null;
 
 -- Group plan
 create unique index uniq_day_items_group
-on day_items_progress (user_id, plan_id, day_id, item_type, item_key, group_id)
+on day_items_progress (user_id, progress_id, day_id, item_type, item_key, group_id)
 where group_id is not null;
 
 
 create or replace function public.ensure_day_items_exist(
   p_user_id uuid,
   p_plan_id uuid,
+  p_progress_id uuid,
   p_day_id uuid,
   p_group_id uuid default null
 )
@@ -988,14 +1033,23 @@ language plpgsql
 as $$
 declare
   refs text[];
+  v_devotional_content text;
+  v_day_number int;
   ref text;
 begin
+
+  select content, day_number
+  into v_devotional_content, v_day_number
+  from devotional_days
+  where id = p_day_id;
+
+
   -- 1️⃣ Ensure devotional item
   insert into day_items_progress (
-    user_id, plan_id, day_id, item_type, item_key, group_id
+    user_id, progress_id, plan_id, day_id, item_type, item_key, devotional_content, day_number, group_id
   )
   values (
-    p_user_id, p_plan_id, p_day_id, 'devotional', 'main', p_group_id
+    p_user_id, p_progress_id, p_plan_id, p_day_id, 'devotional', 'main', v_devotional_content, v_day_number, p_group_id
   )
   on conflict do nothing;
 
@@ -1013,10 +1067,10 @@ begin
   -- 3️⃣ Ensure one item per scripture ref
   foreach ref in array refs loop
     insert into day_items_progress (
-      user_id, plan_id, day_id, item_type, item_key, group_id
+      user_id, progress_id, plan_id, day_id, item_type, item_key, group_id, day_number
     )
     values (
-      p_user_id, p_plan_id, p_day_id, 'scripture', ref, p_group_id
+      p_user_id, p_progress_id, p_plan_id, p_day_id, 'scripture', ref, p_group_id, v_day_number
     )
     on conflict do nothing;
   end loop;
@@ -1027,6 +1081,7 @@ $$;
 create or replace function public.toggle_item_completion(
   p_user_id uuid,
   p_plan_id uuid,
+  p_progress_id uuid,
   p_day_id uuid,
   p_item_type text,
   p_item_key text,
@@ -1045,16 +1100,17 @@ begin
   perform ensure_day_items_exist(
     p_user_id,
     p_plan_id,
+    p_progress_id,
     p_day_id,
     p_group_id
   );
 
   -- Insert if missing (partial index safe)
   insert into day_items_progress (
-    user_id, plan_id, day_id, item_type, item_key, completed, group_id
+    user_id, progress_id, plan_id, day_id, item_type, item_key, completed, group_id
   )
   values (
-    p_user_id, p_plan_id, p_day_id, p_item_type, p_item_key, p_completed, p_group_id
+    p_user_id, p_progress_id, p_plan_id, p_day_id, p_item_type, p_item_key, p_completed, p_group_id
   )
   on conflict do nothing;
 
@@ -1063,7 +1119,7 @@ begin
   set completed = p_completed,
       updated_at = now()
   where user_id = p_user_id
-    and plan_id = p_plan_id
+    and progress_id = p_progress_id
     and day_id = p_day_id
     and item_type = p_item_type
     and item_key = p_item_key
@@ -1083,7 +1139,7 @@ begin
   into v_total_items
   from day_items_progress
   where user_id = p_user_id
-    and plan_id = p_plan_id
+    and progress_id = p_progress_id
     and day_id = p_day_id
     and (
       (p_group_id is null and group_id is null)
@@ -1095,7 +1151,7 @@ begin
   into v_completed_items
   from day_items_progress
   where user_id = p_user_id
-    and plan_id = p_plan_id
+    and progress_id = p_progress_id
     and day_id = p_day_id
     and completed = true
     and (
@@ -1113,7 +1169,7 @@ if v_total_items > 0 and v_completed_items = v_total_items then
     end,
     updated_at = now()
     where user_id = p_user_id
-      and plan_id = p_plan_id
+      and id = p_progress_id
       and (
         (p_group_id is null and group_id is null)
         or group_id = p_group_id
@@ -1123,7 +1179,7 @@ if v_total_items > 0 and v_completed_items = v_total_items then
     set completed_days = array_remove(completed_days, v_day_number),
         updated_at = now()
     where user_id = p_user_id
-      and plan_id = p_plan_id
+      and id = p_progress_id
       and (
         (p_group_id is null and group_id is null)
         or group_id = p_group_id
@@ -1137,6 +1193,7 @@ $$;
 create or replace function public.toggle_day_completion(
   p_user_id uuid,
   p_plan_id uuid,
+  p_progress_id uuid,
   p_day_id uuid,
   p_completed boolean,
   p_group_id uuid default null
@@ -1148,7 +1205,7 @@ declare
   v_day_number int;
 begin
   -- Ensure items exist for the day
-  perform ensure_day_items_exist(p_user_id, p_plan_id, p_day_id, p_group_id);
+  perform ensure_day_items_exist(p_user_id, p_plan_id, p_progress_id, p_day_id, p_group_id);
 
   -- Get day number
   select day_number
@@ -1161,7 +1218,7 @@ begin
   set completed = p_completed,
       updated_at = now()
   where user_id = p_user_id
-    and plan_id = p_plan_id
+    and progress_id = p_progress_id
     and day_id = p_day_id
     and  (
         (p_group_id is null and group_id is null)
@@ -1180,7 +1237,7 @@ begin
       end,
       updated_at = now()
     where user_id = p_user_id
-      and plan_id = p_plan_id
+      and id = p_progress_id
       and  (
         (p_group_id is null and group_id is null)
         or group_id = p_group_id
@@ -1191,7 +1248,7 @@ begin
       completed_days = array_remove(completed_days, v_day_number),
       updated_at = now()
     where user_id = p_user_id
-      and plan_id = p_plan_id
+      and id = p_progress_id
       and  (
         (p_group_id is null and group_id is null)
         or group_id = p_group_id

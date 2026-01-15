@@ -1,10 +1,10 @@
-import { useAppStore } from '@/store/useAppStore';
+import { useAppStore } from '@/src/state/useAppStore';
 import { Ionicons } from '@expo/vector-icons';
 import { Stack, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useBible } from '../../../context/BibleContext';
+import { useBible } from '../../../src/state/BibleContext';
 
 export default function BibleBooksChapters() {
   const router = useRouter();

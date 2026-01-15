@@ -1,8 +1,8 @@
-import LoadingSpinner from '@/components/LoadingSpinner';
-import { RelatedPlansSection } from '@/components/RelatedPlans';
-import { useAuth } from '@/context/AuthContext';
-import { useFetchDevotionalPlanById } from '@/hooks/useDevotionalPlans';
-import { usePlanProgress, useUserPlanProgress } from '@/hooks/usePlanProgress';
+import LoadingSpinner from '@/src/components/LoadingSpinner';
+import { RelatedPlansSection } from '@/src/components/RelatedPlans';
+import { useFetchDevotionalPlanById } from '@/src/hooks/useDevotionalPlans';
+import { usePlanProgress, useUserPlanProgress } from '@/src/hooks/usePlanProgress';
+import { useAuth } from '@/src/state/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
 import BottomSheet, { BottomSheetBackdrop, BottomSheetView } from '@gorhom/bottom-sheet';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
@@ -22,7 +22,7 @@ export default function DevotionalDetailScreen() {
   const router = useRouter();
   const colorScheme = useColorScheme();
   const { isGuest, session } = useAuth();
-  const { insertToPlanProgress, planProgressQuery } = usePlanProgress(
+  const { startPlanProgressMutation, planProgressQuery } = usePlanProgress(
     id as string,
     session?.user?.id,
   );
@@ -109,7 +109,7 @@ export default function DevotionalDetailScreen() {
           onPress={() => {
             bottomSheetRef.current?.expand();
           }}
-          disabled={insertToPlanProgress.isPending}>
+          disabled={startPlanProgressMutation.isPending}>
           <Text className="text-center text-white dark:text-black font-semibold text-lg">
             Start Plan
           </Text>
@@ -177,24 +177,23 @@ export default function DevotionalDetailScreen() {
                   router.push(`/plan_progress/${plan?.id}`);
                   return;
                 }
-                insertToPlanProgress.mutate(
+                startPlanProgressMutation.mutate(
                   {
-                    current_day: 1,
                     plan_id: id as string,
                     user_id: session?.user?.id as string,
                   },
                   {
-                    onSuccess: () => {
-                      router.push(`/plan_progress/${plan?.id}`);
-                    },
-                    onError: (e) => {
-                      console.log(e);
+                    onSuccess: (progressId) => {
+                      router.push({
+                        pathname: `/plan_progress/[progressId]`,
+                        params: { progressId, planId: id },
+                      });
                     },
                   },
                 );
               }}
               className="px-4 py-4 rounded-full  bg-gray-300 dark:bg-neutral-600 w-full flex-row items-center justify-center">
-              {insertToPlanProgress.isPending ? (
+              {startPlanProgressMutation.isPending ? (
                 <LoadingSpinner size={'small'} />
               ) : (
                 <Text className="text-gray-900 text-lg font-bold dark:text-white">By YourSelf</Text>

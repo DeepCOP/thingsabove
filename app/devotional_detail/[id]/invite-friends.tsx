@@ -1,9 +1,9 @@
-import LoadingSpinner from '@/components/LoadingSpinner';
-import { useAuth } from '@/context/AuthContext';
-import { useCreatePlanGroup } from '@/hooks/useCreatePlanGroup';
-import { useFriends } from '@/hooks/useFriends';
-import { useInviteFriends } from '@/hooks/useInviteFriends';
-import { usePlanGroupMembers } from '@/hooks/usePlanGroup';
+import LoadingSpinner from '@/src/components/LoadingSpinner';
+import { useCreatePlanGroup } from '@/src/hooks/useCreatePlanGroup';
+import { useFriends } from '@/src/hooks/useFriends';
+import { useInviteFriends } from '@/src/hooks/useInviteFriends';
+import { usePlanGroupMembers } from '@/src/hooks/usePlanGroup';
+import { useAuth } from '@/src/state/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
@@ -12,7 +12,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function InviteFriendsScreen() {
   const { session } = useAuth();
-  const { id, startDate, groupId } = useLocalSearchParams();
+  const { id, startDate, groupId, progressId } = useLocalSearchParams();
   const router = useRouter();
 
   const friendsQuery = useFriends(session!.user.id);
@@ -96,8 +96,12 @@ export default function InviteFriendsScreen() {
                 inviteFriendsToExistingGroup.mutate(selected, {
                   onSuccess: () => {
                     router.replace({
-                      pathname: `/plan_progress/[planId]`,
-                      params: { groupId: groupId, planId: id as string },
+                      pathname: `/plan_progress/[progressId]`,
+                      params: {
+                        groupId: groupId,
+                        planId: id as string,
+                        progressId: progressId as string,
+                      },
                     });
                   },
                 });
@@ -111,19 +115,25 @@ export default function InviteFriendsScreen() {
                   start_date: startDate as string,
                 },
                 {
-                  onSuccess: (groupId) => {
+                  onSuccess: (progressId) => {
                     router.replace({
-                      pathname: `/plan_progress/[planId]`,
-                      params: { groupId: groupId, planId: id as string },
+                      pathname: `/plan_progress/[progressId]`,
+                      params: {
+                        progressId: progressId as string,
+                      },
                     });
                   },
                 },
               );
             }}
             className="bg-black dark:bg-white py-4 rounded-full mt-4 mb-6">
-            <Text className="text-white dark:text-black text-center font-semibold">
-              Invite {selected.length} Friends
-            </Text>
+            {createPlanGroupMutation.isPending || inviteFriendsToExistingGroup.isPending ? (
+              <LoadingSpinner size={'small'} />
+            ) : (
+              <Text className="text-white dark:text-black text-center font-semibold">
+                Invite {selected.length} Friends
+              </Text>
+            )}
           </TouchableOpacity>
         </>
       ) : (

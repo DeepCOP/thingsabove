@@ -1,5 +1,5 @@
-import { ListCard } from '@/components/DevoCard';
-import { useSearchPlans } from '@/hooks/useDevotionalPlans';
+import { ListCard } from '@/src/components/DevoCard';
+import { useSearchPlans } from '@/src/hooks/useDevotionalPlans';
 import { Ionicons } from '@expo/vector-icons';
 import NetInfo from '@react-native-community/netinfo';
 import { useRouter } from 'expo-router';

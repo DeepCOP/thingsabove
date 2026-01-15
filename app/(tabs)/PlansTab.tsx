@@ -1,11 +1,11 @@
-import { GridCard, ListCard } from '@/components/DevoCard';
-import Dropdown from '@/components/DropDown';
-import LoadingSpinner from '@/components/LoadingSpinner';
-import { MyPlansToggle } from '@/components/MyPlansToggle';
-import { useAuth } from '@/context/AuthContext';
-import { useFetchUserPlans, usePlans } from '@/hooks/useDevotionalPlans';
-import { useUserPlanProgress } from '@/hooks/usePlanProgress';
-import { useAppStore } from '@/store/useAppStore';
+import { GridCard, ListCard } from '@/src/components/DevoCard';
+import Dropdown from '@/src/components/DropDown';
+import LoadingSpinner from '@/src/components/LoadingSpinner';
+import { MyPlansToggle } from '@/src/components/MyPlansToggle';
+import { useFetchUserPlans, usePlans } from '@/src/hooks/useDevotionalPlans';
+import { useUserPlanProgress } from '@/src/hooks/usePlanProgress';
+import { useAuth } from '@/src/state/AuthContext';
+import { useAppStore } from '@/src/state/useAppStore';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useMemo, useState } from 'react';
@@ -237,10 +237,11 @@ function MyPlansList() {
               item={item}
               onPress={() =>
                 router.push({
-                  pathname: '/plan_progress/[planId]',
+                  pathname: '/plan_progress/[progressId]',
                   params: {
                     groupId: item.group_id,
                     planId: item.id!,
+                    progressId: item.progress_id!,
                   },
                 })
               }
@@ -250,10 +251,11 @@ function MyPlansList() {
               item={item}
               onPress={() =>
                 router.push({
-                  pathname: '/plan_progress/[planId]',
+                  pathname: '/plan_progress/[progressId]',
                   params: {
                     groupId: item.group_id,
                     planId: item.id!,
+                    progressId: item.progress_id!,
                   },
                 })
               }

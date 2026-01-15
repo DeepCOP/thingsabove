@@ -1,10 +1,10 @@
-import BibleReaderView from '@/components/BibleReaderView';
+import BibleReaderView from '@/src/components/BibleReaderView';
 import { Ionicons } from '@expo/vector-icons';
 import { Tabs, useRouter } from 'expo-router';
 import { useRef } from 'react';
 import { Animated, Text, TouchableOpacity, useColorScheme, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useBible } from '../../context/BibleContext';
+import { useBible } from '../../src/state/BibleContext';
 
 export default function BibleTab() {
   const insets = useSafeAreaInsets();

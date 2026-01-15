@@ -1,5 +1,5 @@
-import DaysPicker from '@/components/DaysPicker';
-import { useFetchDevotionalPlanById } from '@/hooks/useDevotionalPlans';
+import DaysPicker from '@/src/components/DaysPicker';
+import { useFetchDevotionalPlanById } from '@/src/hooks/useDevotionalPlans';
 import { Ionicons } from '@expo/vector-icons';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc'; // Import the plugin

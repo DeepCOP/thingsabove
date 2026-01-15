@@ -18,12 +18,12 @@ import {
 } from '@expo-google-fonts/open-sans';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { BibleProvider } from '../context/BibleContext';
+import { BibleProvider } from '../src/state/BibleContext';
 
-import { AuthProvider, useAuth } from '@/context/AuthContext';
-import { supabase } from '@/lib/api/supabaseClient';
-import { mutationQueue } from '@/lib/mutationQueue';
-import { QueryProviderWrapper } from '@/lib/queryClient';
+import { mutationQueue } from '@/src/lib/mutationQueue';
+import { QueryProviderWrapper } from '@/src/lib/queryClient';
+import { supabase } from '@/src/lib/supabaseClient';
+import { AuthProvider, useAuth } from '@/src/state/AuthContext';
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
@@ -118,9 +118,12 @@ function RootLayoutContent() {
         </Stack.Protected>
         {/* 🔒 AUTH-REQUIRED ROUTES */}
         <Stack.Protected guard={session != null}>
-          <Stack.Screen name="plan_progress/[planId]/index" options={{ title: 'plan progress' }} />
           <Stack.Screen
-            name="plan_progress/[planId]/plan-complete/index"
+            name="plan_progress/[progressId]/index"
+            options={{ title: 'plan progress' }}
+          />
+          <Stack.Screen
+            name="plan_progress/[progressId]/plan-complete/index"
             options={{ headerShown: false }}
           />
           <Stack.Screen
@@ -142,7 +145,7 @@ function RootLayoutContent() {
           />
 
           <Stack.Screen
-            name="plan_progress/[planId]/missedDays/index"
+            name="plan_progress/[progressId]/missedDays/index"
             options={{ title: 'Missed Days' }}
           />
           <Stack.Screen name="add_friend/index" options={{ title: 'Add Friend' }} />

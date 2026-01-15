@@ -1,18 +1,19 @@
-import LoadingSpinner from '@/components/LoadingSpinner';
-import { ProgressBar } from '@/components/ProgressBar';
-import { usePlanGroupMembers } from '@/hooks/usePlanGroup';
-import { useUsersPlanProgress } from '@/hooks/usePlanProgress';
-import { PlanProgress } from '@/lib/types/types';
+import LoadingSpinner from '@/src/components/LoadingSpinner';
+import { ProgressBar } from '@/src/components/ProgressBar';
+import { usePlanGroupMembers } from '@/src/hooks/usePlanGroup';
+import { useUsersPlanProgress } from '@/src/hooks/usePlanProgress';
+import { PlanProgress } from '@/src/types/types';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { FlatList, Image, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function InviteFriendsScreen() {
-  const { id, groupId } = useLocalSearchParams<{
+  const { id, groupId, progressId } = useLocalSearchParams<{
     id: string;
     groupId: string;
     totalDays: string;
+    progressId: string;
   }>();
   const router = useRouter();
 
@@ -59,6 +60,7 @@ export default function InviteFriendsScreen() {
             params: {
               groupId: groupId,
               id: id as string,
+              progressId: progressId as string,
             },
           });
         }}

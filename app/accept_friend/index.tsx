@@ -1,9 +1,9 @@
-import LoadingSpinner from '@/components/LoadingSpinner';
+import LoadingSpinner from '@/src/components/LoadingSpinner';
 import {
   useAcceptFriendRequest,
   useDeclineFriendRequest,
   usePendingFriendRequests,
-} from '@/hooks/useFriends';
+} from '@/src/hooks/useFriends';
 
 import { FlatList, Image, Text, TouchableOpacity, View } from 'react-native';
 

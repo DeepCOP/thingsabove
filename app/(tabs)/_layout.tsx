@@ -1,6 +1,8 @@
-import { useAuth } from '@/context/AuthContext';
-import { useFriends, usePendingFriendRequests, useRealtimeFriends } from '@/hooks/useFriends';
-import { useNotifications, useRealtimeNotifications } from '@/hooks/useNotifications';
+import { useFriends, usePendingFriendRequests } from '@/src/hooks/useFriends';
+import { useNotifications } from '@/src/hooks/useNotifications';
+import { useRealtimeFriends } from '@/src/hooks/useRealtimeFriends';
+import { useRealtimeNotifications } from '@/src/hooks/useRealtimeNotifications';
+import { useAuth } from '@/src/state/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
 import React from 'react';
