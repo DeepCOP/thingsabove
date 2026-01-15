@@ -101,7 +101,10 @@ export default function PlanProgressScreen() {
       prevCompletedCount.current < plan.total_days && completedCount === plan.total_days;
 
     if (justCompleted) {
-      router.replace(`/plan_progress/${plan.id}/plan-complete`);
+      router.replace({
+        pathname: `/plan_progress/[progressId]/plan-complete`,
+        params: { progressId: planProgress.id, planId: plan.id },
+      });
     }
 
     prevCompletedCount.current = completedCount;
@@ -215,7 +218,7 @@ export default function PlanProgressScreen() {
                   groupId: planProgress?.group_id as string,
                   totalDays: plan.total_days,
                   id: planProgress?.plan_id as string,
-                  progressId: progressId as string,
+                  progressId: planProgress?.id as string,
                 },
               })
             }
