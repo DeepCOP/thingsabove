@@ -1,56 +1,25 @@
-import { RelatedPlansSection } from '@/components/RelatedPlans';
-import { useAuth } from '@/context/AuthContext';
-import { usePlanProgress } from '@/hooks/usePlanProgress';
-import { useFetchDevotionalPlan } from '@/hooks/usePlans';
+import { useFetchDevotionalPlanById } from '@/src/hooks/useDevotionalPlans';
+import { usePlanProgress, useUserPlanProgressList } from '@/src/hooks/usePlanProgress';
+import DevotionalDetailScreen from '@/src/screens/DevotionalDetailScreen';
+import { useAuth } from '@/src/state/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
-import {
-  ActivityIndicator,
-  Image,
-  ScrollView,
-  Share,
-  Text,
-  TouchableOpacity,
-  useColorScheme,
-  View,
-} from 'react-native';
+import { Share, TouchableOpacity, useColorScheme } from 'react-native';
 
-export default function DevotionalDetailScreen() {
-  const { id } = useLocalSearchParams(); // plan ID passed from card
+export default function DevotionalDetail() {
+  const { id } = useLocalSearchParams();
   const router = useRouter();
   const colorScheme = useColorScheme();
   const { isGuest, session } = useAuth();
-  const { insertToPlanProgress, planProgressQuery } = usePlanProgress(
+  const { startPlanProgressMutation, planProgressQuery } = usePlanProgress(
     id as string,
     session?.user?.id,
   );
+  const userPlanProgressQuery = useUserPlanProgressList(session?.user.id);
+  const userPlanProgress = userPlanProgressQuery.data || [];
 
-  const planQuery = useFetchDevotionalPlan(id as string);
+  const planQuery = useFetchDevotionalPlanById(id as string);
   const plan = planQuery.data;
-
-  if (planQuery.isLoading || planProgressQuery.isLoading) {
-    return <ActivityIndicator style={{ marginTop: 30 }} size="large" />;
-  }
-
-  if (planQuery.isError) {
-    return (
-      <View className="flex-1 items-center justify-center p-4">
-        <Text className="text-center text-gray-700 dark:text-gray-300">
-          Failed to load this devotional. Please try again later.
-        </Text>
-      </View>
-    );
-  }
-
-  if (!plan) {
-    return (
-      <View className="flex-1 items-center justify-center p-4">
-        <Text className="text-center text-gray-700 dark:text-gray-300">
-          This devotional could not be found.
-        </Text>
-      </View>
-    );
-  }
 
   return (
     <>
@@ -73,86 +42,35 @@ export default function DevotionalDetailScreen() {
           },
         }}
       />
-      <ScrollView
-        className="flex-1 bg-white dark:bg-black"
-        nestedScrollEnabled={true}
-        contentContainerStyle={{ paddingBottom: 80 }}>
-        {/* Cover Image */}
-        <View className="px-4">
-          {plan?.cover_image ? (
-            <Image
-              source={{ uri: plan.cover_image }}
-              className="w-full h-60 rounded-2xl"
-              resizeMode="cover"
-            />
-          ) : (
-            <View className="w-full h-60 rounded-2xl bg-gray-300 dark:bg-neutral-800" />
-          )}
+      <DevotionalDetailScreen
+        plan={planQuery.data}
+        isLoading={planQuery.isLoading || planProgressQuery.isLoading}
+        hasUserPlans={userPlanProgress.length > 0}
+        onMyPlansPress={() => router.push('/PlansTab')}
+        onStartPress={(mode: string) => {
+          if (isGuest) {
+            router.push('/login/signin');
+            return;
+          }
 
-          {(plan?.completions ?? 0) > 0 && (
-            <View className="absolute bottom-0 left-4 right-4 bg-black/50 py-2 rounded-b-2xl">
-              <Text className="text-center text-white font-semibold">
-                Over {plan?.completions} completions
-              </Text>
-            </View>
-          )}
-        </View>
+          if (mode === 'group') {
+            router.push(`/devotional_detail/${id}/start-date`);
+            return;
+          }
 
-        <View className="px-4 mt-5">
-          <Text className="text-2xl font-bold text-gray-900 dark:text-gray-100 leading-snug">
-            {plan?.title}
-          </Text>
+          if (planProgressQuery.data) {
+            router.push(`/plan_progress/${planProgressQuery.data}`);
+            return;
+          }
 
-          <View className="flex-row items-center gap-2 mt-2">
-            <Text className="text-gray-600 dark:text-gray-300">{plan?.total_days} Days</Text>
-          </View>
-        </View>
-
-        <TouchableOpacity
-          className="mt-6 mx-4 bg-black dark:bg-white py-4 rounded-full"
-          onPress={() => {
-            if (isGuest) {
-              router.push({
-                pathname: '/login/signin',
-                params: { redirectTo: `/plan_progress/${plan?.id}/index` },
-              });
-              return;
-            }
-            if (planProgressQuery.data) {
-              router.push(`/plan_progress/${plan?.id}`);
-              return;
-            }
-            insertToPlanProgress.mutate(
-              {
-                current_day: 1,
-                plan_id: id as string,
-                user_id: session?.user?.id as string,
-              },
-              {
-                onSuccess: () => {
-                  router.push(`/plan_progress/${plan?.id}`);
-                },
-                onError: (e) => {
-                  console.log(e);
-                },
-              },
-            );
-          }}
-          disabled={insertToPlanProgress.isPending}>
-          <Text className="text-center text-white dark:text-black font-semibold text-lg">
-            Start Plan
-          </Text>
-        </TouchableOpacity>
-
-        {/* Description */}
-        <View className="px-4 mt-6">
-          <Text className="text-[16px] leading-7 text-gray-800 dark:text-gray-200">
-            {plan?.description}
-          </Text>
-        </View>
-
-        <RelatedPlansSection plan={plan} />
-      </ScrollView>
+          startPlanProgressMutation.mutate(
+            { plan_id: id as string, user_id: session?.user.id! },
+            {
+              onSuccess: (progressId) => router.push(`/plan_progress/${progressId}`),
+            },
+          );
+        }}
+      />
     </>
   );
 }

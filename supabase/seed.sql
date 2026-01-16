@@ -67,13 +67,17 @@ values (
 );
 
 -- Days
-insert into public.devotional_days (plan_id, day_number, content)
+
+insert into public.devotional_days (plan_id,id, day_number, content)
 values
-('11111111-1111-1111-1111-111111111111', 1, 'Faith is strengthened when we tune our hearts to God''s voice instead of fear.'),
-('11111111-1111-1111-1111-111111111111', 2, 'Trust grows when we surrender what we cannot control into God''s hands.'),
-('11111111-1111-1111-1111-111111111111', 3, 'Walking by faith means choosing obedience before understanding.'),
-('11111111-1111-1111-1111-111111111111', 4, 'Faith is active—it moves, prays, believes, and surrenders daily.'),
-('11111111-1111-1111-1111-111111111111', 5, 'God honors those who rely on Him even when situations look impossible.');
+('11111111-1111-1111-1111-111111111111', '11111111-1111-1112-2222-222222220000', 1, 'Faith is strengthened when we tune our hearts to God''s voice instead of fear.'),
+('11111111-1111-1111-1111-111111111111', '33333333-3333-3333-4444-444444440000', 2, 'Trust grows when we surrender what we cannot control into God''s hands.'),
+('11111111-1111-1111-1111-111111111111', '55555555-5555-5555-6666-666666660000', 3, 'Walking by faith means choosing obedience before understanding.'),
+('11111111-1111-1111-1111-111111111111', '77777777-7777-7777-8888-888888880000', 4, 'Faith is active—it moves, prays, believes, and surrenders daily.'),
+('11111111-1111-1111-1111-111111111111', '99999999-9999-9999-aaaa-aaaaaaaa0000', 5, 'God honors those who rely on Him even when situations look impossible.');
+
+
+
 
 -- Scripture references
 -- Scripture references for plan 1 (stored as text[])
@@ -362,58 +366,59 @@ values (null, ARRAY['Psalm 42:1','Matthew 4:4','Luke 11:1','Isaiah 58:6','Mark 1
 -- (Each plan gets 3 realistic sample comments)
 -- =========================================================
 
-insert into public.comments (user_id, content, entity_type, entity_id)
-values
--- PLAN 1: Walking in Faith
-('61ca76b6-ebc0-47e3-bd3c-d28c950b8574', 'This really helped me refocus on trusting God—thank you!', 'plan', '11111111-1111-1111-1111-111111111111'),
-('61ca76b6-ebc0-47e3-bd3c-d28c950b8573', 'Day 3 hit me deeply. Walking by faith isn’t easy but worth it.', 'plan', '11111111-1111-1111-1111-111111111111'),
-('61ca76b6-ebc0-47e3-bd3c-d28c950b8572', 'Beautiful devotional. Very uplifting.', 'plan', '11111111-1111-1111-1111-111111111111'),
+-- insert into public.comments (user_id, content, plan_id, day_id)
+-- values
+-- -- PLAN 1: Walking in Faith
+-- ('61ca76b6-ebc0-47e3-bd3c-d28c950b8574', 'This really helped me refocus on trusting God—thank you!', '11111111-1111-1111-1111-111111111111','11111111-1111-1112-2222-222222220000'),
+-- ('61ca76b6-ebc0-47e3-bd3c-d28c950b8573', 'Day 3 hit me deeply. Walking by faith isn’t easy but worth it.', '11111111-1111-1111-1111-111111111111', '11111111-1111-1112-2222-222222220000'),
+-- ('61ca76b6-ebc0-47e3-bd3c-d28c950b8572', 'Beautiful devotional. Very uplifting.', '11111111-1111-1111-1111-111111111111','11111111-1111-1112-2222-222222220000')
+-- ;
 
--- PLAN 2: Hope in Difficult Times
-('61ca76b6-ebc0-47e3-bd3c-d28c950b8573', 'Exactly what I needed today. God is close even when life is heavy.', 'plan', '22222222-2222-2222-2222-222222222222'),
-('61ca76b6-ebc0-47e3-bd3c-d28c950b8571', 'Short but powerful. Thank you for sharing this.', 'plan', '22222222-2222-2222-2222-222222222222'),
-('61ca76b6-ebc0-47e3-bd3c-d28c950b8574', 'Day 2 encouraged me so much. Hope is alive!', 'plan', '22222222-2222-2222-2222-222222222222'),
+-- -- PLAN 2: Hope in Difficult Times
+-- ('61ca76b6-ebc0-47e3-bd3c-d28c950b8573', 'Exactly what I needed today. God is close even when life is heavy.', 'plan', '22222222-2222-2222-2222-222222222222'),
+-- ('61ca76b6-ebc0-47e3-bd3c-d28c950b8571', 'Short but powerful. Thank you for sharing this.', 'plan', '22222222-2222-2222-2222-222222222222'),
+-- ('61ca76b6-ebc0-47e3-bd3c-d28c950b8574', 'Day 2 encouraged me so much. Hope is alive!', 'plan', '22222222-2222-2222-2222-222222222222'),
 
--- PLAN 3: Learning to Pray
-('61ca76b6-ebc0-47e3-bd3c-d28c950b8572', 'These prayer insights are so practical. Loved every day.', 'plan', '33333333-3333-3333-3333-333333333333'),
-('61ca76b6-ebc0-47e3-bd3c-d28c950b8576', 'This devotional strengthened my prayer life.', 'plan', '33333333-3333-3333-3333-333333333333'),
-('61ca76b6-ebc0-47e3-bd3c-d28c950b8574', 'Clear, simple, and powerful. Thank you!', 'plan', '33333333-3333-3333-3333-333333333333'),
+-- -- PLAN 3: Learning to Pray
+-- ('61ca76b6-ebc0-47e3-bd3c-d28c950b8572', 'These prayer insights are so practical. Loved every day.', 'plan', '33333333-3333-3333-3333-333333333333'),
+-- ('61ca76b6-ebc0-47e3-bd3c-d28c950b8576', 'This devotional strengthened my prayer life.', 'plan', '33333333-3333-3333-3333-333333333333'),
+-- ('61ca76b6-ebc0-47e3-bd3c-d28c950b8574', 'Clear, simple, and powerful. Thank you!', 'plan', '33333333-3333-3333-3333-333333333333'),
 
--- PLAN 4: Living with Purpose
-('61ca76b6-ebc0-47e3-bd3c-d28c950b8571', 'Day 5 reminded me that my weaknesses can be used by God.', 'plan', '44444444-4444-4444-4444-444444444444'),
-('61ca76b6-ebc0-47e3-bd3c-d28c950b8573', 'This devotional helped me rediscover my purpose.', 'plan', '44444444-4444-4444-4444-444444444444'),
-('61ca76b6-ebc0-47e3-bd3c-d28c950b8572', 'One of the best devotionals I have read.', 'plan', '44444444-4444-4444-4444-444444444444'),
+-- -- PLAN 4: Living with Purpose
+-- ('61ca76b6-ebc0-47e3-bd3c-d28c950b8571', 'Day 5 reminded me that my weaknesses can be used by God.', 'plan', '44444444-4444-4444-4444-444444444444'),
+-- ('61ca76b6-ebc0-47e3-bd3c-d28c950b8573', 'This devotional helped me rediscover my purpose.', 'plan', '44444444-4444-4444-4444-444444444444'),
+-- ('61ca76b6-ebc0-47e3-bd3c-d28c950b8572', 'One of the best devotionals I have read.', 'plan', '44444444-4444-4444-4444-444444444444'),
 
--- PLAN 5: Overcoming Anxiety
-('61ca76b6-ebc0-47e3-bd3c-d28c950b8576', 'So comforting. God truly gives peace.', 'plan', '55555555-5555-5555-5555-555555555555'),
-('61ca76b6-ebc0-47e3-bd3c-d28c950b8574', 'This devotional helped me calm my anxious thoughts.', 'plan', '55555555-5555-5555-5555-555555555555'),
-('61ca76b6-ebc0-47e3-bd3c-d28c950b8572', 'Day 3 on gratitude really helped me today.', 'plan', '55555555-5555-5555-5555-555555555555'),
+-- -- PLAN 5: Overcoming Anxiety
+-- ('61ca76b6-ebc0-47e3-bd3c-d28c950b8576', 'So comforting. God truly gives peace.', 'plan', '55555555-5555-5555-5555-555555555555'),
+-- ('61ca76b6-ebc0-47e3-bd3c-d28c950b8574', 'This devotional helped me calm my anxious thoughts.', 'plan', '55555555-5555-5555-5555-555555555555'),
+-- ('61ca76b6-ebc0-47e3-bd3c-d28c950b8572', 'Day 3 on gratitude really helped me today.', 'plan', '55555555-5555-5555-5555-555555555555'),
 
--- PLAN 6: Strength in Weakness
-('61ca76b6-ebc0-47e3-bd3c-d28c950b8573', 'Perfect reminder that God is strong when I feel weak.', 'plan', '66666666-6666-6666-6666-666666666666'),
-('61ca76b6-ebc0-47e3-bd3c-d28c950b8576', 'Simple but powerful devotional.', 'plan', '66666666-6666-6666-6666-666666666666'),
-('61ca76b6-ebc0-47e3-bd3c-d28c950b8571', 'This blessed me so much today.', 'plan', '66666666-6666-6666-6666-666666666666'),
+-- -- PLAN 6: Strength in Weakness
+-- ('61ca76b6-ebc0-47e3-bd3c-d28c950b8573', 'Perfect reminder that God is strong when I feel weak.', 'plan', '66666666-6666-6666-6666-666666666666'),
+-- ('61ca76b6-ebc0-47e3-bd3c-d28c950b8576', 'Simple but powerful devotional.', 'plan', '66666666-6666-6666-6666-666666666666'),
+-- ('61ca76b6-ebc0-47e3-bd3c-d28c950b8571', 'This blessed me so much today.', 'plan', '66666666-6666-6666-6666-666666666666'),
 
--- PLAN 7: Gratitude Every Day
-('61ca76b6-ebc0-47e3-bd3c-d28c950b8574', 'I feel so encouraged to practice daily gratitude now.', 'plan', '77777777-7777-7777-7777-777777777777'),
-('61ca76b6-ebc0-47e3-bd3c-d28c950b8572', 'Day 6 was exactly what I needed.', 'plan', '77777777-7777-7777-7777-777777777777'),
-('61ca76b6-ebc0-47e3-bd3c-d28c950b8573', 'Very uplifting devotional!', 'plan', '77777777-7777-7777-7777-777777777777'),
+-- -- PLAN 7: Gratitude Every Day
+-- ('61ca76b6-ebc0-47e3-bd3c-d28c950b8574', 'I feel so encouraged to practice daily gratitude now.', 'plan', '77777777-7777-7777-7777-777777777777'),
+-- ('61ca76b6-ebc0-47e3-bd3c-d28c950b8572', 'Day 6 was exactly what I needed.', 'plan', '77777777-7777-7777-7777-777777777777'),
+-- ('61ca76b6-ebc0-47e3-bd3c-d28c950b8573', 'Very uplifting devotional!', 'plan', '77777777-7777-7777-7777-777777777777'),
 
--- PLAN 8: The Holy Spirit''s Guidance
-('61ca76b6-ebc0-47e3-bd3c-d28c950b8571', 'Such a great devotional on the Holy Spirit.', 'plan', '88888888-8888-8888-8888-888888888888'),
-('61ca76b6-ebc0-47e3-bd3c-d28c950b8576', 'I learned so much from day 2!', 'plan', '88888888-8888-8888-8888-888888888888'),
-('61ca76b6-ebc0-47e3-bd3c-d28c950b8574', 'Very deep but easy to understand.', 'plan', '88888888-8888-8888-8888-888888888888'),
+-- -- PLAN 8: The Holy Spirit''s Guidance
+-- ('61ca76b6-ebc0-47e3-bd3c-d28c950b8571', 'Such a great devotional on the Holy Spirit.', 'plan', '88888888-8888-8888-8888-888888888888'),
+-- ('61ca76b6-ebc0-47e3-bd3c-d28c950b8576', 'I learned so much from day 2!', 'plan', '88888888-8888-8888-8888-888888888888'),
+-- ('61ca76b6-ebc0-47e3-bd3c-d28c950b8574', 'Very deep but easy to understand.', 'plan', '88888888-8888-8888-8888-888888888888'),
 
--- PLAN 9: The Love of God
-('61ca76b6-ebc0-47e3-bd3c-d28c950b8572', 'God’s love is truly amazing. Day 1 blessed me.', 'plan', '99999999-9999-9999-9999-999999999999'),
-('61ca76b6-ebc0-47e3-bd3c-d28c950b8573', 'Such a beautiful reminder of His unfailing love.', 'plan', '99999999-9999-9999-9999-999999999999'),
-('61ca76b6-ebc0-47e3-bd3c-d28c950b8571', 'I really enjoyed reading this.', 'plan', '99999999-9999-9999-9999-999999999999'),
+-- -- PLAN 9: The Love of God
+-- ('61ca76b6-ebc0-47e3-bd3c-d28c950b8572', 'God’s love is truly amazing. Day 1 blessed me.', 'plan', '99999999-9999-9999-9999-999999999999'),
+-- ('61ca76b6-ebc0-47e3-bd3c-d28c950b8573', 'Such a beautiful reminder of His unfailing love.', 'plan', '99999999-9999-9999-9999-999999999999'),
+-- ('61ca76b6-ebc0-47e3-bd3c-d28c950b8571', 'I really enjoyed reading this.', 'plan', '99999999-9999-9999-9999-999999999999'),
 
--- PLAN 10: Spiritual Discipline
-('61ca76b6-ebc0-47e3-bd3c-d28c950b8576', 'This devotional challenged me to be more consistent.', 'plan', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'),
-('61ca76b6-ebc0-47e3-bd3c-d28c950b8574', 'Day 4 on fasting was powerful.', 'plan', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'),
-('61ca76b6-ebc0-47e3-bd3c-d28c950b8572', 'Great structure and very Biblical.', 'plan', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa')
-;
+-- -- PLAN 10: Spiritual Discipline
+-- ('61ca76b6-ebc0-47e3-bd3c-d28c950b8576', 'This devotional challenged me to be more consistent.', 'plan', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'),
+-- ('61ca76b6-ebc0-47e3-bd3c-d28c950b8574', 'Day 4 on fasting was powerful.', 'plan', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'),
+-- ('61ca76b6-ebc0-47e3-bd3c-d28c950b8572', 'Great structure and very Biblical.', 'plan', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa')
+-- ;
 
 
 -- =========================================================
@@ -483,4 +488,15 @@ values
 ('61ca76b6-ebc0-47e3-bd3c-d28c950b8572', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'like'),
 ('61ca76b6-ebc0-47e3-bd3c-d28c950b8576', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'like'),
 ('61ca76b6-ebc0-47e3-bd3c-d28c950b8573', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'dislike')
+;
+
+
+
+insert into public.friends (requester_id, receiver_id, status)
+values
+('61ca76b6-ebc0-47e3-bd3c-d28c950b8574', '61ca76b6-ebc0-47e3-bd3c-d28c950b8573', 'accepted'),
+('61ca76b6-ebc0-47e3-bd3c-d28c950b8574', '61ca76b6-ebc0-47e3-bd3c-d28c950b8572', 'accepted'),
+('61ca76b6-ebc0-47e3-bd3c-d28c950b8573', '61ca76b6-ebc0-47e3-bd3c-d28c950b8571', 'accepted'),
+('61ca76b6-ebc0-47e3-bd3c-d28c950b8572', '61ca76b6-ebc0-47e3-bd3c-d28c950b8571', 'accepted'),
+('61ca76b6-ebc0-47e3-bd3c-d28c950b8576', '61ca76b6-ebc0-47e3-bd3c-d28c950b8574', 'accepted');
 ;

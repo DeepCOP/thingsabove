@@ -1,26 +1,36 @@
-import DevotionalPlanReader from '@/components/DevotionPlanReader';
-import { useAuth } from '@/context/AuthContext';
-import { useDayItemsProgress } from '@/hooks/useDayItemsProgress';
-import { usePlanDay } from '@/hooks/usePlanProgress';
-import { BibleBook, useAppStore } from '@/store/useAppStore';
-import { parseVerseRef } from '@/utils/utils';
+import DevotionalPlanReader from '@/src/components/DevotionPlanReader';
+import LoadingSpinner from '@/src/components/LoadingSpinner';
+import { useDayItemsProgress } from '@/src/hooks/useDayItemsProgress';
+import { useAuth } from '@/src/state/AuthContext';
+import { BibleBook, useAppStore } from '@/src/state/useAppStore';
+import { parseVerseRef, sortByItemKey } from '@/src/utils';
 import { useLocalSearchParams } from 'expo-router';
-import { useState } from 'react';
-import { ActivityIndicator } from 'react-native';
+import { useMemo, useState } from 'react';
+import { Text, View } from 'react-native';
 
 export default function DevotionalDayScreen() {
-  const { dayId, id: planId } = useLocalSearchParams();
+  const { dayId, id: planId, progressId, groupId } = useLocalSearchParams();
   const [last, setLast] = useState(false);
   const { session } = useAuth();
   const { itemId, setItemId, setSelectedBook } = useAppStore();
 
-  const { data: dayData, isLoading: dayLoading } = usePlanDay((dayId as string) ?? null);
   const { dayItemsProgressQuery, toggleMutation } = useDayItemsProgress({
+    progress_id: progressId as string,
     plan_id: planId as string,
     day_id: dayId as string,
     user_id: session?.user?.id!,
-    scripture_refs: dayData?.scripture_refs || [],
+    group_id: groupId as string,
   });
+
+  const dayItemsProgress = useMemo(() => {
+    if (!dayItemsProgressQuery?.data) return null;
+    const data = dayItemsProgressQuery?.data;
+
+    return {
+      items: [...data].sort((a, b) => sortByItemKey(a.item_key, b.item_key)),
+    };
+  }, [dayItemsProgressQuery?.data]);
+
   const setFromVerseRef = (
     ref: string,
     // bibleBooks: BibleBook[],
@@ -42,61 +52,47 @@ export default function DevotionalDayScreen() {
   };
   const HandleNext = () => {
     setLast(false);
-    const currentItem = dayItemsProgressQuery?.items?.find((item) => item.id === itemId);
-    let nextItemId;
-    if (currentItem?.item_type === 'devotional') {
-      nextItemId = dayItemsProgressQuery?.scriptures?.[0]?.id;
-      if (!nextItemId) {
-        setLast(true);
-        return;
-      }
-      setFromVerseRef(dayItemsProgressQuery?.scriptures?.[0]?.ref || '', setSelectedBook);
-
-      setItemId(nextItemId || '');
-      return;
-    }
-    const currentItemIdx = dayItemsProgressQuery?.scriptures?.findIndex(
-      (item) => item.id === itemId,
-    );
-    if (currentItemIdx === undefined || !dayItemsProgressQuery?.scriptures) return;
-    if (currentItemIdx === dayItemsProgressQuery?.scriptures?.length - 1) {
+    const currentItemIdx = dayItemsProgress?.items?.findIndex((item) => item.id === itemId);
+    if (currentItemIdx === undefined || !dayItemsProgress?.items) return;
+    if (currentItemIdx === dayItemsProgress?.items?.length - 1) {
       setLast(true);
       return;
     }
-    const nextItem = dayItemsProgressQuery?.scriptures?.[currentItemIdx + 1];
-    setFromVerseRef(nextItem.ref, setSelectedBook);
+    const nextItem = dayItemsProgress?.items?.[currentItemIdx + 1];
+    setFromVerseRef(nextItem.item_key as string, setSelectedBook);
 
     setItemId(nextItem?.id || '');
   };
   const HandlePrevious = () => {
     setLast(false);
-    const currentItem = dayItemsProgressQuery?.items?.find((item) => item.id === itemId);
+    const currentItem = dayItemsProgress?.items?.find((item) => item.id === itemId);
     if (currentItem?.item_type === 'devotional') {
       return;
     }
-    const currentItemIdx = dayItemsProgressQuery?.scriptures?.findIndex(
-      (item) => item.id === itemId,
-    );
-    if (currentItemIdx === 0) {
-      setItemId(dayItemsProgressQuery?.devotional?.id || '');
-      return;
-    }
-    if (!currentItemIdx || !dayItemsProgressQuery?.scriptures) return;
-    const prevItem = dayItemsProgressQuery?.scriptures?.[currentItemIdx - 1];
-    setFromVerseRef(prevItem.ref, setSelectedBook);
+    const currentItemIdx = dayItemsProgress?.items?.findIndex((item) => item.id === itemId);
+    if (!currentItemIdx || !dayItemsProgress?.items) return;
+    const prevItem = dayItemsProgress?.items?.[currentItemIdx - 1];
+    setFromVerseRef(prevItem.item_key as string, setSelectedBook);
 
     setItemId(prevItem?.id || '');
   };
-  const item = dayItemsProgressQuery?.items.find((item) => item.id === itemId);
-  if (dayLoading) {
-    return <ActivityIndicator size="large" style={{ flex: 1, justifyContent: 'center' }} />;
+  const item = dayItemsProgress?.items.find((item) => item.id === itemId);
+  if (dayItemsProgressQuery.isLoading) {
+    return <LoadingSpinner />;
+  }
+
+  if (!dayItemsProgressQuery.data?.length) {
+    return (
+      <View className="flex-1 justify-center items-center">
+        <Text>Item Not Found</Text>
+      </View>
+    );
   }
   return (
     <>
       {item && (
         <DevotionalPlanReader
           item={item}
-          dayData={dayData}
           HandleNext={HandleNext}
           HandlePrevious={HandlePrevious}
           last={last}

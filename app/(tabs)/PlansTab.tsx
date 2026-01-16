@@ -1,136 +1,26 @@
-import { GridCard, ListCard } from '@/components/DevoCard';
-import Dropdown from '@/components/DropDown';
-import { useAuth } from '@/context/AuthContext';
-import { usePlans } from '@/hooks/usePlans';
-import { useAppStore } from '@/store/useAppStore';
-import { Ionicons } from '@expo/vector-icons';
+import PlansScreen from '@/src/screens/PlansScreen';
+import { useAuth } from '@/src/state/AuthContext';
+import { useAppStore } from '@/src/state/useAppStore';
 import { router } from 'expo-router';
-import { useMemo, useState } from 'react';
-import {
-  ActivityIndicator,
-  FlatList,
-  Text,
-  TouchableOpacity,
-  useColorScheme,
-  View,
-} from 'react-native';
+import { useState } from 'react';
 
-export default function PlansScreen() {
-  const { plansQuery } = usePlans();
+export default function PlansTab() {
   const { session } = useAuth();
-  const colorScheme = useColorScheme();
+  const [activeTab, setActiveTab] = useState<'my-plans' | 'find-plans'>('my-plans');
 
-  const { sort, setSort } = useAppStore();
-  const [isGrid, setIsGrid] = useState(false);
-  // flatten pages and deduplicate by `id` to avoid duplicate items
-  const flatData = useMemo(() => {
-    const items = plansQuery.data?.pages.flatMap((page) => page.items) || [];
-    return items;
-  }, [plansQuery.data]);
-
-  const [refreshing, setRefreshing] = useState(false);
-
-  const onRefresh = async () => {
-    setRefreshing(true);
-
-    await plansQuery.refetch();
-
-    setRefreshing(false);
-  };
-
-  const sortedPlans = useMemo(() => {
-    if (!flatData) return [];
-    if (sort === 'Recent') {
-      return [...flatData].sort(
-        (a, b) => new Date(b.created_at!).getTime() - new Date(a.created_at!).getTime(),
-      );
-    }
-
-    if (sort === 'Trending') {
-      return [...flatData].sort(
-        (a, b) =>
-          (b.likes_count || 0) +
-          (b.comments_count || 0) * 2 -
-          ((a.likes_count || 0) + (a.comments_count || 0) * 2),
-      );
-    }
-
-    return flatData;
-  }, [sort, flatData]);
+  const { sort, setSort, isGrid, setIsGrid } = useAppStore();
 
   return (
-    <View className="flex-1 bg-gray-100 dark:bg-black px-4 pt-12">
-      {/* Top Bar */}
-      <View className="flex-row justify-between items-center mb-4">
-        <TouchableOpacity onPress={() => setIsGrid(!isGrid)}>
-          <Ionicons
-            name={isGrid ? 'list-outline' : 'grid-outline'}
-            size={24}
-            color={colorScheme === 'dark' ? '#fff' : '#222'}
-          />
-        </TouchableOpacity>
-
-        <View className="flex-row items-center gap-4">
-          <Ionicons
-            name="search"
-            size={22}
-            color={colorScheme === 'dark' ? '#fff' : '#222'}
-            onPress={() => router.push('/search/devotionals')}
-          />
-          <Ionicons
-            name="settings-outline"
-            size={22}
-            color={colorScheme === 'dark' ? '#fff' : '#222'}
-          />
-          {!session && (
-            <TouchableOpacity onPress={() => router.push('/login/signin')}>
-              <Ionicons
-                name="person-add"
-                size={22}
-                color={colorScheme === 'dark' ? '#fff' : '#222'}
-              />
-            </TouchableOpacity>
-          )}
-        </View>
-      </View>
-
-      {/* Sort Dropdown */}
-      <View className="flex-row items-center mb-3">
-        <Text className="text-gray-700 dark:text-gray-200 mr-2">Sort by:</Text>
-
-        <Dropdown
-          value={sort}
-          onChange={(v) => setSort(v as 'Recent' | 'Trending')}
-          options={['Recent', 'Trending']}
-        />
-      </View>
-
-      {plansQuery.isLoading && <ActivityIndicator style={{ marginTop: 30 }} size="large" />}
-
-      {/* Plan list */}
-      <FlatList
-        showsVerticalScrollIndicator={false}
-        data={sortedPlans}
-        keyExtractor={(item) => item.id!}
-        refreshing={refreshing}
-        onRefresh={onRefresh}
-        key={isGrid ? 'grid' : 'list'}
-        numColumns={isGrid ? 2 : 1}
-        columnWrapperStyle={isGrid ? { gap: 12 } : undefined}
-        contentContainerStyle={{ paddingBottom: 40 }}
-        renderItem={({ item }) => (isGrid ? <GridCard item={item} /> : <ListCard item={item} />)}
-        onEndReached={() => {
-          if (plansQuery.hasNextPage) {
-            plansQuery.fetchNextPage();
-          }
-        }}
-        onEndReachedThreshold={2}
-        ListFooterComponent={
-          plansQuery.isFetchingNextPage ? (
-            <ActivityIndicator size="small" style={{ marginTop: 10 }} />
-          ) : null
-        }
-      />
-    </View>
+    <PlansScreen
+      isGrid={isGrid}
+      sort={sort}
+      activeTab={activeTab}
+      isAuthenticated={!!session}
+      onToggleGrid={() => setIsGrid(!isGrid)}
+      onChangeTab={setActiveTab}
+      onChangeSort={setSort}
+      onSearch={() => router.push('/search/devotionals')}
+      onLogin={() => router.push('/login/signin')}
+    />
   );
 }

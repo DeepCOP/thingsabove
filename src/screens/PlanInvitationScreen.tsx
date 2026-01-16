@@ -1,0 +1,123 @@
+import { Image, Text, TouchableOpacity, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
+type Props = {
+  inviterName: string;
+  inviterInitial: string;
+  inviterAvatar?: string | null;
+
+  planTitle?: string;
+  planCover?: string | null;
+  totalDays?: number;
+
+  members?: any[];
+  diffDays: number;
+  startDateLabel: string;
+
+  hasAccepted: boolean;
+  isGuest: boolean;
+  isAccepting: boolean;
+
+  onAccept: () => void;
+  onDecline: () => void;
+};
+
+export default function PlanInvitationScreen({
+  inviterName,
+  inviterInitial,
+  inviterAvatar,
+  planTitle,
+  planCover,
+  totalDays,
+  members,
+  diffDays,
+  startDateLabel,
+  hasAccepted,
+  isGuest,
+  isAccepting,
+  onAccept,
+  onDecline,
+}: Props) {
+  const insets = useSafeAreaInsets();
+
+  return (
+    <View className="flex-1 bg-white dark:bg-black px-6 pt-12">
+      {/* Avatar */}
+      <View className="items-center mb-6">
+        {inviterAvatar ? (
+          <View className="rounded-full border-2 dark:border-white border-black">
+            <Image source={{ uri: inviterAvatar }} className="w-24 h-24 rounded-full" />
+          </View>
+        ) : (
+          <View className="w-24 h-24 rounded-full border-2 dark:border-white border-black items-center justify-center">
+            <Text className="text-3xl font-bold dark:text-gray-200">{inviterInitial}</Text>
+          </View>
+        )}
+      </View>
+
+      {/* Invitation text */}
+      <Text className="text-center dark:text-white text-lg mb-6">
+        <Text className="font-semibold">{inviterName}</Text> wants to read this plan with you.
+      </Text>
+
+      {/* Plan Card */}
+      <View className="bg-neutral-300 dark:bg-neutral-800 rounded-2xl p-4 mb-10">
+        {planCover ? (
+          <Image source={{ uri: planCover }} className="w-full h-44 rounded-lg" />
+        ) : (
+          <View className="w-full h-44 bg-gray-300 dark:bg-neutral-800" />
+        )}
+
+        <Text className="dark:text-white text-lg font-semibold mt-3">{planTitle}</Text>
+        <Text className="dark:text-gray-400 text-sm mb-3">{totalDays} Days</Text>
+
+        {/* Participants */}
+        <Text className="dark:text-gray-400 text-sm mb-1">Participants</Text>
+        <View className="flex-row mb-3">
+          {members?.slice(0, 3).map((m) => (
+            <View
+              key={m.user_id}
+              className="w-8 h-8 rounded-full border dark:border-white mr-2 items-center justify-center">
+              {m.profiles?.avatar_url ? (
+                <Image source={{ uri: m.profiles.avatar_url }} className="w-8 h-8 rounded-full" />
+              ) : (
+                <Text className="dark:text-white text-xs">
+                  {m.profiles?.first_name?.[0] ?? 'U'}
+                </Text>
+              )}
+            </View>
+          ))}
+        </View>
+
+        {/* Start date */}
+        <Text className="dark:text-gray-400 text-sm">{startDateLabel}</Text>
+      </View>
+
+      {/* Actions */}
+      {!hasAccepted ? (
+        <View className="absolute left-0 right-0 px-6" style={{ bottom: insets.bottom + 20 }}>
+          <TouchableOpacity
+            onPress={onAccept}
+            disabled={isAccepting}
+            className="bg-black dark:bg-white py-4 rounded-full mb-3">
+            <Text className="text-center font-semibold text-lg dark:text-black text-white">
+              ACCEPT
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={onDecline}
+            className="py-3 rounded-full bg-gray-300 dark:bg-neutral-600">
+            <Text className="text-center text-lg dark:text-white">DECLINE</Text>
+          </TouchableOpacity>
+        </View>
+      ) : (
+        <View style={{ paddingBottom: insets.bottom + 20 }}>
+          <Text className="text-center dark:text-white text-lg bg-gray-300 dark:bg-neutral-600 rounded-full py-3">
+            You have accepted the invitation
+          </Text>
+        </View>
+      )}
+    </View>
+  );
+}

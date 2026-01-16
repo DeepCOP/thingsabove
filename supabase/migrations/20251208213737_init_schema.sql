@@ -214,49 +214,6 @@ create policy "authors manage scripture refs"
   on public.scripture_references(user_id);
 
 
---comments
-create table if not exists public.comments (
-  id uuid primary key default gen_random_uuid(),
-  user_id uuid references auth.users(id) on delete set null,
-  content text not null,
-  entity_type text check (entity_type in ('plan', 'day')),
-  entity_id uuid not null,
-  created_at timestamptz default now(),
-  updated_at timestamptz default now()
-);
-
-
-alter table public.comments enable row level security;
-
-
-create policy "comments readable by everyone"
-  on public.comments
-  for select
-  using (true);
-
-create policy "logged in users can insert comments"
-  on public.comments
-  for insert
-  with check (auth.uid() = user_id);
-
-create policy "comment owners can update"
-  on public.comments
-  for update
-  using (auth.uid() = user_id)
-  with check (auth.uid() = user_id);
-
-
-create policy "comment owners can delete"
-  on public.comments
-  for delete
-  using (auth.uid() = user_id);
-
-
-create index if not exists idx_comments_entity 
-  on public.comments(entity_type, entity_id);
-
-create index if not exists idx_comments_user_id 
-  on public.comments(user_id);
 
 
 -- Reports
@@ -300,40 +257,7 @@ create index if not exists idx_reports_plan_id
   on public.reports(plan_id);
 
 
--- Plan Progress
-create table if not exists public.plan_progress (
-  id uuid primary key default gen_random_uuid(),
-  user_id uuid references auth.users(id) on delete cascade,
-  plan_id uuid references public.devotional_plans(id) on delete cascade,
-  current_day int not null default 1,
-  completed_days int[] default '{}',
-  updated_at timestamptz default now(),
-  created_at timestamptz default now(),
-  unique (user_id, plan_id)
-);
 
-alter table public.plan_progress enable row level security;
-
-
-create policy "users can view their own progress"
-  on public.plan_progress
-  for select
-  using (auth.uid() = user_id);
-
-
-create policy "users can insert their own progress"
-  on public.plan_progress
-  for insert
-  with check (auth.uid() = user_id);
-
-create policy "users can update their own progress"
-  on public.plan_progress
-  for update
-  using (auth.uid() = user_id)
-  with check (auth.uid() = user_id);
-
-create index if not exists idx_progress_user on public.plan_progress(user_id);
-create index if not exists idx_progress_plan on public.plan_progress(plan_id);
 
 
 
@@ -544,10 +468,6 @@ as select
   p.created_at,
   p.updated_at,
 
-  -- comments count
-  (select count(*) from public.comments c 
-   where c.entity_type = 'plan' and c.entity_id = p.id) as comments_count,
-
   -- like count
   (select count(*) from public.plan_reactions r 
    where r.plan_id = p.id and r.reaction_type = 'like') as likes_count,
@@ -559,7 +479,7 @@ as select
 from public.devotional_plans p;
 
 
---search
+--searchbu
 create extension if not exists pg_trgm;
 
 
@@ -613,51 +533,523 @@ as $$
   limit limit_count;
 $$;
 
-create or replace view public.plan_day_view as
-select 
-    d.id as day_id,
-    d.plan_id,
-    d.day_number,
-    d.content as devotional_content,
-    (select r.reference 
-     from scripture_references r
-     where r.day_id = d.id) as scripture_refs
-from devotional_days d
-order by d.day_number;
+
+
+
+create table friends (
+  id uuid primary key default gen_random_uuid(),
+  requester_id uuid not null references public.profiles(id),
+  receiver_id uuid not null references public.profiles(id),
+  status text check (status in ('pending', 'accepted')) not null,
+  created_at timestamptz default now(),
+  unique (requester_id, receiver_id)
+);
+
+
+alter publication supabase_realtime
+add table friends;
+
+create or replace function public.send_friend_request(
+  p_receiver_id uuid
+)
+returns void
+language plpgsql
+security definer
+as $$
+begin
+  -- Prevent self request
+  if auth.uid() = p_receiver_id then
+    raise exception 'Cannot send friend request to yourself';
+  end if;
+
+  -- Prevent duplicate (both directions)
+  if exists (
+    select 1 from friends
+    where 
+      (requester_id = auth.uid() and receiver_id = p_receiver_id)
+      or
+      (requester_id = p_receiver_id and receiver_id = auth.uid())
+  ) then
+    raise exception 'Friend request already exists';
+  end if;
+
+  insert into friends (requester_id, receiver_id, status)
+  values (auth.uid(), p_receiver_id, 'pending');
+
+  perform create_notification(
+    ARRAY[p_receiver_id], 
+    'friend_request',
+    'New Friend Request',
+    'You have a new friend request',
+    jsonb_build_object(
+      'requester_id', auth.uid()
+    )
+  );
+end;
+$$;
+
+
+
+create or replace function public.accept_friend_request(
+  p_requester_id uuid
+)
+returns void
+language plpgsql
+security definer
+as $$
+begin
+  update friends
+  set status = 'accepted'
+  where requester_id = p_requester_id
+    and receiver_id = auth.uid()
+    and status = 'pending';
+
+  if not found then
+    raise exception 'Friend request not found or already handled';
+  end if;
+end;
+$$;
+
+
+create or replace function public.decline_friend_request(
+  p_requester_id uuid
+)
+returns void
+language plpgsql
+security definer
+as $$
+begin
+  delete from friends
+  where requester_id = p_requester_id
+    and receiver_id = auth.uid()
+    and status = 'pending';
+
+  if not found then
+    raise exception 'Friend request not found or already handled';
+  end if;
+end;
+$$;
+
+
+
+create or replace function public.get_user_by_email(
+  p_email text
+)
+returns table (
+  id uuid,
+  email text,
+  first_name text,
+  last_name text,
+  avatar_url text,
+  friendship_status text
+)
+security definer
+language plpgsql
+as $$
+begin
+  return query
+  select
+    p.id,
+    p.email,
+    p.first_name,
+    p.last_name,
+    p.avatar_url,
+    f.status as friendship_status
+  from profiles p
+  left join friends f
+    on (
+      (f.requester_id = auth.uid() and f.receiver_id = p.id)
+      or
+      (f.receiver_id = auth.uid() and f.requester_id = p.id)
+    )
+  where p.email = p_email
+    and p.id <> auth.uid();
+end;
+$$;
+
+
+create or replace function public.get_pending_friend_requests()
+returns table (
+  id uuid,
+  requester_id uuid,
+  first_name text,
+  last_name text,
+  avatar_url text,
+  created_at timestamptz
+)
+language sql
+security definer
+as $$
+  select
+    f.id,
+    p.id as requester_id,
+    p.first_name,
+    p.last_name,
+    p.avatar_url,
+    f.created_at
+  from friends f
+  join profiles p on p.id = f.requester_id
+  where f.receiver_id = auth.uid()
+    and f.status = 'pending'
+  order by f.created_at desc;
+$$;
+
+
+
+
+create table plan_groups (
+  id uuid primary key default gen_random_uuid(),
+  created_by uuid not null references public.profiles(id),
+  start_date date not null,
+  plan_id uuid not null references devotional_plans(id) on delete cascade,
+  max_members int default 150,
+  completed_days int default 0,
+  created_at timestamptz default now()
+);
+
+
+create table plan_group_members (
+  id uuid primary key default gen_random_uuid(),
+  group_id uuid not null references plan_groups(id) on delete cascade,
+  user_id uuid not null references profiles(id),
+  status text check (status in ('pending', 'accepted')) default 'pending',
+  joined_at timestamptz,
+  unique (group_id, user_id)
+);
+
+
+create or replace function public.create_plan_group(
+  p_user_id uuid,
+  p_plan_id uuid,
+  p_start_date date,
+  p_friends_ids uuid[]
+)
+returns uuid
+language plpgsql
+security definer
+as $$
+declare
+  v_group_id uuid;
+  v_progress_id uuid;
+begin
+
+  -- 1️⃣ Create plan group
+  insert into plan_groups (
+    plan_id,
+    created_by,
+    start_date
+  )
+  values (
+    p_plan_id,
+    p_user_id,
+    p_start_date
+  )
+  returning id into v_group_id;
+
+  -- 2️⃣ Add creator as accepted member
+  insert into plan_group_members (
+    group_id,
+    user_id,
+    status,
+    joined_at
+  )
+  values (
+    v_group_id,
+    p_user_id,
+    'accepted',
+    now()
+  );
+
+  -- 3️⃣ Create plan progress
+  insert into plan_progress (
+    user_id,
+    plan_id,
+    group_id,
+    current_day,
+    completed_days,
+    start_date
+  )
+  values (
+    p_user_id,
+    p_plan_id,
+    v_group_id,
+    1,
+    '{}',
+    p_start_date
+  )
+  on conflict (user_id, plan_id, group_id) do nothing;
+
+  select id into v_progress_id
+  from plan_progress
+  where user_id = p_user_id
+    and plan_id = p_plan_id
+    and group_id = v_group_id;
+
+  insert into plan_group_members (group_id, user_id, status)
+  select v_group_id, unnest(p_friends_ids), 'pending'
+  on conflict (group_id, user_id) do nothing;
+
+  perform create_notification(
+    p_friends_ids,
+    'plan_invite',
+    'Plan Invitation',
+    'You were invited to read a plan with friends',
+    jsonb_build_object(
+      'plan_id', p_plan_id,
+      'group_id', v_group_id,
+      'invited_by', auth.uid()
+    )
+  );
+
+  -- 4️⃣ Return the group id
+  return v_progress_id;
+end;
+$$;
+
+
+
+create or replace function public.add_user_to_existing_plan_group(
+  p_group_id uuid,
+  p_friends_ids uuid[]
+)
+returns void
+language plpgsql
+security definer
+as $$
+declare
+  v_plan_id uuid;
+begin
+  -- Ensure group exists and fetch plan data
+  select plan_id
+  into v_plan_id
+  from plan_groups
+  where id = p_group_id;
+
+  if not found then
+    raise exception 'Plan group not found';
+  end if;
+
+  insert into plan_group_members (group_id, user_id, status)
+  select p_group_id, unnest(p_friends_ids), 'pending'
+  on conflict (group_id, user_id) do nothing;
+
+    perform create_notification(
+    p_friends_ids,
+    'plan_invite',
+    'Plan Invitation',
+    'You were invited to read a plan with friends',
+    jsonb_build_object(
+      'plan_id', v_plan_id,
+      'group_id', p_group_id,
+      'invited_by', auth.uid()
+    )
+  );
+end;
+$$;
+
+
+create or replace function public.accept_plan_group_invite(
+  p_group_id uuid,
+  p_plan_id uuid,
+  p_start_date date
+)
+returns uuid
+language plpgsql
+as $$
+declare
+  v_progress_id uuid;
+begin
+
+  update plan_group_members
+  set status = 'accepted',
+      joined_at = now()
+  where group_id = p_group_id
+    and user_id = auth.uid();
+
+    
+  -- 3️⃣ Create plan progress for creator (group-aware)
+  insert into plan_progress (
+    user_id,
+    plan_id,
+    group_id,
+    current_day,
+    completed_days,
+    start_date
+  )
+  values (
+    auth.uid(),
+    p_plan_id,
+    p_group_id,
+    1,
+    '{}',
+    p_start_date
+  )
+  on conflict (user_id, plan_id, group_id) do nothing;
+
+  select id into v_progress_id
+  from plan_progress
+  where user_id = auth.uid()
+    and plan_id = p_plan_id
+    and group_id = p_group_id;
+
+  return v_progress_id;
+end;
+$$;
+
+
+-- Plan Progress
+create table if not exists public.plan_progress (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid references auth.users(id) on delete cascade,
+  plan_id uuid references public.devotional_plans(id) on delete cascade,
+  current_day int not null default 1,
+  group_id uuid references public.plan_groups(id) on delete cascade,
+  completed_days int[] default '{}',
+  start_date timestamptz default now(),
+  updated_at timestamptz default now(),
+  created_at timestamptz default now(),
+  unique (user_id, plan_id, group_id)
+);
+
+alter table public.plan_progress enable row level security;
+
+
+create policy "users can view own or group members progress"
+on public.plan_progress
+for select
+using (
+  -- Can always see your own progress
+  auth.uid() = user_id
+
+  OR
+
+  -- Can see progress of members in same plan group
+  (
+    group_id IS NOT NULL
+    AND exists (
+      select 1
+      from plan_group_members pgm
+      where pgm.group_id = plan_progress.group_id
+        and pgm.user_id = auth.uid()
+        and pgm.status = 'accepted'
+    )
+  )
+);
+
+
+create policy "users can insert their own progress"
+  on public.plan_progress
+  for insert
+  with check (auth.uid() = user_id);
+
+create policy "users can update their own progress"
+  on public.plan_progress
+  for update
+  using (auth.uid() = user_id)
+  with check (auth.uid() = user_id);
+
+create index if not exists idx_progress_user on public.plan_progress(user_id);
+create index if not exists idx_progress_plan on public.plan_progress(plan_id);
+
+
+create or replace function public.start_plan_progress(
+  p_user_id uuid,
+  p_plan_id uuid,
+  p_group_id uuid default null,
+  p_start_date timestamptz default now()
+)
+returns uuid
+language plpgsql
+security definer
+as $$
+declare
+  v_progress_id uuid;
+begin
+  -- Insert plan progress
+  insert into public.plan_progress (
+    user_id,
+    plan_id,
+    group_id,
+    current_day,
+    completed_days,
+    start_date
+  )
+  values (
+    p_user_id,
+    p_plan_id,
+    p_group_id,
+    1,
+    '{}',
+    p_start_date
+  )
+  on conflict (user_id, plan_id, group_id)
+  do update
+    set updated_at = now()
+  returning id into v_progress_id;
+
+  return v_progress_id;
+end;
+$$;
+
+
 
 
 create table if not exists public.day_items_progress (
   id uuid primary key default gen_random_uuid(),
   user_id uuid references auth.users(id) on delete cascade,
   plan_id uuid references public.devotional_plans(id) on delete cascade,
+  progress_id uuid references public.plan_progress(id) on delete cascade,
   day_id uuid references public.devotional_days(id) on delete cascade,
   item_type text check (item_type in ('devotional', 'scripture')),
   item_key text, -- e.g. scripture reference or 'main'
+  devotional_content text,
+  day_number int,
+  group_id uuid references public.plan_groups(id) on delete cascade,
   completed boolean default false,
   created_at timestamptz default now(),
-  updated_at timestamptz default now(),
-  unique (user_id, plan_id, day_id, item_type, item_key)
+  updated_at timestamptz default now()
 );
+
+-- Personal plan (no group)
+create unique index uniq_day_items_personal
+on day_items_progress (user_id, progress_id, day_id, item_type, item_key)
+where group_id is null;
+
+-- Group plan
+create unique index uniq_day_items_group
+on day_items_progress (user_id, progress_id, day_id, item_type, item_key, group_id)
+where group_id is not null;
 
 
 create or replace function public.ensure_day_items_exist(
   p_user_id uuid,
   p_plan_id uuid,
-  p_day_id uuid
+  p_progress_id uuid,
+  p_day_id uuid,
+  p_group_id uuid default null
 )
 returns void
 language plpgsql
 as $$
 declare
   refs text[];
+  v_devotional_content text;
+  v_day_number int;
   ref text;
 begin
+
+  select content, day_number
+  into v_devotional_content, v_day_number
+  from devotional_days
+  where id = p_day_id;
+
+
   -- 1️⃣ Ensure devotional item
   insert into day_items_progress (
-    user_id, plan_id, day_id, item_type, item_key
+    user_id, progress_id, plan_id, day_id, item_type, item_key, devotional_content, day_number, group_id
   )
   values (
-    p_user_id, p_plan_id, p_day_id, 'devotional', 'main'
+    p_user_id, p_progress_id, p_plan_id, p_day_id, 'devotional', 'main', v_devotional_content, v_day_number, p_group_id
   )
   on conflict do nothing;
 
@@ -675,10 +1067,10 @@ begin
   -- 3️⃣ Ensure one item per scripture ref
   foreach ref in array refs loop
     insert into day_items_progress (
-      user_id, plan_id, day_id, item_type, item_key
+      user_id, progress_id, plan_id, day_id, item_type, item_key, group_id, day_number
     )
     values (
-      p_user_id, p_plan_id, p_day_id, 'scripture', ref
+      p_user_id, p_progress_id, p_plan_id, p_day_id, 'scripture', ref, p_group_id, v_day_number
     )
     on conflict do nothing;
   end loop;
@@ -689,10 +1081,12 @@ $$;
 create or replace function public.toggle_item_completion(
   p_user_id uuid,
   p_plan_id uuid,
+  p_progress_id uuid,
   p_day_id uuid,
   p_item_type text,
   p_item_key text,
-  p_completed boolean
+  p_completed boolean,
+  p_group_id uuid default null
 )
 returns void
 language plpgsql
@@ -701,76 +1095,108 @@ declare
   v_total_items int;
   v_completed_items int;
   v_day_number int;
-  v_total_days int;
 begin
+  -- Ensure all items exist
+  perform ensure_day_items_exist(
+    p_user_id,
+    p_plan_id,
+    p_progress_id,
+    p_day_id,
+    p_group_id
+  );
 
-  perform ensure_day_items_exist(p_user_id, p_plan_id, p_day_id);
+  -- Insert if missing (partial index safe)
+  insert into day_items_progress (
+    user_id, progress_id, plan_id, day_id, item_type, item_key, completed, group_id
+  )
+  values (
+    p_user_id, p_progress_id, p_plan_id, p_day_id, p_item_type, p_item_key, p_completed, p_group_id
+  )
+  on conflict do nothing;
 
-  -- Upsert item progress
-  insert into day_items_progress (user_id, plan_id, day_id, item_type, item_key, completed)
-  values (p_user_id, p_plan_id, p_day_id, p_item_type, p_item_key, p_completed)
-  on conflict (user_id, plan_id, day_id, item_type, item_key)
-  do update set completed = p_completed, updated_at = now();
+  -- Update item (NULL-safe)
+  update day_items_progress
+  set completed = p_completed,
+      updated_at = now()
+  where user_id = p_user_id
+    and progress_id = p_progress_id
+    and day_id = p_day_id
+    and item_type = p_item_type
+    and item_key = p_item_key
+    and (
+      (p_group_id is null and group_id is null)
+      or group_id = p_group_id
+    );
 
   -- Get day number
-  select day_number into v_day_number
+  select day_number
+  into v_day_number
   from devotional_days
   where id = p_day_id;
 
-  -- Get total days in plan
-  select total_days into v_total_days
-  from devotional_plans
-  where id = p_plan_id;
-
-
-  -- Count total items for the day (devotional + scripture)
-  select count(*) into v_total_items
+  -- Count total items
+  select count(*)
+  into v_total_items
   from day_items_progress
   where user_id = p_user_id
-    and plan_id = p_plan_id
-    and day_id = p_day_id;
+    and progress_id = p_progress_id
+    and day_id = p_day_id
+    and (
+      (p_group_id is null and group_id is null)
+      or group_id = p_group_id
+    );
 
   -- Count completed items
-  select count(*) into v_completed_items
+  select count(*)
+  into v_completed_items
   from day_items_progress
   where user_id = p_user_id
-    and plan_id = p_plan_id
+    and progress_id = p_progress_id
     and day_id = p_day_id
-    and completed = true;
+    and completed = true
+    and (
+      (p_group_id is null and group_id is null)
+      or group_id = p_group_id
+    );
 
-  -- Update plan_progress.completed_days safely
--- Update plan_progress.completed_days safely
-if v_completed_items = v_total_items then
-  update plan_progress
-  set 
-    completed_days = case
-      when not (v_day_number = ANY(completed_days))
+  -- Update completed_days
+if v_total_items > 0 and v_completed_items = v_total_items then
+    update plan_progress
+    set completed_days = case
+      when not (v_day_number = any(completed_days))
         then array_append(completed_days, v_day_number)
       else completed_days
     end,
     updated_at = now()
-  where user_id = p_user_id
-    and plan_id = p_plan_id;
-
-else
-  update plan_progress
-  set 
-    completed_days = array_remove(completed_days, v_day_number),
-    updated_at = now()
-  where user_id = p_user_id
-    and plan_id = p_plan_id;
-end if;
-
-
+    where user_id = p_user_id
+      and id = p_progress_id
+      and (
+        (p_group_id is null and group_id is null)
+        or group_id = p_group_id
+      );
+  else
+    update plan_progress
+    set completed_days = array_remove(completed_days, v_day_number),
+        updated_at = now()
+    where user_id = p_user_id
+      and id = p_progress_id
+      and (
+        (p_group_id is null and group_id is null)
+        or group_id = p_group_id
+      );
+  end if;
 end;
 $$;
+
 
 
 create or replace function public.toggle_day_completion(
   p_user_id uuid,
   p_plan_id uuid,
+  p_progress_id uuid,
   p_day_id uuid,
-  p_completed boolean
+  p_completed boolean,
+  p_group_id uuid default null
 )
 returns void
 language plpgsql
@@ -779,7 +1205,7 @@ declare
   v_day_number int;
 begin
   -- Ensure items exist for the day
-  perform ensure_day_items_exist(p_user_id, p_plan_id, p_day_id);
+  perform ensure_day_items_exist(p_user_id, p_plan_id, p_progress_id, p_day_id, p_group_id);
 
   -- Get day number
   select day_number
@@ -792,8 +1218,13 @@ begin
   set completed = p_completed,
       updated_at = now()
   where user_id = p_user_id
-    and plan_id = p_plan_id
-    and day_id = p_day_id;
+    and progress_id = p_progress_id
+    and day_id = p_day_id
+    and  (
+        (p_group_id is null and group_id is null)
+        or group_id = p_group_id
+      );
+
 
   -- Update completed_days array
   if p_completed then
@@ -806,15 +1237,425 @@ begin
       end,
       updated_at = now()
     where user_id = p_user_id
-      and plan_id = p_plan_id;
+      and id = p_progress_id
+      and  (
+        (p_group_id is null and group_id is null)
+        or group_id = p_group_id
+      );
   else
     update plan_progress
     set
       completed_days = array_remove(completed_days, v_day_number),
       updated_at = now()
     where user_id = p_user_id
-      and plan_id = p_plan_id;
+      and id = p_progress_id
+      and  (
+        (p_group_id is null and group_id is null)
+        or group_id = p_group_id
+      );
   end if;
 
 end;
 $$;
+
+
+--comments
+create table if not exists public.comments (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid references auth.users(id) on delete set null,
+  plan_id uuid not null references devotional_plans(id) on delete cascade,
+  day_id uuid not null references devotional_days(id) on delete cascade,
+  group_id uuid not null references public.plan_groups(id) on delete cascade,
+  content text not null check (length(trim(content)) > 0),
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+
+
+alter table public.comments enable row level security;
+
+
+create policy "comments readable by everyone"
+  on public.comments
+  for select
+  using (true);
+
+create policy "logged in users can insert comments"
+  on public.comments
+  for insert
+  with check (auth.uid() = user_id);
+
+create policy "comment owners can update"
+  on public.comments
+  for update
+  using (auth.uid() = user_id)
+  with check (auth.uid() = user_id);
+
+
+create policy "comment owners can delete"
+  on public.comments
+  for delete
+  using (auth.uid() = user_id);
+
+create index idx_plan_day_comments_plan_day
+  on comments (plan_id, day_id);
+
+create index idx_plan_day_comments_user
+  on comments (user_id);
+
+create index idx_plan_day_comments_parent
+  on comments (group_id);
+
+
+create or replace function public.add_plan_day_comment(
+  p_plan_id uuid,
+  p_day_id uuid,
+  p_content text,
+  p_group_id uuid default null
+)
+returns void
+language plpgsql
+security definer
+as $$
+begin
+  insert into comments (
+    plan_id,
+    day_id,
+    user_id,
+    group_id,
+    content
+  )
+  values (
+    p_plan_id,
+    p_day_id,
+    auth.uid(),
+    p_group_id,
+    trim(p_content)
+  );
+end;
+$$;
+
+create or replace function public.get_plan_day_comments(
+  p_plan_id uuid,
+  p_day_id uuid,
+  p_group_id uuid default null
+)
+returns table (
+  id uuid,
+  user_id uuid,
+  group_id uuid,
+  content text,
+  created_at timestamptz,
+  first_name text,
+  last_name text,
+  avatar_url text
+)
+language sql
+stable
+as $$
+  select
+    c.id,
+    c.user_id,
+    c.group_id,
+    c.content,
+    c.created_at,
+    p.first_name,
+    p.last_name,
+    p.avatar_url
+  from comments c
+  join profiles p on p.id = c.user_id
+  where c.plan_id = p_plan_id
+    and c.day_id = p_day_id
+    and c.group_id = p_group_id
+  order by c.created_at asc;
+$$;
+
+
+create table notifications (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references public.profiles(id) on delete cascade,
+
+  type text not null,
+  title text not null,
+  body text,
+
+  data jsonb, 
+
+  is_read boolean default false,
+  created_at timestamptz default now()
+);
+
+create index idx_notifications_user on notifications(user_id);
+create index idx_notifications_unread on notifications(user_id, is_read);
+
+
+create or replace function public.create_notification(
+  p_user_ids uuid[],
+  p_type text,
+  p_title text,
+  p_body text,
+  p_data jsonb default '{}'::jsonb
+)
+returns void
+language plpgsql
+as $$
+begin
+  insert into notifications (user_id, type, title, body, data)
+  select unnest(p_user_ids), p_type, p_title, p_body, p_data;
+end;
+$$;
+
+
+create or replace function public.get_my_notifications()
+returns table (
+  id uuid,
+  type text,
+  title text,
+  body text,
+  data jsonb,
+  is_read boolean,
+  created_at timestamptz
+)
+language sql
+stable
+as $$
+  select
+    id,
+    type,
+    title,
+    body,
+    data,
+    is_read,
+    created_at
+  from notifications
+  where user_id = auth.uid()
+  order by created_at desc;
+$$;
+
+
+
+create or replace function public.mark_notification_read(
+  p_notification_id uuid
+)
+returns void
+language sql
+as $$
+  update notifications
+  set is_read = true
+  where id = p_notification_id
+    and user_id = auth.uid();
+$$;
+
+
+alter table public.notifications
+enable row level security;
+
+create policy "Users can read their own notifications"
+on public.notifications
+for select
+using (
+  auth.uid() = user_id
+);
+
+
+create policy "Users can update their own notifications"
+on public.notifications
+for update
+using (
+  auth.uid() = user_id
+)
+with check (
+  auth.uid() = user_id
+);
+
+
+alter publication supabase_realtime
+add table notifications;
+
+
+create or replace function unread_notifications_count()
+returns integer
+language sql
+security definer
+as $$
+  select count(*)
+  from notifications
+  where user_id = auth.uid()
+    and is_read = false;
+$$;
+
+
+
+alter table public.friends enable row level security;
+alter table public.day_items_progress enable row level security;
+alter table public.plan_group_members enable row level security;
+alter table public.plan_groups enable row level security;
+
+create or replace function public.is_group_member(p_group_id uuid)
+returns boolean
+language sql
+security definer
+set search_path = public
+as $$
+  select exists (
+    select 1
+    from plan_group_members
+    where group_id = p_group_id
+      and user_id = auth.uid()
+  );
+$$;
+
+
+create policy "Friends: select own friendships"
+on public.friends
+for select
+using (
+  requester_id = auth.uid()
+  or receiver_id = auth.uid()
+);
+
+
+create policy "Friends: send request"
+on public.friends
+for insert
+with check (
+  requester_id = auth.uid()
+  and requester_id <> receiver_id
+);
+
+
+create policy "Friends: update status"
+on public.friends
+for update
+using (
+  requester_id = auth.uid()
+  or receiver_id = auth.uid()
+);
+
+
+create policy "Friends: delete friendship"
+on public.friends
+for delete
+using (
+  requester_id = auth.uid()
+  or receiver_id = auth.uid()
+);
+
+
+create policy "Plan groups: view group"
+on public.plan_groups
+for select
+using (
+  created_by = auth.uid()
+  or public.is_group_member(id)
+);
+
+create policy "Plan groups: create group"
+on public.plan_groups
+for insert
+with check (
+  created_by = auth.uid()
+);
+
+
+create policy "Plan groups: update group"
+on public.plan_groups
+for update
+using (
+  created_by = auth.uid()
+);
+
+
+create policy "Plan groups: delete group"
+on public.plan_groups
+for delete
+using (
+  created_by = auth.uid()
+);
+
+
+create policy "Group members: view members"
+on public.plan_group_members
+for select
+using (
+  public.is_group_member(group_id)
+);
+
+
+create policy "Group members: join group"
+on public.plan_group_members
+for insert
+with check (
+  user_id = auth.uid()
+  or exists (
+    select 1
+    from plan_groups pg
+    where pg.id = group_id
+      and pg.created_by = auth.uid()
+  )
+);
+
+
+create policy "Group members: update status"
+on public.plan_group_members
+for update
+using (
+  user_id = auth.uid()
+  or exists (
+    select 1
+    from plan_groups pg
+    where pg.id = group_id
+      and pg.created_by = auth.uid()
+  )
+);
+
+
+create policy "Group members: leave or remove"
+on public.plan_group_members
+for delete
+using (
+  user_id = auth.uid()
+  or exists (
+    select 1
+    from plan_groups pg
+    where pg.id = group_id
+      and pg.created_by = auth.uid()
+  )
+);
+
+
+create policy "Day progress: view group progress"
+on public.day_items_progress
+for select
+using (
+  user_id = auth.uid()
+  or exists (
+    select 1
+    from plan_group_members pgm
+    where pgm.group_id = group_id
+      and pgm.user_id = auth.uid()
+      and pgm.status = 'accepted'
+  )
+);
+
+create policy "Day progress: insert own"
+on public.day_items_progress
+for insert
+with check (
+  user_id = auth.uid()
+);
+
+create policy "Day progress: update own"
+on public.day_items_progress
+for update
+using (
+  user_id = auth.uid()
+);
+
+
+create policy "Day progress: delete own"
+on public.day_items_progress
+for delete
+using (
+  user_id = auth.uid()
+);

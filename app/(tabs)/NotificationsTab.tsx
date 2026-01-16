@@ -1,10 +1,65 @@
-import { Text, View } from 'react-native';
-import React from 'react';
+import LoadingSpinner from '@/src/components/LoadingSpinner';
+import { useNotifications } from '@/src/hooks/useNotifications';
+import NotificationsScreen from '@/src/screens/NotificationsScreen';
+import { useAuth } from '@/src/state/AuthContext';
+import { Json } from '@/src/types/supabase.gen.types';
+import { useRouter } from 'expo-router';
 
-export default function Notifications() {
+type planInviteNotificationData = {
+  plan_id: string;
+  group_id: string;
+  invited_by: string;
+};
+
+type friendRequestNotificationData = {
+  requester_id: string;
+};
+
+export default function NotificationsTab() {
+  const router = useRouter();
+  const { session } = useAuth();
+  const { notificationsQuery, markRead } = useNotifications(session?.user?.id);
+
+  if (notificationsQuery.isLoading) {
+    return <LoadingSpinner />;
+  }
+
+  function handleNotificationPress(item: {
+    body: string;
+    created_at: string;
+    data: Json;
+    id: string;
+    is_read: boolean;
+    title: string;
+    type: string;
+  }) {
+    markRead.mutate(item.id);
+
+    const data = item.data as planInviteNotificationData & friendRequestNotificationData;
+
+    switch (item.type) {
+      case 'plan_invite':
+        router.push({
+          pathname: '/devotional_detail/[id]/invitation',
+          params: {
+            groupId: data.group_id,
+            invitedBy: data.invited_by,
+            id: data.plan_id,
+          },
+        });
+        break;
+      case 'friend_request':
+        router.push('/accept_friend');
+        break;
+      default:
+        break;
+    }
+  }
   return (
-    <View className="flex-1 justify-center items-center">
-      <Text>Notifications</Text>
-    </View>
+    <NotificationsScreen
+      notifications={notificationsQuery.data || []}
+      isLoading={notificationsQuery.isLoading}
+      onPress={handleNotificationPress}
+    />
   );
 }
