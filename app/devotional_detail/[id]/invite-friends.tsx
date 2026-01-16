@@ -3,14 +3,13 @@ import { useCreatePlanGroup } from '@/src/hooks/useCreatePlanGroup';
 import { useFriends } from '@/src/hooks/useFriends';
 import { useInviteFriends } from '@/src/hooks/useInviteFriends';
 import { usePlanGroupMembers } from '@/src/hooks/usePlanGroup';
+import InviteFriendsScreen from '@/src/screens/InviteFriendsScreen';
 import { useAuth } from '@/src/state/AuthContext';
-import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
-import { FlatList, Image, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-export default function InviteFriendsScreen() {
+export default function InviteFriends() {
   const { session } = useAuth();
   const { id, startDate, groupId, progressId } = useLocalSearchParams();
   const router = useRouter();
@@ -35,119 +34,50 @@ export default function InviteFriendsScreen() {
     setSelected((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
   };
 
+  const isSubmitting = inviteFriendsToExistingGroup.isPending || createPlanGroupMutation.isPending;
   return (
-    <View className="flex-1 bg-white dark:bg-black px-4" style={{ paddingBottom: insets.bottom }}>
-      {friends.length > 0 ? (
-        <>
-          <View className="flex-row justify-start items-center mt-6 mb-4 gap-5 border-b border-gray-300 dark:border-gray-700">
-            <TouchableOpacity
-              onPress={() => {
-                if (!friendsQuery.data) return;
-
-                setSelected(friends.map((friend) => friend.id));
-              }}
-              className="py-3  mb-4">
-              <Text className="capitalize text-gray-700 dark:text-gray-200">Select All</Text>
-            </TouchableOpacity>
-            {selected.length > 0 && (
-              <TouchableOpacity
-                onPress={() => {
-                  setSelected([]);
-                }}
-                className="py-3  mb-4">
-                <Text className="capitalize text-gray-700 dark:text-gray-200">Select None</Text>
-              </TouchableOpacity>
-            )}
-          </View>
-          <FlatList
-            data={friends}
-            keyExtractor={(item) => item.id}
-            renderItem={({ item }) => {
-              const isSelected = selected.includes(item.id);
-              return (
-                <TouchableOpacity
-                  onPress={() => toggle(item.id)}
-                  className="flex-row items-center mb-3 p-3 rounded-xl bg-gray-100 dark:bg-neutral-900">
-                  {item.avatar_url ? (
-                    <Image
-                      source={{ uri: item.avatar_url }}
-                      className="w-10 h-10 rounded-full mr-3"
-                    />
-                  ) : (
-                    <View className="w-10 h-10 rounded-full bg-gray-300 dark:bg-gray-700 mr-3" />
-                  )}
-                  <Text className="flex-1 dark:text-white font-semibold">
-                    {item.first_name} {item.last_name}
-                  </Text>
-
-                  {isSelected && <Ionicons name="checkmark-circle" size={22} color="#22c55e" />}
-                </TouchableOpacity>
-              );
-            }}
-          />
-          <TouchableOpacity
-            disabled={
-              selected.length === 0 ||
-              inviteFriendsToExistingGroup.isPending ||
-              createPlanGroupMutation.isPending
-            }
-            onPress={() => {
-              if (groupId) {
-                inviteFriendsToExistingGroup.mutate(selected, {
-                  onSuccess: () => {
-                    router.replace({
-                      pathname: `/plan_progress/[progressId]`,
-                      params: {
-                        groupId: groupId,
-                        planId: id as string,
-                        progressId: progressId as string,
-                      },
-                    });
-                  },
-                });
-                return;
-              }
-              createPlanGroupMutation.mutate(
-                {
-                  plan_id: id as string,
-                  invited_user_ids: selected,
-                  user_id: session?.user?.id as string,
-                  start_date: startDate as string,
+    <InviteFriendsScreen
+      friends={friends}
+      selected={selected}
+      isSubmitting={isSubmitting}
+      onToggle={toggle}
+      onSelectAll={() => setSelected(friends.map((f) => f.id))}
+      onClearSelection={() => setSelected([])}
+      onAddFriend={() => router.push('/add_friend')}
+      onSubmit={() => {
+        if (groupId) {
+          inviteFriendsToExistingGroup.mutate(selected, {
+            onSuccess: () => {
+              router.replace({
+                pathname: '/plan_progress/[progressId]',
+                params: {
+                  groupId,
+                  planId: id as string,
+                  progressId: progressId as string,
                 },
-                {
-                  onSuccess: (progressId) => {
-                    router.replace({
-                      pathname: `/plan_progress/[progressId]`,
-                      params: {
-                        progressId: progressId as string,
-                      },
-                    });
-                  },
-                },
-              );
-            }}
-            className="bg-black dark:bg-white py-4 rounded-full mt-4 mb-6">
-            {createPlanGroupMutation.isPending || inviteFriendsToExistingGroup.isPending ? (
-              <LoadingSpinner size={'small'} />
-            ) : (
-              <Text className="text-white dark:text-black text-center font-semibold">
-                Invite {selected.length} Friends
-              </Text>
-            )}
-          </TouchableOpacity>
-        </>
-      ) : (
-        <View className="flex-1 items-center justify-center">
-          <Text className="text-black dark:text-white">No Friends Found</Text>
-          <TouchableOpacity
-            onPress={() => router.push('/add_friend')}
-            className="bg-black dark:bg-white py-4 rounded-full px-4 mt-4">
-            <Text className="text-white dark:text-black text-center font-semibold">
-              Add Friends
-            </Text>
-          </TouchableOpacity>
-        </View>
-      )}
-    </View>
+              });
+            },
+          });
+          return;
+        }
+
+        createPlanGroupMutation.mutate(
+          {
+            plan_id: id as string,
+            invited_user_ids: selected,
+            user_id: session?.user?.id as string,
+            start_date: startDate as string,
+          },
+          {
+            onSuccess: (newProgressId) => {
+              router.replace({
+                pathname: '/plan_progress/[progressId]',
+                params: { progressId: newProgressId as string },
+              });
+            },
+          },
+        );
+      }}
+    />
   );
 }

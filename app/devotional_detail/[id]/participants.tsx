@@ -1,15 +1,13 @@
 import LoadingSpinner from '@/src/components/LoadingSpinner';
-import { ProgressBar } from '@/src/components/ProgressBar';
 import { usePlanGroupMembers } from '@/src/hooks/usePlanGroup';
-import { useUsersPlanProgress } from '@/src/hooks/usePlanProgress';
-import { PlanProgress } from '@/src/types/types';
+import { useGroupPlanProgressList } from '@/src/hooks/usePlanProgress';
+import ParticipantsScreen from '@/src/screens/ParticipantsScreen';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
-import { FlatList, Image, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-export default function InviteFriendsScreen() {
-  const { id, groupId, progressId } = useLocalSearchParams<{
+export default function Participants() {
+  const { id, groupId, progressId, totalDays } = useLocalSearchParams<{
     id: string;
     groupId: string;
     totalDays: string;
@@ -21,7 +19,7 @@ export default function InviteFriendsScreen() {
   const usersIds = useMemo(() => {
     return planGroupMembersQuery.data?.map((member) => member.user_id) || [];
   }, [planGroupMembersQuery.data]);
-  const usersPlanProgresses = useUsersPlanProgress(usersIds, groupId as string);
+  const usersPlanProgresses = useGroupPlanProgressList(usersIds, groupId as string);
   const [refreshing, setRefreshing] = useState(false);
 
   const insets = useSafeAreaInsets();
@@ -42,88 +40,22 @@ export default function InviteFriendsScreen() {
   }
 
   return (
-    <View className="flex-1 bg-white dark:bg-black px-4" style={{ paddingBottom: insets.bottom }}>
-      <FlatList
-        data={planGroupMembersQuery.data}
-        refreshing={refreshing}
-        onRefresh={onRefresh}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => {
-          return <MemberCard item={item} usersPlanProgresses={usersPlanProgresses.data || []} />;
-        }}
-      />
-
-      <TouchableOpacity
-        onPress={() => {
-          router.push({
-            pathname: `/devotional_detail/[id]/invite-friends`,
-            params: {
-              groupId: groupId,
-              id: id as string,
-              progressId: progressId as string,
-            },
-          });
-        }}
-        className="bg-black dark:bg-white py-4 rounded-full mt-4 mb-6">
-        <Text className="text-white dark:text-black text-center font-semibold">Invite others</Text>
-      </TouchableOpacity>
-    </View>
-  );
-}
-
-function MemberCard({
-  item,
-  usersPlanProgresses,
-}: {
-  item: {
-    id: string;
-    status: string | null;
-    joined_at: string | null;
-    user_id: string;
-    profiles: {
-      id: string;
-      first_name: string;
-      last_name: string;
-      avatar_url: string | null;
-    };
-  };
-  usersPlanProgresses: PlanProgress[];
-}) {
-  const { totalDays } = useLocalSearchParams<{
-    id: string;
-    groupId: string;
-    totalDays: string;
-  }>();
-  const planProgress = usersPlanProgresses.find((progress) => progress.user_id === item.user_id);
-
-  const percentageCompletion =
-    ((planProgress?.completed_days?.length || 0) / Number(totalDays || 1)) * 100;
-
-  return (
-    <View className="mb-3 p-3 rounded-xl bg-gray-100 dark:bg-neutral-900">
-      <View className="flex-row items-center mb-2">
-        {item.profiles.avatar_url ? (
-          <Image
-            source={{ uri: item.profiles.avatar_url }}
-            className="w-10 h-10 rounded-full mr-3"
-          />
-        ) : (
-          <View className="w-10 h-10 rounded-full bg-gray-300 dark:bg-gray-700 mr-3" />
-        )}
-
-        <View className="flex-1">
-          <Text className="dark:text-white font-semibold">
-            {item.profiles.first_name} {item.profiles.last_name}
-          </Text>
-
-          <Text className="text-xs text-gray-700 dark:text-neutral-200  mt-0.5">
-            {planProgress?.completed_days?.length || 0} / {totalDays} days completed
-          </Text>
-        </View>
-
-        <Text className="font-semibold text-green-600">{percentageCompletion.toFixed(2)}%</Text>
-      </View>
-      {planProgress && <ProgressBar percentage={percentageCompletion} />}
-    </View>
+    <ParticipantsScreen
+      members={planGroupMembersQuery.data || []}
+      totalDays={Number(totalDays)}
+      progresses={usersPlanProgresses.data || []}
+      refreshing={refreshing}
+      onRefresh={onRefresh}
+      onInvite={() =>
+        router.push({
+          pathname: '/devotional_detail/[id]/invite-friends',
+          params: {
+            id,
+            groupId,
+            progressId,
+          },
+        })
+      }
+    />
   );
 }

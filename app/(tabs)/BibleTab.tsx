@@ -1,4 +1,4 @@
-import BibleReaderView from '@/src/components/BibleReaderView';
+import BibleReaderView from '@/src/screens/BibleReaderViewScreen';
 import { Ionicons } from '@expo/vector-icons';
 import { Tabs, useRouter } from 'expo-router';
 import { useRef } from 'react';

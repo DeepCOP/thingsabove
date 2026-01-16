@@ -48,6 +48,7 @@ export type ParsedVerse = {
 export type Notifications = Database['public']['Tables']['notifications']['Row'];
 export type NotificationsInsert = Database['public']['Tables']['notifications']['Insert'];
 export type NotificationsUpdate = Database['public']['Tables']['notifications']['Update'];
+export type GetMyNotifications = Database['public']['Functions']['get_my_notifications']['Returns'];
 
 export type PlanGroupMembers = Database['public']['Tables']['plan_group_members']['Row'];
 export type PlanGroupMembersInsert = Database['public']['Tables']['plan_group_members']['Insert'];
@@ -56,3 +57,6 @@ export type PlanGroupMembersUpdate = Database['public']['Tables']['plan_group_me
 export type DayItemsProgress = Database['public']['Tables']['day_items_progress']['Row'];
 export type DayItemsProgressInsert = Database['public']['Tables']['day_items_progress']['Insert'];
 export type DayItemsProgressUpdate = Database['public']['Tables']['day_items_progress']['Update'];
+
+export type GetPendingFriendRequests =
+  Database['public']['Functions']['get_pending_friend_requests']['Returns'];

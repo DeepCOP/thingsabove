@@ -1,8 +1,8 @@
 import {
+  fetchGroupPlanProgressList,
   fetchPlanDays,
   fetchPlanProgress,
-  fetchUserPlanProgress,
-  fetchUsersPlanProgress,
+  fetchUserPlanProgressList,
 } from '@/src/api/queries';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { startPlanProgress } from '../api/mutations';
@@ -35,20 +35,20 @@ export function usePlanProgress(progress_id: string, user_id: string) {
   };
 }
 
-export const useUserPlanProgress = (user_id: string) => {
+export const useUserPlanProgressList = (user_id: string) => {
   const userPlanProgressQuery = useQuery({
     queryKey: ['user_plans_progressess', user_id],
     enabled: !!user_id,
-    queryFn: async () => fetchUserPlanProgress({ user_id }),
+    queryFn: async () => fetchUserPlanProgressList({ user_id }),
   });
   return userPlanProgressQuery;
 };
 
-export const useUsersPlanProgress = (userIds: string[], groupId: string) => {
+export const useGroupPlanProgressList = (userIds: string[], groupId: string) => {
   const usersPlanProgress = useQuery({
     queryKey: ['users_plans_progressess', userIds, groupId],
     enabled: !!userIds && userIds.length > 0 && !!groupId,
-    queryFn: async () => fetchUsersPlanProgress({ userIds, groupId }),
+    queryFn: async () => fetchGroupPlanProgressList({ userIds, groupId }),
   });
   return usersPlanProgress;
 };

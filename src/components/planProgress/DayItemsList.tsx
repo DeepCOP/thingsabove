@@ -1,6 +1,6 @@
 import { DayItemsProgress } from '@/src/types/types';
 import { Ionicons } from '@expo/vector-icons';
-import { ActivityIndicator, Text, TouchableOpacity, useColorScheme, View } from 'react-native';
+import { Text, TouchableOpacity, useColorScheme, View } from 'react-native';
 
 type Props = {
   items: DayItemsProgress[];
@@ -19,9 +19,7 @@ export function DayItemsList({ items, onPressItem, onToggle, toggleLoading }: Pr
           className="flex-row items-center justify-between"
           onPress={() => onPressItem(item)}>
           <View className="flex-row items-center gap-3">
-            {toggleLoading ? (
-              <ActivityIndicator size={'small'} />
-            ) : (
+            {
               <TouchableOpacity
                 disabled={toggleLoading}
                 onPress={() => onToggle(item)}
@@ -34,7 +32,7 @@ export function DayItemsList({ items, onPressItem, onToggle, toggleLoading }: Pr
                   color={colorScheme === 'dark' ? 'black' : 'white'}
                 />
               </TouchableOpacity>
-            )}
+            }
 
             <Text className="text-lg dark:text-white">
               {item?.item_type === 'devotional' ? 'Devotional' : item?.item_key || 'Scripture'}

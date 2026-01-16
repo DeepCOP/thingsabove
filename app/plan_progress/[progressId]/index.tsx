@@ -1,7 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import DayCommentsSection from '@/src/components/DayComment';
 import { useDayItemsProgress } from '@/src/hooks/useDayItemsProgress';
 import { useFetchDevotionalPlanById } from '@/src/hooks/useDevotionalPlans';
 import { useDevotionalDays, usePlanProgress } from '@/src/hooks/usePlanProgress';
@@ -14,20 +13,13 @@ import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
 import LoadingSpinner from '@/src/components/LoadingSpinner';
-import { DayItemsList } from '@/src/components/planProgress/DayItemsList';
-import { DaysCarousel } from '@/src/components/planProgress/DaysCarousel';
-import { GroupAvatarsRow } from '@/src/components/planProgress/GroupAvatarRow';
-import { PlanHeader } from '@/src/components/planProgress/PlanHeader';
-import { PlanMetaRow } from '@/src/components/planProgress/PlanMetaRow';
-import { StartReadingCTA } from '@/src/components/planProgress/StartReadingCTA';
 import { usePlanGroupMembers } from '@/src/hooks/usePlanGroup';
+import PlanProgressScreen from '@/src/screens/PlanProgressScreen';
 import { DayItemsProgress } from '@/src/types/types';
-import { BottomSheetModal } from '@gorhom/bottom-sheet';
-import { ScrollView, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
 
 dayjs.extend(utc);
-export default function PlanProgressScreen() {
-  const commentsSheetRef = useRef<BottomSheetModal>(null);
+export default function PlanProgress() {
   const insets = useSafeAreaInsets();
   const { progressId } = useLocalSearchParams();
   const router = useRouter();
@@ -173,94 +165,49 @@ export default function PlanProgressScreen() {
 
   return (
     <>
-      <Stack.Screen
-        options={{
-          title: plan?.title || 'Plan Progress',
+      <Stack.Screen options={{ title: plan.title }} />
+
+      <PlanProgressScreen
+        insetsBottom={insets.bottom}
+        title={plan.title}
+        coverImage={plan.cover_image || undefined}
+        days={days}
+        selectedDay={selectedDayNumber}
+        selectedDayData={selectedDay}
+        currentDayId={currentDayData?.id}
+        totalDays={plan.total_days}
+        missedCount={missedDays?.length || 0}
+        members={planGroupMembersQuery.data}
+        items={dayItemsProgress?.items || []}
+        itemsLoading={dayItemsProgressQuery.isLoading}
+        toggleLoading={toggleMutation.isPending}
+        planProgress={planProgress}
+        onSelectDay={setSelectedDay}
+        onComments={() => {}}
+        onMissedDays={() => {
+          setMissedDays(missedDays || []);
+          router.push(`/plan_progress/${progressId}/missedDays`);
         }}
-      />
-      <ScrollView
-        className="flex-1 bg-white dark:bg-black"
-        style={{ marginBottom: insets.bottom + 70 }}>
-        <PlanHeader
-          title={plan.title}
-          coverImage={plan.cover_image || undefined}
-          selectedDay={selectedDayNumber}
-        />
-
-        <DaysCarousel
-          days={days}
-          selectedDay={selectedDayNumber}
-          currentDayId={currentDayData?.id}
-          completedDays={planProgress.completed_days ?? []}
-          startDate={planProgress.start_date ?? ''}
-          onSelectDay={setSelectedDay}
-        />
-
-        <PlanMetaRow
-          day={selectedDayNumber}
-          groupId={planProgress?.group_id as string}
-          totalDays={days.length}
-          missedCount={missedDays?.length}
-          onComments={() => commentsSheetRef.current?.expand()}
-          onMissedDays={() => {
-            setMissedDays(missedDays ?? []);
-            router.push(`/plan_progress/${planProgress?.id}/missedDays`);
-          }}
-        />
-
-        {!planGroupMembersQuery.isLoading && planGroupMembersQuery.data && (
-          <GroupAvatarsRow
-            members={planGroupMembersQuery.data}
-            onPress={() =>
-              router.push({
-                pathname: `/devotional_detail/[id]/participants`,
-                params: {
-                  groupId: planProgress?.group_id as string,
-                  totalDays: plan.total_days,
-                  id: planProgress?.plan_id as string,
-                  progressId: planProgress?.id as string,
-                },
-              })
-            }
-          />
-        )}
-
-        {dayItemsProgressQuery.isLoading ? (
-          <LoadingSpinner />
-        ) : dayItemsProgressQuery?.data?.length ? (
-          <DayItemsList
-            items={dayItemsProgress?.items || []}
-            onPressItem={handleItemPress}
-            onToggle={(item) =>
-              toggleMutation.mutate({
-                item_type: item.item_type,
-                item_key: item.item_key,
-                completed: !item.completed,
-              })
-            }
-            toggleLoading={toggleMutation.isPending}
-          />
-        ) : (
-          <View className="flex-1 justify-center items-center">
-            <Text>No items found</Text>
-          </View>
-        )}
-      </ScrollView>
-
-      <StartReadingCTA
-        bottomInset={insets.bottom}
-        visible={!!dayItemsProgress?.items?.length}
-        onPress={() => {
-          if (!devotional) return;
-          handleItemPress(devotional || ({} as any));
-        }}
-      />
-
-      <DayCommentsSection
-        ref={commentsSheetRef}
-        planId={planProgress?.plan_id as string}
-        dayId={selectedDay?.id || ''}
-        group_id={planProgress?.group_id as string}
+        onParticipants={() =>
+          router.push({
+            pathname: `/devotional_detail/[id]/participants`,
+            params: {
+              id: plan.id,
+              groupId: planProgress.group_id,
+              totalDays: plan.total_days,
+              progressId: planProgress.id,
+            },
+          })
+        }
+        onPressItem={handleItemPress}
+        onToggleItem={(item) =>
+          toggleMutation.mutate({
+            item_type: item.item_type as 'scripture' | 'devotional',
+            item_key: item.item_key as string,
+            completed: !item.completed,
+          })
+        }
+        devotionalItem={devotional}
       />
     </>
   );

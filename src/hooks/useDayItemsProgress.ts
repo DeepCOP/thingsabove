@@ -72,7 +72,7 @@ export function useDayItemsProgress({ user_id, plan_id, progress_id, day_id, gro
   });
 
   const toggleDayCompletionMutation = useMutation({
-    mutationFn: async ({ completed }: { completed: boolean }) =>
+    mutationFn: async ({ completed, day_id }: { completed: boolean; day_id: string }) =>
       toggleDayCompletion({ completed, user_id, plan_id, progress_id, day_id, groupId: group_id }),
 
     onSuccess: () => {
@@ -81,11 +81,14 @@ export function useDayItemsProgress({ user_id, plan_id, progress_id, day_id, gro
       });
 
       queryClient.invalidateQueries({
-        queryKey: ['plan_progress', progress_id, user_id, group_id],
+        queryKey: ['plan_progress', progress_id, user_id],
       });
       queryClient.invalidateQueries({
         queryKey: ['user_plans_progressess', user_id],
       });
+    },
+    onError: (error) => {
+      console.error('Error toggling item completion:', error);
     },
   });
 
