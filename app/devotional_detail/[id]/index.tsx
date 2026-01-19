@@ -3,7 +3,7 @@ import { usePlanProgress, useUserPlanProgressList } from '@/src/hooks/usePlanPro
 import DevotionalDetailScreen from '@/src/screens/DevotionalDetailScreen';
 import { useAuth } from '@/src/state/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
-import { BottomSheetModal } from '@gorhom/bottom-sheet';
+import BottomSheet from '@gorhom/bottom-sheet';
 import { useRef } from 'react';
 
 import { usePlanReactions, useTogglePlanReaction } from '@/src/hooks/usePlanReactions';
@@ -11,12 +11,14 @@ import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { Share, TouchableOpacity, useColorScheme } from 'react-native';
 
 export default function DevotionalDetail() {
-  const reportSheetRef = useRef<BottomSheetModal>(null);
-
   const { id } = useLocalSearchParams();
+  const reportSheetRef = useRef<BottomSheet>(null);
+  const { isGuest, session } = useAuth();
+  const toggleReaction = useTogglePlanReaction(id as string, session?.user?.id || '');
+  const { data: currentReaction } = usePlanReactions(id as string, session?.user?.id || '');
+
   const router = useRouter();
   const colorScheme = useColorScheme();
-  const { isGuest, session } = useAuth();
   const { startPlanProgressMutation, planProgressQuery } = usePlanProgress(
     id as string,
     session?.user?.id,
@@ -26,7 +28,20 @@ export default function DevotionalDetail() {
 
   const planQuery = useFetchDevotionalPlanById(id as string);
   const plan = planQuery.data;
-
+  const handleToggleReaction = (reaction: 'like' | 'dislike') => {
+    if (isGuest) {
+      router.push('/login/signin');
+      return;
+    }
+    toggleReaction.mutate(reaction);
+  };
+  const onReportPress = () => {
+    if (isGuest) {
+      router.push('/login/signin');
+      return;
+    }
+    reportSheetRef.current?.expand();
+  };
   return (
     <>
       <Stack.Screen
@@ -49,7 +64,11 @@ export default function DevotionalDetail() {
         }}
       />
       <DevotionalDetailScreen
+        onReportPress={onReportPress}
+        handleToggleReaction={handleToggleReaction}
+        currentReaction={currentReaction}
         plan={planQuery.data}
+        reportSheetRef={reportSheetRef}
         isLoading={planQuery.isLoading || planProgressQuery.isLoading}
         hasUserPlans={userPlanProgress.length > 0}
         onMyPlansPress={() => router.push('/PlansTab')}

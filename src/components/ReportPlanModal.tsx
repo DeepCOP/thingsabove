@@ -1,6 +1,10 @@
-import BottomSheet, { BottomSheetBackdrop, BottomSheetView } from '@gorhom/bottom-sheet';
+import BottomSheet, {
+  BottomSheetBackdrop,
+  BottomSheetTextInput,
+  BottomSheetView,
+} from '@gorhom/bottom-sheet';
 import { forwardRef, useMemo, useState } from 'react';
-import { Text, TextInput, TouchableOpacity, useColorScheme, View } from 'react-native';
+import { Text, TouchableOpacity, useColorScheme } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useReportPlan } from '../hooks/usePlanReactions';
 
@@ -31,6 +35,7 @@ const ReportPlanSheet = forwardRef<BottomSheet, Props>(({ planId }, ref) => {
       snapPoints={snapPoints}
       index={-1}
       enablePanDownToClose
+      bottomInset={insets.bottom + 5}
       keyboardBehavior="interactive"
       backgroundStyle={{ backgroundColor: colorScheme === 'dark' ? '#171717' : '#fff' }}
       keyboardBlurBehavior="restore"
@@ -44,59 +49,57 @@ const ReportPlanSheet = forwardRef<BottomSheet, Props>(({ planId }, ref) => {
         />
       )}>
       <BottomSheetView className="px-4 py-3">
-        <View style={{ marginBottom: insets.bottom }}>
-          <Text className="text-lg font-bold mb-3 dark:text-white">Report this plan</Text>
+        <Text className="text-lg font-bold mb-3 dark:text-white">Report this plan</Text>
 
-          {REPORT_REASONS.map((r) => (
-            <TouchableOpacity
-              key={r}
-              className={`py-3 px-3 rounded-lg mb-2 ${
-                reason === r ? 'bg-red-100 dark:bg-red-900' : 'bg-gray-100 dark:bg-neutral-800'
-              }`}
-              onPress={() => {
-                if (reason === r) {
-                  setReason('');
-                } else {
-                  setReason(r);
-                }
-              }}>
-              <Text className="dark:text-white">{r}</Text>
-            </TouchableOpacity>
-          ))}
-
-          {reason === 'Other' && (
-            <TextInput
-              placeholder="Describe the issue"
-              placeholderTextColor="#888"
-              className="border rounded-lg p-3 mt-2 dark:text-white dark:border-neutral-700"
-              multiline
-              onChangeText={setCustomReason}
-              value={customReason}
-              numberOfLines={4}
-              maxLength={200}
-              autoFocus={true}
-            />
-          )}
-
+        {REPORT_REASONS.map((r) => (
           <TouchableOpacity
-            className={`mt-4 bg-red-600 py-4 rounded-full ${isValid ? '' : 'opacity-50'}`}
-            disabled={reportPlan.isPending || !isValid}
+            key={r}
+            className={`py-3 px-3 rounded-lg mb-2 ${
+              reason === r ? 'bg-red-100 dark:bg-red-900' : 'bg-gray-100 dark:bg-neutral-800'
+            }`}
             onPress={() => {
-              const finalReason = reason === 'Other' ? customReason.trim() : reason;
-              if (!finalReason) return;
-              reportPlan.mutate(finalReason, {
-                onSuccess: () => {
-                  setReason('');
-                  setCustomReason('');
-                  if (ref && typeof ref !== 'function') {
-                    ref?.current?.close();
-                  }
-                },
-              });
+              if (reason === r) {
+                setReason('');
+              } else {
+                setReason(r);
+              }
             }}>
-            <Text className="text-center text-white font-semibold">Submit Report</Text>
+            <Text className="dark:text-white">{r}</Text>
           </TouchableOpacity>
-        </View>
+        ))}
+
+        {reason === 'Other' && (
+          <BottomSheetTextInput
+            placeholder="Describe the issue"
+            placeholderTextColor="#888"
+            className="border rounded-lg p-3 mt-2 dark:text-white dark:border-neutral-700"
+            multiline
+            onChangeText={setCustomReason}
+            value={customReason}
+            numberOfLines={4}
+            maxLength={200}
+            autoFocus={true}
+          />
+        )}
+
+        <TouchableOpacity
+          className={`mt-4 bg-red-600 py-4 rounded-full ${isValid ? '' : 'opacity-50'}`}
+          disabled={reportPlan.isPending || !isValid}
+          onPress={() => {
+            const finalReason = reason === 'Other' ? customReason.trim() : reason;
+            if (!finalReason) return;
+            reportPlan.mutate(finalReason, {
+              onSuccess: () => {
+                setReason('');
+                setCustomReason('');
+                if (ref && typeof ref !== 'function') {
+                  ref?.current?.close();
+                }
+              },
+            });
+          }}>
+          <Text className="text-center text-white font-semibold">Submit Report</Text>
+        </TouchableOpacity>
       </BottomSheetView>
     </BottomSheet>
   );

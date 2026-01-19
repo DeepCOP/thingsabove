@@ -241,3 +241,37 @@ export const getUserNotificationsCount = async () => {
   if (error) throw error;
   return count;
 };
+
+export const togglePlanReaction = async (
+  planId: string,
+  userId: string,
+  reaction: 'like' | 'dislike',
+) => {
+  if (!planId || !userId) {
+    return null;
+  }
+  const { data, error } = await supabase.rpc('toggle_reaction', {
+    p_plan_id: planId,
+    p_reaction_type: reaction,
+  });
+
+  if (error) throw error;
+  return data;
+};
+
+export const getPlanReactionSummary = async (planId: string) => {
+  const { data, error } = await supabase
+    .rpc('get_plan_reaction_summary', { p_plan_id: planId })
+    .single();
+
+  if (error) throw error;
+  return data;
+};
+
+export const reportPlan = async (reason: string, planId: string) => {
+  const { error } = await supabase.rpc('report_plan', {
+    p_plan_id: planId,
+    p_reason: reason,
+  });
+  if (error) throw error;
+};

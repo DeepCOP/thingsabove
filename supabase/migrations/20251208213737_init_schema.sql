@@ -318,7 +318,6 @@ $$;
 
 create or replace function public.toggle_reaction(
   p_plan_id uuid,
-  p_user_id uuid,
   p_reaction_type text
 )
 returns text
@@ -336,14 +335,14 @@ begin
   select id into existing_like
   from public.plan_reactions
   where plan_id = p_plan_id
-    and user_id = p_user_id
+    and user_id = auth.uid()
     and reaction_type = 'like'
   limit 1;
 
   select id into existing_dislike
   from public.plan_reactions
   where plan_id = p_plan_id
-    and user_id = p_user_id
+    and user_id = auth.uid()
     and reaction_type = 'dislike'
   limit 1;
 
@@ -364,7 +363,7 @@ begin
 
   -- CASE 3: Insert new reaction
   insert into public.plan_reactions (plan_id, user_id, reaction_type)
-  values (p_plan_id, p_user_id, p_reaction_type);
+  values (p_plan_id, auth.uid(), p_reaction_type);
 
   return 'added';
 end;
@@ -1317,6 +1316,9 @@ create table if not exists public.comments (
 
 
 alter table public.comments enable row level security;
+
+alter publication supabase_realtime
+add table comments;
 
 
 create policy "comments readable by everyone"

@@ -39,7 +39,7 @@ export function ListCard({
 
           {/* Icons Row */}
           <View className="flex-row items-center gap-4 mt-2">
-            <Stat icon="heart-outline" count={item.likes_count ?? 0} />
+            <Stat icon="thumbs-up-outline" count={item.likes_count ?? 0} />
             <Stat icon="thumbs-down-outline" count={item.dislikes_count ?? 0} />
             <Stat icon="people-outline" count={item.completions ?? 0} />
           </View>
@@ -88,7 +88,7 @@ export function GridCard({
       <Text className="text-gray-600 dark:text-gray-200 text-sm mt-1">{item.total_days} Days</Text>
       {/* Icons Row */}
       <View className="flex-row items-center gap-4 mt-2">
-        <Stat icon="heart-outline" count={item.likes_count ?? 0} />
+        <Stat icon="thumbs-up-outline" count={item.likes_count ?? 0} />
         <Stat icon="thumbs-down-outline" count={item.dislikes_count ?? 0} />
         <Stat icon="people-outline" count={item.completions ?? 0} />
       </View>

@@ -60,3 +60,6 @@ export type DayItemsProgressUpdate = Database['public']['Tables']['day_items_pro
 
 export type GetPendingFriendRequests =
   Database['public']['Functions']['get_pending_friend_requests']['Returns'];
+
+export type GetPlanReactionSummary =
+  Database['public']['Functions']['get_plan_reaction_summary']['Returns'];
