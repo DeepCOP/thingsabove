@@ -4,6 +4,7 @@ import BottomSheet, {
   BottomSheetBackdrop,
   BottomSheetFlatList,
   BottomSheetTextInput,
+  BottomSheetView,
 } from '@gorhom/bottom-sheet';
 import dayjs from 'dayjs';
 import { forwardRef, useMemo, useState } from 'react';
@@ -55,98 +56,102 @@ const DayCommentsBottomSheet = forwardRef<BottomSheet, Props>(
             appearsOnIndex={0}
           />
         )}>
-        <Text className="text-xl font-bold text-gray-800 dark:text-gray-200 mb-3 text-center">
-          Share your thoughts…
-        </Text>
-        {comments.length === 0 ? (
-          <View className="flex-1 items-center justify-center">
-            <Ionicons name="book" size={60} color={'#808080'} />
-            <Text className="text-gray-800 dark:text-gray-200">
-              Share your thoughts based on todays reading.
-            </Text>
-          </View>
-        ) : (
-          <BottomSheetFlatList
-            data={comments}
-            keyboardDismissMode="interactive"
-            keyboardShouldPersistTaps="handled"
-            keyExtractor={(item: {
-              content: string;
-              created_at: string;
-              id: string;
-              parent_id: string;
-              user_id: string;
-            }) => item.id}
-            contentContainerStyle={{ paddingBottom: 120 }}
-            showsVerticalScrollIndicator={false}
-            renderItem={({
-              item,
-            }: {
-              item: {
+        <BottomSheetView className="w-full h-full">
+          <Text className="text-xl font-bold text-gray-800 dark:text-gray-200 mb-3 text-center">
+            Share your thoughts…
+          </Text>
+          {comments.length === 0 ? (
+            <View className="flex-1 items-center justify-center">
+              <Ionicons name="book" size={60} color={'#808080'} />
+              <Text className="text-gray-800 dark:text-gray-200">
+                Share your thoughts based on todays reading.
+              </Text>
+            </View>
+          ) : (
+            <BottomSheetFlatList
+              data={comments}
+              keyboardDismissMode="interactive"
+              keyboardShouldPersistTaps="handled"
+              keyExtractor={(item: {
                 content: string;
                 created_at: string;
                 id: string;
                 parent_id: string;
                 user_id: string;
-                first_name: string;
-                last_name: string;
-                avatar_url: string;
-              };
-            }) => {
-              return (
-                <View className="flex-row items-start gap-3 mb-4 px-4">
-                  {/* Avatar */}
-                  <Image
-                    source={{ uri: item.avatar_url }}
-                    className="w-10 h-10 rounded-full bg-gray-300"
-                  />
+              }) => item.id}
+              contentContainerStyle={{ paddingBottom: 120 }}
+              showsVerticalScrollIndicator={false}
+              renderItem={({
+                item,
+              }: {
+                item: {
+                  content: string;
+                  created_at: string;
+                  id: string;
+                  parent_id: string;
+                  user_id: string;
+                  first_name: string;
+                  last_name: string;
+                  avatar_url: string;
+                };
+              }) => {
+                return (
+                  <View className="flex-row items-start gap-3 mb-4 px-4">
+                    {/* Avatar */}
+                    <Image
+                      source={{ uri: item.avatar_url }}
+                      className="w-10 h-10 rounded-full bg-gray-300"
+                    />
 
-                  <View className={`flex-1 px-3 py-2 rounded-xl bg-neutral-600`}>
-                    <Text className="font-semibold text-sm text-gray-200 dark:text-gray-200">
-                      {item.first_name} {item.last_name}
-                    </Text>
+                    <View className={`flex-1 px-3 py-2 rounded-xl bg-neutral-600`}>
+                      <Text className="font-semibold text-sm text-gray-200 dark:text-gray-200">
+                        {item.first_name} {item.last_name}
+                      </Text>
 
-                    <Text className="mt-1 text-sm dark:text-white text-white">{item.content}</Text>
+                      <Text className="mt-1 text-sm dark:text-white text-white">
+                        {item.content}
+                      </Text>
 
-                    {/* Date */}
-                    <Text className="mt-1 text-xs text-gray-300 ">
-                      {dayjs(item.created_at).format('MMM DD')}
-                    </Text>
+                      {/* Date */}
+                      <Text className="mt-1 text-xs text-gray-300 ">
+                        {dayjs(item.created_at).format('MMM DD')}
+                      </Text>
+                    </View>
                   </View>
-                </View>
-              );
-            }}
-          />
-        )}
-        <View
-          style={{
-            paddingHorizontal: 16,
-            paddingVertical: 8,
-            backgroundColor: colorScheme === 'dark' ? '#000' : '#fff',
-          }}>
-          <View className="flex-row items-center gap-2">
-            <BottomSheetTextInput
-              value={text}
-              onChangeText={setText}
-              placeholder="Share your thoughts…"
-              placeholderTextColor="#999"
-              className="flex-1 px-4 py-3 rounded-full bg-gray-200 dark:bg-neutral-800 dark:text-white"
-            />
-
-            <TouchableOpacity
-              disabled={!text.trim() || isPosting}
-              onPress={() => {
-                addComment.mutate(text, {
-                  onSuccess: () => setText(''),
-                });
+                );
               }}
-              className="px-4 py-3 rounded-full bg-black dark:bg-white">
-              <Text className="text-white dark:text-black">
-                {addComment.isPending ? <ActivityIndicator size={'small'} /> : 'Send'}
-              </Text>
-            </TouchableOpacity>
+            />
+          )}
+          <View
+            style={{
+              paddingHorizontal: 16,
+              paddingVertical: 8,
+              backgroundColor: colorScheme === 'dark' ? '#000' : '#fff',
+            }}>
+            <View className="flex-row items-center gap-2">
+              <BottomSheetTextInput
+                value={text}
+                onChangeText={setText}
+                placeholder="Share your thoughts…"
+                placeholderTextColor="#999"
+                className="flex-1 px-4 py-3 rounded-full bg-gray-200 dark:bg-neutral-800 dark:text-white"
+              />
+
+              <TouchableOpacity
+                disabled={!text.trim() || isPosting}
+                onPress={() => {
+                  addComment.mutate(text, {
+                    onSuccess: () => setText(''),
+                  });
+                }}
+                className="px-4 py-3 rounded-full bg-black dark:bg-white">
+                <Text className="text-white dark:text-black">
+                  {addComment.isPending ? <ActivityIndicator size={'small'} /> : 'Send'}
+                </Text>
+              </TouchableOpacity>
+            </View>
           </View>
-        </View>
+        </BottomSheetView>
       </BottomSheet>
     );
   },
