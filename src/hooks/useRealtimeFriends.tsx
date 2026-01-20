@@ -3,7 +3,7 @@ import { useEffect } from 'react';
 import { FriendRequestRealTime, FriendRequestRealTimeReceiver } from '../api/realTimeQueries';
 import { supabase } from '../lib/supabaseClient';
 
-export function useRealtimeFriends(userId: string, onNew: () => void) {
+export function useRealtimeFriends(userId: string | undefined, onNew: () => void) {
   useEffect(() => {
     if (!userId) return;
 

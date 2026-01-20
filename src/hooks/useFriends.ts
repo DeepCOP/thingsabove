@@ -2,12 +2,12 @@ import { acceptFriendRequest, addFriend, declineFriendRequest } from '@/src/api/
 import { fetchPendingFriendRequests, fetchUserFriends, getUserByEmail } from '@/src/api/queries';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-export function useFriends(userId: string) {
+export function useFriends(userId: string | undefined) {
   return useQuery({
     queryKey: ['friends', userId],
     staleTime: 1000 * 60 * 60 * 24,
     enabled: !!userId,
-    queryFn: async () => await fetchUserFriends({ userId }),
+    queryFn: async () => await fetchUserFriends({ userId: userId! }),
   });
 }
 

@@ -2,11 +2,12 @@ import { markNotificationRead } from '@/src/api/mutations';
 import { getUserNotifications, getUserNotificationsCount } from '@/src/api/queries';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-export function useNotifications(userId: string) {
+export function useNotifications(userId: string | undefined) {
   const queryClient = useQueryClient();
 
   const notificationsQuery = useQuery({
     queryKey: ['notifications', userId],
+    enabled: !!userId,
     staleTime: 0,
     refetchOnReconnect: 'always',
     refetchOnWindowFocus: 'always',
@@ -16,6 +17,7 @@ export function useNotifications(userId: string) {
   const notificationsCountQuery = useQuery({
     queryKey: ['notifications-count', userId],
     staleTime: 0,
+    enabled: !!userId,
     refetchOnReconnect: 'always',
     refetchOnWindowFocus: 'always',
     queryFn: async () => await getUserNotificationsCount(),
