@@ -8,16 +8,10 @@ import BottomSheet, {
 } from '@gorhom/bottom-sheet';
 import dayjs from 'dayjs';
 import { forwardRef, useMemo, useState } from 'react';
-import {
-  ActivityIndicator,
-  Image,
-  Text,
-  TouchableOpacity,
-  useColorScheme,
-  View,
-} from 'react-native';
+import { Image, Text, TouchableOpacity, useColorScheme, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRealtimeComments } from '../hooks/useRealtimeComments';
+import LoadingSpinner from './LoadingSpinner';
 
 type Props = {
   planId: string;
@@ -145,9 +139,11 @@ const DayCommentsBottomSheet = forwardRef<BottomSheet, Props>(
                   });
                 }}
                 className="px-4 py-3 rounded-full bg-black dark:bg-white">
-                <Text className="text-white dark:text-black">
-                  {addComment.isPending ? <ActivityIndicator size={'small'} /> : 'Send'}
-                </Text>
+                {addComment.isPending ? (
+                  <LoadingSpinner size="small" />
+                ) : (
+                  <Text className="text-white dark:text-black">Send</Text>
+                )}
               </TouchableOpacity>
             </View>
           </View>
