@@ -74,7 +74,7 @@ export default function DevotionalDetail() {
         onMyPlansPress={() => router.push('/PlansTab')}
         onStartPress={(mode: string) => {
           if (isGuest) {
-            router.push('/login/signin');
+            router.push('/(auth)/signin');
             return;
           }
 

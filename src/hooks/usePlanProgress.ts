@@ -7,13 +7,13 @@ import {
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { startPlanProgress } from '../api/mutations';
 
-export function usePlanProgress(progress_id: string, user_id: string) {
+export function usePlanProgress(progress_id: string, user_id: string | undefined) {
   const queryClient = useQueryClient();
 
   const planProgressQuery = useQuery({
     queryKey: ['plan_progress', progress_id, user_id],
     enabled: !!progress_id && !!user_id,
-    queryFn: async () => fetchPlanProgress({ progress_id, user_id }),
+    queryFn: async () => fetchPlanProgress({ progress_id, user_id: user_id! }),
   });
 
   const startPlanProgressMutation = useMutation({
@@ -35,11 +35,11 @@ export function usePlanProgress(progress_id: string, user_id: string) {
   };
 }
 
-export const useUserPlanProgressList = (user_id: string) => {
+export const useUserPlanProgressList = (user_id: string | undefined) => {
   const userPlanProgressQuery = useQuery({
     queryKey: ['user_plans_progressess', user_id],
     enabled: !!user_id,
-    queryFn: async () => fetchUserPlanProgressList({ user_id }),
+    queryFn: async () => fetchUserPlanProgressList({ user_id: user_id! }),
   });
   return userPlanProgressQuery;
 };

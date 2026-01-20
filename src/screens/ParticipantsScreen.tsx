@@ -1,7 +1,8 @@
 import { ProgressBar } from '@/src/components/ProgressBar';
 import { PlanProgress } from '@/src/types/types';
-import { FlatList, Image, Text, TouchableOpacity, View } from 'react-native';
+import { FlatList, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import UserAvatar from '../components/UserAvatar';
 
 type Member = {
   id: string;
@@ -48,16 +49,13 @@ export default function ParticipantsScreen({
           return (
             <View className="mb-3 p-3 rounded-xl bg-gray-100 dark:bg-neutral-900">
               <View className="flex-row items-center mb-2">
-                {item.profiles.avatar_url ? (
-                  <Image
-                    source={{ uri: item.profiles.avatar_url }}
-                    className="w-10 h-10 rounded-full mr-3"
-                  />
-                ) : (
-                  <View className="w-10 h-10 rounded-full bg-gray-300 dark:bg-gray-700 mr-3" />
-                )}
+                <UserAvatar
+                  uri={item.profiles.avatar_url}
+                  initial={item.profiles.first_name?.[0] ?? 'U'}
+                  size={40}
+                />
 
-                <View className="flex-1">
+                <View className="flex-1 ml-2">
                   <Text className="dark:text-white font-semibold">
                     {item.profiles.first_name} {item.profiles.last_name}
                   </Text>

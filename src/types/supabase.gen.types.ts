@@ -849,6 +849,15 @@ export type Database = {
         Returns: string;
       };
       unread_notifications_count: { Args: never; Returns: number };
+      update_profile: {
+        Args: {
+          p_avatar_url?: string;
+          p_bio?: string;
+          p_first_name?: string;
+          p_last_name?: string;
+        };
+        Returns: undefined;
+      };
     };
     Enums: {
       [_ in never]: never;

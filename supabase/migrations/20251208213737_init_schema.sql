@@ -27,6 +27,32 @@ create trigger on_auth_user_created
   after insert on auth.users
   for each row execute procedure public.handle_new_user();
 
+create or replace function public.update_profile(
+  p_first_name text default null,
+  p_last_name text default null,
+  p_avatar_url text default null,
+  p_bio text default null
+)
+returns void
+language plpgsql
+security definer
+as $$
+begin
+  update public.profiles
+  set
+    first_name = coalesce(p_first_name, first_name),
+    last_name  = coalesce(p_last_name, last_name),
+    avatar_url = coalesce(p_avatar_url, avatar_url),
+    bio        = coalesce(p_bio, bio),
+    updated_at = now()
+  where id = auth.uid();
+
+  if not found then
+    raise exception 'Profile not found for user %', auth.uid();
+  end if;
+end;
+$$;
+
 
 
 alter table public.profiles enable row level security;
@@ -414,12 +440,12 @@ on storage.objects
 for select using (bucket_id = 'avatars');
 
 
-create policy "users can upload their own avatar"
+create policy "authenticated users can upload avatars"
 on storage.objects
 for insert
 with check (
   bucket_id = 'avatars'
-  and auth.uid()::text = (storage.foldername(name))[1]
+  and auth.uid() is not null
 );
 
 
@@ -427,11 +453,12 @@ create policy "users can update their own avatar"
 on storage.objects
 for update
 using (
-  auth.uid() = owner
-)
-with check  (
   bucket_id = 'avatars'
-  and auth.uid()::text = (storage.foldername(name))[1]
+  and owner = auth.uid()
+)
+with check (
+  bucket_id = 'avatars'
+  and owner = auth.uid()
 );
 
 create policy "users can delete their own avatar"

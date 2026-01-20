@@ -1,4 +1,5 @@
-import { Image, Text, TouchableOpacity, View } from 'react-native';
+import { Text, TouchableOpacity, View } from 'react-native';
+import UserAvatar from '../UserAvatar';
 
 type Props = {
   members: any[];
@@ -17,29 +18,11 @@ export function GroupAvatarsRow({ members, onPress }: Props) {
           key={m.id}
           onPress={onPress}
           style={{ marginLeft: i === 0 ? 0 : -overlap, zIndex: 100 - i }}>
-          {m.profiles.avatar_url ? (
-            <Image
-              source={{ uri: m.profiles.avatar_url }}
-              style={{
-                width: size,
-                height: size,
-                borderRadius: size / 2,
-                borderWidth: 2,
-                borderColor: 'white',
-              }}
-            />
-          ) : (
-            <View
-              style={{
-                width: size,
-                height: size,
-                borderRadius: size / 2,
-                backgroundColor: '#9CA3AF',
-                borderWidth: 2,
-                borderColor: 'white',
-              }}
-            />
-          )}
+          <UserAvatar
+            uri={m.profiles.avatar_url}
+            initial={m.profiles.first_name?.[0] ?? 'U'}
+            size={size}
+          />
         </TouchableOpacity>
       ))}
 

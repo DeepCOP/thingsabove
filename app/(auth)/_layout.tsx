@@ -8,7 +8,6 @@ export default function AuthLayout() {
   return (
     <Tabs
       screenOptions={{
-        headerShown: false,
         tabBarStyle: {
           backgroundColor: colorScheme === 'dark' ? '#000' : '#fff',
         },
@@ -34,6 +33,7 @@ export default function AuthLayout() {
         name="signup"
         options={{
           title: 'Sign Up',
+
           tabBarIcon: ({ focused, color }) => {
             return (
               <Ionicons

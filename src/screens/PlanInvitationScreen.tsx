@@ -1,5 +1,6 @@
 import { Image, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import UserAvatar from '../components/UserAvatar';
 
 type Props = {
   inviterName: string;
@@ -44,15 +45,7 @@ export default function PlanInvitationScreen({
     <View className="flex-1 bg-white dark:bg-black px-6 pt-12">
       {/* Avatar */}
       <View className="items-center mb-6">
-        {inviterAvatar ? (
-          <View className="rounded-full border-2 dark:border-white border-black">
-            <Image source={{ uri: inviterAvatar }} className="w-24 h-24 rounded-full" />
-          </View>
-        ) : (
-          <View className="w-24 h-24 rounded-full border-2 dark:border-white border-black items-center justify-center">
-            <Text className="text-3xl font-bold dark:text-gray-200">{inviterInitial}</Text>
-          </View>
-        )}
+        <UserAvatar uri={inviterAvatar} initial={inviterInitial} size={96} />
       </View>
 
       {/* Invitation text */}
@@ -78,13 +71,11 @@ export default function PlanInvitationScreen({
             <View
               key={m.user_id}
               className="w-8 h-8 rounded-full border dark:border-white mr-2 items-center justify-center">
-              {m.profiles?.avatar_url ? (
-                <Image source={{ uri: m.profiles.avatar_url }} className="w-8 h-8 rounded-full" />
-              ) : (
-                <Text className="dark:text-white text-xs">
-                  {m.profiles?.first_name?.[0] ?? 'U'}
-                </Text>
-              )}
+              <UserAvatar
+                uri={m.profiles?.avatar_url}
+                initial={m.profiles?.first_name?.[0] ?? 'U'}
+                size={32}
+              />
             </View>
           ))}
         </View>
