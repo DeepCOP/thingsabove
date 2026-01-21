@@ -4,9 +4,6 @@ import {
   Merriweather_700Bold,
   Merriweather_900Black,
 } from '@expo-google-fonts/merriweather';
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
-
 import {
   OpenSans_400Regular,
   OpenSans_400Regular_Italic,
@@ -16,8 +13,10 @@ import {
   OpenSans_700Bold_Italic,
   useFonts,
 } from '@expo-google-fonts/open-sans';
+import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { BibleProvider } from '../src/state/BibleContext';
 
 import { mutationQueue } from '@/src/lib/mutationQueue';

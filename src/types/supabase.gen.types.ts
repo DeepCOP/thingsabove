@@ -749,6 +749,14 @@ export type Database = {
           user_id: string;
         }[];
       };
+      get_plan_reaction_summary: {
+        Args: { p_plan_id: string };
+        Returns: {
+          dislikes: number;
+          likes: number;
+          user_reaction: string;
+        }[];
+      };
       get_user_by_email: {
         Args: { p_email: string };
         Returns: {
@@ -763,6 +771,10 @@ export type Database = {
       is_group_member: { Args: { p_group_id: string }; Returns: boolean };
       mark_notification_read: {
         Args: { p_notification_id: string };
+        Returns: undefined;
+      };
+      report_plan: {
+        Args: { p_plan_id: string; p_reason: string };
         Returns: undefined;
       };
       search_plans: {
@@ -833,7 +845,7 @@ export type Database = {
         Returns: undefined;
       };
       toggle_reaction: {
-        Args: { p_plan_id: string; p_reaction_type: string; p_user_id: string };
+        Args: { p_plan_id: string; p_reaction_type: string };
         Returns: string;
       };
       unread_notifications_count: { Args: never; Returns: number };

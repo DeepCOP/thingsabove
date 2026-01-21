@@ -225,6 +225,20 @@ create table if not exists public.reports (
   created_at timestamptz default now()
 );
 
+create or replace function public.report_plan(
+  p_plan_id uuid,
+  p_reason text
+)
+returns void
+language plpgsql
+security definer
+as $$
+begin
+  insert into reports (user_id, plan_id, reason)
+  values (auth.uid(), p_plan_id, p_reason);
+end;
+$$;
+
 
 alter table public.reports enable row level security;
 
@@ -272,9 +286,38 @@ create table if not exists public.plan_reactions (
 );
 
 
+create or replace function public.get_plan_reaction_summary(
+  p_plan_id uuid
+)
+returns table (
+  likes int,
+  dislikes int,
+  user_reaction text
+)
+language plpgsql
+security definer
+as $$
+begin
+  return query
+  select
+    count(*) filter (where reaction_type = 'like')::int as likes,
+    count(*) filter (where reaction_type = 'dislike')::int as dislikes,
+    (
+      select reaction_type
+      from plan_reactions
+      where plan_id = p_plan_id
+        and user_id = auth.uid()
+      limit 1
+    ) as user_reaction
+  from plan_reactions
+  where plan_id = p_plan_id;
+end;
+$$;
+
+
+
 create or replace function public.toggle_reaction(
   p_plan_id uuid,
-  p_user_id uuid,
   p_reaction_type text
 )
 returns text
@@ -292,14 +335,14 @@ begin
   select id into existing_like
   from public.plan_reactions
   where plan_id = p_plan_id
-    and user_id = p_user_id
+    and user_id = auth.uid()
     and reaction_type = 'like'
   limit 1;
 
   select id into existing_dislike
   from public.plan_reactions
   where plan_id = p_plan_id
-    and user_id = p_user_id
+    and user_id = auth.uid()
     and reaction_type = 'dislike'
   limit 1;
 
@@ -320,7 +363,7 @@ begin
 
   -- CASE 3: Insert new reaction
   insert into public.plan_reactions (plan_id, user_id, reaction_type)
-  values (p_plan_id, p_user_id, p_reaction_type);
+  values (p_plan_id, auth.uid(), p_reaction_type);
 
   return 'added';
 end;
@@ -1273,6 +1316,9 @@ create table if not exists public.comments (
 
 
 alter table public.comments enable row level security;
+
+alter publication supabase_realtime
+add table comments;
 
 
 create policy "comments readable by everyone"

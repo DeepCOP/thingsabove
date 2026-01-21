@@ -1,11 +1,24 @@
 import LoadingSpinner from '@/src/components/LoadingSpinner';
 import { RelatedPlansSection } from '@/src/components/RelatedPlans';
+import { Ionicons } from '@expo/vector-icons';
 import BottomSheet from '@gorhom/bottom-sheet';
 import { useRef } from 'react';
 import { Image, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import ReportPlanSheet from '../components/ReportPlanModal';
 import StartPlanBottomSheet from '../components/StartPlanBottomSheet';
+import { useAuth } from '../state/AuthContext';
 
 type Props = {
+  onReportPress: () => void;
+  handleToggleReaction: (reaction: 'like' | 'dislike') => void;
+  currentReaction:
+    | {
+        dislikes: number;
+        likes: number;
+        user_reaction: string;
+      }
+    | undefined;
+  reportSheetRef: React.RefObject<BottomSheet | null>;
   plan: any;
   isLoading: boolean;
   hasUserPlans: boolean;
@@ -14,6 +27,10 @@ type Props = {
 };
 
 export default function DevotionalDetailScreen({
+  onReportPress,
+  handleToggleReaction,
+  currentReaction,
+  reportSheetRef,
   plan,
   isLoading,
   hasUserPlans,
@@ -21,7 +38,7 @@ export default function DevotionalDetailScreen({
   onMyPlansPress,
 }: Props) {
   const bottomSheetRef = useRef<BottomSheet>(null);
-
+  const { isGuest } = useAuth();
   if (isLoading) {
     return <LoadingSpinner style={{ marginTop: 30 }} />;
   }
@@ -72,6 +89,55 @@ export default function DevotionalDetailScreen({
             <Text className="text-gray-600 dark:text-gray-300">{plan?.total_days} Days</Text>
           </View>
         </View>
+        <View className="px-4 mt-4 flex-row items-center gap-6">
+          <TouchableOpacity
+            className="flex-row items-center gap-1 justify-center"
+            disabled={isGuest}
+            onPress={() => {
+              handleToggleReaction('like');
+            }}>
+            <Ionicons
+              name={currentReaction?.user_reaction === 'like' ? 'thumbs-up' : 'thumbs-up-outline'}
+              size={22}
+              color={currentReaction?.user_reaction === 'like' ? '#22c55e' : '#9ca3af'}
+            />
+            <Text
+              className={` ${
+                currentReaction?.user_reaction === 'like' ? 'text-green-500' : 'text-gray-500'
+              }`}>
+              {currentReaction?.likes ?? 0}
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            className="flex-row items-start gap-1 justify-center"
+            disabled={isGuest}
+            onPress={() => {
+              handleToggleReaction('dislike');
+            }}>
+            <Ionicons
+              name={
+                currentReaction?.user_reaction === 'dislike' ? 'thumbs-down' : 'thumbs-down-outline'
+              }
+              size={22}
+              color={currentReaction?.user_reaction === 'dislike' ? '#ef4444' : '#9ca3af'}
+            />
+            <Text
+              className={` ${
+                currentReaction?.user_reaction === 'dislike' ? 'text-red-500' : 'text-gray-500'
+              }`}>
+              {currentReaction?.dislikes ?? 0}
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            className=" flex-row items-start gap-1 justify-center"
+            onPress={() => {
+              onReportPress();
+            }}>
+            <Ionicons name="flag-outline" size={18} color="red" />
+            <Text className="text-red-600">Report</Text>
+          </TouchableOpacity>
+        </View>
 
         <TouchableOpacity
           className="mt-6 mx-4 bg-black dark:bg-white py-4 rounded-full"
@@ -102,6 +168,7 @@ export default function DevotionalDetailScreen({
       </ScrollView>
 
       <StartPlanBottomSheet ref={bottomSheetRef} plan={plan} onStartPress={onStartPress} />
+      <ReportPlanSheet ref={reportSheetRef} planId={plan.id} />
     </>
   );
 }

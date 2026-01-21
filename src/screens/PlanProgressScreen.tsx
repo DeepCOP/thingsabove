@@ -1,4 +1,4 @@
-import { BottomSheetModal } from '@gorhom/bottom-sheet';
+import BottomSheet from '@gorhom/bottom-sheet';
 import { useRef } from 'react';
 import { ScrollView, Text, View } from 'react-native';
 
@@ -58,7 +58,7 @@ export default function PlanProgressScreen({
   onToggleItem,
   devotionalItem,
 }: Props) {
-  const commentsSheetRef = useRef<BottomSheetModal>(null);
+  const commentsSheetRef = useRef<BottomSheet>(null);
 
   return (
     <>

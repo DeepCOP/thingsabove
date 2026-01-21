@@ -3,13 +3,15 @@ import { Ionicons } from '@expo/vector-icons';
 import BottomSheet, {
   BottomSheetBackdrop,
   BottomSheetFlatList,
+  BottomSheetTextInput,
   BottomSheetView,
 } from '@gorhom/bottom-sheet';
 import dayjs from 'dayjs';
 import { forwardRef, useMemo, useState } from 'react';
-import { Image, Text, TextInput, TouchableOpacity, useColorScheme, View } from 'react-native';
+import { Image, Text, TouchableOpacity, useColorScheme, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRealtimeComments } from '../hooks/useRealtimeComments';
+import LoadingSpinner from './LoadingSpinner';
 
 type Props = {
   planId: string;
@@ -35,8 +37,9 @@ const DayCommentsBottomSheet = forwardRef<BottomSheet, Props>(
         index={-1}
         snapPoints={snapPoints}
         enablePanDownToClose
-        keyboardBehavior="interactive"
+        bottomInset={insets.bottom + 8}
         backgroundStyle={{ backgroundColor: colorScheme === 'dark' ? '#171717' : '#fff' }}
+        keyboardBehavior="interactive"
         keyboardBlurBehavior="restore"
         backdropComponent={(props) => (
           <BottomSheetBackdrop
@@ -47,7 +50,7 @@ const DayCommentsBottomSheet = forwardRef<BottomSheet, Props>(
             appearsOnIndex={0}
           />
         )}>
-        <BottomSheetView className="flex-1 px-4 h-full">
+        <BottomSheetView className="w-full h-full">
           <Text className="text-xl font-bold text-gray-800 dark:text-gray-200 mb-3 text-center">
             Share your thoughts…
           </Text>
@@ -61,6 +64,8 @@ const DayCommentsBottomSheet = forwardRef<BottomSheet, Props>(
           ) : (
             <BottomSheetFlatList
               data={comments}
+              keyboardDismissMode="interactive"
+              keyboardShouldPersistTaps="handled"
               keyExtractor={(item: {
                 content: string;
                 created_at: string;
@@ -68,7 +73,8 @@ const DayCommentsBottomSheet = forwardRef<BottomSheet, Props>(
                 parent_id: string;
                 user_id: string;
               }) => item.id}
-              contentContainerStyle={{ paddingBottom: 80 }}
+              contentContainerStyle={{ paddingBottom: 120 }}
+              showsVerticalScrollIndicator={false}
               renderItem={({
                 item,
               }: {
@@ -84,7 +90,7 @@ const DayCommentsBottomSheet = forwardRef<BottomSheet, Props>(
                 };
               }) => {
                 return (
-                  <View className="flex-row items-start gap-3 mb-4">
+                  <View className="flex-row items-start gap-3 mb-4 px-4">
                     {/* Avatar */}
                     <Image
                       source={{ uri: item.avatar_url }}
@@ -110,26 +116,34 @@ const DayCommentsBottomSheet = forwardRef<BottomSheet, Props>(
               }}
             />
           )}
-
           <View
-            className="absolute bottom-0 left-0 right-0 px-4 py-3 bg-white dark:bg-black border-t border-gray-200 dark:border-neutral-800"
-            style={{ marginBottom: insets.bottom + 5 || 12 }}>
+            style={{
+              paddingHorizontal: 16,
+              paddingVertical: 8,
+              backgroundColor: colorScheme === 'dark' ? '#000' : '#fff',
+            }}>
             <View className="flex-row items-center gap-2">
-              <TextInput
+              <BottomSheetTextInput
                 value={text}
                 onChangeText={setText}
                 placeholder="Share your thoughts…"
                 placeholderTextColor="#999"
                 className="flex-1 px-4 py-3 rounded-full bg-gray-200 dark:bg-neutral-800 dark:text-white"
               />
+
               <TouchableOpacity
                 disabled={!text.trim() || isPosting}
                 onPress={() => {
-                  addComment.mutate(text);
-                  setText('');
+                  addComment.mutate(text, {
+                    onSuccess: () => setText(''),
+                  });
                 }}
                 className="px-4 py-3 rounded-full bg-black dark:bg-white">
-                <Text className="text-white dark:text-black">Send</Text>
+                {addComment.isPending ? (
+                  <LoadingSpinner size="small" />
+                ) : (
+                  <Text className="text-white dark:text-black">Send</Text>
+                )}
               </TouchableOpacity>
             </View>
           </View>
