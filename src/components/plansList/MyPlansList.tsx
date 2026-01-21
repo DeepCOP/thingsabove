@@ -14,8 +14,8 @@ export default function MyPlansList({
   listFooterComponent,
   containterStyle,
 }: {
-  listHeaderComponent?: React.ReactNode;
-  listFooterComponent?: React.ReactNode;
+  listHeaderComponent?: React.JSX.Element;
+  listFooterComponent?: React.JSX.Element;
   containterStyle?: object;
 }) {
   const { session } = useAuth();
@@ -94,8 +94,8 @@ export default function MyPlansList({
       <FlatList
         showsVerticalScrollIndicator={false}
         data={sortedPlans}
-        ListHeaderComponent={() => listHeaderComponent}
-        ListFooterComponent={() => listFooterComponent}
+        ListHeaderComponent={listHeaderComponent}
+        ListFooterComponent={listFooterComponent}
         keyExtractor={(item) => item.progress_id!}
         refreshing={refreshing}
         onRefresh={onRefresh}

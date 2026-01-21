@@ -13,9 +13,9 @@ export default function ProfileScreen({
   handleUpdateProfile,
   handleUploadAvatar,
   updating,
-  uplaoding,
+  uploading,
   deleting,
-  deleteAvatar,
+  handleDeleteAvatar,
 }: {
   profile: Profiles | undefined;
   onSignOut: () => void;
@@ -44,16 +44,16 @@ export default function ProfileScreen({
     },
     unknown
   >;
-  uplaoding?: boolean;
+  uploading?: boolean;
   updating?: boolean;
   deleting?: boolean;
-  deleteAvatar: (filePath: string) => void;
+  handleDeleteAvatar: (filePath: string) => void;
 }) {
   const insets = useSafeAreaInsets();
   const [isEditingBio, setIsEditingBio] = useState(false);
   const [bio, setBio] = useState(profile?.bio ?? '');
   const onSaveBio = () => {
-    if (!bio.trim() || bio.trim() === profile?.bio?.trim()) return;
+    if (bio.trim() === profile?.bio?.trim()) return;
     handleUpdateProfile({ bio }, { onSuccess: () => setIsEditingBio(false) });
   };
   return (
@@ -72,20 +72,23 @@ export default function ProfileScreen({
             {/* User Info */}
             <View className="items-center mt-6">
               <Avatar
-                url={profile?.avatar_url}
+                profile={profile}
                 size={150}
                 handleUploadAvatar={handleUploadAvatar}
                 handleUpdateProfile={handleUpdateProfile}
-                uplaoding={uplaoding}
+                uploading={uploading}
                 updating={updating}
-                deleteAvatar={deleteAvatar}
+                handleDeleteAvatar={handleDeleteAvatar}
                 deleting={deleting}
               />
 
               <Text className="mt-4 text-xl font-semibold dark:text-white">
                 {profile?.first_name} {profile?.last_name}
               </Text>
-
+              {/* Email */}
+              <Text className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                {profile?.email}
+              </Text>
               <View className="mt-4 px-6 w-full">
                 {!isEditingBio ? (
                   <>
@@ -123,7 +126,7 @@ export default function ProfileScreen({
 
                       <TouchableOpacity onPress={onSaveBio} disabled={updating}>
                         <Text className="font-semibold text-blue-600 dark:text-blue-400">
-                          {uplaoding ? 'Uploading...' : 'Save'}
+                          {uploading ? 'Saving...' : 'Save'}
                         </Text>
                       </TouchableOpacity>
                     </View>

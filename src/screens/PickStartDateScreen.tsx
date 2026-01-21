@@ -76,7 +76,7 @@ export default function PickStartDateScreen({
           <Ionicons
             name="arrow-forward"
             size={24}
-            color={colorScheme === 'dark' ? '#000' : 'fff'}
+            color={colorScheme === 'dark' ? '#000' : '#fff'}
           />
         </TouchableOpacity>
       </View>

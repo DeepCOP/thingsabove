@@ -25,10 +25,10 @@ export default function App() {
       onSignOut={onSignOut}
       handleUpdateProfile={updateProfile.mutate}
       handleUploadAvatar={uploadAvatar.mutate}
-      uplaoding={uploadAvatar.isPending}
+      uploading={uploadAvatar.isPending}
       updating={updateProfile.isPending}
       deleting={deleteAvatar.isPending}
-      deleteAvatar={deleteAvatar.mutate}
+      handleDeleteAvatar={deleteAvatar.mutate}
     />
   ) : (
     <View className="flex-1 items-center justify-center px-6 bg-white dark:bg-black">

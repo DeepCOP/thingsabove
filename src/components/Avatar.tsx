@@ -3,12 +3,11 @@ import { UseMutateFunction } from '@tanstack/react-query';
 import * as ImagePicker from 'expo-image-picker';
 import { Alert, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { useAuth } from '../state/AuthContext';
+import { Profiles } from '../types/types';
 import UserAvatar from './UserAvatar';
 
 interface Props {
   size: number;
-  url: string | undefined | null;
-  onUpload?: (filePath: string) => void;
   handleUpdateProfile: UseMutateFunction<
     void,
     Error,
@@ -34,31 +33,31 @@ interface Props {
     },
     unknown
   >;
-  uplaoding?: boolean;
+  uploading?: boolean;
   updating?: boolean;
   deleting?: boolean;
-  deleteAvatar: UseMutateFunction<void, Error, string, unknown>;
+  handleDeleteAvatar: UseMutateFunction<void, Error, string, unknown>;
+  profile: Profiles | undefined;
 }
 
 export default function Avatar({
-  url,
   size = 150,
-  onUpload,
   handleUpdateProfile,
   handleUploadAvatar,
-  uplaoding,
+  uploading,
   updating,
   deleting,
-  deleteAvatar,
+  profile,
+  handleDeleteAvatar,
 }: Props) {
   const avatarSize = { height: size, width: size };
   const { session } = useAuth();
 
   async function removeAvatar(filePath: string) {
-    if (!session?.user?.id) return;
+    if (!session?.user?.id || !filePath) return;
 
     // 1️⃣ Delete from storage
-    deleteAvatar(filePath, {
+    handleDeleteAvatar(filePath, {
       onSuccess: () => {
         handleUpdateProfile({
           avatar_url: '',
@@ -76,7 +75,7 @@ export default function Avatar({
         text: 'Remove',
         style: 'destructive',
         onPress: async () => {
-          const filePath = url?.split('/').pop()!;
+          const filePath = profile?.avatar_url?.split('/').pop()?.split('?')[0] ?? '';
           await removeAvatar(filePath);
         },
       },
@@ -94,7 +93,6 @@ export default function Avatar({
       });
 
       if (result.canceled || !result.assets?.length) {
-        console.log('User cancelled image picker.');
         return;
       }
 
@@ -106,13 +104,7 @@ export default function Avatar({
 
       const arraybuffer = await fetch(image.uri).then((res) => res.arrayBuffer());
 
-      const fileExt = image.uri.split('.').pop()?.toLowerCase() ?? 'jpeg';
-
-      const path = `${session?.user?.id}.${Date.now()}.${fileExt}`;
-      if (url) {
-        const oldPath = url.split('/').pop()!;
-        await removeAvatar(oldPath);
-      }
+      const path = `${session?.user?.id}.jpg`;
 
       handleUploadAvatar(
         {
@@ -122,10 +114,8 @@ export default function Avatar({
         },
         {
           onSuccess: (data) => {
-            console.log('Upload successful:', data);
-
             handleUpdateProfile({
-              avatar_url: `${process.env.EXPO_PUBLIC_SUPABASE_PROJECT_URL}/storage/v1/object/public/${data.fullPath}`,
+              avatar_url: `${process.env.EXPO_PUBLIC_SUPABASE_PROJECT_URL}/storage/v1/object/public/${data.fullPath}?t=${Date.now()}`,
             });
           },
         },
@@ -134,26 +124,25 @@ export default function Avatar({
       console.log('Error uploading image:', error);
     }
   }
-
   return (
     <View style={{ alignItems: 'center' }}>
       <View style={{ position: 'relative' }}>
         <UserAvatar
-          uri={url}
-          initial={session?.user?.user_metadata.first_name?.[0] ?? 'U'}
+          uri={profile?.avatar_url}
+          initial={profile?.first_name?.[0] ?? 'U'}
           size={avatarSize.width}
         />
 
         {/* Plus button */}
         <TouchableOpacity
           onPress={uploadAvatar}
-          disabled={uplaoding || updating || deleting}
-          style={[ButtonStyles.plusButton, uplaoding && { opacity: 0.6 }]}>
+          disabled={uploading || updating || deleting}
+          style={[ButtonStyles.plusButton, uploading && { opacity: 0.6 }]}>
           <Ionicons name="add" size={20} color="#fff" />
         </TouchableOpacity>
-        {url && (
+        {profile?.avatar_url && (
           <TouchableOpacity
-            disabled={uplaoding || updating || deleting}
+            disabled={uploading || updating || deleting}
             onPress={confirmRemoveAvatar}
             style={[styles.actionBtn, styles.removeBtn, deleting && { opacity: 0.6 }]}>
             <Ionicons name="trash-outline" size={16} color="#fff" />

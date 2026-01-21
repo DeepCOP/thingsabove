@@ -196,6 +196,7 @@ export const uploadAvatar = async (
     .from('avatars')
     .upload(filePath, arraybuffer, {
       contentType: mimeType ?? 'image/jpeg',
+      upsert: true,
     });
 
   if (uploadError) {
