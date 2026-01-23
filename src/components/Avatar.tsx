@@ -75,7 +75,7 @@ export default function Avatar({
         text: 'Remove',
         style: 'destructive',
         onPress: async () => {
-          const filePath = profile?.avatar_url?.split('/').pop()?.split('?')[0] ?? '';
+          const filePath = profile?.avatar_url?.split('/').pop() ?? '';
           await removeAvatar(filePath);
         },
       },
@@ -103,8 +103,8 @@ export default function Avatar({
       }
 
       const arraybuffer = await fetch(image.uri).then((res) => res.arrayBuffer());
-
-      const path = `${session?.user?.id}.jpg`;
+      const fileExt = image.uri.split('.').pop()?.toLowerCase() ?? 'jpeg';
+      const path = `${session?.user?.id}.${Date.now()}.${fileExt}`;
 
       handleUploadAvatar(
         {
@@ -114,9 +114,19 @@ export default function Avatar({
         },
         {
           onSuccess: (data) => {
-            handleUpdateProfile({
-              avatar_url: `${process.env.EXPO_PUBLIC_SUPABASE_PROJECT_URL}/storage/v1/object/public/${data.fullPath}?t=${Date.now()}`,
-            });
+            const currnentFilePath = profile?.avatar_url?.split('/').pop() ?? '';
+            handleUpdateProfile(
+              {
+                avatar_url: `${process.env.EXPO_PUBLIC_SUPABASE_PROJECT_URL}/storage/v1/object/public/${data.fullPath}`,
+              },
+              {
+                onSuccess: () => {
+                  if (currnentFilePath) {
+                    handleDeleteAvatar(currnentFilePath);
+                  }
+                },
+              },
+            );
           },
         },
       );
