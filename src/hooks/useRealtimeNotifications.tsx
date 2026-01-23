@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 import { notificationsRealTime } from '../api/realTimeQueries';
 import { supabase } from '../lib/supabaseClient';
 
-export function useRealtimeNotifications(userId: string | null, onNew: () => void) {
+export function useRealtimeNotifications(userId: string | undefined, onNew: () => void) {
   useEffect(() => {
     if (!userId) return;
 

@@ -186,3 +186,77 @@ export const markNotificationRead = async (p_notification_id: string) => {
   });
   if (error) throw error;
 };
+
+export const uploadAvatar = async (
+  filePath: string,
+  mimeType: string,
+  arraybuffer: ArrayBuffer,
+) => {
+  const { data, error: uploadError } = await supabase.storage
+    .from('avatars')
+    .upload(filePath, arraybuffer, {
+      contentType: mimeType ?? 'image/jpeg',
+      upsert: true,
+    });
+
+  if (uploadError) {
+    throw uploadError;
+  }
+
+  return data;
+};
+
+export const updateProfile = async ({
+  first_name,
+  last_name,
+  avatar_url,
+  bio,
+}: {
+  first_name?: string;
+  last_name?: string;
+  avatar_url?: string;
+  bio?: string;
+}) => {
+  const { error } = await supabase.rpc('update_profile', {
+    p_first_name: first_name,
+    p_last_name: last_name,
+    p_avatar_url: avatar_url,
+    p_bio: bio,
+  });
+
+  if (error) throw error;
+};
+
+export const deleteAvatarFromStorage = async (filePath: string) => {
+  const { error } = await supabase.storage.from('avatars').remove([filePath]);
+
+  if (error) throw error;
+};
+
+export const signUpUser = async (
+  email: string,
+  password: string,
+  firstName: string,
+  lastName: string,
+) => {
+  const { error } = await supabase.auth.signUp({
+    email,
+    password,
+    options: {
+      data: {
+        first_name: firstName,
+        last_name: lastName,
+      },
+    },
+  });
+  if (error) throw error;
+};
+
+export const signInUserWithPassword = async (email: string, password: string) => {
+  const { error } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+  });
+
+  if (error) throw error;
+};

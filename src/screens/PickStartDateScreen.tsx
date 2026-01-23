@@ -1,7 +1,7 @@
 import DaysPicker from '@/src/components/DaysPicker';
 import { Ionicons } from '@expo/vector-icons';
 import dayjs, { Dayjs } from 'dayjs';
-import { Image, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { Image, ScrollView, Text, TouchableOpacity, useColorScheme, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 type Props = {
@@ -20,6 +20,7 @@ export default function PickStartDateScreen({
   onNext,
 }: Props) {
   const insets = useSafeAreaInsets();
+  const colorScheme = useColorScheme();
   const startDate = dayjs().utc().startOf('day');
 
   return (
@@ -72,7 +73,11 @@ export default function PickStartDateScreen({
         <TouchableOpacity
           onPress={onNext}
           className="w-14 h-14 rounded-full bg-black dark:bg-white items-center justify-center">
-          <Ionicons name="arrow-forward" size={24} color="#fff" />
+          <Ionicons
+            name="arrow-forward"
+            size={24}
+            color={colorScheme === 'dark' ? '#000' : '#fff'}
+          />
         </TouchableOpacity>
       </View>
     </View>

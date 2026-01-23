@@ -27,6 +27,32 @@ create trigger on_auth_user_created
   after insert on auth.users
   for each row execute procedure public.handle_new_user();
 
+create or replace function public.update_profile(
+  p_first_name text default null,
+  p_last_name text default null,
+  p_avatar_url text default null,
+  p_bio text default null
+)
+returns void
+language plpgsql
+security definer
+as $$
+begin
+  update public.profiles
+  set
+    first_name = coalesce(p_first_name, first_name),
+    last_name  = coalesce(p_last_name, last_name),
+    avatar_url = coalesce(p_avatar_url, avatar_url),
+    bio        = coalesce(p_bio, bio),
+    updated_at = now()
+  where id = auth.uid();
+
+  if not found then
+    raise exception 'Profile not found for user %', auth.uid();
+  end if;
+end;
+$$;
+
 
 
 alter table public.profiles enable row level security;
@@ -98,6 +124,95 @@ create policy "authors can delete their plans"
 
   create index if not exists idx_devotional_plans_author_id on public.devotional_plans(author_id);
   create index if not exists idx_devotional_plans_id on public.devotional_plans(id);
+
+
+create or replace function public.insert_devotional_days_with_scriptures(
+  p_plan_id uuid,
+  p_days jsonb
+)
+returns void
+language plpgsql
+as $$
+declare
+  day_item jsonb;
+  inserted_day_id uuid;
+begin
+
+  if auth.uid() is null then
+    raise exception 'Not authenticated';
+  end if;
+
+  -- Loop over days array
+  for day_item in
+    select * from jsonb_array_elements(p_days)
+  loop
+    -- Insert devotional day
+    insert into public.devotional_days (
+      plan_id,
+      day_number,
+      content,
+      id
+    )
+    values (
+      p_plan_id,
+      (day_item ->> 'day_number')::int,
+      day_item ->> 'content',
+      (day_item ->> 'id')::uuid
+
+    )
+    returning id into inserted_day_id;
+
+    -- Insert scriptures if present
+    if jsonb_array_length(coalesce(day_item -> 'scriptures', '[]'::jsonb)) > 0 then
+      insert into public.scripture_references (
+        day_id,
+        reference
+      )
+      values (
+        inserted_day_id,
+        (
+          select array_agg(value::text)
+          from jsonb_array_elements_text(day_item -> 'scriptures')
+        )
+      );
+    end if;
+  end loop;
+end;
+$$;
+
+
+create or replace function public.get_devotional_days_with_scriptures(
+  p_plan_id uuid
+)
+returns jsonb
+language plpgsql
+as $$
+begin
+  return (
+    select jsonb_agg(
+      jsonb_build_object(
+        'id', d.id,
+        'day_number', d.day_number,
+        'content', d.content,
+        'scriptures', coalesce(sr.references, '[]'::jsonb),
+        'created_at', d.created_at,
+        'updated_at', d.updated_at
+      )
+      order by d.day_number
+    )
+    from public.devotional_days d
+    left join (
+      select
+        day_id,
+        jsonb_agg(reference) as references
+      from public.scripture_references
+      group by day_id
+    ) sr on sr.day_id = d.id
+    where d.plan_id = p_plan_id
+  );
+end;
+$$;
+
 
 
 --Devotional days
@@ -414,12 +529,12 @@ on storage.objects
 for select using (bucket_id = 'avatars');
 
 
-create policy "users can upload their own avatar"
+create policy "authenticated users can upload avatars"
 on storage.objects
 for insert
 with check (
   bucket_id = 'avatars'
-  and auth.uid()::text = (storage.foldername(name))[1]
+  and auth.uid() is not null
 );
 
 
@@ -427,11 +542,12 @@ create policy "users can update their own avatar"
 on storage.objects
 for update
 using (
-  auth.uid() = owner
-)
-with check  (
   bucket_id = 'avatars'
-  and auth.uid()::text = (storage.foldername(name))[1]
+  and owner = auth.uid()
+)
+with check (
+  bucket_id = 'avatars'
+  and owner = auth.uid()
 );
 
 create policy "users can delete their own avatar"
@@ -455,45 +571,33 @@ on storage.objects
 for select
 using (bucket_id = 'plan_images');
 
-create policy "authors upload plan images"
+create policy "users upload own plan images"
 on storage.objects
 for insert
 with check (
   bucket_id = 'plan_images'
-  and exists (
-    select 1
-    from public.devotional_plans p
-    where p.id::text = (storage.foldername(name))[1]
-    and p.author_id = auth.uid()
-  )
+  and auth.uid()::text = (storage.foldername(name))[1]
 );
 
 
-create policy "authors delete cover images"
+
+create policy "users delete own plan images"
 on storage.objects
 for delete
 using (
   bucket_id = 'plan_images'
-  and exists (
-    select 1
-    from public.devotional_plans p
-    where p.id::text = (storage.foldername(name))[1]
-    and p.author_id = auth.uid()
-  )
+  and auth.uid()::text = (storage.foldername(name))[1]
 );
 
-create policy "authors update cover images"
+
+create policy "users update own plan images"
 on storage.objects
 for update
 using (
   bucket_id = 'plan_images'
-  and exists (
-    select 1
-    from public.devotional_plans p
-    where p.id::text = (storage.foldername(name))[1]
-    and p.author_id = auth.uid()
-  )
+  and auth.uid()::text = (storage.foldername(name))[1]
 );
+
 
 
 --plan_view

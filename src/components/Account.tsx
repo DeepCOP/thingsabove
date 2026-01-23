@@ -5,13 +5,12 @@ import { Session } from '@supabase/supabase-js';
 import { useEffect, useState } from 'react';
 import { Alert, StyleSheet, View } from 'react-native';
 import { supabase } from '../lib/supabaseClient';
-import Avatar from './Avatar';
 
 export default function Account({ session }: { session: Session }) {
   const [loading, setLoading] = useState(true);
   const [username, setUsername] = useState('');
   const [website, setWebsite] = useState('');
-  const [avatarUrl, setAvatarUrl] = useState('');
+  const [avatarUrl] = useState('');
 
   useEffect(() => {
     if (session) getProfile();
@@ -24,7 +23,7 @@ export default function Account({ session }: { session: Session }) {
 
       const { error, status } = await supabase
         .from('profiles')
-        .select(`username, website, avatar_url`)
+        .select(`first_name,last_name,avatar_url, email`)
         .eq('id', session?.user.id)
         .single();
       if (error && status !== 406) {
@@ -92,14 +91,14 @@ export default function Account({ session }: { session: Session }) {
         <Input label="Website" value={website || ''} onChangeText={(text) => setWebsite(text)} />
       </View>
       <View>
-        <Avatar
+        {/* <Avatar
           size={200}
           url={avatarUrl}
           onUpload={(url: string) => {
             setAvatarUrl(url);
             updateProfile({ username, website, avatar_url: url });
           }}
-        />
+        /> */}
       </View>
       <View style={[styles.verticallySpaced, styles.mt20]}>
         <Button

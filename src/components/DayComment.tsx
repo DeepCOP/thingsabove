@@ -8,10 +8,11 @@ import BottomSheet, {
 } from '@gorhom/bottom-sheet';
 import dayjs from 'dayjs';
 import { forwardRef, useMemo, useState } from 'react';
-import { Image, Text, TouchableOpacity, useColorScheme, View } from 'react-native';
+import { Text, TouchableOpacity, useColorScheme, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRealtimeComments } from '../hooks/useRealtimeComments';
 import LoadingSpinner from './LoadingSpinner';
+import UserAvatar from './UserAvatar';
 
 type Props = {
   planId: string;
@@ -92,9 +93,10 @@ const DayCommentsBottomSheet = forwardRef<BottomSheet, Props>(
                 return (
                   <View className="flex-row items-start gap-3 mb-4 px-4">
                     {/* Avatar */}
-                    <Image
-                      source={{ uri: item.avatar_url }}
-                      className="w-10 h-10 rounded-full bg-gray-300"
+                    <UserAvatar
+                      uri={item.avatar_url}
+                      initial={item.first_name?.[0] ?? 'U'}
+                      size={40}
                     />
 
                     <View className={`flex-1 px-3 py-2 rounded-xl bg-neutral-600`}>

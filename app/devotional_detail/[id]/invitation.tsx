@@ -61,7 +61,7 @@ export default function PlanInvitation() {
       isAccepting={acceptMutation.isPending}
       onAccept={() => {
         if (isGuest) {
-          router.push('/login/signin');
+          router.push('/(auth)/signin');
           return;
         }
 

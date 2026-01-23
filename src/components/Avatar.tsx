@@ -1,114 +1,183 @@
+import { Ionicons } from '@expo/vector-icons';
+import { UseMutateFunction } from '@tanstack/react-query';
 import * as ImagePicker from 'expo-image-picker';
-import { useEffect, useState } from 'react';
-import { Alert, Button, Image, StyleSheet, View } from 'react-native';
-import { supabase } from '../lib/supabaseClient';
+import { Alert, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { useAuth } from '../state/AuthContext';
+import { Profiles } from '../types/types';
+import UserAvatar from './UserAvatar';
 
 interface Props {
   size: number;
-  url: string | null;
-  onUpload: (filePath: string) => void;
+  handleUpdateProfile: UseMutateFunction<
+    void,
+    Error,
+    {
+      first_name?: string;
+      last_name?: string;
+      avatar_url?: string;
+      bio?: string;
+    },
+    unknown
+  >;
+  handleUploadAvatar: UseMutateFunction<
+    {
+      id: string;
+      path: string;
+      fullPath: string;
+    },
+    Error,
+    {
+      filePath: string;
+      mimeType: string;
+      arraybuffer: ArrayBuffer;
+    },
+    unknown
+  >;
+  uploading?: boolean;
+  updating?: boolean;
+  deleting?: boolean;
+  handleDeleteAvatar: UseMutateFunction<void, Error, string, unknown>;
+  profile: Profiles | undefined;
 }
 
-export default function Avatar({ url, size = 150, onUpload }: Props) {
-  const [uploading, setUploading] = useState(false);
-  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+export default function Avatar({
+  size = 150,
+  handleUpdateProfile,
+  handleUploadAvatar,
+  uploading,
+  updating,
+  deleting,
+  profile,
+  handleDeleteAvatar,
+}: Props) {
   const avatarSize = { height: size, width: size };
+  const { session } = useAuth();
 
-  useEffect(() => {
-    if (url) downloadImage(url);
-  }, [url]);
+  async function removeAvatar(filePath: string) {
+    if (!session?.user?.id || !filePath) return;
 
-  async function downloadImage(path: string) {
-    try {
-      const { data, error } = await supabase.storage.from('avatars').download(path);
+    // 1️⃣ Delete from storage
+    handleDeleteAvatar(filePath, {
+      onSuccess: () => {
+        handleUpdateProfile({
+          avatar_url: '',
+        });
+      },
+    });
 
-      if (error) {
-        throw error;
-      }
-
-      const fr = new FileReader();
-      fr.readAsDataURL(data);
-      fr.onload = () => {
-        setAvatarUrl(fr.result as string);
-      };
-    } catch (error) {
-      if (error instanceof Error) {
-        console.log('Error downloading image: ', error.message);
-      }
-    }
+    // 2️⃣ Update profile
   }
+
+  const confirmRemoveAvatar = () => {
+    Alert.alert('Remove avatar', 'Are you sure you want to remove your profile picture?', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Remove',
+        style: 'destructive',
+        onPress: async () => {
+          const filePath = profile?.avatar_url?.split('/').pop() ?? '';
+          await removeAvatar(filePath);
+        },
+      },
+    ]);
+  };
 
   async function uploadAvatar() {
     try {
-      setUploading(true);
-
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images, // Restrict to only images
-        allowsMultipleSelection: false, // Can only select one image
-        allowsEditing: true, // Allows the user to crop / rotate their photo before uploading it
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsMultipleSelection: false,
+        allowsEditing: true,
         quality: 1,
-        exif: false, // We don't want nor need that data.
+        exif: false,
       });
 
-      if (result.canceled || !result.assets || result.assets.length === 0) {
-        console.log('User cancelled image picker.');
+      if (result.canceled || !result.assets?.length) {
         return;
       }
 
       const image = result.assets[0];
-      console.log('Got image', image);
 
       if (!image.uri) {
-        throw new Error('No image uri!'); // Realistically, this should never happen, but just in case...
+        throw new Error('No image uri!');
       }
 
       const arraybuffer = await fetch(image.uri).then((res) => res.arrayBuffer());
+      const fileExt = image.uri.split('.').pop()?.toLowerCase() ?? 'jpeg';
+      const path = `${session?.user?.id}.${Date.now()}.${fileExt}`;
 
-      const fileExt = image.uri?.split('.').pop()?.toLowerCase() ?? 'jpeg';
-      const path = `${Date.now()}.${fileExt}`;
-      const { data, error: uploadError } = await supabase.storage
-        .from('avatars')
-        .upload(path, arraybuffer, {
-          contentType: image.mimeType ?? 'image/jpeg',
-        });
-
-      if (uploadError) {
-        throw uploadError;
-      }
-
-      onUpload(data.path);
+      handleUploadAvatar(
+        {
+          filePath: path,
+          mimeType: image.mimeType ?? 'image/jpeg',
+          arraybuffer,
+        },
+        {
+          onSuccess: (data) => {
+            const currnentFilePath = profile?.avatar_url?.split('/').pop() ?? '';
+            handleUpdateProfile(
+              {
+                avatar_url: `${process.env.EXPO_PUBLIC_SUPABASE_PROJECT_URL}/storage/v1/object/public/${data.fullPath}`,
+              },
+              {
+                onSuccess: () => {
+                  if (currnentFilePath) {
+                    handleDeleteAvatar(currnentFilePath);
+                  }
+                },
+              },
+            );
+          },
+        },
+      );
     } catch (error) {
-      if (error instanceof Error) {
-        Alert.alert(error.message);
-      } else {
-        throw error;
-      }
-    } finally {
-      setUploading(false);
+      console.log('Error uploading image:', error);
     }
   }
-
   return (
-    <View>
-      {avatarUrl ? (
-        <Image
-          source={{ uri: avatarUrl }}
-          accessibilityLabel="Avatar"
-          style={[avatarSize, styles.avatar, styles.image]}
+    <View style={{ alignItems: 'center' }}>
+      <View style={{ position: 'relative' }}>
+        <UserAvatar
+          uri={profile?.avatar_url}
+          initial={profile?.first_name?.[0] ?? 'U'}
+          size={avatarSize.width}
         />
-      ) : (
-        <View style={[avatarSize, styles.avatar, styles.noImage]} />
-      )}
-      <View>
-        <Button
-          title={uploading ? 'Uploading ...' : 'Upload'}
+
+        {/* Plus button */}
+        <TouchableOpacity
           onPress={uploadAvatar}
-          disabled={uploading}
-        />
+          disabled={uploading || updating || deleting}
+          style={[ButtonStyles.plusButton, uploading && { opacity: 0.6 }]}>
+          <Ionicons name="add" size={20} color="#fff" />
+        </TouchableOpacity>
+        {profile?.avatar_url && (
+          <TouchableOpacity
+            disabled={uploading || updating || deleting}
+            onPress={confirmRemoveAvatar}
+            style={[styles.actionBtn, styles.removeBtn, deleting && { opacity: 0.6 }]}>
+            <Ionicons name="trash-outline" size={16} color="#fff" />
+          </TouchableOpacity>
+        )}
       </View>
     </View>
   );
 }
+
+const ButtonStyles = StyleSheet.create({
+  plusButton: {
+    position: 'absolute',
+    bottom: 4,
+    right: 4,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#4F46E5', // indigo
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: '#fff',
+  },
+});
 
 const styles = StyleSheet.create({
   avatar: {
@@ -126,5 +195,18 @@ const styles = StyleSheet.create({
     borderStyle: 'solid',
     borderColor: 'rgb(200, 200, 200)',
     borderRadius: 5,
+  },
+  actionBtn: {
+    position: 'absolute',
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  removeBtn: {
+    top: 4,
+    right: 4,
+    backgroundColor: '#DC2626',
   },
 });

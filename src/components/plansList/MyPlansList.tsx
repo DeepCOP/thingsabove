@@ -9,9 +9,17 @@ import { router } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { FlatList, Text, View } from 'react-native';
 
-export default function MyPlansList() {
+export default function MyPlansList({
+  listHeaderComponent,
+  listFooterComponent,
+  containterStyle,
+}: {
+  listHeaderComponent?: React.JSX.Element;
+  listFooterComponent?: React.JSX.Element;
+  containterStyle?: object;
+}) {
   const { session } = useAuth();
-  const userPlanProgressQuery = useUserPlanProgressList(session?.user.id);
+  const userPlanProgressQuery = useUserPlanProgressList(session?.user?.id);
   const userPlanProgress = useMemo(
     () => userPlanProgressQuery.data ?? [],
     [userPlanProgressQuery.data],
@@ -86,13 +94,15 @@ export default function MyPlansList() {
       <FlatList
         showsVerticalScrollIndicator={false}
         data={sortedPlans}
+        ListHeaderComponent={listHeaderComponent}
+        ListFooterComponent={listFooterComponent}
         keyExtractor={(item) => item.progress_id!}
         refreshing={refreshing}
         onRefresh={onRefresh}
         key={isGrid ? 'grid' : 'list'}
         numColumns={isGrid ? 2 : 1}
         columnWrapperStyle={isGrid ? { gap: 12 } : undefined}
-        contentContainerStyle={{ paddingBottom: 40 }}
+        contentContainerStyle={{ paddingBottom: 40, ...containterStyle }}
         renderItem={({ item }) => {
           if (!plansQuery.data || plansQuery.data.length === 0 || !userPlanProgressQuery.data) {
             return (
