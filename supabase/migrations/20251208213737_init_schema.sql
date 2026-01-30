@@ -1809,3 +1809,48 @@ for delete
 using (
   user_id = auth.uid()
 );
+
+create table if not exists ai_notifications (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid references auth.users(id) on delete cascade,
+  daily_message_id uuid references ai_daily_messages(id),
+  type text,
+  content text,
+  sent_at timestamptz,
+  created_at timestamptz default now(),
+  unique (user_id, daily_message_id)
+);
+
+
+
+create table if not exists ai_daily_messages (
+  id uuid primary key default gen_random_uuid(),
+  message_date date unique not null,
+  content text not null,
+  created_at timestamptz default now()
+);
+
+
+create or replace function queue_daily_notifications()
+returns void
+language sql
+security definer
+as $$
+insert into ai_notifications (user_id, daily_message_id, type, content)
+select
+  np.user_id,
+  dm.id,
+  'encouragement',
+  dm.content
+from notification_preferences np
+join ai_daily_messages dm
+  on dm.message_date = current_date
+where
+  np.frequency = 'daily'
+  and not exists (
+    select 1
+    from ai_notifications n
+    where n.user_id = np.user_id
+      and n.daily_message_id = dm.id
+  );
+$$;
