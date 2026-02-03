@@ -57,7 +57,7 @@ export default function RootLayout() {
 
 function RootLayoutContent() {
   const { session, loading } = useAuth();
-  const { expoPushToken, notification } = usePushNotifications();
+  usePushNotifications();
   const [loaded] = useFonts({
     OpenSansRegular: OpenSans_400Regular,
     OpenSansSemiBold: OpenSans_600SemiBold,

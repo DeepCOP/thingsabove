@@ -5,12 +5,10 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 serve(async () => {
   const supabase = createClient(
     Deno.env.get('SUPABASE_URL')!,
-    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
   );
 
-  const genAI = new GoogleGenerativeAI(
-    Deno.env.get('GEMINI_API_KEY')!
-  );
+  const genAI = new GoogleGenerativeAI(Deno.env.get('GEMINI_API_KEY')!);
 
   const model = genAI.getGenerativeModel({
     model: 'gemini-2.5-flash',
@@ -74,7 +72,7 @@ Requirements:
   await supabase.from('ai_daily_messages').insert({
     message_date: today,
     content: message,
-    type: 'daily'
+    type: 'daily',
   });
 
   return new Response('Daily encouragement generated', { status: 200 });

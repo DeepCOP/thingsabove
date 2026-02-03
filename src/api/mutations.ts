@@ -262,23 +262,21 @@ export const signInUserWithPassword = async (email: string, password: string) =>
 };
 
 export const toggleDailyEncouragement = async (value: boolean, userId: string | undefined) => {
-      if (!userId) return;
-      const { error } = await supabase.from('notification_preferences').upsert({
-        user_id: userId,
-        daily: value,
-        updated_at: new Date().toISOString(),
-      })
-      
-      if (error) throw error;
+  if (!userId) return;
+  const { error } = await supabase.from('notification_preferences').upsert({
+    user_id: userId,
+    daily: value,
+    updated_at: new Date().toISOString(),
+  });
 
-      return value;
-    }
+  if (error) throw error;
 
-export const pushNotificationSetup = async (userTimeZone:string, token:string) => {
-          await supabase
-          .rpc('upsert_push_notification_setup',{
-            p_timezone: userTimeZone,
-            p_expo_push_token: token,
-          })
+  return value;
+};
 
-}
+export const pushNotificationSetup = async (userTimeZone: string, token: string) => {
+  await supabase.rpc('upsert_push_notification_setup', {
+    p_timezone: userTimeZone,
+    p_expo_push_token: token,
+  });
+};

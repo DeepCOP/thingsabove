@@ -284,17 +284,16 @@ export const getProfile = async (userId: string) => {
   return data;
 };
 
-
 export const getNOtificationsPreferences = async (userId: string) => {
-      const { data, error } = await supabase
-        .from('notification_preferences')
-        .select('*')
-        .eq('user_id', userId!)
-        .single();
+  const { data, error } = await supabase
+    .from('notification_preferences')
+    .select('*')
+    .eq('user_id', userId!)
+    .single();
 
-      if (error && error.code !== 'PGRST116') {
-        throw error;
-      }
+  if (error && error.code !== 'PGRST116') {
+    throw error;
+  }
 
-      return data;
+  return data;
 };
