@@ -99,6 +99,7 @@ export default function Account({ session }: { session: Session }) {
             updateProfile({ username, website, avatar_url: url });
           }}
         /> */}
+        {/* <Push /> */}
       </View>
       <View style={[styles.verticallySpaced, styles.mt20]}>
         <Button

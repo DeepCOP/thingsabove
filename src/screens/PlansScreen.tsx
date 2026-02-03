@@ -15,6 +15,7 @@ type Props = {
   onChangeSort: (sort: 'Recent' | 'Trending') => void;
   onSearch: () => void;
   onLogin: () => void;
+  onSetting: () => void;
 };
 
 export default function PlansScreen({
@@ -27,6 +28,7 @@ export default function PlansScreen({
   onChangeSort,
   onSearch,
   onLogin,
+  onSetting,
 }: Props) {
   const colorScheme = useColorScheme();
 
@@ -49,11 +51,14 @@ export default function PlansScreen({
             color={colorScheme === 'dark' ? '#fff' : '#222'}
             onPress={onSearch}
           />
-          <Ionicons
-            name="settings-outline"
-            size={22}
-            color={colorScheme === 'dark' ? '#fff' : '#222'}
-          />
+          {isAuthenticated && (
+            <Ionicons
+              name="settings-outline"
+              size={22}
+              color={colorScheme === 'dark' ? '#fff' : '#222'}
+              onPress={onSetting}
+            />
+          )}
           {!isAuthenticated && (
             <TouchableOpacity onPress={onLogin}>
               <Ionicons

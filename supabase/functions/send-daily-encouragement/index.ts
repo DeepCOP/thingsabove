@@ -6,37 +6,73 @@ serve(async () => {
     Deno.env.get('SUPABASE_URL')!,
     Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
   );
+  const EXPO_ACCESS_TOKEN = Deno.env.get('EXPO_ACCESS_TOKEN');
 
   // fetch small batch
-  const { data: notifications } = await supabase
+  const { data: notifications,error } = await supabase
     .from('ai_notifications')
     .select(`
       id,
       content,
-      profiles ( expo_push_token )
+      profiles ( expo_push_token, first_name, last_name )
     `)
     .is('sent_at', null)
-    .limit(100);
+    .eq('type','daily')
+    .lte('scheduled_for', new Date().toISOString())
+    .limit(1000);
 
   if (!notifications?.length) {
+    console.error('Error fetching notifications:', error);
     return new Response('No pending notifications');
   }
 
+  function chunk<T>(arr: T[], size: number) {
+    const chunks: T[][] = [];
+    for (let i = 0; i < arr.length; i += size) {
+      chunks.push(arr.slice(i, i + size));
+    }
+    return chunks;
+  }
+
+  const sleep = (ms: number) =>
+  new Promise(resolve => setTimeout(resolve, ms));
+
+
   const messages = notifications
     .filter(n => n.profiles?.expo_push_token)
-    .map(n => ({
+    .map(n =>{
+      const firstName = n.profiles?.first_name?.trim();
+      const name = firstName || 'Friend';
+
+      return {
       to: n.profiles.expo_push_token,
-      title: 'Daily Encouragement',
+      title:`${name}, a word for today`,
       body: n.content,
       sound: 'default',
-    }));
+    }});
 
-  if (messages.length) {
-    await fetch('https://exp.host/--/api/v2/push/send', {
+  const batches = chunk(messages, 100);
+  const successfulIds: string[] = [];
+
+  for (const batch of batches) {
+    const res = await fetch('https://exp.host/--/api/v2/push/send', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(messages),
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${EXPO_ACCESS_TOKEN}`,
+      },
+      body: JSON.stringify(batch),
     });
+
+      const { data } = await res.json();
+
+      data.forEach((ticket: any, idx: number) => {
+        if (ticket.status === 'ok') {
+          successfulIds.push(notifications[i * 100 + idx].id);
+        }
+      });
+      await sleep(200);
+
   }
 
   // mark as sent
@@ -45,7 +81,7 @@ serve(async () => {
     .update({ sent_at: new Date().toISOString() })
     .in(
       'id',
-      notifications.map(n => n.id)
+      successfulIds
     );
 
   return new Response(`Sent ${messages.length} notifications`);

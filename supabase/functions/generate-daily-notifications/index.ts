@@ -1,16 +1,33 @@
 import { serve } from 'https://deno.land/std/http/server.ts';
-import OpenAI from 'https://esm.sh/openai@4';
+import { GoogleGenerativeAI } from 'https://esm.sh/@google/generative-ai';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-
-const openai = new OpenAI({
-  apiKey: Deno.env.get('OPENAI_API_KEY'),
-});
 
 serve(async () => {
   const supabase = createClient(
     Deno.env.get('SUPABASE_URL')!,
     Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
   );
+
+  const genAI = new GoogleGenerativeAI(
+    Deno.env.get('GEMINI_API_KEY')!
+  );
+
+  const model = genAI.getGenerativeModel({
+    model: 'gemini-2.5-flash',
+    systemInstruction: `
+You are a Christian devotional assistant.
+
+Your goal is to encourage users toward God’s reign and righteousness.
+Your tone must be invitational, gentle, and Scripture-centered.
+
+Rules:
+- Never use guilt or shame
+- Never command
+- Never claim divine authority
+- Keep messages short (1–2 sentences)
+
+`,
+  });
 
   const today = new Date().toISOString().slice(0, 10);
 
@@ -26,23 +43,28 @@ serve(async () => {
   }
 
   // 2️⃣ Generate encouragement
-  const completion = await openai.chat.completions.create({
-    model: 'gpt-4o-mini',
-    messages: [
-      {
-        role: 'system',
-        content:
-          'You are a Christian devotional assistant. Messages must be biblically grounded, encouraging, and gentle.',
-      },
+  const result = await model.generateContent({
+    contents: [
       {
         role: 'user',
-        content:
-          'Write one short daily Christian encouragement (2–3 sentences). No emojis.',
+        parts: [
+          {
+            text: `
+Write a daily Christian encouragement notification.
+
+Requirements:
+- 1–2 short sentences
+- Invitational tone
+- Scripture-centered (verse reference optional)
+- Calm and hopeful
+`,
+          },
+        ],
       },
     ],
   });
 
-  const message = completion.choices[0].message.content?.trim();
+  const message = result.response.text()?.trim();
 
   if (!message) {
     return new Response('AI failed', { status: 500 });
@@ -52,6 +74,7 @@ serve(async () => {
   await supabase.from('ai_daily_messages').insert({
     message_date: today,
     content: message,
+    type: 'daily'
   });
 
   return new Response('Daily encouragement generated', { status: 200 });

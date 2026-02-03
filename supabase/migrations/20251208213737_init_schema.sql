@@ -5,6 +5,8 @@ create table if not exists public.profiles (
   last_name text not null,
   email text unique not null,
   avatar_url text,
+  expo_push_token text,
+  timezone text default 'UTC',
   bio text,
   created_at timestamptz default now(),
   updated_at timestamptz default now()
@@ -1810,47 +1812,98 @@ using (
   user_id = auth.uid()
 );
 
-create table if not exists ai_notifications (
-  id uuid primary key default gen_random_uuid(),
-  user_id uuid references auth.users(id) on delete cascade,
-  daily_message_id uuid references ai_daily_messages(id),
-  type text,
-  content text,
-  sent_at timestamptz,
-  created_at timestamptz default now(),
-  unique (user_id, daily_message_id)
-);
-
 
 
 create table if not exists ai_daily_messages (
   id uuid primary key default gen_random_uuid(),
   message_date date unique not null,
   content text not null,
+  type text not null,
   created_at timestamptz default now()
 );
 
 
+create table if not exists ai_notifications (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid references public.profiles(id) on delete cascade,
+  message_id uuid references public.ai_daily_messages(id),
+  type text,
+  content text,
+  scheduled_for timestamptz,
+  sent_at timestamptz,
+  created_at timestamptz default now(),
+  unique (user_id, message_id)
+);
+
 create or replace function queue_daily_notifications()
 returns void
-language sql
+language plpgsql
 security definer
 as $$
-insert into ai_notifications (user_id, daily_message_id, type, content)
-select
-  np.user_id,
-  dm.id,
-  'encouragement',
-  dm.content
-from notification_preferences np
-join ai_daily_messages dm
-  on dm.message_date = current_date
-where
-  np.frequency = 'daily'
-  and not exists (
-    select 1
-    from ai_notifications n
-    where n.user_id = np.user_id
-      and n.daily_message_id = dm.id
-  );
+declare
+  send_hour int := 7; -- 7 AM local time
+begin
+  insert into ai_notifications (
+    user_id,
+    message_id,
+    type,
+    content,
+    scheduled_for
+  )
+  select
+    np.user_id,
+    dm.id,
+    'daily',
+    dm.content,
+    (
+      (current_date + make_interval(hours => send_hour))
+        at time zone p.timezone
+    ) at time zone 'UTC'
+  from notification_preferences np
+  join public.profiles p on p.id = np.user_id
+  join ai_daily_messages dm
+    on dm.message_date = current_date
+  where
+    np.daily = true
+    and p.expo_push_token is not null
+    and not exists (
+      select 1
+      from ai_notifications n
+      where n.user_id = np.user_id
+        and n.message_id = dm.id
+    );
+end;
+$$;
+
+
+create table if not exists notification_preferences (
+  user_id uuid primary key references public.profiles(id) on delete cascade,
+  daily boolean default true,
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+
+
+create or replace function upsert_push_notification_setup(
+  p_expo_push_token text,
+  p_timezone text
+)
+returns void
+language plpgsql
+security definer
+as $$
+begin
+  -- 1️⃣ Update profile
+  update public.profiles
+  set
+    expo_push_token = p_expo_push_token,
+    timezone = p_timezone
+  where id = auth.uid();
+
+  -- 2️⃣ Ensure notification preferences exist
+  insert into public.notification_preferences (user_id, daily)
+  values (auth.uid(), true)
+  on conflict (user_id)
+  do nothing;
+end;
 $$;
