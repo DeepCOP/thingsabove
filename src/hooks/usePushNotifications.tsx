@@ -15,11 +15,6 @@ Notifications.setNotificationHandler({
   }),
 });
 
-function handleRegistrationError(message: string) {
-  console.warn(message);
-  throw new Error(message);
-}
-
 export async function registerForPushNotificationsAsync(): Promise<string | null> {
   // 1️⃣ Physical device check
   if (!Device.isDevice) {
@@ -84,13 +79,11 @@ export function usePushNotifications() {
   useEffect(() => {
     if (!session?.user?.id) return;
 
-    registerForPushNotificationsAsync()
-      .then(async (token) => {
-        if (!token) return;
+    registerForPushNotificationsAsync().then(async (token) => {
+      if (!token) return;
 
-        setExpoPushToken(token);
-      })
-      .catch(console.error);
+      setExpoPushToken(token);
+    });
 
     const notificationListener = Notifications.addNotificationReceivedListener(setNotification);
 
