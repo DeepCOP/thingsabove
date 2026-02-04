@@ -1,60 +1,8 @@
 import { useAuth } from '@/src/state/AuthContext';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import Constants from 'expo-constants';
-import * as Device from 'expo-device';
-import * as Notifications from 'expo-notifications';
-import { Alert, Platform } from 'react-native';
-import { pushNotificationSetup, toggleDailyEncouragement } from '../api/mutations';
-import { getNOtificationsPreferences } from '../api/queries';
-
-type NotificationPrefs = {
-  daily_encouragement: boolean | null;
-};
-
-export async function ensurePushReady(): Promise<string | null> {
-  const { status: existingStatus } = await Notifications.getPermissionsAsync();
-
-  // 1️⃣ Permission
-  if (Platform.OS === 'android') {
-    await Notifications.setNotificationChannelAsync('default', {
-      name: 'default',
-      importance: Notifications.AndroidImportance.MAX,
-      vibrationPattern: [0, 250, 250, 250],
-      lightColor: '#FF231F7C',
-    });
-  }
-  if (!Device.isDevice) {
-    Alert.alert('Unsupported device', 'Push notifications require a physical device.');
-    return null;
-  }
-
-  let finalStatus = existingStatus;
-  if (existingStatus !== 'granted') {
-    const res = await Notifications.requestPermissionsAsync();
-    finalStatus = res.status;
-  }
-
-  if (finalStatus !== 'granted') {
-    Alert.alert('Notifications disabled', 'Please enable notifications in system settings.');
-    return null;
-  }
-
-  // 3️⃣ Get Expo push token
-  const projectId = Constants?.expoConfig?.extra?.eas?.projectId ?? Constants?.easConfig?.projectId;
-
-  if (!projectId) {
-    console.warn('Expo project ID not found');
-    return null;
-  }
-
-  const token = (await Notifications.getExpoPushTokenAsync({ projectId })).data;
-
-  if (token && existingStatus !== 'granted') {
-    const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    await pushNotificationSetup(userTimeZone, token);
-  }
-  return token;
-}
+import { toggleDailyEncouragement } from '../api/mutations';
+import { getNotificationsPreferences } from '../api/queries';
+import { NotificationPreferences } from '../types/types';
 
 export function useNotificationSettings() {
   const { session } = useAuth();
@@ -66,7 +14,7 @@ export function useNotificationSettings() {
   const { data, isLoading: loading } = useQuery({
     queryKey: ['notification-preferences', userId],
     enabled: !!userId,
-    queryFn: async () => getNOtificationsPreferences(userId!),
+    queryFn: async () => getNotificationsPreferences(userId!),
   });
 
   const dailyEncouragement = data?.daily ?? false;
@@ -81,15 +29,21 @@ export function useNotificationSettings() {
         queryKey: ['notification-preferences', userId],
       });
 
-      const previous = queryClient.getQueryData<NotificationPrefs | null>([
+      const previous = queryClient.getQueryData<NotificationPreferences>([
         'notification-preferences',
         userId,
       ]);
 
-      queryClient.setQueryData(['notification-preferences', userId], {
-        daily_encouragement: value,
-      });
-
+      queryClient.setQueryData(
+        ['notification-preferences', userId],
+        (old: NotificationPreferences | undefined) => {
+          return {
+            ...old,
+            user_id: userId,
+            daily: value,
+          };
+        },
+      );
       return { previous };
     },
 

@@ -1,5 +1,6 @@
 import LoadingSpinner from '@/src/components/LoadingSpinner';
-import { ensurePushReady, useNotificationSettings } from '@/src/hooks/useNotificationSetting';
+import { useNotificationSettings } from '@/src/hooks/useNotificationSetting';
+import { registerForPushNotificationsAsync } from '@/src/hooks/usePushNotifications';
 import { useAppStore } from '@/src/state/useAppStore';
 import { Switch, Text, TouchableOpacity, View } from 'react-native';
 
@@ -20,7 +21,7 @@ export default function NotificationSettingsScreen() {
   const handleToggleDailyEncouragement = async (nextValue: boolean) => {
     // Only when enabling
     if (nextValue) {
-      const token = await ensurePushReady();
+      const token = await registerForPushNotificationsAsync();
       if (!token) return;
     }
     toggleDailyEncouragementMutation(nextValue);

@@ -30,14 +30,14 @@ export default function DevotionalDetail() {
   const plan = planQuery.data;
   const handleToggleReaction = (reaction: 'like' | 'dislike') => {
     if (isGuest) {
-      router.push('/login/signin');
+      router.push('/(auth)/signin');
       return;
     }
     toggleReaction.mutate(reaction);
   };
   const onReportPress = () => {
     if (isGuest) {
-      router.push('/login/signin');
+      router.push('/(auth)/signin');
       return;
     }
     reportSheetRef.current?.expand();

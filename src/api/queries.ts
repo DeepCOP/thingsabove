@@ -284,7 +284,7 @@ export const getProfile = async (userId: string) => {
   return data;
 };
 
-export const getNOtificationsPreferences = async (userId: string) => {
+export const getNotificationsPreferences = async (userId: string) => {
   const { data, error } = await supabase
     .from('notification_preferences')
     .select('*')

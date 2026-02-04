@@ -70,3 +70,11 @@ In the Terminal, you'll find command lists:
    ```bash
    pnpx supabase db reset --linked
    ```
+4. Set Secrets
+   ```bash
+   pnpx supabase secrets set --env-file .env
+   ```
+5. Deploy Edge functions
+   ```bash
+   pnpx supabase functions deploy
+   ```
