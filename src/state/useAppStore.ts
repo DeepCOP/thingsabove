@@ -41,8 +41,8 @@ type AppState = {
   setCurrentPlan: (plan: any) => void;
 
   // THEME
-  theme: 'light' | 'dark';
-  setTheme: (t: 'light' | 'dark') => void;
+  theme: 'light' | 'dark' | 'system';
+  setTheme: (t: 'light' | 'dark' | 'system') => void;
 };
 
 export const useAppStore = create<AppState>()(
@@ -77,7 +77,7 @@ export const useAppStore = create<AppState>()(
       setCurrentPlan: (plan) => set({ currentPlan: plan }),
 
       // THEME
-      theme: 'light',
+      theme: 'system',
       setTheme: (theme) => set({ theme }),
       // BIBLE VERSION
       version: 'KJV',

@@ -8,6 +8,75 @@ export type Database = {
   };
   public: {
     Tables: {
+      ai_daily_messages: {
+        Row: {
+          content: string;
+          created_at: string | null;
+          id: string;
+          message_date: string;
+          type: string;
+        };
+        Insert: {
+          content: string;
+          created_at?: string | null;
+          id?: string;
+          message_date: string;
+          type: string;
+        };
+        Update: {
+          content?: string;
+          created_at?: string | null;
+          id?: string;
+          message_date?: string;
+          type?: string;
+        };
+        Relationships: [];
+      };
+      ai_notifications: {
+        Row: {
+          content: string | null;
+          created_at: string | null;
+          id: string;
+          message_id: string | null;
+          sent_at: string | null;
+          type: string | null;
+          user_id: string | null;
+        };
+        Insert: {
+          content?: string | null;
+          created_at?: string | null;
+          id?: string;
+          message_id?: string | null;
+          sent_at?: string | null;
+          type?: string | null;
+          user_id?: string | null;
+        };
+        Update: {
+          content?: string | null;
+          created_at?: string | null;
+          id?: string;
+          message_id?: string | null;
+          sent_at?: string | null;
+          type?: string | null;
+          user_id?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'ai_notifications_message_id_fkey';
+            columns: ['message_id'];
+            isOneToOne: false;
+            referencedRelation: 'ai_daily_messages';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'ai_notifications_user_id_fkey';
+            columns: ['user_id'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       comments: {
         Row: {
           content: string;
@@ -274,6 +343,35 @@ export type Database = {
           },
         ];
       };
+      notification_preferences: {
+        Row: {
+          created_at: string | null;
+          daily: boolean | null;
+          updated_at: string | null;
+          user_id: string;
+        };
+        Insert: {
+          created_at?: string | null;
+          daily?: boolean | null;
+          updated_at?: string | null;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string | null;
+          daily?: boolean | null;
+          updated_at?: string | null;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'notification_preferences_user_id_fkey';
+            columns: ['user_id'];
+            isOneToOne: true;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       notifications: {
         Row: {
           body: string | null;
@@ -509,9 +607,11 @@ export type Database = {
           bio: string | null;
           created_at: string | null;
           email: string;
+          expo_push_token: string | null;
           first_name: string;
           id: string;
           last_name: string;
+          timezone: string | null;
           updated_at: string | null;
         };
         Insert: {
@@ -519,9 +619,11 @@ export type Database = {
           bio?: string | null;
           created_at?: string | null;
           email: string;
+          expo_push_token?: string | null;
           first_name: string;
           id: string;
           last_name: string;
+          timezone?: string | null;
           updated_at?: string | null;
         };
         Update: {
@@ -529,9 +631,11 @@ export type Database = {
           bio?: string | null;
           created_at?: string | null;
           email?: string;
+          expo_push_token?: string | null;
           first_name?: string;
           id?: string;
           last_name?: string;
+          timezone?: string | null;
           updated_at?: string | null;
         };
         Relationships: [];
@@ -713,6 +817,10 @@ export type Database = {
         };
         Returns: undefined;
       };
+      get_devotional_days_with_scriptures: {
+        Args: { p_plan_id: string };
+        Returns: Json;
+      };
       get_my_notifications: {
         Args: never;
         Returns: {
@@ -768,11 +876,16 @@ export type Database = {
           last_name: string;
         }[];
       };
+      insert_devotional_days_with_scriptures: {
+        Args: { p_days: Json; p_plan_id: string };
+        Returns: undefined;
+      };
       is_group_member: { Args: { p_group_id: string }; Returns: boolean };
       mark_notification_read: {
         Args: { p_notification_id: string };
         Returns: undefined;
       };
+      queue_daily_notifications: { Args: never; Returns: undefined };
       report_plan: {
         Args: { p_plan_id: string; p_reason: string };
         Returns: undefined;
@@ -856,6 +969,10 @@ export type Database = {
           p_first_name?: string;
           p_last_name?: string;
         };
+        Returns: undefined;
+      };
+      upsert_push_notification_setup: {
+        Args: { p_expo_push_token: string; p_timezone: string };
         Returns: undefined;
       };
     };

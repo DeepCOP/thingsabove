@@ -19,6 +19,8 @@ import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { BibleProvider } from '../src/state/BibleContext';
 
+import { usePushNotifications } from '@/src/hooks/usePushNotifications';
+import { useThemePreference } from '@/src/hooks/useThemePreference';
 import { mutationQueue } from '@/src/lib/mutationQueue';
 import { QueryProviderWrapper } from '@/src/lib/queryClient';
 import { supabase } from '@/src/lib/supabaseClient';
@@ -26,19 +28,18 @@ import { AuthProvider, useAuth } from '@/src/state/AuthContext';
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
-import { useColorScheme } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import '../global.css';
 
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
+  const { resolvedTheme } = useThemePreference();
 
   return (
     <SafeAreaProvider>
       <GestureHandlerRootView style={{ flex: 1 }}>
-        <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+        <ThemeProvider value={resolvedTheme === 'dark' ? DarkTheme : DefaultTheme}>
           <AuthProvider>
             <QueryProviderWrapper>
               <BottomSheetModalProvider>
@@ -56,7 +57,7 @@ export default function RootLayout() {
 
 function RootLayoutContent() {
   const { session, loading } = useAuth();
-
+  usePushNotifications();
   const [loaded] = useFonts({
     OpenSansRegular: OpenSans_400Regular,
     OpenSansSemiBold: OpenSans_600SemiBold,
@@ -149,6 +150,7 @@ function RootLayoutContent() {
           />
           <Stack.Screen name="add_friend/index" options={{ title: 'Add Friend' }} />
           <Stack.Screen name="accept_friend/index" options={{ title: 'Friend Requests' }} />
+          <Stack.Screen name="settings/index" options={{ title: 'Settings' }} />
         </Stack.Protected>
       </Stack>
     </>

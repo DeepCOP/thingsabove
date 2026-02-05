@@ -21,6 +21,7 @@ export default function PlansTab() {
       onChangeSort={setSort}
       onSearch={() => router.push('/search/devotionals')}
       onLogin={() => router.push('/(auth)/signin')}
+      onSetting={() => router.push('/settings')}
     />
   );
 }

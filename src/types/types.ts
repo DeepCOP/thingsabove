@@ -63,3 +63,6 @@ export type GetPendingFriendRequests =
 
 export type GetPlanReactionSummary =
   Database['public']['Functions']['get_plan_reaction_summary']['Returns'];
+
+export type NotificationPreferences =
+  Database['public']['Tables']['notification_preferences']['Row'];
