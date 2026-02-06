@@ -4,7 +4,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: '13.0.5';
+    PostgrestVersion: '14.1';
   };
   public: {
     Tables: {
@@ -38,6 +38,7 @@ export type Database = {
           created_at: string | null;
           id: string;
           message_id: string | null;
+          scheduled_for: string | null;
           sent_at: string | null;
           type: string | null;
           user_id: string | null;
@@ -47,6 +48,7 @@ export type Database = {
           created_at?: string | null;
           id?: string;
           message_id?: string | null;
+          scheduled_for?: string | null;
           sent_at?: string | null;
           type?: string | null;
           user_id?: string | null;
@@ -56,6 +58,7 @@ export type Database = {
           created_at?: string | null;
           id?: string;
           message_id?: string | null;
+          scheduled_for?: string | null;
           sent_at?: string | null;
           type?: string | null;
           user_id?: string | null;
@@ -74,6 +77,67 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: 'profiles';
             referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'ai_notifications_user_id_fkey';
+            columns: ['user_id'];
+            isOneToOne: false;
+            referencedRelation: 'user_behavior_snapshot';
+            referencedColumns: ['user_id'];
+          },
+        ];
+      };
+      ai_triggers: {
+        Row: {
+          context: Json;
+          created_at: string | null;
+          generated_message: string | null;
+          id: string;
+          priority: number | null;
+          sent: boolean | null;
+          sent_at: string | null;
+          trigger_reason: string;
+          trigger_type: string;
+          user_id: string;
+        };
+        Insert: {
+          context?: Json;
+          created_at?: string | null;
+          generated_message?: string | null;
+          id?: string;
+          priority?: number | null;
+          sent?: boolean | null;
+          sent_at?: string | null;
+          trigger_reason: string;
+          trigger_type: string;
+          user_id: string;
+        };
+        Update: {
+          context?: Json;
+          created_at?: string | null;
+          generated_message?: string | null;
+          id?: string;
+          priority?: number | null;
+          sent?: boolean | null;
+          sent_at?: string | null;
+          trigger_reason?: string;
+          trigger_type?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'ai_triggers_user_id_fkey';
+            columns: ['user_id'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'ai_triggers_user_id_fkey';
+            columns: ['user_id'];
+            isOneToOne: false;
+            referencedRelation: 'user_behavior_snapshot';
+            referencedColumns: ['user_id'];
           },
         ];
       };
@@ -335,11 +399,25 @@ export type Database = {
             referencedColumns: ['id'];
           },
           {
+            foreignKeyName: 'friends_receiver_id_fkey';
+            columns: ['receiver_id'];
+            isOneToOne: false;
+            referencedRelation: 'user_behavior_snapshot';
+            referencedColumns: ['user_id'];
+          },
+          {
             foreignKeyName: 'friends_requester_id_fkey';
             columns: ['requester_id'];
             isOneToOne: false;
             referencedRelation: 'profiles';
             referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'friends_requester_id_fkey';
+            columns: ['requester_id'];
+            isOneToOne: false;
+            referencedRelation: 'user_behavior_snapshot';
+            referencedColumns: ['user_id'];
           },
         ];
       };
@@ -369,6 +447,13 @@ export type Database = {
             isOneToOne: true;
             referencedRelation: 'profiles';
             referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'notification_preferences_user_id_fkey';
+            columns: ['user_id'];
+            isOneToOne: true;
+            referencedRelation: 'user_behavior_snapshot';
+            referencedColumns: ['user_id'];
           },
         ];
       };
@@ -411,6 +496,13 @@ export type Database = {
             referencedRelation: 'profiles';
             referencedColumns: ['id'];
           },
+          {
+            foreignKeyName: 'notifications_user_id_fkey';
+            columns: ['user_id'];
+            isOneToOne: false;
+            referencedRelation: 'user_behavior_snapshot';
+            referencedColumns: ['user_id'];
+          },
         ];
       };
       plan_group_members: {
@@ -450,6 +542,13 @@ export type Database = {
             referencedRelation: 'profiles';
             referencedColumns: ['id'];
           },
+          {
+            foreignKeyName: 'plan_group_members_user_id_fkey';
+            columns: ['user_id'];
+            isOneToOne: false;
+            referencedRelation: 'user_behavior_snapshot';
+            referencedColumns: ['user_id'];
+          },
         ];
       };
       plan_groups: {
@@ -487,6 +586,13 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: 'profiles';
             referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'plan_groups_created_by_fkey';
+            columns: ['created_by'];
+            isOneToOne: false;
+            referencedRelation: 'user_behavior_snapshot';
+            referencedColumns: ['user_id'];
           },
           {
             foreignKeyName: 'plan_groups_plan_id_fkey';
@@ -611,6 +717,7 @@ export type Database = {
           first_name: string;
           id: string;
           last_name: string;
+          last_seen: string | null;
           timezone: string | null;
           updated_at: string | null;
         };
@@ -623,6 +730,7 @@ export type Database = {
           first_name: string;
           id: string;
           last_name: string;
+          last_seen?: string | null;
           timezone?: string | null;
           updated_at?: string | null;
         };
@@ -635,6 +743,7 @@ export type Database = {
           first_name?: string;
           id?: string;
           last_name?: string;
+          last_seen?: string | null;
           timezone?: string | null;
           updated_at?: string | null;
         };
@@ -761,6 +870,24 @@ export type Database = {
         };
         Relationships: [];
       };
+      user_behavior_snapshot: {
+        Row: {
+          abandoned_plans: number | null;
+          active_plans: number | null;
+          commented_recently: boolean | null;
+          has_friends: boolean | null;
+          last_activity_at: string | null;
+          last_seen: string | null;
+          max_days_completed: number | null;
+          plans_completed: number | null;
+          plans_started: number | null;
+          time_since_last_activity: unknown;
+          time_since_last_seen: unknown;
+          timezone: string | null;
+          user_id: string | null;
+        };
+        Relationships: [];
+      };
     };
     Functions: {
       accept_friend_request: {
@@ -817,6 +944,7 @@ export type Database = {
         };
         Returns: undefined;
       };
+      generate_ai_triggers: { Args: never; Returns: undefined };
       get_devotional_days_with_scriptures: {
         Args: { p_plan_id: string };
         Returns: Json;

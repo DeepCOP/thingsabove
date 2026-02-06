@@ -2,6 +2,7 @@
 create table if not exists public.profiles (
   id uuid primary key references auth.users(id) on delete cascade,
   first_name text not null,
+  last_seen timestamptz default now(),
   last_name text not null,
   email text unique not null,
   avatar_url text,
@@ -1905,5 +1906,285 @@ begin
   values (auth.uid(), true)
   on conflict (user_id)
   do nothing;
+end;
+$$;
+
+
+create or replace view user_behavior_snapshot as
+select
+  p.id as user_id,
+  p.timezone,
+  p.last_seen,
+
+  now() - p.last_seen as time_since_last_seen,
+
+  -- ACTIVITY
+  max(pp.updated_at) as last_activity_at,
+  now() - max(pp.updated_at) as time_since_last_activity,
+
+  -- PLANS
+  count(distinct pp.plan_id) as plans_started,
+
+  count(distinct pp.plan_id) filter (
+    where array_length(pp.completed_days, 1) = dp.total_days
+  ) as plans_completed,
+
+  count(distinct pp.plan_id) filter (
+    where array_length(pp.completed_days, 1) < dp.total_days
+  ) as active_plans,
+
+  count(distinct pp.plan_id) filter (
+    where pp.updated_at < now() - interval '5 days'
+      and array_length(pp.completed_days, 1) < dp.total_days
+  ) as abandoned_plans,
+
+  -- STREAK (simple version)
+  max(array_length(pp.completed_days, 1)) as max_days_completed,
+
+  -- SOCIAL
+  exists (
+    select 1 from comments c
+    where c.user_id = p.id
+      and c.created_at > now() - interval '7 days'
+  ) as commented_recently,
+
+  exists (
+    select 1 from friends f
+    where (f.requester_id = p.id or f.receiver_id = p.id)
+      and f.status = 'accepted'
+  ) as has_friends
+
+from profiles p
+left join plan_progress pp on pp.user_id = p.id
+left join devotional_plans dp on dp.id = pp.plan_id
+group by p.id;
+
+
+create table if not exists public.ai_triggers (
+  id uuid primary key default gen_random_uuid(),
+  priority int default 10,
+  user_id uuid not null
+    references public.profiles(id) on delete cascade,
+
+  trigger_type text not null check (
+    trigger_type in (
+      'inactivity_nudge',
+      'abandoned_plan',
+      'plan_completion',
+      'streak_encouragement',
+      'friend_invite_nudge',
+      'social_prompt',
+      'welcome_back'
+    )
+  ),
+
+  trigger_reason text not null,
+  -- human-readable explanation
+  -- e.g. "No activity for 6 days, 1 active plan"
+
+  context jsonb not null default '{}',
+  -- snapshot of metrics at trigger time
+  -- used by AI to craft message
+
+  generated_message text,
+  -- optional: stored AI message (for auditing / reuse)
+
+  sent boolean default false,
+  sent_at timestamptz,
+
+  created_at timestamptz default now(),
+
+  -- spam protection
+  unique (user_id, trigger_type, created_at)
+);
+
+
+
+
+create or replace function generate_ai_triggers()
+returns void
+language plpgsql
+security definer
+as $$
+begin
+  /* =====================================================
+     🎉 PLAN COMPLETION (Priority 1)
+     ===================================================== */
+  insert into ai_triggers (
+    user_id,
+    trigger_type,
+    trigger_reason,
+    priority,
+    context
+  )
+  select
+    u.user_id,
+    'plan_completion',
+    'User completed a devotional plan',
+    1,
+    jsonb_build_object(
+      'plans_completed', u.plans_completed,
+      'max_days_completed', u.max_days_completed
+    )
+  from user_behavior_snapshot u
+  where
+    u.plans_completed > 0
+    and u.last_activity_at > now() - interval '1 day'
+
+    -- GLOBAL COOLDOWN (no spam)2.
+    and not exists (
+      select 1 from ai_triggers t
+      where t.user_id = u.user_id
+        and t.created_at > now() - interval '48 hours'
+    )
+
+    -- PER-TRIGGER COOLDOWN
+    and not exists (
+      select 1 from ai_triggers t
+      where t.user_id = u.user_id
+        and t.trigger_type = 'plan_completion'
+        and t.created_at > now() - interval '3 days'
+    );
+
+  /* =====================================================
+     🙌 WELCOME BACK (Priority 2)
+     ===================================================== */
+  insert into ai_triggers (
+    user_id,
+    trigger_type,
+    trigger_reason,
+    priority,
+    context
+  )
+  select
+    u.user_id,
+    'welcome_back',
+    'User returned after long inactivity',
+    2,
+    jsonb_build_object(
+      'time_since_last_seen', u.time_since_last_seen
+    )
+  from user_behavior_snapshot u
+  where
+    u.time_since_last_seen > interval '5 days'
+
+    -- GLOBAL COOLDOWN
+    and not exists (
+      select 1 from ai_triggers t
+      where t.user_id = u.user_id
+        and t.created_at > now() - interval '48 hours'
+    )
+
+    -- BLOCK IF HIGHER PRIORITY EXISTS
+    and not exists (
+      select 1 from ai_triggers t
+      where t.user_id = u.user_id
+        and t.priority < 2
+        and t.created_at > now() - interval '1 day'
+    )
+
+    -- PER-TRIGGER COOLDOWN
+    and not exists (
+      select 1 from ai_triggers t
+      where t.user_id = u.user_id
+        and t.trigger_type = 'welcome_back'
+        and t.created_at > now() - interval '14 days'
+    );
+
+  /* =====================================================
+     🤝 FRIEND INVITE NUDGE (Priority 3)
+     ===================================================== */
+  insert into ai_triggers (
+    user_id,
+    trigger_type,
+    trigger_reason,
+    priority,
+    context
+  )
+  select
+    u.user_id,
+    'friend_invite_nudge',
+    'Active user with no friends',
+    3,
+    jsonb_build_object(
+      'plans_started', u.plans_started,
+      'commented_recently', u.commented_recently
+    )
+  from user_behavior_snapshot u
+  where
+    u.has_friends = false
+    and u.plans_started > 0
+    and u.time_since_last_activity < interval '3 days'
+
+    -- GLOBAL COOLDOWN
+    and not exists (
+      select 1 from ai_triggers t
+      where t.user_id = u.user_id
+        and t.created_at > now() - interval '48 hours'
+    )
+
+    -- BLOCK IF HIGHER PRIORITY EXISTS
+    and not exists (
+      select 1 from ai_triggers t
+      where t.user_id = u.user_id
+        and t.priority < 3
+        and t.created_at > now() - interval '1 day'
+    )
+
+    -- PER-TRIGGER COOLDOWN
+    and not exists (
+      select 1 from ai_triggers t
+      where t.user_id = u.user_id
+        and t.trigger_type = 'friend_invite_nudge'
+        and t.created_at > now() - interval '14 days'
+    );
+
+  /* =====================================================
+     😴 INACTIVITY NUDGE (Priority 4)
+     ===================================================== */
+  insert into ai_triggers (
+    user_id,
+    trigger_type,
+    trigger_reason,
+    priority,
+    context
+  )
+  select
+    u.user_id,
+    'inactivity_nudge',
+    'User inactive for more than 5 days',
+    4,
+    jsonb_build_object(
+      'time_since_last_activity', u.time_since_last_activity,
+      'active_plans', u.active_plans
+    )
+  from user_behavior_snapshot u
+  where
+    u.time_since_last_activity > interval '5 days'
+    and u.active_plans > 0
+
+    -- GLOBAL COOLDOWN
+    and not exists (
+      select 1 from ai_triggers t
+      where t.user_id = u.user_id
+        and t.created_at > now() - interval '48 hours'
+    )
+
+    -- BLOCK IF ANY HIGHER PRIORITY EXISTS
+    and not exists (
+      select 1 from ai_triggers t
+      where t.user_id = u.user_id
+        and t.priority < 4
+        and t.created_at > now() - interval '1 day'
+    )
+
+    -- PER-TRIGGER COOLDOWN
+    and not exists (
+      select 1 from ai_triggers t
+      where t.user_id = u.user_id
+        and t.trigger_type = 'inactivity_nudge'
+        and t.created_at > now() - interval '7 days'
+    );
+
 end;
 $$;

@@ -297,3 +297,7 @@ export const getNotificationsPreferences = async (userId: string) => {
 
   return data;
 };
+
+export const updateLastSeen = async (userId: string) => {
+  await supabase.from('profiles').update({ last_seen: new Date().toISOString() }).eq('id', userId);
+};
