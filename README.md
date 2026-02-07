@@ -1,80 +1,103 @@
-# thingsabove
+# Devotional App
 
-Devotional Bible
+A Bible devotional mobile app built with React Native, Expo, and Supabase. It supports devotional plans, comments, reactions, reporting, group plans, and push notifications (daily and AI-driven).
 
-# 📖 Bible Devotional App
+**Features**
+- Devotional plans with daily content
+- Reactions and reporting
+- Comments in group plans
+- Push notifications (daily encouragement and occasional AI nudges)
+- Supabase Auth, RLS, Storage
 
-A modern Bible Devotional mobile application built with **React Native**, **Expo**, and **Supabase**, designed to deliver a YouVersion-style experience with devotional plans, Bible reading, reactions, comments, reporting, and offline support.
+**Tech Stack**
+- React Native (Expo)
+- NativeWind
+- React Query
+- Supabase (Auth, DB, Storage, RLS)
+- TypeScript
+- Expo Notifications
 
-## 🛠️ Tech Stack
+**Requirements**
+- Node.js 18+ and pnpm
+- Supabase CLI
+- Expo CLI (optional, but helpful)
+- Android Studio or Xcode for simulators (optional)
 
-### **Mobile App**
+**Environment Variables**
+Create `.env` and set values shown in `.env.example`.
 
-- ⚛ React Native (Expo)
-- 🎨 NativeWind (Tailwind CSS for React Native)
-- 📦 React Query
-- 🔥 Supabase (Auth, Database, Storage, RLS)
-- 📚 TypeScript
-- 🔔 Expo Notifications
+Required server-side values:
+```
+SUPABASE_URL=https://YOUR_PROJECT_ID.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=YOUR_SUPABASE_SERVICE_ROLE_KEY
+SUPABASE_SECRET_KEY=YOUR_SUPABASE_SECRET_KEY
+EXPO_ACCESS_TOKEN=YOUR_EXPO_ACCESS_TOKEN
+GEMINI_API_KEY=YOUR_GEMINI_API_KEY
+```
 
-### **Web Devotional Submission Editor**
+Required public values (used by the app):
+```
+EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY=YOUR_SUPABASE_PUBLISHABLE_KEY
+EXPO_PUBLIC_SUPABASE_PROJECT_URL=https://YOUR_PROJECT_ID.supabase.co
+```
 
-- 🌐 Next.js
-- ✍️ Rich-text editor (TipTap / Quill / Pell)
-- 🔄 Supabase for content storage
+## App Setup
 
----
+1. Install dependencies.
+```
+pnpm install
+```
 
-## Get started
+2. Start the app.
+```
+pnpm start
+```
 
-1. Install dependencies
+Follow the Expo prompts to run on a device or simulator. Push notifications require a physical device.
 
-   ```bash
-   pnpm install
-   ```
+## Supabase Setup
 
-2. Start the app
+1. Create a Supabase project.
+Get the Project URL, anon key, and service role key from Settings -> API.
 
-   ```bash
-   pnpm start
-   ```
+2. Log in and link the project.
+```
+pnpx supabase login
+pnpx supabase link --project-ref YOUR_PROJECT_REF_ID
+```
 
-Follow the terminal prompts to:
+3. Run migrations.
+```
+pnpx supabase db push --linked
+```
+If you need a full reset (destructive), use `pnpx supabase db reset --linked`.
 
-- Sign in or continue anonymously
-- Choose how to run the app
+4. Set Edge Function secrets from `.env`.
+```
+pnpx supabase secrets set --env-file .env
+```
 
-In the output, you'll find options to open the app in a
+5. Create Vault secrets for cron jobs.
+Run in the Supabase SQL editor:
+```
+select vault.create_secret('project_url', 'https://YOUR_PROJECT_ID.supabase.co');
+select vault.create_secret('service-role-key', 'YOUR_SUPABASE_SERVICE_ROLE_KEY');
+```
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+6. Deploy Edge Functions.
+```
+pnpx supabase functions deploy
+```
 
+## Notification Pipeline Notes
 
-In the Terminal, you'll find command lists:
--  example
-   - s => to switch b/n development build and expo go to run the app on a physical device or emulator
+Daily notifications:
+- `generate-daily-notifications` creates the daily message.
+- `queue_daily_notifications` schedules per-user delivery.
+- `send-daily-encouragement` sends via Expo.
 
-## Supabase Database Migration
+Occasional AI notifications:
+- `generate_ai_triggers` inserts AI triggers based on user behavior.
+- `generate-ai-notifications` creates AI content.
+- `send-occasional-notifications` sends via Expo.
 
-1. login with supabase cli
-   ```bash
-   pnpx supabase login
-   ```
-2. link your supabase project
-   ```bash
-   pnpx supabase link --project-ref YOUR_PROJECT_REF_ID
-   ```
-3. Run migrations
-   ```bash
-   pnpx supabase db reset --linked
-   ```
-4. Set Secrets
-   ```bash
-   pnpx supabase secrets set --env-file .env
-   ```
-5. Deploy Edge functions
-   ```bash
-   pnpx supabase functions deploy
-   ```

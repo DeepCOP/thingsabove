@@ -41,21 +41,24 @@ Deno.serve(async () => {
     return new Response('No notifications', { status: 200 });
   }
 
-  const messages = triggers
-    .filter((t) => t.profiles?.expo_push_token)
-    .map((t) => ({
-      to: t.profiles.expo_push_token,
-      sound: 'default',
-      title: notificationTitle(t.trigger_type),
-      body: t.generated_message,
-      data: { triggerType: t.trigger_type },
-    }));
+  const eligible = triggers.filter((t) => t.profiles?.expo_push_token);
+
+  const messages = eligible.map((t) => ({
+    id: t.id,
+    to: t.profiles!.expo_push_token!,
+    sound: 'default',
+    title: notificationTitle(t.trigger_type),
+    body: t.generated_message,
+    data: { triggerType: t.trigger_type },
+  }));
 
   // 🔹 Expo limit: 100 per request
   const chunk = <T>(arr: T[], size: number) =>
     Array.from({ length: Math.ceil(arr.length / size) }, (_, i) =>
       arr.slice(i * size, i * size + size),
     );
+
+  const successfulIds: string[] = [];
 
   for (const batch of chunk(messages, 100)) {
     const res = await fetch('https://exp.host/--/api/v2/push/send', {
@@ -70,17 +73,23 @@ Deno.serve(async () => {
     const result = await res.json();
     console.log('Expo batch:', result);
 
+    const data = result?.data ?? [];
+    data.forEach((ticket: any, idx: number) => {
+      if (ticket.status === 'ok') {
+        successfulIds.push(batch[idx].id);
+      }
+    });
+
     // 🛑 rate-limit safe
     await sleep(200);
   }
 
-  await supabase
-    .from('ai_triggers')
-    .update({ sent: true, sent_at: new Date().toISOString() })
-    .in(
-      'id',
-      triggers.map((t) => t.id),
-    );
+  if (successfulIds.length > 0) {
+    await supabase
+      .from('ai_triggers')
+      .update({ sent: true, sent_at: new Date().toISOString() })
+      .in('id', successfulIds);
+  }
 
-  return new Response('Push sent', { status: 200 });
+  return new Response(`Push sent ${successfulIds.length}/${messages.length}`, { status: 200 });
 });

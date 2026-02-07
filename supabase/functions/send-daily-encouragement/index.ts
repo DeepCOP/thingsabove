@@ -38,19 +38,20 @@ serve(async () => {
 
   const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-  const messages = notifications
-    .filter((n) => n.profiles?.expo_push_token)
-    .map((n) => {
-      const firstName = n.profiles?.first_name?.trim();
-      const name = firstName || 'Friend';
+  const eligible = notifications.filter((n) => n.profiles?.expo_push_token);
 
-      return {
-        to: n.profiles.expo_push_token,
-        title: `${name}, a word for today`,
-        body: n.content,
-        sound: 'default',
-      };
-    });
+  const messages = eligible.map((n) => {
+    const firstName = n.profiles?.first_name?.trim();
+    const name = firstName || 'Friend';
+
+    return {
+      id: n.id,
+      to: n.profiles!.expo_push_token!,
+      title: `${name}, a word for today`,
+      body: n.content,
+      sound: 'default',
+    };
+  });
 
   const batches = chunk(messages, 100);
   const successfulIds: string[] = [];
@@ -69,17 +70,19 @@ serve(async () => {
 
     data.forEach((ticket: any, idx: number) => {
       if (ticket.status === 'ok') {
-        successfulIds.push(notifications[i * 100 + idx].id);
+        successfulIds.push(batch[idx].id);
       }
     });
     await sleep(200);
   }
 
   // mark as sent
-  await supabase
-    .from('ai_notifications')
-    .update({ sent_at: new Date().toISOString() })
-    .in('id', successfulIds);
+  if (successfulIds.length > 0) {
+    await supabase
+      .from('ai_notifications')
+      .update({ sent_at: new Date().toISOString() })
+      .in('id', successfulIds);
+  }
 
   return new Response(`Sent ${messages.length} notifications`);
 });

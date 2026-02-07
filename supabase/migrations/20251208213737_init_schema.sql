@@ -1823,6 +1823,9 @@ create table if not exists ai_daily_messages (
   created_at timestamptz default now()
 );
 
+alter table public.ai_daily_messages
+enable row level security;
+
 
 create table if not exists ai_notifications (
   id uuid primary key default gen_random_uuid(),
@@ -1835,6 +1838,9 @@ create table if not exists ai_notifications (
   created_at timestamptz default now(),
   unique (user_id, message_id)
 );
+
+alter table public.ai_notifications
+enable row level security;
 
 create or replace function queue_daily_notifications()
 returns void
@@ -1883,6 +1889,25 @@ create table if not exists notification_preferences (
   created_at timestamptz default now(),
   updated_at timestamptz default now()
 );
+
+alter table public.notification_preferences
+enable row level security;
+
+create policy "Users can view their notification preferences"
+  on public.notification_preferences
+  for select
+  using (auth.uid() = user_id);
+
+create policy "Users can insert their notification preferences"
+  on public.notification_preferences
+  for insert
+  with check (auth.uid() = user_id);
+
+create policy "Users can update their notification preferences"
+  on public.notification_preferences
+  for update
+  using (auth.uid() = user_id)
+  with check (auth.uid() = user_id);
 
 
 create or replace function upsert_push_notification_setup(
@@ -1948,6 +1973,21 @@ select
       and c.created_at > now() - interval '7 days'
   ) as commented_recently,
 
+  (
+    exists (
+      select 1
+      from plan_group_members pgm
+      join plan_groups pg on pg.id = pgm.group_id
+      where pgm.user_id = p.id
+        and pgm.status = 'accepted'
+    )
+    or exists (
+      select 1
+      from plan_groups pg
+      where pg.created_by = p.id
+    )
+  ) as has_group_plan,
+
   exists (
     select 1 from friends f
     where (f.requester_id = p.id or f.receiver_id = p.id)
@@ -1997,6 +2037,9 @@ create table if not exists public.ai_triggers (
   -- spam protection
   unique (user_id, trigger_type, created_at)
 );
+
+alter table public.ai_triggers
+enable row level security;
 
 
 
@@ -2186,5 +2229,152 @@ begin
         and t.created_at > now() - interval '7 days'
     );
 
+  /* =====================================================
+     🔥 STREAK ENCOURAGEMENT (Priority 5)
+     ===================================================== */
+  insert into ai_triggers (
+    user_id,
+    trigger_type,
+    trigger_reason,
+    priority,
+    context
+  )
+  select
+    u.user_id,
+    'streak_encouragement',
+    'User is building a steady devotional rhythm',
+    5,
+    jsonb_build_object(
+      'max_days_completed', u.max_days_completed,
+      'active_plans', u.active_plans
+    )
+  from user_behavior_snapshot u
+  where
+    u.max_days_completed >= 3
+    and u.last_activity_at > now() - interval '1 day'
+
+    -- GLOBAL COOLDOWN
+    and not exists (
+      select 1 from ai_triggers t
+      where t.user_id = u.user_id
+        and t.created_at > now() - interval '48 hours'
+    )
+
+    -- BLOCK IF ANY HIGHER PRIORITY EXISTS
+    and not exists (
+      select 1 from ai_triggers t
+      where t.user_id = u.user_id
+        and t.priority < 5
+        and t.created_at > now() - interval '1 day'
+    )
+
+    -- PER-TRIGGER COOLDOWN
+    and not exists (
+      select 1 from ai_triggers t
+      where t.user_id = u.user_id
+        and t.trigger_type = 'streak_encouragement'
+        and t.created_at > now() - interval '7 days'
+    );
+
+  /* =====================================================
+     🧭 ABANDONED PLAN (Priority 6)
+     ===================================================== */
+  insert into ai_triggers (
+    user_id,
+    trigger_type,
+    trigger_reason,
+    priority,
+    context
+  )
+  select
+    u.user_id,
+    'abandoned_plan',
+    'User has an inactive plan that was not completed',
+    6,
+    jsonb_build_object(
+      'abandoned_plans', u.abandoned_plans,
+      'active_plans', u.active_plans,
+      'time_since_last_activity', u.time_since_last_activity
+    )
+  from user_behavior_snapshot u
+  where
+    u.abandoned_plans > 0
+    and u.time_since_last_activity < interval '3 days'
+
+    -- GLOBAL COOLDOWN
+    and not exists (
+      select 1 from ai_triggers t
+      where t.user_id = u.user_id
+        and t.created_at > now() - interval '48 hours'
+    )
+
+    -- BLOCK IF ANY HIGHER PRIORITY EXISTS
+    and not exists (
+      select 1 from ai_triggers t
+      where t.user_id = u.user_id
+        and t.priority < 6
+        and t.created_at > now() - interval '1 day'
+    )
+
+    -- PER-TRIGGER COOLDOWN
+    and not exists (
+      select 1 from ai_triggers 
+      where t.user_id = u.user_id
+        and t.trigger_type = 'abandoned_plan'
+        and t.created_at > now() - interval '10 days'
+    );
+
+  /* =====================================================
+     💬 SOCIAL PROMPT (Priority 7)
+     ===================================================== */
+  insert into ai_triggers (
+    user_id,
+    trigger_type,
+    trigger_reason,
+    priority,
+    context
+  )
+  select
+    u.user_id,
+    'social_prompt',
+    'Active user with friends but no recent comments',
+    7,
+    jsonb_build_object(
+      'commented_recently', u.commented_recently,
+      'has_friends', u.has_friends,
+      'plans_started', u.plans_started
+    )
+  from user_behavior_snapshot u
+  where
+    u.has_friends = true
+    and u.commented_recently = false
+    and u.has_group_plan = true
+    and u.time_since_last_activity < interval '3 days'
+    and u.plans_started > 0
+
+    -- GLOBAL COOLDOWN
+    and not exists (
+      select 1 from ai_triggers t
+      where t.user_id = u.user_id
+        and t.created_at > now() - interval '48 hours'
+    )
+
+    -- BLOCK IF ANY HIGHER PRIORITY EXISTS
+    and not exists (
+      select 1 from ai_triggers t
+      where t.user_id = u.user_id
+        and t.priority < 7
+        and t.created_at > now() - interval '1 day'
+    )
+
+    -- PER-TRIGGER COOLDOWN
+    and not exists (
+      select 1 from ai_triggers t
+      where t.user_id = u.user_id
+        and t.trigger_type = 'social_prompt'
+        and t.created_at > now() - interval '14 days'
+    );
+
 end;
 $$;
+t

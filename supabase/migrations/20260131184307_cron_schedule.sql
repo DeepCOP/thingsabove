@@ -55,7 +55,7 @@ select
 select
   cron.schedule(
   'send-occasional-notifications',
-    '/65 * * * *',
+    '5 * * * *',
     $$
       select net.http_post(
         url := (select decrypted_secret from vault.decrypted_secrets where name = 'project_url') || '/functions/v1/send-occasional-notifications',
