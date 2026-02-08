@@ -8,7 +8,12 @@ serve(async () => {
     Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
   );
 
-  const genAI = new GoogleGenerativeAI(Deno.env.get('GEMINI_API_KEY')!);
+  const googleApiKey = Deno.env.get('GOOGLE_API_KEY');
+  if (!googleApiKey) {
+    return new Response('Missing GOOGLE_API_KEY', { status: 500 });
+  }
+
+  const genAI = new GoogleGenerativeAI(googleApiKey);
 
   const model = genAI.getGenerativeModel({
     model: 'gemini-2.5-flash',

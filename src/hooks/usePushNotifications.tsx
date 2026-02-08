@@ -61,11 +61,9 @@ export async function registerForPushNotificationsAsync(): Promise<string | null
   if (!token) return null;
 
   // 6️⃣ Register token only if newly granted or missing on backend
-  if (existingStatus !== 'granted') {
-    const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
-    await pushNotificationSetup(userTimeZone, token);
-  }
+  await pushNotificationSetup(userTimeZone, token);
 
   return token;
 }

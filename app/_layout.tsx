@@ -19,6 +19,7 @@ import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { BibleProvider } from '../src/state/BibleContext';
 
+import { useLastSeenTracker } from '@/src/hooks/useLastSeen';
 import { usePushNotifications } from '@/src/hooks/usePushNotifications';
 import { useThemePreference } from '@/src/hooks/useThemePreference';
 import { mutationQueue } from '@/src/lib/mutationQueue';
@@ -58,6 +59,7 @@ export default function RootLayout() {
 function RootLayoutContent() {
   const { session, loading } = useAuth();
   usePushNotifications();
+  useLastSeenTracker();
   const [loaded] = useFonts({
     OpenSansRegular: OpenSans_400Regular,
     OpenSansSemiBold: OpenSans_600SemiBold,
