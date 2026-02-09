@@ -19,7 +19,6 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "googleServicesFile": "./google-services.json",
-
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
       "package": "com.yordise.thingsabove"
@@ -64,11 +63,19 @@
       "reactCompiler": true,
       "baseUrl": "https://thingsabove.com"
     },
-    "owner": "yordi-se",
+    "owner": "things-above",
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "87fe6610-bbc1-40ff-9bce-92c576c59b0a"
+        "projectId": "de7e88d0-085e-40a2-90e9-c481ffaac58c"
+      },
+      "expo-navigation-bar": {
+        "backgroundColor": "#0f172a",
+        "barStyle": "light",
+        "borderColor": "#1f2937",
+        "visibility": "visible",
+        "behavior": "inset-swipe",
+        "position": "relative"
       }
     }
   }
