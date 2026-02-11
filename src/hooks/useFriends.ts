@@ -58,9 +58,10 @@ export function useDeclineFriendRequest() {
   });
 }
 
-export function usePendingFriendRequests() {
+export function usePendingFriendRequests(userId: string | undefined) {
   return useQuery({
-    queryKey: ['friend-requests'],
+    queryKey: ['friend-requests', userId],
+    enabled: !!userId,
     queryFn: async () => await fetchPendingFriendRequests(),
   });
 }

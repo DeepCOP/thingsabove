@@ -216,6 +216,7 @@ export type Database = {
           item_type: string | null;
           plan_id: string | null;
           progress_id: string | null;
+          title: string | null;
           updated_at: string | null;
           user_id: string | null;
         };
@@ -231,6 +232,7 @@ export type Database = {
           item_type?: string | null;
           plan_id?: string | null;
           progress_id?: string | null;
+          title?: string | null;
           updated_at?: string | null;
           user_id?: string | null;
         };
@@ -246,6 +248,7 @@ export type Database = {
           item_type?: string | null;
           plan_id?: string | null;
           progress_id?: string | null;
+          title?: string | null;
           updated_at?: string | null;
           user_id?: string | null;
         };
@@ -294,6 +297,7 @@ export type Database = {
           day_number: number;
           id: string;
           plan_id: string | null;
+          title: string | null;
           updated_at: string | null;
         };
         Insert: {
@@ -302,6 +306,7 @@ export type Database = {
           day_number: number;
           id?: string;
           plan_id?: string | null;
+          title?: string | null;
           updated_at?: string | null;
         };
         Update: {
@@ -310,6 +315,7 @@ export type Database = {
           day_number?: number;
           id?: string;
           plan_id?: string | null;
+          title?: string | null;
           updated_at?: string | null;
         };
         Relationships: [
@@ -329,6 +335,51 @@ export type Database = {
           },
         ];
       };
+      devotional_days_draft: {
+        Row: {
+          content: string;
+          created_at: string | null;
+          day_number: number;
+          id: string;
+          plan_id: string | null;
+          title: string | null;
+          updated_at: string | null;
+        };
+        Insert: {
+          content: string;
+          created_at?: string | null;
+          day_number: number;
+          id?: string;
+          plan_id?: string | null;
+          title?: string | null;
+          updated_at?: string | null;
+        };
+        Update: {
+          content?: string;
+          created_at?: string | null;
+          day_number?: number;
+          id?: string;
+          plan_id?: string | null;
+          title?: string | null;
+          updated_at?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'devotional_days_draft_plan_id_fkey';
+            columns: ['plan_id'];
+            isOneToOne: false;
+            referencedRelation: 'devotional_plans';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'devotional_days_draft_plan_id_fkey';
+            columns: ['plan_id'];
+            isOneToOne: false;
+            referencedRelation: 'devotional_plans_view';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       devotional_plans: {
         Row: {
           author_id: string | null;
@@ -337,6 +388,7 @@ export type Database = {
           created_at: string | null;
           description: string;
           id: string;
+          status: string | null;
           tags: string | null;
           title: string;
           total_days: number;
@@ -349,6 +401,7 @@ export type Database = {
           created_at?: string | null;
           description: string;
           id?: string;
+          status?: string | null;
           tags?: string | null;
           title: string;
           total_days?: number;
@@ -361,6 +414,7 @@ export type Database = {
           created_at?: string | null;
           description?: string;
           id?: string;
+          status?: string | null;
           tags?: string | null;
           title?: string;
           total_days?: number;
@@ -613,6 +667,7 @@ export type Database = {
       plan_progress: {
         Row: {
           completed_days: number[] | null;
+          completed_once: boolean | null;
           created_at: string | null;
           current_day: number;
           group_id: string | null;
@@ -624,6 +679,7 @@ export type Database = {
         };
         Insert: {
           completed_days?: number[] | null;
+          completed_once?: boolean | null;
           created_at?: string | null;
           current_day?: number;
           group_id?: string | null;
@@ -635,6 +691,7 @@ export type Database = {
         };
         Update: {
           completed_days?: number[] | null;
+          completed_once?: boolean | null;
           created_at?: string | null;
           current_day?: number;
           group_id?: string | null;
@@ -823,6 +880,41 @@ export type Database = {
           },
         ];
       };
+      scripture_references_draft: {
+        Row: {
+          created_at: string | null;
+          day_id: string | null;
+          id: string;
+          reference: string[] | null;
+          updated_at: string | null;
+          user_id: string | null;
+        };
+        Insert: {
+          created_at?: string | null;
+          day_id?: string | null;
+          id?: string;
+          reference?: string[] | null;
+          updated_at?: string | null;
+          user_id?: string | null;
+        };
+        Update: {
+          created_at?: string | null;
+          day_id?: string | null;
+          id?: string;
+          reference?: string[] | null;
+          updated_at?: string | null;
+          user_id?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'scripture_references_draft_day_id_fkey';
+            columns: ['day_id'];
+            isOneToOne: false;
+            referencedRelation: 'devotional_days_draft';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
     };
     Views: {
       devotional_plans_view: {
@@ -835,6 +927,7 @@ export type Database = {
           dislikes_count: number | null;
           id: string | null;
           likes_count: number | null;
+          status: string | null;
           tags: string | null;
           title: string | null;
           total_days: number | null;
@@ -849,6 +942,7 @@ export type Database = {
           dislikes_count?: never;
           id?: string | null;
           likes_count?: never;
+          status?: string | null;
           tags?: string | null;
           title?: string | null;
           total_days?: number | null;
@@ -863,6 +957,7 @@ export type Database = {
           dislikes_count?: never;
           id?: string | null;
           likes_count?: never;
+          status?: string | null;
           tags?: string | null;
           title?: string | null;
           total_days?: number | null;
@@ -876,6 +971,7 @@ export type Database = {
           active_plans: number | null;
           commented_recently: boolean | null;
           has_friends: boolean | null;
+          has_group_plan: boolean | null;
           last_activity_at: string | null;
           last_seen: string | null;
           max_days_completed: number | null;
@@ -945,9 +1041,70 @@ export type Database = {
         Returns: undefined;
       };
       generate_ai_triggers: { Args: never; Returns: undefined };
+      get_day_items_progress: {
+        Args: {
+          p_day_id: string;
+          p_group_id?: string;
+          p_plan_id: string;
+          p_progress_id: string;
+          p_user_id: string;
+        };
+        Returns: {
+          completed: boolean | null;
+          created_at: string | null;
+          day_id: string | null;
+          day_number: number | null;
+          devotional_content: string | null;
+          group_id: string | null;
+          id: string;
+          item_key: string | null;
+          item_type: string | null;
+          plan_id: string | null;
+          progress_id: string | null;
+          title: string | null;
+          updated_at: string | null;
+          user_id: string | null;
+        }[];
+        SetofOptions: {
+          from: '*';
+          to: 'day_items_progress';
+          isOneToOne: false;
+          isSetofReturn: true;
+        };
+      };
       get_devotional_days_with_scriptures: {
         Args: { p_plan_id: string };
-        Returns: Json;
+        Returns: {
+          content: string;
+          day_id: string;
+          day_number: number;
+          scriptures: string[];
+          title: string;
+        }[];
+      };
+      get_devotional_drafts: {
+        Args: { _plan_id: string };
+        Returns: {
+          content: string;
+          day_id: string;
+          day_number: number;
+          scriptures: string[];
+          title: string;
+        }[];
+      };
+      get_my_devotional_plans: {
+        Args: never;
+        Returns: {
+          cover_image: string;
+          created_at: string;
+          description: string;
+          dislikes_count: number;
+          id: string;
+          likes_count: number;
+          status: string;
+          title: string;
+          total_days: number;
+        }[];
       };
       get_my_notifications: {
         Args: never;
@@ -1002,20 +1159,26 @@ export type Database = {
           friendship_status: string;
           id: string;
           last_name: string;
+          receiver_id: string;
+          requester_id: string;
         }[];
-      };
-      insert_devotional_days_with_scriptures: {
-        Args: { p_days: Json; p_plan_id: string };
-        Returns: undefined;
       };
       is_group_member: { Args: { p_group_id: string }; Returns: boolean };
       mark_notification_read: {
         Args: { p_notification_id: string };
         Returns: undefined;
       };
+      publish_devotional_plan: {
+        Args: { p_days: Json; p_plan_id: string };
+        Returns: undefined;
+      };
       queue_daily_notifications: { Args: never; Returns: undefined };
       report_plan: {
         Args: { p_plan_id: string; p_reason: string };
+        Returns: undefined;
+      };
+      save_devotional_draft: {
+        Args: { _days: Json; _plan_id: string };
         Returns: undefined;
       };
       search_plans: {
@@ -1034,6 +1197,7 @@ export type Database = {
           dislikes_count: number | null;
           id: string | null;
           likes_count: number | null;
+          status: string | null;
           tags: string | null;
           title: string | null;
           total_days: number | null;

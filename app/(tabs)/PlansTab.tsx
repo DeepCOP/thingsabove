@@ -3,6 +3,7 @@ import { useAuth } from '@/src/state/AuthContext';
 import { useAppStore } from '@/src/state/useAppStore';
 import { router } from 'expo-router';
 import { useState } from 'react';
+import { Linking } from 'react-native';
 
 export default function PlansTab() {
   const { session } = useAuth();
@@ -22,6 +23,7 @@ export default function PlansTab() {
       onSearch={() => router.push('/search/devotionals')}
       onLogin={() => router.push('/(auth)/signin')}
       onSetting={() => router.push('/settings')}
+      onContribute={() => Linking.openURL(`${process.env.EXPO_PUBLIC_WEB_INTERFACE_URL}/plans/new`)}
     />
   );
 }

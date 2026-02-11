@@ -31,6 +31,14 @@ const asyncStoragePersistor = createAsyncStoragePersister({
 
 // helper react component to wrap app
 export function QueryProviderWrapper({ children }: { children: React.ReactNode }) {
+  const shouldDehydrateQuery = (query: { state: { status: string; data: unknown } }) => {
+    if (query.state.status !== 'success') return false;
+    const data = query.state.data;
+    if (data == null) return false;
+    if (Array.isArray(data) && data.length === 0) return false;
+    return true;
+  };
+
   // persist on mount
   React.useEffect(() => {
     persistQueryClient({
@@ -38,13 +46,17 @@ export function QueryProviderWrapper({ children }: { children: React.ReactNode }
       persister: asyncStoragePersistor,
       maxAge: 1000 * 60 * 60 * 24, // 24 hours
       buster: 'v1', // change to force refetch / reset
+      dehydrateOptions: { shouldDehydrateQuery },
     });
   }, []);
 
   return (
     <PersistQueryClientProvider
       client={queryClient}
-      persistOptions={{ persister: asyncStoragePersistor }}>
+      persistOptions={{
+        persister: asyncStoragePersistor,
+        dehydrateOptions: { shouldDehydrateQuery },
+      }}>
       {children}
     </PersistQueryClientProvider>
   );

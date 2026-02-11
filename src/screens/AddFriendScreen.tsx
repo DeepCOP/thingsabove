@@ -1,5 +1,7 @@
 import LoadingSpinner from '@/src/components/LoadingSpinner';
-import { Image, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Text, TextInput, View } from 'react-native';
+import FriendRequestCard from '../components/FriendRequestCard';
+import { useAuth } from '../state/AuthContext';
 
 type UserResult = {
   id: string;
@@ -7,6 +9,8 @@ type UserResult = {
   last_name: string;
   avatar_url?: string | null;
   friendship_status: string | null;
+  receiver_id: string;
+  requester_id: string;
 };
 
 type Props = {
@@ -28,6 +32,15 @@ export default function AddFriendScreen({
   isAdding,
   onAddFriend,
 }: Props) {
+  const { session, loading: sessionLoading } = useAuth();
+
+  if (sessionLoading) {
+    return (
+      <View className="flex-1 items-center justify-center">
+        <LoadingSpinner />
+      </View>
+    );
+  }
   return (
     <View className="flex-1 bg-white dark:bg-black px-4 pt-6">
       <Text className="text-xl font-bold dark:text-white mb-3">Add Friend</Text>
@@ -52,34 +65,16 @@ export default function AddFriendScreen({
 
       {/* User result */}
       {user && (
-        <View className="mt-4 flex-row items-center p-3 rounded-xl bg-gray-100 dark:bg-neutral-900">
-          {user.avatar_url ? (
-            <Image source={{ uri: user.avatar_url }} className="w-10 h-10 rounded-full mr-3" />
-          ) : (
-            <View className="w-10 h-10 rounded-full bg-gray-400 mr-3 items-center justify-center">
-              <Text className="text-white font-bold">{user.first_name[0]}</Text>
-            </View>
-          )}
-
-          <View className="flex-1">
-            <Text className="font-semibold dark:text-white">
-              {user.first_name} {user.last_name}
-            </Text>
-            <Text className="text-xs text-gray-500">{user.friendship_status ?? 'Not friends'}</Text>
-          </View>
-
-          {user.friendship_status === null && (
-            <TouchableOpacity
-              onPress={() => onAddFriend(user.id)}
-              className="bg-black dark:bg-white px-4 py-2 rounded-full">
-              {isAdding ? (
-                <LoadingSpinner size="small" />
-              ) : (
-                <Text className="text-white dark:text-black font-semibold">Add</Text>
-              )}
-            </TouchableOpacity>
-          )}
-        </View>
+        <FriendRequestCard
+          id={user.id}
+          first_name={user.first_name}
+          last_name={user.last_name}
+          avatar_url={user.avatar_url}
+          mode={user.requester_id === session?.user?.id ? 'requester' : 'receiver'}
+          statusText={user.friendship_status ?? 'Not friends'}
+          onAdd={onAddFriend}
+          isAdding={isAdding}
+        />
       )}
 
       {/* No result */}

@@ -19,8 +19,12 @@ import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { BibleProvider } from '../src/state/BibleContext';
 
+import { useFriends, usePendingFriendRequests } from '@/src/hooks/useFriends';
 import { useLastSeenTracker } from '@/src/hooks/useLastSeen';
+import { useNotifications } from '@/src/hooks/useNotifications';
 import { usePushNotifications } from '@/src/hooks/usePushNotifications';
+import { useRealtimeFriends } from '@/src/hooks/useRealtimeFriends';
+import { useRealtimeNotifications } from '@/src/hooks/useRealtimeNotifications';
 import { useThemePreference } from '@/src/hooks/useThemePreference';
 import { mutationQueue } from '@/src/lib/mutationQueue';
 import { QueryProviderWrapper } from '@/src/lib/queryClient';
@@ -58,7 +62,21 @@ export default function RootLayout() {
 
 function RootLayoutContent() {
   const { session, loading } = useAuth();
+  const { notificationsQuery, notificationsCountQuery } = useNotifications(session?.user?.id);
+
+  const friendsQuery = useFriends(session?.user.id);
+  const PandingFriendsQuery = usePendingFriendRequests(session?.user.id);
+
   usePushNotifications();
+  useRealtimeNotifications(session?.user?.id, () => {
+    notificationsQuery.refetch();
+    notificationsCountQuery.refetch();
+  });
+  useRealtimeFriends(session?.user.id, () => {
+    friendsQuery.refetch();
+    PandingFriendsQuery.refetch();
+  });
+
   useLastSeenTracker();
   const [loaded] = useFonts({
     OpenSansRegular: OpenSans_400Regular,
@@ -109,7 +127,11 @@ function RootLayoutContent() {
   return (
     <>
       <StatusBar style="auto" />
-      <Stack initialRouteName="(tabs)">
+      <Stack
+        initialRouteName="(tabs)"
+        screenOptions={{
+          headerBackButtonDisplayMode: 'minimal',
+        }}>
         <Stack.Screen name="index" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="bible/[book]/index" />

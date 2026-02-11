@@ -16,8 +16,10 @@ import {
   Text,
   TouchableOpacity,
   useColorScheme,
+  useWindowDimensions,
   View,
 } from 'react-native';
+import RenderHTML from 'react-native-render-html';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useBible } from '../state/BibleContext';
 import { DayItemsProgress } from '../types/types';
@@ -50,6 +52,7 @@ export default function DevotionalPlanReader({
 }) {
   const insets = useSafeAreaInsets();
   const colorScheme = useColorScheme();
+  const { width } = useWindowDimensions();
   const { data: plan } = useFetchDevotionalPlanById(item?.plan_id!);
   const [selectedVerse, setSelectedVerse] = useState<
     {
@@ -68,6 +71,10 @@ export default function DevotionalPlanReader({
   const versePositions = useRef<Record<number, number>>({});
   const scrollRef = useRef<ScrollView | null>(null);
   const didScrollRef = useRef(false);
+
+  const devotionalTitle =
+    item?.title?.trim() || (item?.day_number ? `Day ${item.day_number}` : 'Devotional');
+  const devotionalHtml = item?.devotional_content ?? '';
 
   useEffect(() => {
     if (!selectedBook?.verseStart) return;
@@ -206,12 +213,126 @@ export default function DevotionalPlanReader({
         </View>
       </View>
 
-      <View className="flex-1 bg-white dark:bg-black">
+      <View className="flex-1 bg-white dark:bg-black" style={{ paddingBottom: insets.bottom }}>
         {item?.item_type === 'devotional' && item?.item_key === 'main' ? (
           <Animated.ScrollView className="px-5 pt-28 pb-32">
-            <Text className="text-[19px] leading-[34px] text-gray-900 dark:text-gray-100 font-MerriWeather400Regular">
-              {item?.devotional_content}
-            </Text>
+            <View className="items-center mb-6">
+              <Text className="text-center text-gray-500 dark:text-gray-400 text-xl font-OpenSansSemiBold">
+                {devotionalTitle}
+              </Text>
+            </View>
+            <RenderHTML
+              contentWidth={Math.max(width - 40, 0)}
+              source={{ html: devotionalHtml }}
+              systemFonts={[
+                'MerriWeather400Regular',
+                'MerriWeather700Bold',
+                'MerriWeather900Black',
+                'OpenSansSemiBold',
+              ]}
+              enableCSSInlineProcessing
+              classesStyles={{
+                'text-left': { textAlign: 'left' },
+                'text-center': { textAlign: 'center' },
+                'text-right': { textAlign: 'right' },
+                'text-justify': { textAlign: 'justify' },
+                'align-left': { textAlign: 'left' },
+                'align-center': { textAlign: 'center' },
+                'align-right': { textAlign: 'right' },
+                'align-justify': { textAlign: 'justify' },
+              }}
+              baseStyle={{
+                color: colorScheme === 'dark' ? '#F3F4F6' : '#111827',
+                fontSize: 19,
+                lineHeight: 34,
+                fontFamily: 'MerriWeather400Regular',
+                paddingBottom: insets.bottom + 90,
+              }}
+              tagsStyles={{
+                p: { marginBottom: 12 },
+                a: {
+                  color: colorScheme === 'dark' ? '#93C5FD' : '#2563EB',
+                  textDecorationLine: 'underline',
+                },
+                strong: { fontFamily: 'MerriWeather700Bold', fontWeight: '700' },
+                b: { fontFamily: 'MerriWeather700Bold', fontWeight: '700' },
+                em: { fontStyle: 'italic' },
+                i: { fontStyle: 'italic' },
+                u: { textDecorationLine: 'underline' },
+                s: { textDecorationLine: 'line-through' },
+                del: { textDecorationLine: 'line-through' },
+                blockquote: {
+                  borderLeftWidth: 3,
+                  borderLeftColor: colorScheme === 'dark' ? '#334155' : '#E5E7EB',
+                  paddingLeft: 12,
+                  marginVertical: 10,
+                  color: colorScheme === 'dark' ? '#CBD5F5' : '#4B5563',
+                },
+                mark: {
+                  backgroundColor: colorScheme === 'dark' ? '#374151' : '#FDE68A',
+                  paddingHorizontal: 4,
+                  borderRadius: 4,
+                },
+                ul: { paddingLeft: 18, marginBottom: 10 },
+                ol: { paddingLeft: 18, marginBottom: 10 },
+                h1: {
+                  fontSize: 32,
+                  lineHeight: 36,
+                  marginBottom: 12,
+                  fontFamily: 'MerriWeather900Black',
+                  fontWeight: '900',
+                },
+                h2: {
+                  fontSize: 28,
+                  lineHeight: 30,
+                  marginBottom: 10,
+                  fontFamily: 'MerriWeather700Bold',
+                },
+                h3: {
+                  fontSize: 24,
+                  lineHeight: 30,
+                  marginBottom: 10,
+                  fontFamily: 'MerriWeather700Bold',
+                  fontWeight: '900',
+                },
+                h4: {
+                  fontSize: 20,
+                  lineHeight: 30,
+                  marginBottom: 10,
+                  fontFamily: 'MerriWeather700Bold',
+                  fontWeight: '900',
+                },
+                h5: {
+                  fontSize: 16,
+                  lineHeight: 30,
+                  marginBottom: 10,
+                  fontFamily: 'MerriWeather700Bold',
+                  fontWeight: '900',
+                },
+                h6: {
+                  fontSize: 12,
+                  lineHeight: 30,
+                  marginBottom: 10,
+                  fontFamily: 'MerriWeather700Bold',
+                  fontWeight: '900',
+                },
+                pre: {
+                  backgroundColor: colorScheme === 'dark' ? '#0F172A' : '#F8FAFC',
+                  padding: 12,
+                  borderRadius: 8,
+                  marginBottom: 12,
+                },
+                code: {
+                  backgroundColor: colorScheme === 'dark' ? '#0F172A' : '#F8FAFC',
+                  paddingHorizontal: 6,
+                  paddingVertical: 2,
+                  borderRadius: 6,
+                  fontFamily: 'Courier',
+                  fontSize: 16,
+                },
+                li: { marginBottom: 6 },
+              }}
+            />
           </Animated.ScrollView>
         ) : (
           <Animated.ScrollView
@@ -274,8 +395,8 @@ export default function DevotionalPlanReader({
             position: 'absolute',
             bottom: 0,
             left: 0,
-            paddingBottom: insets.bottom,
             right: 0,
+            paddingBottom: insets.bottom,
             zIndex: 10,
           }}>
           <View className="flex-row bg-black px-6 py-3 rounded-full items-center">

@@ -43,7 +43,6 @@ export const usePlans = () => {
   const plansQuery = useInfiniteQuery({
     queryKey: ['plans'],
     staleTime: 1000 * 60 * 60 * 24,
-
     queryFn: async ({
       pageParam,
     }: {
