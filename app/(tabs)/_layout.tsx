@@ -1,7 +1,4 @@
-import { useFriends, usePendingFriendRequests } from '@/src/hooks/useFriends';
 import { useNotifications } from '@/src/hooks/useNotifications';
-import { useRealtimeFriends } from '@/src/hooks/useRealtimeFriends';
-import { useRealtimeNotifications } from '@/src/hooks/useRealtimeNotifications';
 import { useAuth } from '@/src/state/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
@@ -14,19 +11,7 @@ export default function TabLayout() {
   const colorScheme = useColorScheme();
 
   const { session } = useAuth();
-  const { notificationsQuery, notificationsCountQuery } = useNotifications(session?.user?.id);
-
-  const friendsQuery = useFriends(session?.user.id);
-  const PandingFriendsQuery = usePendingFriendRequests();
-
-  useRealtimeNotifications(session?.user?.id, () => {
-    notificationsQuery.refetch();
-    notificationsCountQuery.refetch();
-  });
-  useRealtimeFriends(session?.user.id, () => {
-    friendsQuery.refetch();
-    PandingFriendsQuery.refetch();
-  });
+  const { notificationsCountQuery } = useNotifications(session?.user?.id);
 
   return (
     <>
@@ -74,22 +59,6 @@ export default function TabLayout() {
             tabBarIcon: ({ focused, color, size }) => {
               return (
                 <Ionicons name={`${focused ? 'book' : 'book-outline'}`} size={size} color={color} />
-              );
-            },
-          }}
-        />
-        <Tabs.Screen
-          name="CreateTab"
-          options={{
-            title: 'Create',
-            headerShown: false,
-            tabBarIcon: ({ focused, color, size }) => {
-              return (
-                <Ionicons
-                  name={`${focused ? 'add-circle' : 'add-circle-outline'}`}
-                  size={size}
-                  color={color}
-                />
               );
             },
           }}

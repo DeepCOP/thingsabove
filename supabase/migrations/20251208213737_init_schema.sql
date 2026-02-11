@@ -90,6 +90,7 @@ create table if not exists public.devotional_plans (
   cover_image text,
   completions int default 0,
   tags text,
+  status text check (status in ('draft', 'published')) default 'draft',
   total_days int not null default 1,
   author_id uuid references auth.users(id) on delete set null,
   created_at timestamptz default now(),
@@ -128,91 +129,229 @@ create policy "authors can delete their plans"
   create index if not exists idx_devotional_plans_author_id on public.devotional_plans(author_id);
   create index if not exists idx_devotional_plans_id on public.devotional_plans(id);
 
+create or replace function save_devotional_draft(
+  _plan_id uuid,
+  _days jsonb
+)
+returns void
+language plpgsql
+security definer
+as $$
+begin
+  -- Insert / update days
+  insert into public.devotional_days_draft (plan_id, day_number, content, title)
+  select
+    _plan_id,
+    (d->>'day_number')::int,
+    d->>'content',
+    d->>'title'
+  from jsonb_array_elements(_days) d
+  on conflict (plan_id, day_number)
+  do update set
+    content = excluded.content,
+    title = excluded.title,
+    updated_at = now();
 
-create or replace function public.insert_devotional_days_with_scriptures(
+  -- Replace scriptures
+  delete from public.scripture_references_draft
+  where day_id in (
+    select id from public.devotional_days_draft
+    where plan_id = _plan_id
+  );
+
+  insert into public.scripture_references_draft (day_id, reference)
+  select
+    dd.id,
+    array(
+      select jsonb_array_elements_text(d->'scriptures')
+    )
+  from jsonb_array_elements(_days) d
+  join public.devotional_days_draft dd
+    on dd.plan_id = _plan_id
+   and dd.day_number = (d->>'day_number')::int;
+end;
+$$;
+
+
+create or replace function get_devotional_drafts(
+  _plan_id uuid
+)
+returns table (
+  day_id uuid,
+  day_number int,
+  content text,
+  title text,
+  scriptures text[]
+)
+language plpgsql
+security definer
+as $$
+begin
+  return query
+  select
+    d.id,
+    d.day_number,
+    d.content,
+    d.title,
+    coalesce(s.reference, '{}')
+  from public.devotional_days_draft d
+  left join public.scripture_references_draft s
+    on s.day_id = d.id
+  where d.plan_id = _plan_id
+    and exists (
+      select 1
+      from public.devotional_plans p
+      where p.id = d.plan_id
+        and p.author_id = auth.uid()
+    )
+  order by d.day_number;
+end;
+$$;
+
+
+
+create or replace function public.publish_devotional_plan(
   p_plan_id uuid,
   p_days jsonb
 )
 returns void
 language plpgsql
+security definer
 as $$
 declare
   day_item jsonb;
-  inserted_day_id uuid;
+  upserted_day_id uuid;
+  draft_day_id uuid;
+  published_days_count int;
 begin
-
+  -- Auth check
   if auth.uid() is null then
     raise exception 'Not authenticated';
   end if;
 
-  -- Loop over days array
+  -- Ownership check
+  if not exists (
+    select 1
+    from public.devotional_plans
+    where id = p_plan_id
+      and author_id = auth.uid()
+  ) then
+    raise exception 'Not authorized';
+  end if;
+
+  -- Count valid days
+  select count(*)
+  into published_days_count
+  from jsonb_array_elements(p_days) d
+  where trim(coalesce(d ->> 'content', '')) <> '';
+
+  -- ?? Exit if no valid content
+  if published_days_count = 0 then
+    raise exception 'No content found';
+  end if;
+
+  -- Loop only over valid days
   for day_item in
-    select * from jsonb_array_elements(p_days)
+    select d
+    from jsonb_array_elements(p_days) d
+    where trim(coalesce(d ->> 'content', '')) <> ''
   loop
-    -- Insert devotional day
+
+    -- Get draft day id
+    select id
+    into draft_day_id
+    from public.devotional_days_draft
+    where plan_id = p_plan_id
+      and day_number = (day_item ->> 'day_number')::int;
+
+    -- Upsert published day
     insert into public.devotional_days (
+      id,
       plan_id,
       day_number,
       content,
-      id
+      title
     )
     values (
+      (day_item ->> 'id')::uuid,
       p_plan_id,
       (day_item ->> 'day_number')::int,
       day_item ->> 'content',
-      (day_item ->> 'id')::uuid
-
+      day_item ->> 'title'
     )
-    returning id into inserted_day_id;
+    on conflict (plan_id, day_number)
+    do update set
+      content = excluded.content,
+      title = excluded.title,
+      updated_at = now()
+    returning id into upserted_day_id;
 
-    -- Insert scriptures if present
+    -- Replace scriptures
+    delete from public.scripture_references
+    where day_id = upserted_day_id;
+
     if jsonb_array_length(coalesce(day_item -> 'scriptures', '[]'::jsonb)) > 0 then
-      insert into public.scripture_references (
-        day_id,
-        reference
-      )
-      values (
-        inserted_day_id,
-        (
-          select array_agg(value::text)
-          from jsonb_array_elements_text(day_item -> 'scriptures')
-        )
-      );
+      insert into public.scripture_references (day_id, reference)
+      select
+        upserted_day_id,
+        array_agg(value)
+      from jsonb_array_elements_text(day_item -> 'scriptures');
     end if;
+
+    -- Cleanup draft
+    if draft_day_id is not null then
+      delete from public.scripture_references_draft
+      where day_id = draft_day_id;
+
+      delete from public.devotional_days_draft
+      where plan_id = p_plan_id;
+    end if;
+
   end loop;
+
+  -- Update plan
+  update public.devotional_plans
+  set
+    status = 'published',
+    total_days = published_days_count,
+    updated_at = now()
+  where id = p_plan_id
+    and author_id = auth.uid();
+
 end;
 $$;
-
 
 create or replace function public.get_devotional_days_with_scriptures(
   p_plan_id uuid
 )
-returns jsonb
+returns table (
+  day_id uuid,
+  day_number int,
+  content text,
+  title text,
+  scriptures text[]
+)
 language plpgsql
 as $$
 begin
-  return (
-    select jsonb_agg(
-      jsonb_build_object(
-        'id', d.id,
-        'day_number', d.day_number,
-        'content', d.content,
-        'scriptures', coalesce(sr.references, '[]'::jsonb),
-        'created_at', d.created_at,
-        'updated_at', d.updated_at
-      )
-      order by d.day_number
+  return query
+  select
+    d.id,
+    d.day_number,
+    d.content,
+    d.title,
+    coalesce(s.reference, '{}')
+  from public.devotional_days d
+  left join public.scripture_references s
+    on s.day_id = d.id
+  where d.plan_id = p_plan_id
+    and exists (
+      select 1
+      from public.devotional_plans p
+      where p.id = d.plan_id
+        and p.author_id = auth.uid()
     )
-    from public.devotional_days d
-    left join (
-      select
-        day_id,
-        jsonb_agg(reference) as references
-      from public.scripture_references
-      group by day_id
-    ) sr on sr.day_id = d.id
-    where d.plan_id = p_plan_id
-  );
+  order by d.day_number;
 end;
 $$;
 
@@ -224,10 +363,12 @@ create table if not exists public.devotional_days (
   plan_id uuid references public.devotional_plans(id) on delete cascade,
   day_number int not null,
   content text not null,
+  title text,
   created_at timestamptz default now(),
   updated_at timestamptz default now(),
   unique (plan_id, day_number)
 );
+
 
 alter table public.devotional_days enable row level security;
 
@@ -285,6 +426,122 @@ create policy "authors delete days"
 create index if not exists idx_devotional_days
   on public.devotional_days(plan_id, day_number);
 
+--Devotional days
+create table if not exists public.devotional_days_draft (
+  id uuid primary key default gen_random_uuid(),
+  plan_id uuid references public.devotional_plans(id) on delete cascade,
+  day_number int not null,
+  content text not null,
+  title text,
+  created_at timestamptz default now(),
+  updated_at timestamptz default now(),
+  unique (plan_id, day_number)
+);
+
+alter table public.devotional_days_draft enable row level security;
+
+
+create policy "devotional_days_draft are not public read"
+  on public.devotional_days_draft
+  for select
+  using (
+    exists (
+      select 1
+      from public.devotional_plans p
+      where p.id = plan_id 
+      and p.author_id = auth.uid()
+    )
+  );
+create policy "authors insert days"
+  on public.devotional_days_draft
+  for insert
+  with check (
+    exists (
+      select 1
+      from public.devotional_plans p
+      where p.id = plan_id 
+      and p.author_id = auth.uid()
+    )
+  );
+
+create policy "authors update days"
+  on public.devotional_days_draft
+  for update
+  using (
+    exists (
+      select 1
+      from public.devotional_plans p
+      where p.id = plan_id 
+      and p.author_id = auth.uid()
+    )
+  )
+  with check (
+    exists (
+      select 1
+      from public.devotional_plans p
+      where p.id = plan_id 
+      and p.author_id = auth.uid()
+    )
+  );
+
+create policy "authors delete days"
+  on public.devotional_days_draft
+  for delete
+  using (
+    exists (
+      select 1
+      from public.devotional_plans p
+      where p.id = plan_id 
+      and p.author_id = auth.uid()
+    )
+  );
+
+
+create index if not exists idx_devotional_days_draft
+  on public.devotional_days_draft(plan_id, day_number);
+
+create or replace function get_my_devotional_plans()
+returns table (
+  id uuid,
+  title text,
+  status text,
+  description text,
+  total_days int,
+  cover_image text,
+  created_at timestamptz,
+  likes_count int,
+  dislikes_count int
+)
+language plpgsql
+security definer
+as $$
+begin
+  return query
+  select
+    p.id,
+    p.title,
+    p.status,
+    p.description,
+    p.total_days,
+    p.cover_image,
+    p.created_at,
+
+    -- ?? likes
+    count(*) filter (where r.reaction_type = 'like')::int as likes_count,
+
+    -- ?? dislikes
+    count(*) filter (where r.reaction_type = 'dislike')::int as dislikes_count
+
+  from public.devotional_plans p
+  left join public.plan_reactions r
+    on r.plan_id = p.id
+  where p.author_id = auth.uid()
+  group by p.id
+  order by p.created_at desc;
+end;
+$$;
+
+
 
 --Scripture references
 create table if not exists public.scripture_references (
@@ -332,6 +589,59 @@ create policy "authors manage scripture refs"
   on public.scripture_references(user_id);
 
 
+
+create table if not exists public.scripture_references_draft (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid references auth.users(id) on delete set null,
+  day_id uuid references public.devotional_days_draft(id) on delete cascade,
+  reference text[] default '{}',
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+
+
+alter table public.scripture_references_draft enable row level security;
+
+
+create policy "scripture refs public read"
+  on public.scripture_references_draft
+  for select
+  using (
+    exists (
+      select 1
+      from public.devotional_days_draft d
+      join public.devotional_plans p on d.plan_id = p.id
+      where d.id = day_id
+      and p.author_id = auth.uid()
+    )
+  );
+
+
+create policy "authors manage scripture refs"
+  on public.scripture_references_draft
+  for all
+  using (
+    exists (
+      select 1
+      from public.devotional_days_draft d
+      join public.devotional_plans p on d.plan_id = p.id
+      where d.id = day_id
+      and p.author_id = auth.uid()
+    )
+  )
+  with check (
+    exists (
+      select 1
+      from public.devotional_days_draft d
+      join public.devotional_plans p on d.plan_id = p.id
+      where d.id = day_id
+      and p.author_id = auth.uid()
+    )
+  );
+
+
+  create index if not exists idx_scripture_refs_draft_user_id 
+  on public.scripture_references_draft(user_id);
 
 
 -- Reports
@@ -616,6 +926,7 @@ as select
   p.tags,
   p.author_id,
   p.created_at,
+  p.status,
   p.updated_at,
 
   -- like count
@@ -791,7 +1102,9 @@ returns table (
   first_name text,
   last_name text,
   avatar_url text,
-  friendship_status text
+  friendship_status text,
+  requester_id uuid,
+  receiver_id uuid
 )
 security definer
 language plpgsql
@@ -804,7 +1117,9 @@ begin
     p.first_name,
     p.last_name,
     p.avatar_url,
-    f.status as friendship_status
+    f.status as friendship_status,
+    f.requester_id as requester_id,
+    f.receiver_id as receiver_id
   from profiles p
   left join friends f
     on (
@@ -816,7 +1131,6 @@ begin
     and p.id <> auth.uid();
 end;
 $$;
-
 
 create or replace function public.get_pending_friend_requests()
 returns table (
@@ -883,7 +1197,7 @@ declare
   v_progress_id uuid;
 begin
 
-  -- 1️⃣ Create plan group
+  -- 1?? Create plan group
   insert into plan_groups (
     plan_id,
     created_by,
@@ -896,7 +1210,7 @@ begin
   )
   returning id into v_group_id;
 
-  -- 2️⃣ Add creator as accepted member
+  -- 2?? Add creator as accepted member
   insert into plan_group_members (
     group_id,
     user_id,
@@ -910,7 +1224,7 @@ begin
     now()
   );
 
-  -- 3️⃣ Create plan progress
+  -- 3?? Create plan progress
   insert into plan_progress (
     user_id,
     plan_id,
@@ -951,7 +1265,7 @@ begin
     )
   );
 
-  -- 4️⃣ Return the group id
+  -- 4?? Return the group id
   return v_progress_id;
 end;
 $$;
@@ -1017,7 +1331,7 @@ begin
     and user_id = auth.uid();
 
     
-  -- 3️⃣ Create plan progress for creator (group-aware)
+  -- 3?? Create plan progress for creator (group-aware)
   insert into plan_progress (
     user_id,
     plan_id,
@@ -1055,6 +1369,7 @@ create table if not exists public.plan_progress (
   current_day int not null default 1,
   group_id uuid references public.plan_groups(id) on delete cascade,
   completed_days int[] default '{}',
+  completed_once boolean default false,
   start_date timestamptz default now(),
   updated_at timestamptz default now(),
   created_at timestamptz default now(),
@@ -1154,6 +1469,7 @@ create table if not exists public.day_items_progress (
   item_key text, -- e.g. scripture reference or 'main'
   devotional_content text,
   day_number int,
+  title text,
   group_id uuid references public.plan_groups(id) on delete cascade,
   completed boolean default false,
   created_at timestamptz default now(),
@@ -1185,25 +1501,84 @@ declare
   refs text[];
   v_devotional_content text;
   v_day_number int;
+  v_day_title text;
   ref text;
 begin
 
-  select content, day_number
-  into v_devotional_content, v_day_number
+  select content, day_number, title
+  into v_devotional_content, v_day_number, v_day_title
   from devotional_days
   where id = p_day_id;
 
 
-  -- 1️⃣ Ensure devotional item
-  insert into day_items_progress (
-    user_id, progress_id, plan_id, day_id, item_type, item_key, devotional_content, day_number, group_id
-  )
-  values (
-    p_user_id, p_progress_id, p_plan_id, p_day_id, 'devotional', 'main', v_devotional_content, v_day_number, p_group_id
-  )
-  on conflict do nothing;
+  -- Ensure devotional item
+  if p_group_id is null then
+    insert into day_items_progress (
+      user_id,
+      progress_id,
+      plan_id,
+      day_id,
+      item_type,
+      item_key,
+      devotional_content,
+      day_number,
+      title,
+      group_id
+    )
+    values (
+      p_user_id,
+      p_progress_id,
+      p_plan_id,
+      p_day_id,
+      'devotional',
+      'main',
+      v_devotional_content,
+      v_day_number,
+      v_day_title,
+      null
+    )
+    on conflict (user_id, progress_id, day_id, item_type, item_key)
+    where group_id is null
+    do update
+    set devotional_content = excluded.devotional_content,
+        day_number = excluded.day_number,
+        title = excluded.title,
+        updated_at = now();
+  else
+    insert into day_items_progress (
+      user_id,
+      progress_id,
+      plan_id,
+      day_id,
+      item_type,
+      item_key,
+      devotional_content,
+      day_number,
+      title,
+      group_id
+    )
+    values (
+      p_user_id,
+      p_progress_id,
+      p_plan_id,
+      p_day_id,
+      'devotional',
+      'main',
+      v_devotional_content,
+      v_day_number,
+      v_day_title,
+      p_group_id
+    )
+    on conflict (user_id, progress_id, day_id, item_type, item_key, group_id)
+    where group_id is not null
+    do update
+    set devotional_content = excluded.devotional_content,
+        day_number = excluded.day_number,
+        title = excluded.title,
+        updated_at = now();
+  end if;
 
-  -- 2️⃣ Load scripture references (text[])
+  -- Load scripture references (text[])
   select reference
   into refs
   from scripture_references
@@ -1214,16 +1589,101 @@ begin
     return;
   end if;
 
-  -- 3️⃣ Ensure one item per scripture ref
+  -- Ensure one item per scripture ref
   foreach ref in array refs loop
-    insert into day_items_progress (
-      user_id, progress_id, plan_id, day_id, item_type, item_key, group_id, day_number
-    )
-    values (
-      p_user_id, p_progress_id, p_plan_id, p_day_id, 'scripture', ref, p_group_id, v_day_number
-    )
-    on conflict do nothing;
+    if p_group_id is null then
+      insert into day_items_progress (
+        user_id,
+        progress_id,
+        plan_id,
+        day_id,
+        item_type,
+        item_key,
+        group_id,
+        day_number,
+        title
+      )
+      values (
+        p_user_id,
+        p_progress_id,
+        p_plan_id,
+        p_day_id,
+        'scripture',
+        ref,
+        null,
+        v_day_number,
+        v_day_title
+      )
+      on conflict (user_id, progress_id, day_id, item_type, item_key)
+      where group_id is null
+      do update
+      set day_number = excluded.day_number,
+          title = excluded.title,
+          updated_at = now();
+    else
+      insert into day_items_progress (
+        user_id,
+        progress_id,
+        plan_id,
+        day_id,
+        item_type,
+        item_key,
+        group_id,
+        day_number,
+        title
+      )
+      values (
+        p_user_id,
+        p_progress_id,
+        p_plan_id,
+        p_day_id,
+        'scripture',
+        ref,
+        p_group_id,
+        v_day_number,
+        v_day_title
+      )
+      on conflict (user_id, progress_id, day_id, item_type, item_key, group_id)
+      where group_id is not null
+      do update
+      set day_number = excluded.day_number,
+          title = excluded.title,
+          updated_at = now();
+    end if;
   end loop;
+end;
+$$;
+
+create or replace function public.get_day_items_progress(
+  p_user_id uuid,
+  p_plan_id uuid,
+  p_progress_id uuid,
+  p_day_id uuid,
+  p_group_id uuid default null
+)
+returns setof public.day_items_progress
+language plpgsql
+as $$
+begin
+  perform ensure_day_items_exist(
+    p_user_id,
+    p_plan_id,
+    p_progress_id,
+    p_day_id,
+    p_group_id
+  );
+
+  return query
+  select *
+  from public.day_items_progress
+  where user_id = p_user_id
+    and progress_id = p_progress_id
+    and day_id = p_day_id
+    and (
+      (p_group_id is null and group_id is null)
+      or group_id = p_group_id
+    )
+  order by item_type, item_key;
 end;
 $$;
 
@@ -1245,15 +1705,22 @@ declare
   v_total_items int;
   v_completed_items int;
   v_day_number int;
+  v_plan_total_days int;
+  v_completed_once boolean;
+  v_is_plan_complete boolean;
 begin
-  -- Ensure all items exist
-  perform ensure_day_items_exist(
-    p_user_id,
-    p_plan_id,
-    p_progress_id,
-    p_day_id,
-    p_group_id
-  );
+  -- Check completion state before updates
+  select dp.total_days,
+         coalesce(pp.completed_once, false)
+  into v_plan_total_days, v_completed_once
+  from plan_progress pp
+  join devotional_plans dp on dp.id = pp.plan_id
+  where pp.id = p_progress_id
+    and pp.user_id = p_user_id
+    and (
+      (p_group_id is null and pp.group_id is null)
+      or pp.group_id = p_group_id
+    );
 
   -- Insert if missing (partial index safe)
   insert into day_items_progress (
@@ -1330,6 +1797,34 @@ if v_total_items > 0 and v_completed_items = v_total_items then
         updated_at = now()
     where user_id = p_user_id
       and id = p_progress_id
+      and (
+        (p_group_id is null and group_id is null)
+        or group_id = p_group_id
+      );
+  end if;
+
+  -- Increment completions when a plan is completed for the first time
+  select (coalesce(array_length(pp.completed_days, 1), 0) >= v_plan_total_days)
+  into v_is_plan_complete
+  from plan_progress pp
+  where pp.id = p_progress_id
+    and pp.user_id = p_user_id
+    and (
+      (p_group_id is null and pp.group_id is null)
+      or pp.group_id = p_group_id
+    );
+
+  if v_completed_once is not true and v_is_plan_complete is true then
+    update devotional_plans
+    set completions = coalesce(completions, 0) + 1,
+        updated_at = now()
+    where id = p_plan_id;
+
+    update plan_progress
+    set completed_once = true,
+        updated_at = now()
+    where id = p_progress_id
+      and user_id = p_user_id
       and (
         (p_group_id is null and group_id is null)
         or group_id = p_group_id
@@ -1919,14 +2414,14 @@ language plpgsql
 security definer
 as $$
 begin
-  -- 1️⃣ Update profile
+  -- 1?? Update profile
   update public.profiles
   set
     expo_push_token = p_expo_push_token,
     timezone = p_timezone
   where id = auth.uid();
 
-  -- 2️⃣ Ensure notification preferences exist
+  -- 2?? Ensure notification preferences exist
   insert into public.notification_preferences (user_id, daily)
   values (auth.uid(), true)
   on conflict (user_id)
@@ -2051,7 +2546,7 @@ security definer
 as $$
 begin
   /* =====================================================
-     🎉 PLAN COMPLETION (Priority 1)
+     ?? PLAN COMPLETION (Priority 1)
      ===================================================== */
   insert into ai_triggers (
     user_id,
@@ -2090,7 +2585,7 @@ begin
     );
 
   /* =====================================================
-     🙌 WELCOME BACK (Priority 2)
+     ?? WELCOME BACK (Priority 2)
      ===================================================== */
   insert into ai_triggers (
     user_id,
@@ -2135,7 +2630,7 @@ begin
     );
 
   /* =====================================================
-     🤝 FRIEND INVITE NUDGE (Priority 3)
+     ?? FRIEND INVITE NUDGE (Priority 3)
      ===================================================== */
   insert into ai_triggers (
     user_id,
@@ -2183,7 +2678,7 @@ begin
     );
 
   /* =====================================================
-     😴 INACTIVITY NUDGE (Priority 4)
+     ?? INACTIVITY NUDGE (Priority 4)
      ===================================================== */
   insert into ai_triggers (
     user_id,
@@ -2230,7 +2725,7 @@ begin
     );
 
   /* =====================================================
-     🔥 STREAK ENCOURAGEMENT (Priority 5)
+     ?? STREAK ENCOURAGEMENT (Priority 5)
      ===================================================== */
   insert into ai_triggers (
     user_id,
@@ -2277,7 +2772,7 @@ begin
     );
 
   /* =====================================================
-     🧭 ABANDONED PLAN (Priority 6)
+     ?? ABANDONED PLAN (Priority 6)
      ===================================================== */
   insert into ai_triggers (
     user_id,
@@ -2325,7 +2820,7 @@ begin
     );
 
   /* =====================================================
-     💬 SOCIAL PROMPT (Priority 7)
+     ?? SOCIAL PROMPT (Priority 7)
      ===================================================== */
   insert into ai_triggers (
     user_id,
@@ -2378,3 +2873,4 @@ begin
 end;
 $$;
 t
+

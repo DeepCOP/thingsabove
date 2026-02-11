@@ -54,7 +54,9 @@ export type PlanGroupMembers = Database['public']['Tables']['plan_group_members'
 export type PlanGroupMembersInsert = Database['public']['Tables']['plan_group_members']['Insert'];
 export type PlanGroupMembersUpdate = Database['public']['Tables']['plan_group_members']['Update'];
 
-export type DayItemsProgress = Database['public']['Tables']['day_items_progress']['Row'];
+export type DayItemsProgress = Database['public']['Tables']['day_items_progress']['Row'] & {
+  title?: string | null;
+};
 export type DayItemsProgressInsert = Database['public']['Tables']['day_items_progress']['Insert'];
 export type DayItemsProgressUpdate = Database['public']['Tables']['day_items_progress']['Update'];
 

@@ -55,6 +55,47 @@ pnpm start
 
 Follow the Expo prompts to run on a device or simulator. Push notifications require a physical device.
 
+## Push Notifications Setup
+
+1. Ensure Expo Notifications is configured in `app.json` (the `expo-notifications` plugin and a valid `extra.eas.projectId` are required).
+2. For Android, add your Firebase `google-services.json` to the project root and keep the path set in `app.json`.
+3. Run the app on a physical device and grant notification permissions when prompted.
+4. The app registers for push tokens in `src/hooks/usePushNotifications.tsx`; verify that the token logs in the console and can be sent via Expo.
+
+## EAS Build (Development)
+
+1. Install and log in to EAS:
+```
+pnpm add -g eas-cli
+eas login
+```
+2. Configure EAS for the project (first time only):
+```
+eas build:configure
+```
+3. Build a development client:
+```
+eas build -p android --profile development
+eas build -p ios --profile development
+```
+4. Install the build on a device and run with Expo:
+```
+pnpm start
+```
+
+## EAS Build (Production)
+
+1. Build release binaries:
+```
+eas build -p android --profile production
+eas build -p ios --profile production
+```
+2. Submit to stores:
+```
+eas submit -p android --profile production
+eas submit -p ios --profile production
+```
+
 ## Supabase Setup
 
 1. Create a Supabase project.

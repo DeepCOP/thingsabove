@@ -59,7 +59,7 @@ export default function PlanProgress() {
       verseStart: parsed.verseStart,
     });
   };
-  const { dayItemsProgressQuery, toggleMutation, loadItems, loadingItems } = useDayItemsProgress({
+  const { dayItemsProgressQuery, toggleMutation } = useDayItemsProgress({
     user_id: session?.user?.id!,
     plan_id: planProgress?.plan_id as string,
     progress_id: progressId as string,
@@ -105,13 +105,6 @@ export default function PlanProgress() {
   useEffect(() => {
     setSelectedDay(currentDayData?.day_number || 1);
   }, [currentDayData]);
-
-  useEffect(() => {
-    if (dayItemsProgress?.items || loadingItems) {
-      return;
-    }
-    loadItems.mutate();
-  }, [dayItemsProgress]);
 
   const missedDays = useMemo(() => {
     if (!planProgress || !plan) return null;
@@ -178,7 +171,7 @@ export default function PlanProgress() {
         totalDays={plan.total_days}
         missedCount={missedDays?.length || 0}
         members={planGroupMembersQuery.data}
-        items={dayItemsProgress?.items || []}
+        items={dayItemsProgress?.items}
         itemsLoading={dayItemsProgressQuery.isLoading}
         toggleLoading={toggleMutation.isPending}
         planProgress={planProgress}

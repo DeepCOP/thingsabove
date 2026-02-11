@@ -5,6 +5,7 @@ export const searchRelatedPlans = async (currentPlanId: string, tags: string) =>
     .from('devotional_plans')
     .select('id, title, cover_image, total_days, tags, description')
     .neq('id', currentPlanId)
+    .neq('status', 'draft')
     .textSearch('tags', tags, { type: 'websearch' })
     .limit(10);
   if (error) throw error;
@@ -48,6 +49,7 @@ export const fetchPlans = async ({
   let query = supabase
     .from('devotional_plans_view')
     .select('*')
+    .neq('status', 'draft')
     .order('created_at', { ascending: false })
     .order('id', { ascending: false }) // secondary key for stable ordering
     .limit(PAGE_SIZE);
@@ -69,7 +71,12 @@ export const fetchPlans = async ({
 };
 
 export const fetchPlanById = async (id: string) => {
-  let { data, error } = await supabase.from('devotional_plans').select('*').eq('id', id).single();
+  let { data, error } = await supabase
+    .from('devotional_plans')
+    .select('*')
+    .eq('id', id)
+    .neq('status', 'draft')
+    .single();
 
   if (error) throw error;
 
@@ -77,35 +84,6 @@ export const fetchPlanById = async (id: string) => {
 };
 
 export const fetchDayItems = async ({
-  user_id,
-  progress_id,
-  day_id,
-  groupId,
-}: {
-  user_id: string;
-  progress_id: string;
-  day_id: string;
-  groupId?: string;
-}) => {
-  let query = supabase
-    .from('day_items_progress')
-    .select('*')
-    .eq('user_id', user_id)
-    .eq('progress_id', progress_id)
-    .eq('day_id', day_id);
-  if (groupId) {
-    query = query.eq('group_id', groupId);
-  } else {
-    query = query.is('group_id', null);
-  }
-  const { data, error } = await query;
-
-  if (error) throw error;
-  // Return mapped progress
-  return data;
-};
-
-export const loadDayItems = async ({
   user_id,
   plan_id,
   progress_id,
@@ -118,7 +96,7 @@ export const loadDayItems = async ({
   day_id: string;
   groupId?: string;
 }) => {
-  const { error } = await supabase.rpc('ensure_day_items_exist', {
+  const { data, error } = await supabase.rpc('get_day_items_progress', {
     p_user_id: user_id,
     p_plan_id: plan_id,
     p_progress_id: progress_id,
@@ -127,6 +105,8 @@ export const loadDayItems = async ({
   });
 
   if (error) throw error;
+  // Return mapped progress
+  return data;
 };
 
 export const fetchPlanProgress = async ({
@@ -204,7 +184,11 @@ export const fetchUserFriends = async ({ userId }: { userId: string }) => {
 };
 
 export const fetchUserPlans = async (planId: string[]) => {
-  const { data, error } = await supabase.from('devotional_plans_view').select('*').in('id', planId);
+  const { data, error } = await supabase
+    .from('devotional_plans_view')
+    .select('*')
+    .neq('status', 'draft')
+    .in('id', planId);
   if (error) throw error;
   return data;
 };

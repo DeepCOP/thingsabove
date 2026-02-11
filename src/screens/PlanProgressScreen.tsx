@@ -89,7 +89,7 @@ export default function PlanProgressScreen({
 
         {itemsLoading ? (
           <LoadingSpinner />
-        ) : items?.length ? (
+        ) : items ? (
           <DayItemsList
             items={items}
             onPressItem={onPressItem}

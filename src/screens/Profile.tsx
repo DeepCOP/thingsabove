@@ -135,7 +135,7 @@ export default function ProfileScreen({
               </View>
             </View>
             {/* Plans title */}
-            <View className="mt-10 px-4">
+            <View className="mt-10 px-4 border-b border-gray-500">
               <Text className="text-lg font-semibold dark:text-white mb-4">Your Plans</Text>
             </View>
           </>

@@ -1,9 +1,8 @@
 // hooks/useDayItemsProgress.ts
 /* eslint-disable react-hooks/exhaustive-deps */
 import { toggleDayCompletion, toggleItemCompletion } from '@/src/api/mutations';
-import { fetchDayItems, loadDayItems } from '@/src/api/queries';
+import { fetchDayItems } from '@/src/api/queries';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useEffect } from 'react';
 
 interface Params {
   user_id: string;
@@ -23,6 +22,7 @@ export function useDayItemsProgress({ user_id, plan_id, progress_id, day_id, gro
     queryFn: async () => {
       const data = await fetchDayItems({
         user_id,
+        plan_id,
         progress_id,
         day_id,
         groupId: group_id,
@@ -92,46 +92,14 @@ export function useDayItemsProgress({ user_id, plan_id, progress_id, day_id, gro
     },
   });
 
-  const loadItems = useMutation({
-    mutationFn: async () =>
-      loadDayItems({ user_id, plan_id, progress_id, day_id, groupId: group_id }),
-
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ['day_items_progress', user_id, progress_id, day_id, group_id],
-      });
-
-      queryClient.invalidateQueries({
-        queryKey: ['plan_progress', progress_id, user_id, group_id],
-      });
-    },
-    onError: (error) => {
-      console.error('Error toggling item completion:', error);
-    },
-  });
-
   const toggleItem = (type: 'devotional' | 'scripture', key: string, completed: boolean) => {
     toggleMutation.mutate({ item_type: type, item_key: key, completed });
   };
-
-  useEffect(() => {
-    if (
-      !day_id ||
-      !progress_id ||
-      !user_id ||
-      (dayItemsProgressQuery.data ?? []).length > 0 ||
-      dayItemsProgressQuery.isLoading
-    )
-      return;
-    loadItems.mutate();
-  }, [day_id, progress_id, user_id, dayItemsProgressQuery.data, dayItemsProgressQuery.isLoading]);
 
   return {
     dayItemsProgressQuery,
     toggleMutation,
     toggleDayCompletion: toggleDayCompletionMutation,
     toggleItem,
-    loadItems,
-    loadingItems: loadItems.isPending,
   };
 }

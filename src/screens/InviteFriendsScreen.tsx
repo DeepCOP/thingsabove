@@ -1,7 +1,8 @@
 import LoadingSpinner from '@/src/components/LoadingSpinner';
 import { Ionicons } from '@expo/vector-icons';
-import { FlatList, Image, Text, TouchableOpacity, View } from 'react-native';
+import { FlatList, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import UserAvatar from '../components/UserAvatar';
 
 type Friend = {
   id: string;
@@ -61,15 +62,8 @@ export default function InviteFriendsScreen({
               return (
                 <TouchableOpacity
                   onPress={() => onToggle(item.id)}
-                  className="flex-row items-center mb-3 p-3 rounded-xl bg-gray-100 dark:bg-neutral-900">
-                  {item.avatar_url ? (
-                    <Image
-                      source={{ uri: item.avatar_url }}
-                      className="w-10 h-10 rounded-full mr-3"
-                    />
-                  ) : (
-                    <View className="w-10 h-10 rounded-full bg-gray-300 dark:bg-gray-700 mr-3" />
-                  )}
+                  className="flex-row items-center gap-2 mb-3 p-3 rounded-xl bg-gray-100 dark:bg-neutral-900">
+                  <UserAvatar initial={item.first_name[0]} uri={item.avatar_url} size={34} />
 
                   <Text className="flex-1 dark:text-white font-semibold">
                     {item.first_name} {item.last_name}

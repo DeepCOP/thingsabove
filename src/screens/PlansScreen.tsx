@@ -16,6 +16,7 @@ type Props = {
   onSearch: () => void;
   onLogin: () => void;
   onSetting: () => void;
+  onContribute: () => void;
 };
 
 export default function PlansScreen({
@@ -29,6 +30,7 @@ export default function PlansScreen({
   onSearch,
   onLogin,
   onSetting,
+  onContribute,
 }: Props) {
   const colorScheme = useColorScheme();
 
@@ -83,6 +85,15 @@ export default function PlansScreen({
       </View>
 
       {activeTab === 'my-plans' ? <MyPlansList /> : <FindPlansList />}
+
+      <TouchableOpacity
+        onPress={onContribute}
+        className="absolute bottom-4 right-4 flex-row items-center gap-1">
+        <Text className="text-xs text-gray-500 dark:text-gray-400 underline">
+          Have a plan you&apos;d like to contribute?
+        </Text>
+        <Ionicons name="arrow-forward" />
+      </TouchableOpacity>
     </View>
   );
 }
