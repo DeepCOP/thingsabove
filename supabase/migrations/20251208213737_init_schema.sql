@@ -1210,7 +1210,7 @@ begin
   )
   returning id into v_group_id;
 
-  -- 2?? Add creator as accepted member
+  -- 2 Add creator as accepted member
   insert into plan_group_members (
     group_id,
     user_id,
@@ -1224,7 +1224,7 @@ begin
     now()
   );
 
-  -- 3?? Create plan progress
+  -- 3 Create plan progress
   insert into plan_progress (
     user_id,
     plan_id,
@@ -1265,7 +1265,7 @@ begin
     )
   );
 
-  -- 4?? Return the group id
+  -- 4 Return the group id
   return v_progress_id;
 end;
 $$;
