@@ -1197,7 +1197,7 @@ declare
   v_progress_id uuid;
 begin
 
-  -- 1?? Create plan group
+  -- 1 Create plan group
   insert into plan_groups (
     plan_id,
     created_by,
