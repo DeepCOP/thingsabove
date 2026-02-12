@@ -118,7 +118,7 @@ export default function DevotionalPlanReader({
     }
 
     // Official Bible.com link
-    const link = `${process.env.EXPO_BASE_URL}/bible/12/${selectedBook.name
+    const link = `${process.env.EXPO_PUBLIC_BASE_URL}/bible/12/${selectedBook.name
       .toLowerCase()
       .slice(0, 3)}.${selectedBook.chapter}.${ranges.join(',')}.${version}`;
 
@@ -193,7 +193,7 @@ export default function DevotionalPlanReader({
           {item?.item_type === 'devotional' && item?.item_key === 'main' ? (
             <TouchableOpacity
               onPress={async () => {
-                const content = `${plan?.title}: Day ${item?.day_number} · Devotional \n\n ${process.env.EXPO_BASE_URL}/devotional_detail/${plan?.id}/${item?.day_id}/${item.id}`;
+                const content = `${plan?.title}: Day ${item?.day_number} · Devotional \n\n ${process.env.EXPO_PUBLIC_BASE_URL}/devotional_detail/${plan?.id}/${item?.day_id}/${item.id}`;
                 await Share.share({ message: content });
               }}>
               <Ionicons

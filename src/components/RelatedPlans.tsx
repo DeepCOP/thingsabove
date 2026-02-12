@@ -5,7 +5,7 @@ import { useRelatedPlans } from '../hooks/useDevotionalPlans';
 import { DevotionalPlan } from '../types/types';
 
 export function RelatedPlansSection({ plan }: { plan: DevotionalPlan | undefined | null }) {
-  const tags = plan?.tags ? plan.tags : '';
+  const tags = plan?.tags ? plan.tags : [];
   const { data, isLoading } = useRelatedPlans(tags, plan?.id || '');
   const router = useRouter();
 

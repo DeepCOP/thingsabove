@@ -88,8 +88,8 @@ export default function PlansScreen({
 
       <TouchableOpacity
         onPress={onContribute}
-        className="absolute bottom-4 right-4 flex-row items-center gap-1">
-        <Text className="text-xs text-gray-500 dark:text-gray-400 underline">
+        className="absolute bottom-4 right-4 flex-row items-center gap-1 bg-rose-400 px-4 py-2 rounded-full">
+        <Text className="text-xs font-bold text-gray-800 dark:text-gray-400 underline">
           Have a plan you&apos;d like to contribute?
         </Text>
         <Ionicons name="arrow-forward" />

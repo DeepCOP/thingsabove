@@ -389,7 +389,7 @@ export type Database = {
           description: string;
           id: string;
           status: string | null;
-          tags: string | null;
+          tags: string[] | null;
           title: string;
           total_days: number;
           updated_at: string | null;
@@ -402,7 +402,7 @@ export type Database = {
           description: string;
           id?: string;
           status?: string | null;
-          tags?: string | null;
+          tags?: string[] | null;
           title: string;
           total_days?: number;
           updated_at?: string | null;
@@ -415,7 +415,7 @@ export type Database = {
           description?: string;
           id?: string;
           status?: string | null;
-          tags?: string | null;
+          tags?: string[] | null;
           title?: string;
           total_days?: number;
           updated_at?: string | null;
@@ -928,7 +928,7 @@ export type Database = {
           id: string | null;
           likes_count: number | null;
           status: string | null;
-          tags: string | null;
+          tags: string[] | null;
           title: string | null;
           total_days: number | null;
           updated_at: string | null;
@@ -943,7 +943,7 @@ export type Database = {
           id?: string | null;
           likes_count?: never;
           status?: string | null;
-          tags?: string | null;
+          tags?: string[] | null;
           title?: string | null;
           total_days?: number | null;
           updated_at?: string | null;
@@ -958,7 +958,7 @@ export type Database = {
           id?: string | null;
           likes_count?: never;
           status?: string | null;
-          tags?: string | null;
+          tags?: string[] | null;
           title?: string | null;
           total_days?: number | null;
           updated_at?: string | null;
@@ -1198,7 +1198,7 @@ export type Database = {
           id: string | null;
           likes_count: number | null;
           status: string | null;
-          tags: string | null;
+          tags: string[] | null;
           title: string | null;
           total_days: number | null;
           updated_at: string | null;
@@ -1225,6 +1225,7 @@ export type Database = {
         };
         Returns: string;
       };
+      tags_to_text: { Args: { tags: string[] }; Returns: string };
       toggle_day_completion: {
         Args: {
           p_completed: boolean;
