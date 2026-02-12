@@ -1,5 +1,4 @@
 // hooks/useDayItemsProgress.ts
-/* eslint-disable react-hooks/exhaustive-deps */
 import { toggleDayCompletion, toggleItemCompletion } from '@/src/api/mutations';
 import { fetchDayItems } from '@/src/api/queries';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
