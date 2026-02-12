@@ -6,10 +6,10 @@ import { useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 
 import { useFetchDevotionalPlanById } from '@/src/hooks/useDevotionalPlans';
+import PlanCoverImage from '@/src/components/PlanCoverImage';
 import { UseMutationResult } from '@tanstack/react-query';
 import {
   Animated,
-  Image,
   Modal,
   ScrollView,
   Share,
@@ -183,11 +183,11 @@ export default function DevotionalPlanReader({
                 color={colorScheme === 'dark' ? '#fff' : '#000'}
               />
             </TouchableOpacity>
-            {plan?.cover_image ? (
-              <Image source={{ uri: plan?.cover_image }} className="w-12 h-12 ml-2 rounded-lg " />
-            ) : (
-              <View className="w-10 h-10 ml-2 rounded-full bg-gray-400 dark:bg-gray-700" />
-            )}
+            <PlanCoverImage
+              uri={plan?.cover_image}
+              className="w-12 h-12 ml-2 rounded-lg"
+              placeholderClassName="w-10 h-10 ml-2 rounded-lg bg-gray-400 dark:bg-gray-700"
+            />
           </View>
 
           {item?.item_type === 'devotional' && item?.item_key === 'main' ? (

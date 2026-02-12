@@ -1,6 +1,7 @@
 import BottomSheet, { BottomSheetBackdrop, BottomSheetView } from '@gorhom/bottom-sheet';
 import { forwardRef } from 'react';
-import { Image, Text, TouchableOpacity, View, useColorScheme } from 'react-native';
+import PlanCoverImage from '@/src/components/PlanCoverImage';
+import { Text, TouchableOpacity, View, useColorScheme } from 'react-native';
 
 type Props = {
   plan: any;
@@ -29,11 +30,7 @@ const StartPlanBottomSheet = forwardRef<BottomSheet, Props>(({ plan, onStartPres
         />
       )}>
       <BottomSheetView className="flex-1 px-4 pt-4 items-center justify-center">
-        {plan.cover_image ? (
-          <Image source={{ uri: plan.cover_image }} className="w-28 h-28 rounded-2xl mb-3" />
-        ) : (
-          <View className="w-28 h-28 rounded-2xl bg-gray-300 dark:bg-neutral-800 mb-3" />
-        )}
+        <PlanCoverImage uri={plan.cover_image} className="w-28 h-28 rounded-2xl mb-3" />
 
         <Text className="text-2xl text-center font-bold dark:text-white mb-4">
           How do you want to read?

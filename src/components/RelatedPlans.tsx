@@ -1,6 +1,7 @@
 import { RelatedPlanSkeleton } from '@/src/components/PlanSkeleton';
+import PlanCoverImage from '@/src/components/PlanCoverImage';
 import { useRouter } from 'expo-router';
-import { FlatList, Image, Text, TouchableOpacity, View } from 'react-native';
+import { FlatList, Text, TouchableOpacity, View } from 'react-native';
 import { useRelatedPlans } from '../hooks/useDevotionalPlans';
 import { DevotionalPlan } from '../types/types';
 
@@ -39,11 +40,7 @@ export function RelatedPlansSection({ plan }: { plan: DevotionalPlan | undefined
               <TouchableOpacity
                 className="mr-4 w-48"
                 onPress={() => router.push(`/devotional_detail/${item?.id}`)}>
-                <Image
-                  source={{ uri: item.cover_image || undefined }}
-                  className="h-28 w-full rounded-xl"
-                  resizeMode="cover"
-                />
+                <PlanCoverImage uri={item.cover_image} className="h-28 w-full rounded-xl" />
                 <Text className="mt-2 text-gray-700 dark:text-gray-300 font-semibold">
                   {item.total_days} Days
                 </Text>

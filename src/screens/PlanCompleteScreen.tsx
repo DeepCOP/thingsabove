@@ -1,6 +1,7 @@
+import PlanCoverImage from '@/src/components/PlanCoverImage';
 import { RelatedPlansSection } from '@/src/components/RelatedPlans';
 import { Ionicons } from '@expo/vector-icons';
-import { Animated, Image, Text, TouchableOpacity, useColorScheme, View } from 'react-native';
+import { Animated, Text, TouchableOpacity, useColorScheme, View } from 'react-native';
 
 type Props = {
   plan: any;
@@ -40,11 +41,7 @@ export default function PlanCompleteScreen({
       {/* COVER */}
       <View className="px-4 mt-3">
         <View className="overflow-hidden rounded-2xl">
-          {plan?.cover_image ? (
-            <Image source={{ uri: plan.cover_image }} className="w-full h-56" resizeMode="cover" />
-          ) : (
-            <View className="w-full h-56 bg-gray-300 dark:bg-neutral-800" />
-          )}
+          <PlanCoverImage uri={plan?.cover_image} className="w-full h-56" />
         </View>
       </View>
 
