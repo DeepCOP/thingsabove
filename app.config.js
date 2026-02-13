@@ -1,4 +1,34 @@
-export default ({ config }) => ({
+// app.config.js
+const fs = require('fs');
+const path = require('path');
+
+function getGoogleServicesFile() {
+  const env = process.env.GOOGLE_SERVICES_JSON;
+  const defaultPath = path.resolve(__dirname, 'google-services.json');
+
+  if (!env) {
+    if (!fs.existsSync(defaultPath)) {
+      throw new Error(`Missing google-services.json (and GOOGLE_SERVICES_JSON not set).`);
+    }
+    return defaultPath;
+  }
+
+  const asPath = path.resolve(__dirname, env);
+  if (fs.existsSync(asPath)) return asPath;
+
+  // Otherwise treat env as JSON (raw or base64)
+  const outPath = path.resolve(__dirname, 'google-services.eas.json');
+  const trimmed = env.trim();
+  const content = trimmed.startsWith('{')
+    ? trimmed
+    : Buffer.from(trimmed, 'base64').toString('utf8');
+
+  fs.writeFileSync(outPath, content);
+  return outPath;
+}
+
+
+module.exports = ({ config }) => ({
   expo: {
     name: 'thingsabove',
     slug: 'thingsabove',
@@ -24,8 +54,8 @@ export default ({ config }) => ({
         monochromeImage: './assets/images/android-icon-monochrome.png',
       },
 
-      // ✅ Now environment variable works
-      googleServicesFile: process.env.GOOGLE_SERVICES_JSON || './google-services.json',
+      // Use env-provided file or write env JSON to disk.
+      googleServicesFile: getGoogleServicesFile(),
 
       edgeToEdgeEnabled: true,
       predictiveBackGestureEnabled: false,

@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { UseMutateFunction } from '@tanstack/react-query';
 import { useState } from 'react';
-import { Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Alert, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Avatar from '../components/Avatar';
 import MyPlansList from '../components/plansList/MyPlansList';
@@ -144,7 +144,12 @@ export default function ProfileScreen({
 
       {/* Logout */}
       <TouchableOpacity
-        onPress={onSignOut}
+        onPress={() => {
+          Alert.alert('Log out', 'Are you sure you want to log out?', [
+            { text: 'Cancel', style: 'cancel' },
+            { text: 'Log out', style: 'destructive', onPress: onSignOut },
+          ]);
+        }}
         className="absolute border-t border-gray-200 dark:border-neutral-800 bottom-0 left-0 right-0 bg-white dark:bg-black flex-row items-center justify-between px-4 py-5">
         <Text className="text-base text-red-600">Log Out</Text>
         <Ionicons name="chevron-forward" size={20} color="#9ca3af" />
