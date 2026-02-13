@@ -20,6 +20,7 @@ export default function SignIn() {
   async function signIn() {
     signInWithPassword.mutate({ email, password });
   }
+  const isDisabled = !email || !password || signInWithPassword.isPending;
 
   return (
     <KeyboardAvoidingView
@@ -47,10 +48,10 @@ export default function SignIn() {
           <TouchableOpacity
             className="bg-black dark:bg-white p-3 rounded-lg mt-4"
             onPress={signIn}
-            disabled={signInWithPassword.isPending}>
+            disabled={isDisabled}>
             <Text
               className="text-white dark:text-black text-center font-bold"
-              style={{ opacity: signInWithPassword.isPending ? 0.6 : 1 }}>
+              style={{ opacity: isDisabled ? 0.6 : 1 }}>
               Sign In
             </Text>
           </TouchableOpacity>
