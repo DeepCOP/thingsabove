@@ -50,7 +50,7 @@ export default function DevotionalDetail() {
             return (
               <TouchableOpacity
                 onPress={async () => {
-                  const content = `Join me in reading ${plan?.title}\n\n ${process.env.EXPO_BASE_URL}/devotional_detail/${plan?.id}`;
+                  const content = `Join me in reading ${plan?.title}\n\n ${process.env.EXPO_PUBLIC_BASE_URL}/devotional_detail/${plan?.id}`;
                   await Share.share({ message: content });
                 }}>
                 <Ionicons

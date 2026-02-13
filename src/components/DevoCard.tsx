@@ -1,8 +1,9 @@
 /* -------------------- LIST VIEW CARD --------------------- */
 
+import PlanCoverImage from '@/src/components/PlanCoverImage';
 import Stat from '@/src/components/Stat';
 import { DevotionalPlanView } from '@/src/types/types';
-import { Image, Text, TouchableOpacity, View } from 'react-native';
+import { Text, TouchableOpacity, View } from 'react-native';
 import { ProgressBar } from './ProgressBar';
 
 export function ListCard({
@@ -22,11 +23,7 @@ export function ListCard({
         onPress();
       }}>
       <View className=" flex-row gap-3">
-        <Image
-          source={{ uri: item.cover_image || '../assets/placeholder_cover.png' }}
-          className="w-20 h-20 rounded-lg"
-          resizeMode="cover"
-        />
+        <PlanCoverImage uri={item.cover_image} className="w-20 h-20 rounded-lg" />
 
         <View className="flex-1">
           <Text className="font-semibold text-[16px] text-gray-900 dark:text-white">
@@ -75,11 +72,7 @@ export function GridCard({
       className="bg-white dark:bg-neutral-900 rounded-xl p-3 mb-3 w-[48%] shadow-sm"
       onPress={onPress}>
       <View className="rounded-lg mb-2 overflow-hidden bg-white dark:bg-white elevation-2xl">
-        <Image
-          source={{ uri: item.cover_image || '../assets/placeholder_cover.png' }}
-          className="w-full h-32"
-          resizeMode="cover"
-        />
+        <PlanCoverImage uri={item.cover_image} className="w-full h-32" />
       </View>
       <Text numberOfLines={2} className="font-semibold text-gray-900 dark:text-white text-[14px]">
         {item.title}

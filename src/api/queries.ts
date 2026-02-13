@@ -1,12 +1,13 @@
 import { supabase } from '../lib/supabaseClient';
 
-export const searchRelatedPlans = async (currentPlanId: string, tags: string) => {
+export const searchRelatedPlans = async (currentPlanId: string, tags: string[]) => {
+  if (!tags.length) return [];
   const { data, error } = await supabase
     .from('devotional_plans')
     .select('id, title, cover_image, total_days, tags, description')
     .neq('id', currentPlanId)
     .neq('status', 'draft')
-    .textSearch('tags', tags, { type: 'websearch' })
+    .overlaps('tags', tags)
     .limit(10);
   if (error) throw error;
 

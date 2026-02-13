@@ -1,9 +1,10 @@
 import LoadingSpinner from '@/src/components/LoadingSpinner';
+import PlanCoverImage from '@/src/components/PlanCoverImage';
 import { RelatedPlansSection } from '@/src/components/RelatedPlans';
 import { Ionicons } from '@expo/vector-icons';
 import BottomSheet from '@gorhom/bottom-sheet';
 import { useRef } from 'react';
-import { Image, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import ReportPlanSheet from '../components/ReportPlanModal';
 import StartPlanBottomSheet from '../components/StartPlanBottomSheet';
 import { useAuth } from '../state/AuthContext';
@@ -58,21 +59,14 @@ export default function DevotionalDetailScreen({
       <ScrollView
         className="flex-1 bg-white dark:bg-black"
         nestedScrollEnabled={true}
+        showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 80 }}>
         {/* Cover Image */}
-        <View className="px-4">
-          {plan?.cover_image ? (
-            <Image
-              source={{ uri: plan.cover_image }}
-              className="w-full h-60 rounded-2xl"
-              resizeMode="cover"
-            />
-          ) : (
-            <View className="w-full h-60 rounded-2xl bg-gray-300 dark:bg-neutral-800" />
-          )}
+        <View>
+          <PlanCoverImage uri={plan?.cover_image} className="w-full h-60 rounded-2xl" />
 
           {(plan?.completions ?? 0) > 0 && (
-            <View className="absolute bottom-0 left-4 right-4 bg-black/50 py-2 rounded-b-2xl">
+            <View className="absolute bottom-0 left-0 right-0 bg-black/50 py-2 rounded-b-2xl">
               <Text className="text-center text-white font-semibold">
                 Over {plan?.completions} completions
               </Text>

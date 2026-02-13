@@ -89,7 +89,7 @@ create table if not exists public.devotional_plans (
   description text not null,
   cover_image text,
   completions int default 0,
-  tags text,
+  tags text[],
   status text check (status in ('draft', 'published')) default 'draft',
   total_days int not null default 1,
   author_id uuid references auth.users(id) on delete set null,
@@ -950,12 +950,22 @@ create index if not exists idx_plans_title_trgm
 create index if not exists idx_plans_description_trgm
   on public.devotional_plans using gin (description gin_trgm_ops);
 
-CREATE INDEX IF NOT EXISTS idx_plans_tags_trgm
-ON public.devotional_plans
-USING gin (tags gin_trgm_ops);
+-- Helper for tag search/indexing (immutable wrapper)
+create or replace function public.tags_to_text(tags text[])
+returns text
+language sql
+immutable
+as $$
+  select coalesce(array_to_string(tags, ' '), '')
+$$;
 
+-- Trigram index over tags array (as text)
+create index if not exists idx_plans_tags_trgm
+on public.devotional_plans
+using gin (public.tags_to_text(tags) gin_trgm_ops);
 
-create or replace function search_plans(
+-- Update search function to work with tag arrays
+create or replace function public.search_plans(
   search_query text,
   limit_count int default 20,
   cursor_created_at timestamptz default null,
@@ -967,34 +977,29 @@ as $$
   select *
   from devotional_plans_view
   where
-    -- cursor filtering FIRST
     (
       cursor_created_at is null
       or (
-          created_at < cursor_created_at
-          or (created_at = cursor_created_at and id < cursor_id)
+        created_at < cursor_created_at
+        or (created_at = cursor_created_at and id < cursor_id)
       )
     )
-
     and (
       -- prefix search
       lower(title) like lower(search_query) || '%'
       or lower(description) like lower(search_query) || '%'
-      or lower(tags) like lower(search_query) || '%'
+      or lower(public.tags_to_text(tags)) like '%' || lower(search_query) || '%'
 
       -- fuzzy search
       or similarity(lower(title), lower(search_query)) > 0.2
       or similarity(lower(description), lower(search_query)) > 0.2
-      or similarity(lower(tags), lower(search_query)) > 0.2
+      or similarity(lower(public.tags_to_text(tags)), lower(search_query)) > 0.2
     )
-
   order by
     created_at desc,
     id desc
   limit limit_count;
 $$;
-
-
 
 
 create table friends (
@@ -2872,5 +2877,5 @@ begin
 
 end;
 $$;
-t
+
 

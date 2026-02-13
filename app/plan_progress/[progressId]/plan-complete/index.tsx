@@ -29,7 +29,7 @@ export default function PlanComplete() {
       animationComplete={animationComplete}
       onBack={() => router.back()}
       onShare={async () => {
-        const content = `Completed reading ${plan?.title}\n\n ${process.env.EXPO_BASE_URL}/devotional_detail/${plan?.id}`;
+        const content = `Completed reading ${plan?.title}\n\n ${process.env.EXPO_PUBLIC_BASE_URL}/devotional_detail/${plan?.id}`;
         await Share.share({ message: content });
       }}
     />

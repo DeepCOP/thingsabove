@@ -6,12 +6,12 @@ import {
   searchRelatedPlans,
 } from '@/src/api/queries';
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
-export const useRelatedPlans = (tags: string, currentPlanId: string) => {
+export const useRelatedPlans = (tags: string[], currentPlanId: string) => {
   return useQuery({
     queryKey: ['related-plans', currentPlanId],
-    enabled: !!tags.trim() && !!currentPlanId,
+    enabled: !!tags.length && !!currentPlanId,
 
-    queryFn: async () => searchRelatedPlans(currentPlanId, tags.trim()),
+    queryFn: async () => searchRelatedPlans(currentPlanId, tags),
   });
 };
 
