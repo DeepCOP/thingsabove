@@ -27,7 +27,6 @@ function getGoogleServicesFile() {
   return outPath;
 }
 
-
 module.exports = ({ config }) => ({
   expo: {
     name: 'thingsabove',
