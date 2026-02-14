@@ -100,10 +100,19 @@ jobs:
       - name: Build APK with EAS
         id: build
         env:
-          EAS_TOKEN: ${{ secrets.EXPO_TOKEN }}
+          EAS_TOKEN: ${{ secrets.EAS_TOKEN }}
         run: |
           echo "Starting EAS build..."
+          echo "EAS version:"
+          eas --version
+
+          echo "Checking EAS auth:"
+          eas whoami || true
+
           BUILD_OUTPUT=$(eas build -p android --profile production --non-interactive --json 2>&1)
+
+          echo "Full EAS output:"
+          echo "$BUILD_OUTPUT"
 
           # Extract build ID from output
           BUILD_ID=$(echo "$BUILD_OUTPUT" | jq -r '.id // empty' || echo "")
