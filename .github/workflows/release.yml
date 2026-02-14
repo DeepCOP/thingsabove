@@ -31,9 +31,6 @@ jobs:
         with:
           version: 8
 
-      - name: Install dependencies
-        run: pnpm install
-
       - name: Validate version format
         run: |
           VERSION="${{ github.event.inputs.version }}"
@@ -102,16 +99,14 @@ jobs:
             });
             return release.data.id;
 
-      - name: Setup EAS CLI
-        run: pnpm add -g eas-cli
+      - name: Setup Expo and EAS
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
 
-      - name: Authenticate with EAS
-        env:
-          EAS_TOKEN: ${{ secrets.EAS_TOKEN }}
-        run: |
-          echo "Authenticating with EAS..."
-          eas login --non-interactive --token "$EAS_TOKEN"
-          eas whoami
+      - name: Install dependencies
+        run: pnpm install
 
       - name: Build APK with EAS
         id: build
@@ -125,7 +120,7 @@ jobs:
           echo "Checking EAS auth:"
           eas whoami || true
 
-          BUILD_OUTPUT=$(eas build -p android --profile development --non-interactive --json 2>&1)
+          BUILD_OUTPUT=$(eas build -p android --profile development --non-interactive --no-wait --json 2>&1)
 
           echo "Full EAS output:"
           echo "$BUILD_OUTPUT"
