@@ -2,7 +2,7 @@ export default ({ config }) => ({
   expo: {
     name: 'thingsabove',
     slug: 'thingsabove',
-    version: '0.1.0-beta.5',
+    version: '0.1.0-beta.6',
     orientation: 'portrait',
     icon: './assets/images/icon.png',
     scheme: 'thingsabove',
