@@ -26,6 +26,14 @@ jobs:
         with:
           node-version: '18'
 
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - name: Install dependencies
+        run: pnpm install
+
       - name: Validate version format
         run: |
           VERSION="${{ github.event.inputs.version }}"
@@ -95,7 +103,7 @@ jobs:
             return release.data.id;
 
       - name: Setup EAS CLI
-        run: npm install -g eas-cli
+        run: pnpm add -g eas-cli
 
       - name: Authenticate with EAS
         env:
