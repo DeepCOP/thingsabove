@@ -118,7 +118,7 @@ jobs:
       - name: Build APK with EAS
         id: build
         env:
-          EAS_TOKEN: ${{ secrets.EAS_TOKEN }}
+          EAS_TOKEN: ${{ secrets.EXPO_TOKEN }}
         run: |
           echo "Starting EAS build..."
           BUILD_OUTPUT=$(eas build -p android --profile production --non-interactive --json 2>&1)
@@ -138,7 +138,7 @@ jobs:
       - name: Poll for build completion
         id: poll
         env:
-          EAS_TOKEN: ${{ secrets.EAS_TOKEN }}
+          EAS_TOKEN: ${{ secrets.EXPO_TOKEN }}
         run: |
           BUILD_ID="${{ steps.build.outputs.BUILD_ID }}"
           MAX_WAIT=3600  # 60 minutes in seconds
