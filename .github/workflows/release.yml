@@ -94,9 +94,6 @@ jobs:
             });
             return release.data.id;
 
-      - name: Install dependencies
-        run: pnpm install
-
       - name: Setup EAS CLI
         run: npm install -g eas-cli
 
