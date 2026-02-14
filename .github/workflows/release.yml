@@ -42,29 +42,14 @@ jobs:
           echo "Updating package.json to version $VERSION"
           npm version $VERSION --no-git-tag-version
 
-      - name: Update app.json
+      - name: Update app.config.js
         run: |
           VERSION="${{ github.event.inputs.version }}"
-          echo "Updating app.json to version $VERSION"
+          echo "Updating app.config.js to version $VERSION"
 
-          # Update version field
-          node -e "
-            const fs = require('fs');
-            const path = './app.json';
-            const content = JSON.parse(fs.readFileSync(path, 'utf8'));
-            content.expo.version = '$VERSION';
-            
-            // Also update buildNumber if it exists
-            if (content.expo.ios) {
-              content.expo.ios.buildNumber = '$VERSION';
-            }
-            if (content.expo.android) {
-              content.expo.android.versionCode = parseInt('$VERSION'.replace(/\./g, ''));
-            }
-            
-            fs.writeFileSync(path, JSON.stringify(content, null, 2) + '\n');
-            console.log('✅ app.json updated');
-          "
+          # Update version in app.config.js
+          sed -i "s/version: '[^']*'/version: '$VERSION'/" app.config.js
+          echo "✅ app.config.js updated"
 
       - name: Configure git
         run: |
