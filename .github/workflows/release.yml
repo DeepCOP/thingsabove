@@ -117,7 +117,7 @@ jobs:
           echo "Checking EAS auth:"
           eas whoami || true
 
-          BUILD_OUTPUT=$(eas build -p android --profile production --non-interactive --json 2>&1)
+          BUILD_OUTPUT=$(eas build -p android --profile development --non-interactive --json 2>&1)
 
           echo "Full EAS output:"
           echo "$BUILD_OUTPUT"
