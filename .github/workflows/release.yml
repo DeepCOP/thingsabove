@@ -26,11 +26,6 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Install pnpm
-        uses: pnpm/action-setup@v2
-        with:
-          version: 8
-
       - name: Validate version format
         run: |
           VERSION="${{ github.event.inputs.version }}"
@@ -104,9 +99,6 @@ jobs:
         with:
           eas-version: latest
           token: ${{ secrets.EXPO_TOKEN }}
-
-      - name: Install dependencies
-        run: pnpm install
 
       - name: Build APK with EAS
         id: build
