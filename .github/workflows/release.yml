@@ -25,6 +25,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
+          cache: 'pnpm'
 
       - name: Install pnpm
         uses: pnpm/action-setup@v2
@@ -110,8 +111,6 @@ jobs:
 
       - name: Build APK with EAS
         id: build
-        env:
-          EAS_TOKEN: ${{ secrets.EAS_TOKEN }}
         run: |
           echo "Starting EAS build..."
           echo "EAS version:"
@@ -120,13 +119,13 @@ jobs:
           echo "Checking EAS auth:"
           eas whoami || true
 
-          BUILD_OUTPUT=$(eas build -p android --profile development --non-interactive --no-wait --json 2>&1)
+          BUILD_OUTPUT=$(eas build -p android --profile development --non-interactive --json 2>&1)
 
           echo "Full EAS output:"
           echo "$BUILD_OUTPUT"
 
           # Extract build ID from output
-          BUILD_ID=$(echo "$BUILD_OUTPUT" | jq -r '.id // empty' || echo "")
+          BUILD_ID=$(echo "$BUILD_OUTPUT" | jq -r '.[0].id // .id // empty' || echo "")
 
           if [ -z "$BUILD_ID" ]; then
             echo "Failed to extract build ID"
