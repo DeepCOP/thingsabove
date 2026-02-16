@@ -1,225 +1,71 @@
-name: Release & Build
+name: EAS Build and Upload Android Release Asset
 
 on:
-  workflow_dispatch:
-    inputs:
-      version:
-        description: 'Version number (e.g., 1.0.0)'
-        required: true
-        type: string
-
-permissions:
-  contents: write
-  pull-requests: write
+  push:
+    tags:
+      - 'v*'
 
 jobs:
-  release-and-build:
+  build_android_release:
     runs-on: ubuntu-latest
+    env:
+      EAS_PROFILE: preview
+
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+      - name: 🏗️ Checkout repo
+        uses: actions/checkout@v3
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: 🏗️ Setup EAS
+        uses: expo/expo-github-action@v8
         with:
-          node-version: '18'
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
 
-      - name: Validate version format
+      - name: 📦 Build Android (APK)
         run: |
-          VERSION="${{ github.event.inputs.version }}"
-          if ! [[ $VERSION =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-            echo "❌ Invalid version format: $VERSION"
-            echo "Expected format: X.Y.Z (e.g., 1.0.0)"
+          eas build --platform android --profile $EAS_PROFILE --non-interactive --wait --json > android-build.json
+
+      - name: ⬇️ Download Android artifact
+        run: |
+          node - <<'NODE'
+          const fs = require('fs');
+          const data = JSON.parse(fs.readFileSync('android-build.json', 'utf8'));
+          const build = Array.isArray(data) ? data[0] : data;
+          const url =
+            build?.artifacts?.applicationArchiveUrl ||
+            build?.artifacts?.buildUrl ||
+            build?.artifacts?.downloadUrl ||
+            build?.buildUrl;
+          if (!url) {
+            console.error('No artifact URL found in android-build.json');
+            process.exit(1);
+          }
+          fs.writeFileSync('android-build-url.txt', url);
+          NODE
+          mkdir -p build
+          curl -L "$(cat android-build-url.txt)" -o build/app-android.apk
+
+      - name: 🔍 Verify APK exists
+        run: |
+          if [ ! -f build/app-android.apk ]; then
+            echo "❌ APK not found"
             exit 1
           fi
-          echo "✅ Version format valid: $VERSION"
+          echo "✅ APK ready"
 
-      - name: Update package.json
-        run: |
-          VERSION="${{ github.event.inputs.version }}"
-          echo "Updating package.json to version $VERSION"
-          npm version $VERSION --no-git-tag-version
-
-      - name: Update app.json
-        run: |
-          VERSION="${{ github.event.inputs.version }}"
-          echo "Updating app.json to version $VERSION"
-
-          # Update version field
-          node -e "
-            const fs = require('fs');
-            const path = './app.json';
-            const content = JSON.parse(fs.readFileSync(path, 'utf8'));
-            content.expo.version = '$VERSION';
-            
-            // Also update buildNumber if it exists
-            if (content.expo.ios) {
-              content.expo.ios.buildNumber = '$VERSION';
-            }
-            if (content.expo.android) {
-              content.expo.android.versionCode = parseInt('$VERSION'.replace(/\./g, ''));
-            }
-            
-            fs.writeFileSync(path, JSON.stringify(content, null, 2) + '\n');
-            console.log('✅ app.json updated');
-          "
-
-      - name: Configure git
-        run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-
-      - name: Commit version changes
-        id: commit
-        run: |
-          VERSION="${{ github.event.inputs.version }}"
-          git add package.json app.json
-          git commit -m "chore: bump version to $VERSION"
-          COMMIT_SHA=$(git rev-parse HEAD)
-          echo "COMMIT_SHA=$COMMIT_SHA" >> $GITHUB_OUTPUT
-          echo "✅ Changes committed"
-
-      - name: Create and push tag
-        id: tag
-        run: |
-          VERSION="${{ github.event.inputs.version }}"
-          TAG="v$VERSION"
-          git tag $TAG
-          git push origin $TAG
-          git push origin HEAD
-          echo "TAG=$TAG" >> $GITHUB_OUTPUT
-          echo "✅ Tag created and pushed: $TAG"
-
-      - name: Create GitHub Release
-        id: create_release
-        uses: actions/github-script@v7
+      - name: 🚀 Upload to GitHub Release
+        uses: softprops/action-gh-release@v2
         with:
-          script: |
-            const version = '${{ github.event.inputs.version }}';
-            const release = await github.rest.repos.createRelease({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              tag_name: `v${version}`,
-              name: `Release v${version}`,
-              draft: false,
-              prerelease: false,
-              body: `## Version ${version}\n\n🚀 APK build in progress...\n\nChecking build status:`
-            });
-            return release.data.id;
+          tag_name: ${{ github.ref_name }}
+          name: Release ${{ github.ref_name }}
+          body: |
+            🚀 Android Production Build
 
-      - name: Install dependencies
-        run: pnpm install
+            Version: ${{ github.ref_name }}
+            Profile: ${{ env.EAS_PROFILE }}
 
-      - name: Setup EAS CLI
-        run: npm install -g eas-cli
-
-      - name: Build APK with EAS
-        id: build
-        env:
-          EAS_TOKEN: ${{ secrets.EXPO_TOKEN }}
-        run: |
-          echo "Starting EAS build..."
-          BUILD_OUTPUT=$(eas build -p android --profile production --non-interactive --json 2>&1)
-
-          # Extract build ID from output
-          BUILD_ID=$(echo "$BUILD_OUTPUT" | jq -r '.id // empty' || echo "")
-
-          if [ -z "$BUILD_ID" ]; then
-            echo "Failed to extract build ID"
-            echo "Build output: $BUILD_OUTPUT"
-            exit 1
-          fi
-
-          echo "Build ID: $BUILD_ID"
-          echo "BUILD_ID=$BUILD_ID" >> $GITHUB_OUTPUT
-
-      - name: Poll for build completion
-        id: poll
-        env:
-          EAS_TOKEN: ${{ secrets.EXPO_TOKEN }}
-        run: |
-          BUILD_ID="${{ steps.build.outputs.BUILD_ID }}"
-          MAX_WAIT=3600  # 60 minutes in seconds
-          ELAPSED=0
-          POLL_INTERVAL=30  # Check every 30 seconds
-
-          echo "Waiting for build $BUILD_ID to complete..."
-
-          while [ $ELAPSED -lt $MAX_WAIT ]; do
-            BUILD_INFO=$(eas build:view $BUILD_ID --json)
-            STATUS=$(echo "$BUILD_INFO" | jq -r '.status')
-            
-            PERCENTAGE=$(echo "$BUILD_INFO" | jq -r '.progress // 0')
-            echo "Build status: $STATUS (waited ${ELAPSED}s) - Progress: $PERCENTAGE%"
-            
-            case "$STATUS" in
-              FINISHED)
-                echo "✅ Build completed successfully"
-                echo "$BUILD_INFO" | jq . > build-info.json
-                echo "BUILD_INFO_JSON=true" >> $GITHUB_OUTPUT
-                exit 0
-                ;;
-              ERRORED)
-                echo "❌ Build failed"
-                echo "$BUILD_INFO" | jq .
-                exit 1
-                ;;
-              CANCELED)
-                echo "⚠️ Build was canceled"
-                exit 1
-                ;;
-            esac
-            
-            sleep $POLL_INTERVAL
-            ELAPSED=$((ELAPSED + POLL_INTERVAL))
-          done
-
-          echo "❌ Build timeout after 60 minutes"
-          exit 1
-
-      - name: Extract APK download URL
-        id: download
-        run: |
-          BUILD_INFO=$(cat build-info.json)
-          APK_URL=$(echo "$BUILD_INFO" | jq -r '.artifacts.buildUrl // empty')
-
-          if [ -z "$APK_URL" ]; then
-            echo "❌ No APK download URL found in build artifacts"
-            echo "$BUILD_INFO" | jq .
-            exit 1
-          fi
-
-          echo "APK URL: $APK_URL"
-          echo "APK_URL=$APK_URL" >> $GITHUB_OUTPUT
-
-      - name: Download APK
-        run: |
-          echo "Downloading APK from: ${{ steps.download.outputs.APK_URL }}"
-          curl -L -o app-release.apk "${{ steps.download.outputs.APK_URL }}"
-
-          if [ ! -f app-release.apk ]; then
-            echo "❌ Failed to download APK"
-            exit 1
-          fi
-
-          APK_SIZE=$(du -h app-release.apk | cut -f1)
-          echo "✅ APK downloaded successfully (Size: $APK_SIZE)"
-          ls -lh app-release.apk
-
-      - name: Upload APK to Release
-        uses: softprops/action-gh-release@v1
-        with:
-          files: app-release.apk
-          tag_name: v${{ github.event.inputs.version }}
-          fail_on_unmatched_files: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Success notification
-        run: |
-          echo "✅ Release v${{ github.event.inputs.version }} completed successfully!"
-          echo "📦 APK uploaded to GitHub release"
-          echo "🏷️  Tag: v${{ github.event.inputs.version }}"
-          echo "🔗 Build ID: ${{ steps.build.outputs.BUILD_ID }}"
+            Built via EAS Cloud.
+          draft: false
+          prerelease: false
+          files: |
+            build/app-android.apk
