@@ -20,6 +20,14 @@ jobs:
         with:
           node-version: '20'
 
+      - name: 🏗️ Setup PNPM
+        uses: pnpm/action-setup@v2
+        with:
+          version: 10
+
+      - name: 📦 Install dependencies
+        run: pnpm install --frozen-lockfile
+
       - name: 🏗️ Setup EAS
         uses: expo/expo-github-action@v8
         with:
@@ -36,7 +44,7 @@ jobs:
       - name: 📦 Build Android (APK)
         run: |
           eas build --platform android --profile $EAS_PROFILE --non-interactive --wait --json > android-build.json
-
+          
       - name: ⬇️ Download Android artifact
         run: |
           ANDROID_BUILD_ID=$(node -e "const fs=require('fs'); const data=JSON.parse(fs.readFileSync('android-build.json','utf8')); const build=Array.isArray(data)?data[0]:data; process.stdout.write(build.id);")
