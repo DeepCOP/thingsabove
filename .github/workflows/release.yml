@@ -9,7 +9,7 @@ jobs:
   build_android_release:
     runs-on: ubuntu-latest
     env:
-      EAS_PROFILE: production
+      EAS_PROFILE: preview
 
     steps:
       - name: 🏗️ Checkout repo
@@ -44,7 +44,7 @@ jobs:
       - name: 📦 Build Android (APK)
         run: |
           eas build --platform android --profile $EAS_PROFILE --non-interactive --wait --json > android-build.json
-          
+
       - name: ⬇️ Download Android artifact
         run: |
           node - <<'NODE'
