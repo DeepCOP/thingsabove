@@ -33,9 +33,15 @@ jobs:
       - name: Run Prettier
         run: pnpm run prettier-check
 
+      - name: 🏗 Setup EAS
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
       - name: 🔍 TypeScript check
         run: pnpm run typecheck
 
       - name: 🚦 Check Metro bundler
         run: |
-          pnpm expo prebuild --clean
+          pnpm expo export --platform android --dev
