@@ -47,9 +47,23 @@ jobs:
           
       - name: ⬇️ Download Android artifact
         run: |
-          ANDROID_BUILD_ID=$(node -e "const fs=require('fs'); const data=JSON.parse(fs.readFileSync('android-build.json','utf8')); const build=Array.isArray(data)?data[0]:data; process.stdout.write(build.id);")
+          node - <<'NODE'
+          const fs = require('fs');
+          const data = JSON.parse(fs.readFileSync('android-build.json', 'utf8'));
+          const build = Array.isArray(data) ? data[0] : data;
+          const url =
+            build?.artifacts?.applicationArchiveUrl ||
+            build?.artifacts?.buildUrl ||
+            build?.artifacts?.downloadUrl ||
+            build?.buildUrl;
+          if (!url) {
+            console.error('No artifact URL found in android-build.json');
+            process.exit(1);
+          }
+          fs.writeFileSync('android-build-url.txt', url);
+          NODE
           mkdir -p build
-          eas build:download --id "$ANDROID_BUILD_ID" --output build/app-android.apk
+          curl -L "$(cat android-build-url.txt)" -o build/app-android.apk
 
       - name: 🔍 Verify APK exists
         run: |
