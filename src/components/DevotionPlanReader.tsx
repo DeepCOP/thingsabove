@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import { useAppStore } from '@/src/state/useAppStore';
 import { Ionicons } from '@expo/vector-icons';
 import * as Clipboard from 'expo-clipboard';
@@ -486,9 +485,7 @@ export default function DevotionalPlanReader({
                 <TouchableOpacity
                   className="py-3 flex items-center justify-center"
                   onPress={async () => {
-                    await Clipboard.setStringAsync(
-                      formatVerseText(),
-                    );
+                    await Clipboard.setStringAsync(formatVerseText());
                     setShowMenu(false);
                   }}>
                   <Ionicons
@@ -501,7 +498,7 @@ export default function DevotionalPlanReader({
 
                 <TouchableOpacity
                   className="py-3 flex items-center justify-center"
-                onPress={async () => {
+                  onPress={async () => {
                     const content = formatVerseText();
                     await Share.share({ message: content });
 
