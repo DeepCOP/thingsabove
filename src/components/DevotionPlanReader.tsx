@@ -133,7 +133,7 @@ export default function DevotionalPlanReader({
     const body = selected.map((v) => `[${v.number}] ${v.text}`).join('\n');
 
     // Official Bible.com link
-    const link = `${process.env.EXPO_PUBLIC_BASE_URL}/bible/12/${selectedBook.name
+    const link = `${process.env.EXPO_PUBLIC_BASE_URL} ${selectedBook.name
       .toLowerCase()
       .slice(0, 3)}.${selectedBook.chapter}.${range}.${version}`;
 
@@ -365,12 +365,22 @@ export default function DevotionalPlanReader({
                       });
                     }}
                     onLongPress={() => {
-                      setSelectedBook({
-                        name: selectedBook.name,
-                        chapter: selectedBook.chapter,
-                        verseStart: verseNumber,
-                        verseEnd: verseNumber,
-                      });
+                      const start = selectedBook.verseStart;
+                      const end = selectedBook.verseEnd ?? selectedBook.verseStart;
+                      const hasRange = start != null && end != null && end !== start;
+                      const inRange =
+                        start != null && end != null
+                          ? verseNumber >= start && verseNumber <= end
+                          : verseNumber === start;
+
+                      if (!hasRange || !inRange) {
+                        setSelectedBook({
+                          name: selectedBook.name,
+                          chapter: selectedBook.chapter,
+                          verseStart: verseNumber,
+                          verseEnd: verseNumber,
+                        });
+                      }
                       setShowMenu(true);
                     }}
                     className={`flex-row items-start rounded-md px-1 ${
