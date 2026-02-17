@@ -83,6 +83,33 @@ eas build -p ios --profile development
 pnpm start
 ```
 
+## EAS Environment Variables (per build profile)
+
+Set these in EAS for each environment you build (e.g. development, preview, production). You can do this in the Expo dashboard or via CLI.
+
+Required app variables:
+```
+EXPO_PUBLIC_WEB_INTERFACE_URL
+EXPO_PUBLIC_BASE_URL
+EXPO_PUBLIC_SUPABASE_PROJECT_URL
+EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY
+```
+
+Required file variable:
+```
+GOOGLE_SERVICES_JSON
+```
+Set `GOOGLE_SERVICES_JSON` to the **contents** of `google-services.json` (raw JSON or base64). This is required because `google-services.json` is not checked into git and EAS Build only uploads tracked files.
+
+Example (CLI):
+```
+eas env:create --environment production --name EXPO_PUBLIC_WEB_INTERFACE_URL --value https://your-web-ui
+eas env:create --environment production --name EXPO_PUBLIC_BASE_URL --value https://your-api
+eas env:create --environment production --name EXPO_PUBLIC_SUPABASE_PROJECT_URL --value https://YOUR_PROJECT_ID.supabase.co
+eas env:create --environment production --name EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY --value YOUR_KEY
+eas env:create --environment production  --name GOOGLE_SERVICES_JSON --type file --value ./google-services.json 
+```
+
 ## EAS Build (Production)
 
 1. Build release binaries:
