@@ -26,6 +26,9 @@ export function usePlanProgress(progress_id: string, user_id: string | undefined
       queryClient.invalidateQueries({
         queryKey: ['plan_progress', progress_id, user_id],
       });
+      queryClient.invalidateQueries({
+        queryKey: ['user_plans_progressess'],
+      });
     },
   });
 

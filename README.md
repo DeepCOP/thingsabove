@@ -57,8 +57,8 @@ Follow the Expo prompts to run on a device or simulator. Push notifications requ
 
 ## Push Notifications Setup
 
-1. Ensure Expo Notifications is configured in `app.json` (the `expo-notifications` plugin and a valid `extra.eas.projectId` are required).
-2. For Android, add your Firebase `google-services.json` to the project root and keep the path set in `app.json`.
+1. Ensure Expo Notifications is configured in `app.config.js` (the `expo-notifications` plugin and a valid `extra.eas.projectId` are required).
+2. For Android, add your Firebase `google-services.json` to the project root and keep the path set in `app.config.js`.
 3. Run the app on a physical device and grant notification permissions when prompted.
 4. The app registers for push tokens in `src/hooks/usePushNotifications.tsx`; verify that the token logs in the console and can be sent via Expo.
 
