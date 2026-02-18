@@ -62,7 +62,7 @@ export function useDayItemsProgress({ user_id, plan_id, progress_id, day_id, gro
         queryKey: ['plan_progress', progress_id, user_id],
       });
       queryClient.invalidateQueries({
-        queryKey: ['user_plans_progressess', user_id],
+        queryKey: ['user_plans_progresses', user_id],
       });
     },
     onError: (error) => {
@@ -83,7 +83,7 @@ export function useDayItemsProgress({ user_id, plan_id, progress_id, day_id, gro
         queryKey: ['plan_progress', progress_id, user_id],
       });
       queryClient.invalidateQueries({
-        queryKey: ['user_plans_progressess', user_id],
+        queryKey: ['user_plans_progresses', user_id],
       });
     },
     onError: (error) => {

@@ -19,7 +19,7 @@ export function useCreatePlanGroup() {
       queryClient.invalidateQueries({ queryKey: ['plan_groups'] });
       queryClient.invalidateQueries({ queryKey: ['plan_progress'] });
       queryClient.invalidateQueries({ queryKey: ['plan-group', groupId] });
-      queryClient.invalidateQueries({ queryKey: ['user_plans_progressess', user_id] });
+      queryClient.invalidateQueries({ queryKey: ['user_plans_progresses', user_id] });
       return groupId;
     },
     onError: (error) => {
