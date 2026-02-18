@@ -7,47 +7,60 @@ type Props = {
   onPressItem: (item: any) => void;
   onToggle: (item: any) => void;
   toggleLoading: boolean;
+  toggleLoadingItemId?: string | null;
 };
 
-export function DayItemsList({ items, onPressItem, onToggle, toggleLoading }: Props) {
+export function DayItemsList({
+  items,
+  onPressItem,
+  onToggle,
+  toggleLoading,
+  toggleLoadingItemId,
+}: Props) {
   const colorScheme = useColorScheme();
   return (
     <View className="mt-4 space-y-6 px-4">
-      {items.map((item) => (
-        <TouchableOpacity
-          key={item.id}
-          className="flex-row items-center justify-between"
-          onPress={() => onPressItem(item)}>
-          <View className="flex-row items-center gap-3">
-            {toggleLoading ? (
-              <ActivityIndicator size="small" color={colorScheme === 'dark' ? 'white' : 'black'} />
-            ) : (
-              <TouchableOpacity
-                disabled={toggleLoading}
-                onPress={() => onToggle(item)}
-                className={`rounded-full p-1 border mr-3 ${
-                  item?.completed ? 'bg-black dark:bg-white' : 'border-gray-500'
-                }`}>
-                <Ionicons
-                  name="checkmark"
-                  size={12}
-                  color={colorScheme === 'dark' ? 'black' : 'white'}
+      {items.map((item) => {
+        const isItemLoading = toggleLoading && toggleLoadingItemId === item.id;
+        return (
+          <TouchableOpacity
+            key={item.id}
+            className="flex-row items-center justify-between"
+            onPress={() => onPressItem(item)}>
+            <View className="flex-row items-center gap-3">
+              {isItemLoading ? (
+                <ActivityIndicator
+                  size="small"
+                  color={colorScheme === 'dark' ? 'white' : 'black'}
                 />
-              </TouchableOpacity>
-            )}
+              ) : (
+                <TouchableOpacity
+                  disabled={toggleLoading}
+                  onPress={() => onToggle(item)}
+                  className={`rounded-full p-1 border mr-3 ${
+                    item?.completed ? 'bg-black dark:bg-white' : 'border-gray-500'
+                  }`}>
+                  <Ionicons
+                    name="checkmark"
+                    size={12}
+                    color={colorScheme === 'dark' ? 'black' : 'white'}
+                  />
+                </TouchableOpacity>
+              )}
 
-            <Text className="text-lg dark:text-white">
-              {item?.item_type === 'devotional' ? 'Devotional' : item?.item_key || 'Scripture'}
-            </Text>
-          </View>
+              <Text className="text-lg dark:text-white">
+                {item?.item_type === 'devotional' ? 'Devotional' : item?.item_key || 'Scripture'}
+              </Text>
+            </View>
 
-          <Ionicons
-            name="chevron-forward"
-            size={22}
-            color={colorScheme === 'dark' ? '#fff' : '#000'}
-          />
-        </TouchableOpacity>
-      ))}
+            <Ionicons
+              name="chevron-forward"
+              size={22}
+              color={colorScheme === 'dark' ? '#fff' : '#000'}
+            />
+          </TouchableOpacity>
+        );
+      })}
     </View>
   );
 }

@@ -60,14 +60,6 @@ export default function NotificationSettingsScreen() {
           </TouchableOpacity>
         ))}
       </View>
-
-      {/* FUTURE TOPICS */}
-      <View className="mt-8 opacity-40">
-        <Text className="font-semibold dark:text-white">More coming soon</Text>
-        <Text className="text-xs text-gray-500 mt-1">
-          Comments • Group activity • Streak reminders
-        </Text>
-      </View>
     </View>
   );
 }

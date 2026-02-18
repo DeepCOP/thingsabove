@@ -1,12 +1,11 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import { useAppStore } from '@/src/state/useAppStore';
 import { Ionicons } from '@expo/vector-icons';
 import * as Clipboard from 'expo-clipboard';
 import { useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 
-import { useFetchDevotionalPlanById } from '@/src/hooks/useDevotionalPlans';
 import PlanCoverImage from '@/src/components/PlanCoverImage';
+import { useFetchDevotionalPlanById } from '@/src/hooks/useDevotionalPlans';
 import { UseMutationResult } from '@tanstack/react-query';
 import {
   Animated,
@@ -54,13 +53,6 @@ export default function DevotionalPlanReader({
   const colorScheme = useColorScheme();
   const { width } = useWindowDimensions();
   const { data: plan } = useFetchDevotionalPlanById(item?.plan_id!);
-  const [selectedVerse, setSelectedVerse] = useState<
-    {
-      number: string;
-      text: string;
-    }[]
-  >([]);
-
   const [showMenu, setShowMenu] = useState(false);
 
   const selectedBook = useAppStore((s) => s.selectedBook);
@@ -81,76 +73,78 @@ export default function DevotionalPlanReader({
     if (!scrollRef.current) return;
     if (didScrollRef.current) return;
 
-    const y = versePositions.current[selectedBook.verseStart];
-    if (y != null) {
-      didScrollRef.current = true;
-
-      // wait for layout pass
-      setTimeout(() => {
+    let cancelled = false;
+    let attempts = 0;
+    const maxAttempts = 12;
+    const tryScroll = () => {
+      if (cancelled || didScrollRef.current) return;
+      const y = versePositions.current[selectedBook.verseStart!];
+      if (y != null) {
+        didScrollRef.current = true;
         scrollRef.current?.scrollTo({
           y: Math.max(y - 140, 0), // header offset
           animated: true,
         });
-      }, 50);
-    }
-  }, [selectedBook.verseStart, versePositions.current]);
+        return;
+      }
+      if (attempts < maxAttempts) {
+        attempts += 1;
+        setTimeout(tryScroll, 50);
+      }
+    };
+
+    // wait for layout pass
+    setTimeout(tryScroll, 50);
+
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedBook.name, selectedBook.chapter, selectedBook.verseStart]);
   useEffect(() => {
     didScrollRef.current = false;
     versePositions.current = {};
   }, [selectedBook.name, selectedBook.chapter]);
 
-  const formatVerseText = (verses: { number: string; text: string }[]) => {
-    if (verses.length === 0) return '';
+  const getSelectedRange = () => {
+    if (!selectedBook?.verseStart) return '';
+    const start = Number(selectedBook.verseStart);
+    const end = Number(selectedBook.verseEnd ?? selectedBook.verseStart);
+    return start === end ? `${start}` : `${start}-${end}`;
+  };
 
-    const { header, ranges, sorted } = formatSelectedVerseTitle();
+  const getSelectedVerses = () => {
+    if (!selectedBook?.verseStart) return [];
+    const start = Number(selectedBook.verseStart);
+    const end = Number(selectedBook.verseEnd ?? selectedBook.verseStart);
+    return (
+      verses?.filter(({ verse }) => {
+        const num = Number(verse);
+        return num >= start && num <= end;
+      }) ?? []
+    ).map(({ verse, text }) => ({ number: `${verse}`, text: text as string }));
+  };
 
-    // Each verse on its own line
-    let body = '';
-    for (let v of ranges) {
-      const range = v.split('-');
+  const formatVerseText = () => {
+    const selected = getSelectedVerses();
+    if (selected.length === 0) return '';
 
-      for (let i = Number(range[0]); i <= Number(range[range.length - 1]); i++) {
-        const verse = sorted.find((v) => v.number === i.toString());
-        if (!verse) continue;
-        body += `[${verse.number}] ${verse.text}`;
-      }
-      body += '\n';
-    }
+    const range = getSelectedRange();
+    const header = `${selectedBook.name} ${selectedBook.chapter}:${range} ${version}`;
+    const body = selected.map((v) => `[${v.number}] ${v.text}`).join('\n');
 
     // Official Bible.com link
-    const link = `${process.env.EXPO_PUBLIC_BASE_URL}/bible/12/${selectedBook.name
+    const link = `${process.env.EXPO_PUBLIC_BASE_URL} ${selectedBook.name
       .toLowerCase()
-      .slice(0, 3)}.${selectedBook.chapter}.${ranges.join(',')}.${version}`;
+      .slice(0, 3)}.${selectedBook.chapter}.${range}.${version}`;
 
     return `${header}\n${body}\n${link}`;
   };
 
   const formatSelectedVerseTitle = () => {
-    if (selectedVerse.length === 0) return { header: '', ranges: [], sorted: [] };
-
-    // Sort verses numerically
-    const sorted = [...selectedVerse].sort((a, b) => Number(a.number) - Number(b.number));
-
-    // Build verse range header (1-2, 10-12, 24)
-    const verseNumbers = sorted.map((v) => Number(v.number));
-    let ranges: string[] = [];
-    let start = verseNumbers[0];
-    let end = verseNumbers[0];
-
-    for (let i = 1; i < verseNumbers.length; i++) {
-      if (verseNumbers[i] === end + 1) {
-        end = verseNumbers[i];
-      } else {
-        ranges.push(start === end ? `${start}` : `${start}-${end}`);
-        start = end = verseNumbers[i];
-      }
-    }
-
-    // Push last range
-    ranges.push(start === end ? `${start}` : `${start}-${end}`);
-    // Construct header: "Luke 19:1-2,10-12,24 ASV"
-    const header = `${selectedBook.name} ${selectedBook.chapter}:${ranges.join(',')} ${version}`;
-    return { header, ranges, sorted };
+    const range = getSelectedRange();
+    if (!range) return { header: '', range: '' };
+    const header = `${selectedBook.name} ${selectedBook.chapter}:${range} ${version}`;
+    return { header, range };
   };
   const isVerseInRange = (verseNum: number) => {
     const { verseStart, verseEnd } = selectedBook;
@@ -371,6 +365,22 @@ export default function DevotionalPlanReader({
                       });
                     }}
                     onLongPress={() => {
+                      const start = selectedBook.verseStart;
+                      const end = selectedBook.verseEnd ?? selectedBook.verseStart;
+                      const hasRange = start != null && end != null && end !== start;
+                      const inRange =
+                        start != null && end != null
+                          ? verseNumber >= start && verseNumber <= end
+                          : verseNumber === start;
+
+                      if (!hasRange || !inRange) {
+                        setSelectedBook({
+                          name: selectedBook.name,
+                          chapter: selectedBook.chapter,
+                          verseStart: verseNumber,
+                          verseEnd: verseNumber,
+                        });
+                      }
                       setShowMenu(true);
                     }}
                     className={`flex-row items-start rounded-md px-1 ${
@@ -404,7 +414,6 @@ export default function DevotionalPlanReader({
               disabled={chapterNumber === 1}
               onPress={() => {
                 HandlePrevious();
-                setSelectedVerse([]);
               }}>
               <Ionicons
                 name="chevron-back"
@@ -437,7 +446,6 @@ export default function DevotionalPlanReader({
                     },
                     {
                       onSuccess: async () => {
-                        setSelectedVerse([]);
                         router.back();
                       },
                     },
@@ -457,7 +465,6 @@ export default function DevotionalPlanReader({
                     },
                     {
                       onSuccess: () => {
-                        setSelectedVerse([]);
                         HandleNext();
                       },
                     },
@@ -473,23 +480,22 @@ export default function DevotionalPlanReader({
           transparent
           animationType="fade"
           onRequestClose={() => {
-            setSelectedVerse([]);
             setShowMenu(false);
           }}
           className="absolute bottom-0 bg-white">
-          <View className="bg-transparent absolute bottom-0 left-0 right-0 justify-end">
+          <View
+            className="bg-transparent absolute bottom-0 left-0 right-0 justify-end"
+            style={{ paddingBottom: insets.bottom + 16 }}>
             <View className="bg-gray-100 dark:bg-neutral-900 p-6 rounded-t-2xl">
               <Text className="mb-4 text-lg font-bold dark:text-white">
-                {selectedVerse.length > 0 ? formatSelectedVerseTitle().header : ' '}
+                {formatSelectedVerseTitle().header || ' '}
               </Text>
 
               <View className="flex-row gap-2 items-center justify-start p-1">
                 <TouchableOpacity
                   className="py-3 flex items-center justify-center"
                   onPress={async () => {
-                    await Clipboard.setStringAsync(
-                      selectedVerse.length > 0 ? formatVerseText(selectedVerse) : '',
-                    );
+                    await Clipboard.setStringAsync(formatVerseText());
                     setShowMenu(false);
                   }}>
                   <Ionicons
@@ -503,7 +509,7 @@ export default function DevotionalPlanReader({
                 <TouchableOpacity
                   className="py-3 flex items-center justify-center"
                   onPress={async () => {
-                    const content = formatVerseText(selectedVerse);
+                    const content = formatVerseText();
                     await Share.share({ message: content });
 
                     setShowMenu(false);

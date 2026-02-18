@@ -2,6 +2,7 @@ import BottomSheet, { BottomSheetBackdrop, BottomSheetView } from '@gorhom/botto
 import { forwardRef } from 'react';
 import PlanCoverImage from '@/src/components/PlanCoverImage';
 import { Text, TouchableOpacity, View, useColorScheme } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 type Props = {
   plan: any;
@@ -10,6 +11,7 @@ type Props = {
 
 const StartPlanBottomSheet = forwardRef<BottomSheet, Props>(({ plan, onStartPress }, ref) => {
   const colorScheme = useColorScheme();
+  const insets = useSafeAreaInsets();
 
   return (
     <BottomSheet
@@ -29,7 +31,9 @@ const StartPlanBottomSheet = forwardRef<BottomSheet, Props>(({ plan, onStartPres
           appearsOnIndex={0}
         />
       )}>
-      <BottomSheetView className="flex-1 px-4 pt-4 items-center justify-center">
+      <BottomSheetView
+        className="flex-1 px-4 pt-4 items-center justify-center"
+        style={{ paddingBottom: insets.bottom + 16 }}>
         <PlanCoverImage uri={plan.cover_image} className="w-28 h-28 rounded-2xl mb-3" />
 
         <Text className="text-2xl text-center font-bold dark:text-white mb-4">

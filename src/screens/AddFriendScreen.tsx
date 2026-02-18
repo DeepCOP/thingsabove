@@ -9,8 +9,8 @@ type UserResult = {
   last_name: string;
   avatar_url?: string | null;
   friendship_status: string | null;
-  receiver_id: string;
-  requester_id: string;
+  receiver_id: string | null;
+  requester_id: string | null;
 };
 
 type Props = {
@@ -33,6 +33,7 @@ export default function AddFriendScreen({
   onAddFriend,
 }: Props) {
   const { session, loading: sessionLoading } = useAuth();
+  const currentUserId = session?.user?.id;
 
   if (sessionLoading) {
     return (
@@ -70,8 +71,20 @@ export default function AddFriendScreen({
           first_name={user.first_name}
           last_name={user.last_name}
           avatar_url={user.avatar_url}
-          mode={user.requester_id === session?.user?.id ? 'requester' : 'receiver'}
-          statusText={user.friendship_status ?? 'Not friends'}
+          mode={
+            !user.friendship_status
+              ? 'requester'
+              : user.friendship_status === 'pending' && user.receiver_id === currentUserId
+                ? 'receiver'
+                : 'friends'
+          }
+          statusText={
+            user.friendship_status === 'accepted'
+              ? 'Friends'
+              : user.friendship_status === 'pending'
+                ? 'Pending'
+                : 'Not friends'
+          }
           onAdd={onAddFriend}
           isAdding={isAdding}
         />

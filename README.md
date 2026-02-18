@@ -57,8 +57,8 @@ Follow the Expo prompts to run on a device or simulator. Push notifications requ
 
 ## Push Notifications Setup
 
-1. Ensure Expo Notifications is configured in `app.json` (the `expo-notifications` plugin and a valid `extra.eas.projectId` are required).
-2. For Android, add your Firebase `google-services.json` to the project root and keep the path set in `app.json`.
+1. Ensure Expo Notifications is configured in `app.config.js` (the `expo-notifications` plugin and a valid `extra.eas.projectId` are required).
+2. For Android, add your Firebase `google-services.json` to the project root and keep the path set in `app.config.js`.
 3. Run the app on a physical device and grant notification permissions when prompted.
 4. The app registers for push tokens in `src/hooks/usePushNotifications.tsx`; verify that the token logs in the console and can be sent via Expo.
 
@@ -81,6 +81,33 @@ eas build -p ios --profile development
 4. Install the build on a device and run with Expo:
 ```
 pnpm start
+```
+
+## EAS Environment Variables (per build profile)
+
+Set these in EAS for each environment you build (e.g. development, preview, production). You can do this in the Expo dashboard or via CLI.
+
+Required app variables:
+```
+EXPO_PUBLIC_WEB_INTERFACE_URL
+EXPO_PUBLIC_BASE_URL
+EXPO_PUBLIC_SUPABASE_PROJECT_URL
+EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY
+```
+
+Required file variable:
+```
+GOOGLE_SERVICES_JSON
+```
+Set `GOOGLE_SERVICES_JSON` to the **contents** of `google-services.json` (raw JSON or base64). This is required because `google-services.json` is not checked into git and EAS Build only uploads tracked files.
+
+Example (CLI):
+```
+eas env:create --environment production --name EXPO_PUBLIC_WEB_INTERFACE_URL --value https://your-web-ui
+eas env:create --environment production --name EXPO_PUBLIC_BASE_URL --value https://your-api
+eas env:create --environment production --name EXPO_PUBLIC_SUPABASE_PROJECT_URL --value https://YOUR_PROJECT_ID.supabase.co
+eas env:create --environment production --name EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY --value YOUR_KEY
+eas env:create --environment production  --name GOOGLE_SERVICES_JSON --type file --value ./google-services.json 
 ```
 
 ## EAS Build (Production)

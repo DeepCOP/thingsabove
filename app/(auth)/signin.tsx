@@ -43,10 +43,18 @@ export default function SignIn() {
             style={{ color: colorScheme === 'dark' ? '#F5F5F5' : '#424242' }}
             placeholderTextColor={colorScheme === 'dark' ? '#F5F5F5' : '#424242'}
           />
-          <Input label="Password" secureTextEntry value={password} onChangeText={setPassword} />
+          <Input
+            style={{ color: colorScheme === 'dark' ? '#F5F5F5' : '#424242' }}
+            label="Password"
+            secureTextEntry
+            value={password}
+            onChangeText={setPassword}
+          />
 
           <TouchableOpacity
-            className="bg-black dark:bg-white p-3 rounded-lg mt-4"
+            className={` p-3 rounded-lg mt-4 ${
+              isDisabled ? 'bg-gray-300 dark:bg-gray-700' : 'bg-black dark:bg-white'
+            }`}
             onPress={signIn}
             disabled={isDisabled}>
             <Text

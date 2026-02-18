@@ -77,6 +77,7 @@ export default function PlanProgress() {
   }, [dayItemsProgressQuery?.data]);
 
   const prevCompletedCount = useRef<number | null>(null);
+  const [pendingToggleItemId, setPendingToggleItemId] = useState<string | null>(null);
   const devotional = dayItemsProgress?.items.find((item) => item.item_type === 'devotional');
 
   useEffect(() => {
@@ -174,6 +175,7 @@ export default function PlanProgress() {
         items={dayItemsProgress?.items}
         itemsLoading={dayItemsProgressQuery.isLoading}
         toggleLoading={toggleMutation.isPending}
+        toggleLoadingItemId={pendingToggleItemId}
         planProgress={planProgress}
         onSelectDay={setSelectedDay}
         onComments={() => {}}
@@ -193,13 +195,19 @@ export default function PlanProgress() {
           })
         }
         onPressItem={handleItemPress}
-        onToggleItem={(item) =>
-          toggleMutation.mutate({
-            item_type: item.item_type as 'scripture' | 'devotional',
-            item_key: item.item_key as string,
-            completed: !item.completed,
-          })
-        }
+        onToggleItem={(item) => {
+          setPendingToggleItemId(item.id);
+          toggleMutation.mutate(
+            {
+              item_type: item.item_type as 'scripture' | 'devotional',
+              item_key: item.item_key as string,
+              completed: !item.completed,
+            },
+            {
+              onSettled: () => setPendingToggleItemId(null),
+            },
+          );
+        }}
         devotionalItem={devotional}
       />
     </>

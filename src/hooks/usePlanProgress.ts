@@ -26,6 +26,9 @@ export function usePlanProgress(progress_id: string, user_id: string | undefined
       queryClient.invalidateQueries({
         queryKey: ['plan_progress', progress_id, user_id],
       });
+      queryClient.invalidateQueries({
+        queryKey: ['user_plans_progresses'],
+      });
     },
   });
 
@@ -37,7 +40,7 @@ export function usePlanProgress(progress_id: string, user_id: string | undefined
 
 export const useUserPlanProgressList = (user_id: string | undefined) => {
   const userPlanProgressQuery = useQuery({
-    queryKey: ['user_plans_progressess', user_id],
+    queryKey: ['user_plans_progresses', user_id],
     enabled: !!user_id,
     queryFn: async () => fetchUserPlanProgressList({ user_id: user_id! }),
   });
