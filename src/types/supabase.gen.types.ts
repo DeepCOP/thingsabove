@@ -845,6 +845,113 @@ export type Database = {
           },
         ];
       };
+      scripture_note_helpful_votes: {
+        Row: {
+          created_at: string;
+          note_id: string;
+          user_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          note_id: string;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string;
+          note_id?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'scripture_note_helpful_votes_note_id_fkey';
+            columns: ['note_id'];
+            isOneToOne: false;
+            referencedRelation: 'scripture_notes';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'scripture_note_helpful_votes_user_id_fkey';
+            columns: ['user_id'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'scripture_note_helpful_votes_user_id_fkey';
+            columns: ['user_id'];
+            isOneToOne: false;
+            referencedRelation: 'user_behavior_snapshot';
+            referencedColumns: ['user_id'];
+          },
+        ];
+      };
+      scripture_notes: {
+        Row: {
+          book: string;
+          chapter: number | null;
+          content: string;
+          created_at: string;
+          id: string;
+          note_type: string;
+          parent_note_id: string | null;
+          scope_key: string;
+          updated_at: string;
+          user_id: string;
+          verse_end: number | null;
+          verse_start: number | null;
+        };
+        Insert: {
+          book: string;
+          chapter?: number | null;
+          content: string;
+          created_at?: string;
+          id?: string;
+          note_type: string;
+          parent_note_id?: string | null;
+          scope_key: string;
+          updated_at?: string;
+          user_id: string;
+          verse_end?: number | null;
+          verse_start?: number | null;
+        };
+        Update: {
+          book?: string;
+          chapter?: number | null;
+          content?: string;
+          created_at?: string;
+          id?: string;
+          note_type?: string;
+          parent_note_id?: string | null;
+          scope_key?: string;
+          updated_at?: string;
+          user_id?: string;
+          verse_end?: number | null;
+          verse_start?: number | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'scripture_notes_parent_note_id_fkey';
+            columns: ['parent_note_id'];
+            isOneToOne: false;
+            referencedRelation: 'scripture_notes';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'scripture_notes_user_id_fkey';
+            columns: ['user_id'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'scripture_notes_user_id_fkey';
+            columns: ['user_id'];
+            isOneToOne: false;
+            referencedRelation: 'user_behavior_snapshot';
+            referencedColumns: ['user_id'];
+          },
+        ];
+      };
       scripture_references: {
         Row: {
           created_at: string | null;
@@ -1003,6 +1110,32 @@ export type Database = {
         };
         Returns: undefined;
       };
+      add_scripture_note:
+        | {
+            Args: {
+              p_book: string;
+              p_chapter?: number;
+              p_content?: string;
+              p_note_type: string;
+              p_scope_key: string;
+              p_verse_end?: number;
+              p_verse_start?: number;
+            };
+            Returns: string;
+          }
+        | {
+            Args: {
+              p_book: string;
+              p_chapter?: number;
+              p_content?: string;
+              p_note_type: string;
+              p_parent_note_id?: string;
+              p_scope_key: string;
+              p_verse_end?: number;
+              p_verse_start?: number;
+            };
+            Returns: string;
+          };
       add_user_to_existing_plan_group: {
         Args: { p_friends_ids: string[]; p_group_id: string };
         Returns: undefined;
@@ -1150,6 +1283,28 @@ export type Database = {
           user_reaction: string;
         }[];
       };
+      get_scripture_notes: {
+        Args: { p_limit?: number; p_note_type: string; p_scope_key: string };
+        Returns: {
+          avatar_url: string;
+          book: string;
+          chapter: number;
+          content: string;
+          created_at: string;
+          first_name: string;
+          helpful_count: number;
+          id: string;
+          is_helpful: boolean;
+          last_name: string;
+          note_type: string;
+          parent_note_id: string;
+          scope_key: string;
+          updated_at: string;
+          user_id: string;
+          verse_end: number;
+          verse_start: number;
+        }[];
+      };
       get_user_by_email: {
         Args: { p_email: string };
         Returns: {
@@ -1253,6 +1408,13 @@ export type Database = {
       toggle_reaction: {
         Args: { p_plan_id: string; p_reaction_type: string };
         Returns: string;
+      };
+      toggle_scripture_note_helpful: {
+        Args: { p_note_id: string };
+        Returns: {
+          helpful_count: number;
+          is_helpful: boolean;
+        }[];
       };
       unread_notifications_count: { Args: never; Returns: number };
       update_profile: {

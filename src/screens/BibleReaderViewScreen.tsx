@@ -5,6 +5,7 @@ import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Animated, Modal, Share, Text, TouchableOpacity, useColorScheme, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import ScriptureNotesModal from '../components/ScriptureNotesModal';
 import { useBible } from '../state/BibleContext';
 
 export default function BibleReaderView({
@@ -22,6 +23,8 @@ export default function BibleReaderView({
       text: string;
     }[]
   >([]);
+  const [showScriptureNotes, setShowScriptureNotes] = useState(false);
+  const [notesVerse, setNotesVerse] = useState<{ number: number; text: string } | null>(null);
 
   const [showMenu, setShowMenu] = useState(false);
 
@@ -86,6 +89,11 @@ export default function BibleReaderView({
     const header = `${selectedBook.name} ${selectedBook.chapter}:${ranges.join(',')} ${version}`;
     return { header, ranges, sorted };
   };
+
+  const getPrimarySelectedVerse = () => {
+    if (selectedVerse.length === 0) return null;
+    return [...selectedVerse].sort((a, b) => a.number - b.number)[0];
+  };
   const chapters = bible.books.find((book) => book.name === selectedBook.name)?.chapters;
   const chapterCount = chapters?.length || 0;
 
@@ -118,13 +126,10 @@ export default function BibleReaderView({
             <View key={verse} className="mb-3">
               <TouchableOpacity
                 onPress={() => {
-                  if (!selectedVerse.some((item) => item.text === text)) {
+                  if (!selectedVerse.some((item) => item.number === verse)) {
                     setSelectedVerse((prev) => [{ number: verse, text: text as string }, ...prev]);
                   } else {
-                    setSelectedVerse((prev) => {
-                      const current = prev.filter((item) => item.number !== verse);
-                      return current;
-                    });
+                    setSelectedVerse((prev) => prev.filter((item) => item.number !== verse));
                   }
                 }}
                 onLongPress={() => {
@@ -134,7 +139,7 @@ export default function BibleReaderView({
                   setShowMenu(true);
                 }}
                 className={`flex-row items-start rounded-md px-1 ${
-                  selectedVerse.some((item) => item.text === text)
+                  selectedVerse.some((item) => item.number === verse)
                     ? 'bg-yellow-200 dark:bg-yellow-700'
                     : ''
                 }`}>
@@ -219,6 +224,19 @@ export default function BibleReaderView({
             </TouchableOpacity>
           </View>
         </Animated.View>
+        <ScriptureNotesModal
+          visible={showScriptureNotes}
+          onClose={() => {
+            setShowScriptureNotes(false);
+            setNotesVerse(null);
+            setSelectedVerse([]);
+          }}
+          verse={notesVerse}
+          book={selectedBook.name}
+          chapter={chapterNumber}
+          verseCount={verses?.length ?? 0}
+          version={version}
+        />
         <Modal
           visible={showMenu}
           transparent
@@ -236,6 +254,25 @@ export default function BibleReaderView({
 
               {/* COPY */}
               <View className="flex-row gap-2 items-center justify-start p-1">
+                <TouchableOpacity
+                  className="py-3 flex items-center justify-center"
+                  disabled={selectedVerse.length === 0}
+                  onPress={() => {
+                    const target = getPrimarySelectedVerse();
+                    if (!target) return;
+                    setSelectedVerse([target]);
+                    setNotesVerse(target);
+                    setShowMenu(false);
+                    setShowScriptureNotes(true);
+                  }}>
+                  <Ionicons
+                    name="chatbubble-ellipses-outline"
+                    size={22}
+                    color={colorScheme === 'dark' ? 'white' : 'black'}
+                  />
+                  <Text className="text-primary dark:text-gray-200 text-lg">Notes</Text>
+                </TouchableOpacity>
+
                 <TouchableOpacity
                   className="py-3 flex items-center justify-center"
                   onPress={async () => {
