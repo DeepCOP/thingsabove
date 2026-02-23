@@ -1284,7 +1284,12 @@ export type Database = {
         }[];
       };
       get_scripture_notes: {
-        Args: { p_limit?: number; p_note_type: string; p_scope_key: string };
+        Args: {
+          p_limit?: number;
+          p_note_type: string;
+          p_offset?: number;
+          p_scope_key: string;
+        };
         Returns: {
           avatar_url: string;
           book: string;
