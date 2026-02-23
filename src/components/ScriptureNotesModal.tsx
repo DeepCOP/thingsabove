@@ -208,7 +208,7 @@ export default function ScriptureNotesModal({
           <>
             <View className="mx-4 mt-3 p-4 rounded-2xl border border-gray-200 dark:border-neutral-800 bg-gray-50 dark:bg-neutral-900">
               <Text className="text-[17px] leading-7 text-primary dark:text-gray-100 italic">
-                "{verse.text}"
+                &quot;{verse.text}&quot;
               </Text>
               <Text className="text-right mt-2 text-sm text-gray-500 dark:text-gray-300">
                 {book} {chapter}:{verse.number} {version}
