@@ -243,6 +243,7 @@ export const signUpUser = async (
     email,
     password,
     options: {
+      emailRedirectTo: `${process.env.EXPO_PUBLIC_WEB_INTERFACE_URL || 'https://localhost:3000'}/auth/confirm`,
       data: {
         first_name: firstName,
         last_name: lastName,
