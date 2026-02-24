@@ -310,4 +310,4 @@ $$;
 
 
 alter publication supabase_realtime
-add table public.scripture_notes;;
+add table public.scripture_notes;

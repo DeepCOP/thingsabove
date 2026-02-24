@@ -8,17 +8,27 @@ export function useRealtimeNotifications(userId: string | undefined, onNew: () =
   useEffect(() => {
     if (!userId) return;
 
-    let channel: RealtimeChannel;
-    const getChannel = async () => {
-      channel = await notificationsRealTime(userId, onNew);
+    let cancelled = false;
+    let channel: RealtimeChannel | null = null;
+
+    const setup = async () => {
+      const ch = await notificationsRealTime(userId, onNew);
+
+      if (cancelled) {
+        supabase.removeChannel(ch);
+      } else {
+        channel = ch;
+      }
     };
 
-    getChannel();
+    setup();
 
     return () => {
+      cancelled = true;
+
       if (channel) {
         supabase.removeChannel(channel);
       }
     };
-  }, [userId]);
+  }, [userId, onNew]);
 }

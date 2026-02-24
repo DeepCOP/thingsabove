@@ -37,15 +37,15 @@ export const addScriptureNote = async ({
   content,
   parentNoteId,
 }: ScriptureNoteContext & { content: string; parentNoteId?: string | null }): Promise<string> => {
-  const { data, error } = await (supabase as any).rpc('add_scripture_note', {
+  const { data, error } = await supabase.rpc('add_scripture_note', {
     p_note_type: noteType,
     p_scope_key: scopeKey,
     p_book: book,
-    p_chapter: chapter,
-    p_verse_start: verseStart,
-    p_verse_end: verseEnd,
+    p_chapter: chapter ?? undefined,
+    p_verse_start: verseStart ?? undefined,
+    p_verse_end: verseEnd ?? undefined,
     p_content: content,
-    p_parent_note_id: parentNoteId ?? null,
+    p_parent_note_id: parentNoteId ?? undefined,
   });
 
   if (error) throw error;
@@ -55,7 +55,7 @@ export const addScriptureNote = async ({
 export const toggleScriptureNoteHelpful = async (
   noteId: string,
 ): Promise<{ is_helpful: boolean; helpful_count: number }> => {
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .rpc('toggle_scripture_note_helpful', { p_note_id: noteId })
     .single();
 

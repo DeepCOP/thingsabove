@@ -2,8 +2,18 @@ import { useAppStore } from '@/src/state/useAppStore';
 import { Ionicons } from '@expo/vector-icons';
 import * as Clipboard from 'expo-clipboard';
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
-import { Animated, Modal, Share, Text, TouchableOpacity, useColorScheme, View } from 'react-native';
+import { useMemo, useState } from 'react';
+import {
+  Animated,
+  Modal,
+  Pressable,
+  Share,
+  Text,
+  TouchableOpacity,
+  useColorScheme,
+  useWindowDimensions,
+  View,
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import ScriptureNotesModal from '../components/ScriptureNotesModal';
 import { useBible } from '../state/BibleContext';
@@ -27,9 +37,12 @@ export default function BibleReaderView({
   const [notesVerse, setNotesVerse] = useState<{ number: number; text: string } | null>(null);
 
   const [showMenu, setShowMenu] = useState(false);
+  const [menuAnchor, setMenuAnchor] = useState({ x: 0, y: 0 });
+  const [menuHeight, setMenuHeight] = useState(0);
 
   const selectedBook = useAppStore((s) => s.selectedBook);
   const setSelectedBook = useAppStore((s) => s.setSelectedBook);
+  const { width: screenWidth, height: screenHeight } = useWindowDimensions();
 
   const router = useRouter();
   const bibleContext = useBible();
@@ -101,6 +114,34 @@ export default function BibleReaderView({
   const verses = bible.books.find((book) => book.name === selectedBook.name)?.chapters[
     chapterNumber - 1
   ]?.verses;
+  const contextMenuStyle = useMemo(() => {
+    const menuWidth = 220;
+    const horizontalMargin = 10;
+    const verticalSpacing = 12;
+    const estimatedHeight = menuHeight || 210;
+    const maxLeft = Math.max(horizontalMargin, screenWidth - menuWidth - horizontalMargin);
+    const left = Math.min(Math.max(horizontalMargin, menuAnchor.x - menuWidth / 2), maxLeft);
+
+    const preferBelow =
+      menuAnchor.y + verticalSpacing + estimatedHeight <= screenHeight - insets.bottom;
+    const top = preferBelow
+      ? menuAnchor.y + verticalSpacing
+      : Math.max(insets.top + 8, menuAnchor.y - estimatedHeight - verticalSpacing);
+
+    return {
+      top,
+      left,
+      width: menuWidth,
+    };
+  }, [
+    insets.bottom,
+    insets.top,
+    menuAnchor.x,
+    menuAnchor.y,
+    menuHeight,
+    screenHeight,
+    screenWidth,
+  ]);
 
   return (
     <>
@@ -132,10 +173,13 @@ export default function BibleReaderView({
                     setSelectedVerse((prev) => prev.filter((item) => item.number !== verse));
                   }
                 }}
-                onLongPress={() => {
+                onLongPress={(event) => {
+                  const pageX = event?.nativeEvent?.pageX ?? screenWidth / 2;
+                  const pageY = event?.nativeEvent?.pageY ?? screenHeight / 2;
                   if (!selectedVerse.some((item) => item.number === verse)) {
                     setSelectedVerse((prev) => [{ number: verse, text: text as string }, ...prev]);
                   }
+                  setMenuAnchor({ x: pageX, y: pageY });
                   setShowMenu(true);
                 }}
                 className={`flex-row items-start rounded-md px-1 ${
@@ -244,18 +288,21 @@ export default function BibleReaderView({
           onRequestClose={() => {
             setSelectedVerse([]);
             setShowMenu(false);
-          }}
-          className="absolute bottom-0 bg-white">
-          <View className="bg-transparent absolute bottom-0 left-0 right-0 justify-end">
-            <View className="bg-gray-100 dark:bg-neutral-900 p-6 rounded-t-2xl">
-              <Text className="mb-4 text-lg font-bold dark:text-white">
-                {selectedVerse.length > 0 ? formatSelectedVerseTitle().header : ''}
-              </Text>
+          }}>
+          <Pressable className="flex-1 bg-black/25" onPress={() => setShowMenu(false)}>
+            <TouchableOpacity
+              activeOpacity={1}
+              onPress={() => {}}
+              style={[{ position: 'absolute' }, contextMenuStyle]}>
+              <View
+                className="rounded-2xl border border-neutral-700/20 dark:border-neutral-700 bg-white dark:bg-neutral-900 overflow-hidden"
+                onLayout={(event) => setMenuHeight(event.nativeEvent.layout.height)}>
+                <Text className="px-4 pt-3 pb-2 text-sm font-semibold text-primary dark:text-gray-100">
+                  {selectedVerse.length > 0 ? formatSelectedVerseTitle().header : ''}
+                </Text>
 
-              {/* COPY */}
-              <View className="flex-row gap-2 items-center justify-start p-1">
                 <TouchableOpacity
-                  className="py-3 flex items-center justify-center"
+                  className="px-4 py-3 flex-row items-center"
                   disabled={selectedVerse.length === 0}
                   onPress={() => {
                     const target = getPrimarySelectedVerse();
@@ -270,11 +317,13 @@ export default function BibleReaderView({
                     size={22}
                     color={colorScheme === 'dark' ? 'white' : 'black'}
                   />
-                  <Text className="text-primary dark:text-gray-200 text-lg">Notes</Text>
+                  <Text className="ml-3 text-primary dark:text-gray-200 text-base">
+                    Scripture Notes
+                  </Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
-                  className="py-3 flex items-center justify-center"
+                  className="px-4 py-3 flex-row items-center"
                   onPress={async () => {
                     await Clipboard.setStringAsync(
                       selectedVerse.length > 0 ? formatVerseText(selectedVerse) : '',
@@ -286,12 +335,11 @@ export default function BibleReaderView({
                     size={22}
                     color={colorScheme === 'dark' ? 'white' : 'black'}
                   />
-                  <Text className="text-primary dark:text-gray-200 text-lg">Copy</Text>
+                  <Text className="ml-3 text-primary dark:text-gray-200 text-base">Copy</Text>
                 </TouchableOpacity>
 
-                {/* SHARE */}
                 <TouchableOpacity
-                  className="py-3 flex items-center justify-center"
+                  className="px-4 py-3 flex-row items-center"
                   onPress={async () => {
                     const content = formatVerseText(selectedVerse);
                     await Share.share({ message: content });
@@ -303,16 +351,20 @@ export default function BibleReaderView({
                     size={22}
                     color={colorScheme === 'dark' ? 'white' : 'black'}
                   />
-                  <Text className="text-primary dark:text-gray-200 text-lg">Share</Text>
+                  <Text className="ml-3 text-primary dark:text-gray-200 text-base">Share</Text>
+                </TouchableOpacity>
+
+                <View className="border-t border-gray-200 dark:border-neutral-700" />
+
+                <TouchableOpacity
+                  className="px-4 py-3 flex-row items-center"
+                  onPress={() => setShowMenu(false)}>
+                  <Ionicons name="close-outline" size={22} color="#ef4444" />
+                  <Text className="ml-3 text-red-600 text-base">Cancel</Text>
                 </TouchableOpacity>
               </View>
-
-              {/* CLOSE */}
-              <TouchableOpacity className="py-3" onPress={() => setShowMenu(false)}>
-                <Text className="text-red-600 text-lg text-center">Cancel</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
+            </TouchableOpacity>
+          </Pressable>
         </Modal>
       </View>
     </>

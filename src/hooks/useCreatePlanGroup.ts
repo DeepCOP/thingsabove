@@ -15,12 +15,10 @@ export function useCreatePlanGroup() {
     mutationFn: async ({ plan_id, start_date, user_id, invited_user_ids }: CreatePlanGroupInput) =>
       await createPlanGroup({ plan_id, start_date, user_id, invited_user_ids }),
 
-    onSuccess: (groupId, user_id) => {
-      queryClient.invalidateQueries({ queryKey: ['plan_groups'] });
+    onSuccess: (_progressId, variables) => {
       queryClient.invalidateQueries({ queryKey: ['plan_progress'] });
-      queryClient.invalidateQueries({ queryKey: ['plan-group', groupId] });
-      queryClient.invalidateQueries({ queryKey: ['user_plans_progresses', user_id] });
-      return groupId;
+      queryClient.invalidateQueries({ queryKey: ['plan-group'] });
+      queryClient.invalidateQueries({ queryKey: ['user_plans_progresses', variables.user_id] });
     },
     onError: (error) => {
       console.error('Error creating plan group:', error);

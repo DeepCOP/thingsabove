@@ -1,5 +1,5 @@
 import { useFetchDevotionalPlanById } from '@/src/hooks/useDevotionalPlans';
-import { usePlanProgress, useUserPlanProgressList } from '@/src/hooks/usePlanProgress';
+import { useStartPlanProgress, useUserPlanProgressList } from '@/src/hooks/usePlanProgress';
 import DevotionalDetailScreen from '@/src/screens/DevotionalDetailScreen';
 import { useAuth } from '@/src/state/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
@@ -12,21 +12,22 @@ import { Share, TouchableOpacity, useColorScheme } from 'react-native';
 
 export default function DevotionalDetail() {
   const { id } = useLocalSearchParams();
+  const planId = id as string;
   const reportSheetRef = useRef<BottomSheet>(null);
   const { isGuest, session } = useAuth();
-  const toggleReaction = useTogglePlanReaction(id as string, session?.user?.id || '');
-  const { data: currentReaction } = usePlanReactions(id as string, session?.user?.id || '');
+  const toggleReaction = useTogglePlanReaction(planId, session?.user?.id || '');
+  const { data: currentReaction } = usePlanReactions(planId, session?.user?.id || '');
 
   const router = useRouter();
   const colorScheme = useColorScheme();
-  const { startPlanProgressMutation, planProgressQuery } = usePlanProgress(
-    id as string,
-    session?.user?.id,
-  );
+  const startPlanProgressMutation = useStartPlanProgress();
   const userPlanProgressQuery = useUserPlanProgressList(session?.user.id);
   const userPlanProgress = userPlanProgressQuery.data || [];
+  const existingSoloProgress = userPlanProgress.find(
+    (progress) => progress.plan_id === planId && !progress.group_id,
+  );
 
-  const planQuery = useFetchDevotionalPlanById(id as string);
+  const planQuery = useFetchDevotionalPlanById(planId);
   const plan = planQuery.data;
   const handleToggleReaction = (reaction: 'like' | 'dislike') => {
     if (isGuest) {
@@ -69,7 +70,7 @@ export default function DevotionalDetail() {
         currentReaction={currentReaction}
         plan={planQuery.data}
         reportSheetRef={reportSheetRef}
-        isLoading={planQuery.isLoading || planProgressQuery.isLoading}
+        isLoading={planQuery.isLoading || userPlanProgressQuery.isLoading}
         hasUserPlans={userPlanProgress.length > 0}
         onMyPlansPress={() => router.push('/PlansTab')}
         onStartPress={(mode: string) => {
@@ -79,17 +80,17 @@ export default function DevotionalDetail() {
           }
 
           if (mode === 'group') {
-            router.push(`/devotional_detail/${id}/start-date`);
+            router.push(`/devotional_detail/${planId}/start-date`);
             return;
           }
 
-          if (planProgressQuery.data) {
-            router.push(`/plan_progress/${planProgressQuery.data}`);
+          if (existingSoloProgress) {
+            router.push(`/plan_progress/${existingSoloProgress.id}`);
             return;
           }
 
           startPlanProgressMutation.mutate(
-            { plan_id: id as string, user_id: session?.user.id! },
+            { plan_id: planId, user_id: session?.user.id! },
             {
               onSuccess: (progressId) => router.push(`/plan_progress/${progressId}`),
             },

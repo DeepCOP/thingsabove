@@ -15,18 +15,26 @@ export function useRealtimeScriptureNotes({
   useEffect(() => {
     if (!enabled || !scopeKey) return;
 
-    let channel: RealtimeChannel;
+    let channel: RealtimeChannel | null = null;
+    let isMounted = true;
 
     const setupChannel = async () => {
-      channel = await scriptureNotesRealTimeChannel({
+      const newChannel = await scriptureNotesRealTimeChannel({
         scopeKey,
         onNew,
       });
+
+      if (isMounted) {
+        channel = newChannel;
+      } else {
+        supabase.removeChannel(newChannel);
+      }
     };
 
     setupChannel();
 
     return () => {
+      isMounted = false;
       if (channel) {
         supabase.removeChannel(channel);
       }

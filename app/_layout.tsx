@@ -32,7 +32,7 @@ import { supabase } from '@/src/lib/supabaseClient';
 import { AuthProvider, useAuth } from '@/src/state/AuthContext';
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import * as SplashScreen from 'expo-splash-screen';
-import { useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import '../global.css';
 
@@ -68,14 +68,18 @@ function RootLayoutContent() {
   const PandingFriendsQuery = usePendingFriendRequests(session?.user.id);
 
   usePushNotifications();
-  useRealtimeNotifications(session?.user?.id, () => {
+  const handleNotificationsNew = useCallback(() => {
     notificationsQuery.refetch();
     notificationsCountQuery.refetch();
-  });
-  useRealtimeFriends(session?.user.id, () => {
+  }, [notificationsQuery, notificationsCountQuery]);
+
+  const handleFriendsNew = useCallback(() => {
     friendsQuery.refetch();
     PandingFriendsQuery.refetch();
-  });
+  }, [friendsQuery, PandingFriendsQuery]);
+
+  useRealtimeNotifications(session?.user?.id, handleNotificationsNew);
+  useRealtimeFriends(session?.user?.id, handleFriendsNew);
 
   useLastSeenTracker();
   const [loaded] = useFonts({

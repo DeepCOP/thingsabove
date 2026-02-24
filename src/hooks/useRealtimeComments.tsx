@@ -7,20 +7,27 @@ export function useRealtimeComments(group_id: string, onNew: () => void) {
   useEffect(() => {
     if (!group_id) return;
 
-    // 1. Create a variable to hold the channel instance
-    let channel: RealtimeChannel;
+    let cancelled = false;
+    let channel: RealtimeChannel | null = null;
 
     const setupChannel = async () => {
-      channel = await commentsRealTimeChannel(group_id, onNew);
+      const ch = await commentsRealTimeChannel(group_id, onNew);
+
+      if (cancelled) {
+        supabase.removeChannel(ch);
+      } else {
+        channel = ch;
+      }
     };
 
     setupChannel();
 
-    // 2. Cleanup function
     return () => {
+      cancelled = true;
+
       if (channel) {
         supabase.removeChannel(channel);
       }
     };
-  }, [group_id, onNew]); // Added onNew to dependencies for safety
+  }, [group_id, onNew]);
 }

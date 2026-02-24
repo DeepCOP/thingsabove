@@ -296,18 +296,26 @@ export default function ScriptureNotesModal({
                       <TouchableOpacity
                         onPress={() => toggleHelpful.mutate(note.id)}
                         disabled={toggleHelpful.isPending || !session}
-                        className="self-start">
+                        className="self-start flex-row items-center">
                         <Ionicons
                           name={note.is_helpful ? 'heart' : 'heart-outline'}
                           size={20}
                           color={
                             note.is_helpful
-                              ? '#ef4444'
+                              ? '#facc15'
                               : colorScheme === 'dark'
                                 ? '#cbd5e1'
                                 : '#6b7280'
                           }
                         />
+                        <Text
+                          className={`ml-1 text-sm ${
+                            note.is_helpful
+                              ? 'text-yellow-600 dark:text-yellow-400'
+                              : 'text-gray-500 dark:text-gray-300'
+                          }`}>
+                          Helpful {note.helpful_count}
+                        </Text>
                       </TouchableOpacity>
 
                       <TouchableOpacity
@@ -355,18 +363,26 @@ export default function ScriptureNotesModal({
                         <TouchableOpacity
                           onPress={() => toggleHelpful.mutate(reply.id)}
                           disabled={toggleHelpful.isPending || !session}
-                          className="mt-2 self-start">
+                          className="mt-2 self-start flex-row items-center">
                           <Ionicons
                             name={reply.is_helpful ? 'heart' : 'heart-outline'}
                             size={18}
                             color={
                               reply.is_helpful
-                                ? '#ef4444'
+                                ? '#facc15'
                                 : colorScheme === 'dark'
                                   ? '#cbd5e1'
                                   : '#6b7280'
                             }
                           />
+                          <Text
+                            className={`ml-1 text-xs ${
+                              reply.is_helpful
+                                ? 'text-yellow-600 dark:text-yellow-400'
+                                : 'text-gray-500 dark:text-gray-300'
+                            }`}>
+                            Helpful {reply.helpful_count}
+                          </Text>
                         </TouchableOpacity>
                       </View>
                     ))}
@@ -457,7 +473,7 @@ export default function ScriptureNotesModal({
 
               {!session && (
                 <Text className="text-xs text-amber-600 dark:text-amber-400 mt-2">
-                  Sign in to post, reply, and mark notes as liked.
+                  Sign in to post, reply, and mark notes as helpful.
                 </Text>
               )}
 
