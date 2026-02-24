@@ -4,6 +4,7 @@ import { useState } from 'react';
 import {
   Keyboard,
   KeyboardAvoidingView,
+  Linking,
   Platform,
   ScrollView,
   Text,
@@ -50,6 +51,15 @@ export default function SignIn() {
             value={password}
             onChangeText={setPassword}
           />
+          <TouchableOpacity
+            className="self-end mt-1"
+            onPress={() =>
+              Linking.openURL(`${process.env.EXPO_PUBLIC_WEB_INTERFACE_URL}/auth/forgot-password`)
+            }>
+            <Text className="text-blue-600 dark:text-blue-400 font-semibold">
+              Forget your password?
+            </Text>
+          </TouchableOpacity>
 
           <TouchableOpacity
             className={` p-3 rounded-lg mt-4 ${
