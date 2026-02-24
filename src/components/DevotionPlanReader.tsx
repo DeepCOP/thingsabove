@@ -2,7 +2,7 @@ import { useAppStore } from '@/src/state/useAppStore';
 import { Ionicons } from '@expo/vector-icons';
 import * as Clipboard from 'expo-clipboard';
 import { useRouter } from 'expo-router';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 import PlanCoverImage from '@/src/components/PlanCoverImage';
 import { useFetchDevotionalPlanById } from '@/src/hooks/useDevotionalPlans';
@@ -10,6 +10,7 @@ import { UseMutationResult } from '@tanstack/react-query';
 import {
   Animated,
   Modal,
+  Pressable,
   ScrollView,
   Share,
   Text,
@@ -51,9 +52,11 @@ export default function DevotionalPlanReader({
 }) {
   const insets = useSafeAreaInsets();
   const colorScheme = useColorScheme();
-  const { width } = useWindowDimensions();
+  const { width, height } = useWindowDimensions();
   const { data: plan } = useFetchDevotionalPlanById(item?.plan_id!);
   const [showMenu, setShowMenu] = useState(false);
+  const [menuAnchor, setMenuAnchor] = useState({ x: 0, y: 0 });
+  const [menuHeight, setMenuHeight] = useState(0);
 
   const selectedBook = useAppStore((s) => s.selectedBook);
   const setSelectedBook = useAppStore((s) => s.setSelectedBook);
@@ -162,6 +165,26 @@ export default function DevotionalPlanReader({
   const verses = bible.books
     .find((book) => book.name === selectedBook.name)
     ?.chapters.find((chapter) => chapter.chapter === chapterNumber)?.verses;
+
+  const contextMenuStyle = useMemo(() => {
+    const menuWidth = 220;
+    const horizontalMargin = 10;
+    const verticalSpacing = 12;
+    const estimatedHeight = menuHeight || 170;
+    const maxLeft = Math.max(horizontalMargin, width - menuWidth - horizontalMargin);
+    const left = Math.min(Math.max(horizontalMargin, menuAnchor.x - menuWidth / 2), maxLeft);
+
+    const preferBelow = menuAnchor.y + verticalSpacing + estimatedHeight <= height - insets.bottom;
+    const top = preferBelow
+      ? menuAnchor.y + verticalSpacing
+      : Math.max(insets.top + 8, menuAnchor.y - estimatedHeight - verticalSpacing);
+
+    return {
+      top,
+      left,
+      width: menuWidth,
+    };
+  }, [height, insets.bottom, insets.top, menuAnchor.x, menuAnchor.y, menuHeight, width]);
 
   if (!verses) return null;
 
@@ -364,7 +387,7 @@ export default function DevotionalPlanReader({
                         verseEnd: verseNumber,
                       });
                     }}
-                    onLongPress={() => {
+                    onLongPress={(event) => {
                       const start = selectedBook.verseStart;
                       const end = selectedBook.verseEnd ?? selectedBook.verseStart;
                       const hasRange = start != null && end != null && end !== start;
@@ -381,6 +404,9 @@ export default function DevotionalPlanReader({
                           verseEnd: verseNumber,
                         });
                       }
+                      const pageX = event?.nativeEvent?.pageX ?? width / 2;
+                      const pageY = event?.nativeEvent?.pageY ?? height / 2;
+                      setMenuAnchor({ x: pageX, y: pageY });
                       setShowMenu(true);
                     }}
                     className={`flex-row items-start rounded-md px-1 ${
@@ -481,19 +507,21 @@ export default function DevotionalPlanReader({
           animationType="fade"
           onRequestClose={() => {
             setShowMenu(false);
-          }}
-          className="absolute bottom-0 bg-white">
-          <View
-            className="bg-transparent absolute bottom-0 left-0 right-0 justify-end"
-            style={{ paddingBottom: insets.bottom + 16 }}>
-            <View className="bg-gray-100 dark:bg-neutral-900 p-6 rounded-t-2xl">
-              <Text className="mb-4 text-lg font-bold dark:text-white">
-                {formatSelectedVerseTitle().header || ' '}
-              </Text>
+          }}>
+          <Pressable className="flex-1 bg-black/25" onPress={() => setShowMenu(false)}>
+            <TouchableOpacity
+              activeOpacity={1}
+              onPress={() => {}}
+              style={[{ position: 'absolute' }, contextMenuStyle]}>
+              <View
+                className="rounded-2xl border border-neutral-700/20 dark:border-neutral-700 bg-white dark:bg-neutral-900 overflow-hidden"
+                onLayout={(event) => setMenuHeight(event.nativeEvent.layout.height)}>
+                <Text className="px-4 pt-3 pb-2 text-sm font-semibold text-primary dark:text-gray-100">
+                  {formatSelectedVerseTitle().header || ' '}
+                </Text>
 
-              <View className="flex-row gap-2 items-center justify-start p-1">
                 <TouchableOpacity
-                  className="py-3 flex items-center justify-center"
+                  className="px-4 py-3 flex-row items-center"
                   onPress={async () => {
                     await Clipboard.setStringAsync(formatVerseText());
                     setShowMenu(false);
@@ -503,11 +531,11 @@ export default function DevotionalPlanReader({
                     size={22}
                     color={colorScheme === 'dark' ? 'white' : 'black'}
                   />
-                  <Text className="text-primary dark:text-gray-200 text-lg">Copy</Text>
+                  <Text className="ml-3 text-primary dark:text-gray-200 text-base">Copy</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
-                  className="py-3 flex items-center justify-center"
+                  className="px-4 py-3 flex-row items-center"
                   onPress={async () => {
                     const content = formatVerseText();
                     await Share.share({ message: content });
@@ -519,15 +547,20 @@ export default function DevotionalPlanReader({
                     size={22}
                     color={colorScheme === 'dark' ? 'white' : 'black'}
                   />
-                  <Text className="text-primary dark:text-gray-200 text-lg">Share</Text>
+                  <Text className="ml-3 text-primary dark:text-gray-200 text-base">Share</Text>
+                </TouchableOpacity>
+
+                <View className="border-t border-gray-200 dark:border-neutral-700" />
+
+                <TouchableOpacity
+                  className="px-4 py-3 flex-row items-center"
+                  onPress={() => setShowMenu(false)}>
+                  <Ionicons name="close-outline" size={22} color="#ef4444" />
+                  <Text className="ml-3 text-red-600 text-base">Cancel</Text>
                 </TouchableOpacity>
               </View>
-
-              <TouchableOpacity className="py-3" onPress={() => setShowMenu(false)}>
-                <Text className="text-red-600 text-lg text-center">Cancel</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
+            </TouchableOpacity>
+          </Pressable>
         </Modal>
       </View>
     </>
