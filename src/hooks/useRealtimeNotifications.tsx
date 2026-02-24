@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import { RealtimeChannel } from '@supabase/supabase-js';
 import { useEffect } from 'react';
 import { notificationsRealTime } from '../api/realTimeQueries';

@@ -46,6 +46,35 @@ export default function BibleReaderView({
 
   const router = useRouter();
   const bibleContext = useBible();
+  const contextMenuStyle = useMemo(() => {
+    const menuWidth = 220;
+    const horizontalMargin = 10;
+    const verticalSpacing = 12;
+    const estimatedHeight = menuHeight || 210;
+    const maxLeft = Math.max(horizontalMargin, screenWidth - menuWidth - horizontalMargin);
+    const left = Math.min(Math.max(horizontalMargin, menuAnchor.x - menuWidth / 2), maxLeft);
+
+    const preferBelow =
+      menuAnchor.y + verticalSpacing + estimatedHeight <= screenHeight - insets.bottom;
+    const top = preferBelow
+      ? menuAnchor.y + verticalSpacing
+      : Math.max(insets.top + 8, menuAnchor.y - estimatedHeight - verticalSpacing);
+
+    return {
+      top,
+      left,
+      width: menuWidth,
+    };
+  }, [
+    insets.bottom,
+    insets.top,
+    menuAnchor.x,
+    menuAnchor.y,
+    menuHeight,
+    screenHeight,
+    screenWidth,
+  ]);
+
   if (!bibleContext) return null;
   const { bible, version, bookNames } = bibleContext;
 
@@ -114,34 +143,6 @@ export default function BibleReaderView({
   const verses = bible.books.find((book) => book.name === selectedBook.name)?.chapters[
     chapterNumber - 1
   ]?.verses;
-  const contextMenuStyle = useMemo(() => {
-    const menuWidth = 220;
-    const horizontalMargin = 10;
-    const verticalSpacing = 12;
-    const estimatedHeight = menuHeight || 210;
-    const maxLeft = Math.max(horizontalMargin, screenWidth - menuWidth - horizontalMargin);
-    const left = Math.min(Math.max(horizontalMargin, menuAnchor.x - menuWidth / 2), maxLeft);
-
-    const preferBelow =
-      menuAnchor.y + verticalSpacing + estimatedHeight <= screenHeight - insets.bottom;
-    const top = preferBelow
-      ? menuAnchor.y + verticalSpacing
-      : Math.max(insets.top + 8, menuAnchor.y - estimatedHeight - verticalSpacing);
-
-    return {
-      top,
-      left,
-      width: menuWidth,
-    };
-  }, [
-    insets.bottom,
-    insets.top,
-    menuAnchor.x,
-    menuAnchor.y,
-    menuHeight,
-    screenHeight,
-    screenWidth,
-  ]);
 
   return (
     <>
