@@ -225,39 +225,76 @@ returns table (
 language sql
 stable
 as $$
-  select
-    n.id,
-    n.user_id,
-    n.note_type,
-    n.scope_key,
-    n.book,
-    n.chapter,
-    n.verse_start,
-    n.verse_end,
-    n.parent_note_id,
-    n.content,
-    n.created_at,
-    n.updated_at,
-    p.first_name,
-    p.last_name,
-    p.avatar_url,
-    coalesce(v.vote_count, 0)::integer as helpful_count,
-    exists (
-      select 1
-      from public.scripture_note_helpful_votes me
-      where me.note_id = n.id
-        and me.user_id = auth.uid()
-    ) as is_helpful
-  from public.scripture_notes n
-  join public.profiles p on p.id = n.user_id
-  left join (
+  with vote_counts as (
     select note_id, count(*)::integer as vote_count
     from public.scripture_note_helpful_votes
     group by note_id
-  ) v on v.note_id = n.id
-  where n.note_type = p_note_type
-    and n.scope_key = p_scope_key
-  order by n.created_at desc, n.id desc
+  ),
+  scoped_notes as (
+    select
+      n.id,
+      n.user_id,
+      n.note_type,
+      n.scope_key,
+      n.book,
+      n.chapter,
+      n.verse_start,
+      n.verse_end,
+      n.parent_note_id,
+      n.content,
+      n.created_at,
+      n.updated_at,
+      p.first_name,
+      p.last_name,
+      p.avatar_url,
+      coalesce(v.vote_count, 0)::integer as helpful_count,
+      exists (
+        select 1
+        from public.scripture_note_helpful_votes me
+        where me.note_id = n.id
+          and me.user_id = auth.uid()
+      ) as is_helpful,
+      coalesce(n.parent_note_id, n.id) as thread_id
+    from public.scripture_notes n
+    join public.profiles p on p.id = n.user_id
+    left join vote_counts v on v.note_id = n.id
+    where n.note_type = p_note_type
+      and n.scope_key = p_scope_key
+  ),
+  thread_meta as (
+    select
+      s.id as thread_id,
+      s.helpful_count as thread_helpful_count,
+      s.created_at as thread_created_at
+    from scoped_notes s
+    where s.parent_note_id is null
+  )
+  select
+    s.id,
+    s.user_id,
+    s.note_type,
+    s.scope_key,
+    s.book,
+    s.chapter,
+    s.verse_start,
+    s.verse_end,
+    s.parent_note_id,
+    s.content,
+    s.created_at,
+    s.updated_at,
+    s.first_name,
+    s.last_name,
+    s.avatar_url,
+    s.helpful_count,
+    s.is_helpful
+  from scoped_notes s
+  join thread_meta t on t.thread_id = s.thread_id
+  order by
+    t.thread_helpful_count desc,
+    t.thread_created_at desc,
+    case when s.parent_note_id is null then 0 else 1 end asc,
+    case when s.parent_note_id is not null then s.created_at end asc,
+    s.id asc
   limit greatest(coalesce(p_limit, 100), 1)
   offset greatest(coalesce(p_offset, 0), 0);
 $$;

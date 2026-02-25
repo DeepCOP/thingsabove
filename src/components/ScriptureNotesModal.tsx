@@ -158,13 +158,7 @@ export default function ScriptureNotesModal({
 
   const canPost = !!session && !!draft.trim() && !addNote.isPending;
   const topLevelNotes = useMemo(
-    () =>
-      notes
-        .filter((note) => !note.parent_note_id)
-        .sort((a, b) => {
-          if (b.helpful_count !== a.helpful_count) return b.helpful_count - a.helpful_count;
-          return dayjs(b.created_at).valueOf() - dayjs(a.created_at).valueOf();
-        }),
+    () => notes.filter((note) => !note.parent_note_id),
     [notes],
   );
 
