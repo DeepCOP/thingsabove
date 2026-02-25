@@ -157,10 +157,7 @@ export default function ScriptureNotesModal({
   });
 
   const canPost = !!session && !!draft.trim() && !addNote.isPending;
-  const topLevelNotes = useMemo(
-    () => notes.filter((note) => !note.parent_note_id),
-    [notes],
-  );
+  const topLevelNotes = useMemo(() => notes.filter((note) => !note.parent_note_id), [notes]);
 
   const repliesByParent = useMemo(() => {
     const grouped: Record<string, ScriptureNote[]> = {};
