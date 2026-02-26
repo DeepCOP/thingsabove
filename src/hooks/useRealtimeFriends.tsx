@@ -1,33 +1,40 @@
 import { RealtimeChannel } from '@supabase/supabase-js';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { FriendRequestRealTime, FriendRequestRealTimeReceiver } from '../api/realTimeQueries';
 import { supabase } from '../lib/supabaseClient';
 
 export function useRealtimeFriends(userId: string | undefined, onNew: () => void) {
+  const requesterRef = useRef<RealtimeChannel | null>(null);
+  const receiverRef = useRef<RealtimeChannel | null>(null);
+
   useEffect(() => {
     if (!userId) return;
 
-    let requesterChannel: RealtimeChannel;
+    let cancelled = false;
 
-    const getRequesterChannel = async () => {
-      requesterChannel = await FriendRequestRealTime({ userId, onNew });
+    const setup = async () => {
+      const req = await FriendRequestRealTime({ userId, onNew });
+      if (cancelled) return supabase.removeChannel(req);
+      requesterRef.current = req;
+
+      const rec = await FriendRequestRealTimeReceiver({ userId, onNew });
+      if (cancelled) return supabase.removeChannel(rec);
+      receiverRef.current = rec;
     };
 
-    let receiverChannel: RealtimeChannel;
-
-    const getReceiverChannel = async () => {
-      receiverChannel = await FriendRequestRealTimeReceiver({ userId, onNew });
-    };
-
-    getRequesterChannel();
-    getReceiverChannel();
+    setup();
 
     return () => {
-      if (receiverChannel) {
-        supabase.removeChannel(receiverChannel);
+      cancelled = true;
+
+      if (requesterRef.current) {
+        supabase.removeChannel(requesterRef.current);
+        requesterRef.current = null;
       }
-      if (requesterChannel) {
-        supabase.removeChannel(requesterChannel);
+
+      if (receiverRef.current) {
+        supabase.removeChannel(receiverRef.current);
+        receiverRef.current = null;
       }
     };
   }, [userId, onNew]);

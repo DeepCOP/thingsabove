@@ -17,8 +17,8 @@ export function useAddFriend() {
   return useMutation({
     mutationFn: async ({ friendId }: { friendId: string; userId: string }) =>
       await addFriend({ receiver_id: friendId }),
-    onSuccess: (userId) => {
-      qc.invalidateQueries({ queryKey: ['friends', userId] });
+    onSuccess: (_data, variables) => {
+      qc.invalidateQueries({ queryKey: ['friends', variables.userId] });
       qc.invalidateQueries({ queryKey: ['get-user-by-email'] });
     },
   });
@@ -26,8 +26,8 @@ export function useAddFriend() {
 
 export function useGetUserByEmail({ query, userId }: { query: string; userId: string }) {
   return useQuery({
-    queryKey: ['get-user-by-email', query],
-    enabled: !!query,
+    queryKey: ['get-user-by-email', query, userId],
+    enabled: !!query && !!userId,
     staleTime: 0,
     queryFn: async () => await getUserByEmail(query),
   });

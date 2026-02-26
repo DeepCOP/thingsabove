@@ -1013,7 +1013,7 @@ create table friends (
 
 
 alter publication supabase_realtime
-add table friends;
+add table public.friends;
 
 create or replace function public.send_friend_request(
   p_receiver_id uuid
@@ -1925,7 +1925,7 @@ create table if not exists public.comments (
 alter table public.comments enable row level security;
 
 alter publication supabase_realtime
-add table comments;
+add table public.comments;
 
 
 create policy "comments readable by everyone"
@@ -2123,7 +2123,7 @@ with check (
 
 
 alter publication supabase_realtime
-add table notifications;
+add table public.notifications;
 
 
 create or replace function unread_notifications_count()

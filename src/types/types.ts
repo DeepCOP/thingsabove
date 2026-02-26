@@ -68,3 +68,34 @@ export type GetPlanReactionSummary =
 
 export type NotificationPreferences =
   Database['public']['Tables']['notification_preferences']['Row'];
+
+export type ScriptureNoteType = 'verse' | 'section' | 'chapter' | 'book';
+
+export type ScriptureNoteContext = {
+  noteType: ScriptureNoteType;
+  scopeKey: string;
+  book: string;
+  chapter: number | null;
+  verseStart: number | null;
+  verseEnd: number | null;
+};
+
+export type ScriptureNote = {
+  id: string;
+  user_id: string;
+  note_type: ScriptureNoteType;
+  scope_key: string;
+  book: string;
+  chapter: number | null;
+  verse_start: number | null;
+  verse_end: number | null;
+  parent_note_id: string | null;
+  content: string;
+  created_at: string;
+  updated_at: string;
+  first_name: string;
+  last_name: string;
+  avatar_url: string | null;
+  helpful_count: number;
+  is_helpful: boolean;
+};
