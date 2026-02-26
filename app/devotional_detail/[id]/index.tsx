@@ -29,12 +29,12 @@ export default function DevotionalDetail() {
 
   const planQuery = useFetchDevotionalPlanById(planId);
   const plan = planQuery.data;
-  const handleToggleReaction = (reaction: 'like' | 'dislike') => {
+  const handleToggleReaction = () => {
     if (isGuest) {
       router.push('/(auth)/signin');
       return;
     }
-    toggleReaction.mutate(reaction);
+    toggleReaction.mutate();
   };
   const onReportPress = () => {
     if (isGuest) {

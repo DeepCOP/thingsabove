@@ -11,12 +11,11 @@ import { useAuth } from '../state/AuthContext';
 
 type Props = {
   onReportPress: () => void;
-  handleToggleReaction: (reaction: 'like' | 'dislike') => void;
+  handleToggleReaction: () => void;
   currentReaction:
     | {
-        dislikes: number;
-        likes: number;
-        user_reaction: string;
+        helpful_count: number;
+        user_reaction: 'helpful' | null;
       }
     | undefined;
   reportSheetRef: React.RefObject<BottomSheet | null>;
@@ -87,40 +86,17 @@ export default function DevotionalDetailScreen({
           <TouchableOpacity
             className="flex-row items-center gap-1 justify-center"
             disabled={isGuest}
-            onPress={() => {
-              handleToggleReaction('like');
-            }}>
+            onPress={handleToggleReaction}>
             <Ionicons
-              name={currentReaction?.user_reaction === 'like' ? 'thumbs-up' : 'thumbs-up-outline'}
+              name={currentReaction?.user_reaction === 'helpful' ? 'heart' : 'heart-outline'}
               size={22}
-              color={currentReaction?.user_reaction === 'like' ? '#22c55e' : '#9ca3af'}
+              color={currentReaction?.user_reaction === 'helpful' ? '#EAB308' : '#9ca3af'}
             />
             <Text
               className={` ${
-                currentReaction?.user_reaction === 'like' ? 'text-green-500' : 'text-gray-500'
+                currentReaction?.user_reaction === 'helpful' ? 'text-yellow-500' : 'text-gray-500'
               }`}>
-              {currentReaction?.likes ?? 0}
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            className="flex-row items-start gap-1 justify-center"
-            disabled={isGuest}
-            onPress={() => {
-              handleToggleReaction('dislike');
-            }}>
-            <Ionicons
-              name={
-                currentReaction?.user_reaction === 'dislike' ? 'thumbs-down' : 'thumbs-down-outline'
-              }
-              size={22}
-              color={currentReaction?.user_reaction === 'dislike' ? '#ef4444' : '#9ca3af'}
-            />
-            <Text
-              className={` ${
-                currentReaction?.user_reaction === 'dislike' ? 'text-red-500' : 'text-gray-500'
-              }`}>
-              {currentReaction?.dislikes ?? 0}
+              Helpful {currentReaction?.helpful_count ?? 0}
             </Text>
           </TouchableOpacity>
           <TouchableOpacity

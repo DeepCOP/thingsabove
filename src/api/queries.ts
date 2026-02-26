@@ -227,21 +227,39 @@ export const getUserNotificationsCount = async () => {
   return count;
 };
 
-export const togglePlanReaction = async (
-  planId: string,
-  userId: string,
-  reaction: 'like' | 'dislike',
-) => {
+export const togglePlanReaction = async (planId: string, userId: string) => {
   if (!planId || !userId) {
     return null;
   }
   const { data, error } = await supabase.rpc('toggle_reaction', {
     p_plan_id: planId,
-    p_reaction_type: reaction,
+    p_reaction_type: 'helpful',
   });
 
   if (error) throw error;
   return data;
+};
+
+export const fetchUserHelpfulPlanReactions = async (planIds: string[], userId: string) => {
+  if (!userId || !planIds.length) return [];
+
+  const { data, error } = await supabase
+    .from('plan_reactions')
+    .select('plan_id')
+    .eq('user_id', userId)
+    .eq('reaction_type', 'helpful')
+    .in('plan_id', planIds);
+
+  if (error) throw error;
+
+  return (data ?? [])
+    .map((row) => row.plan_id)
+    .filter((planId): planId is string => typeof planId === 'string');
+};
+
+export type PlanReactionSummary = {
+  helpful_count: number;
+  user_reaction: 'helpful' | null;
 };
 
 export const getPlanReactionSummary = async (planId: string) => {
@@ -250,7 +268,17 @@ export const getPlanReactionSummary = async (planId: string) => {
     .single();
 
   if (error) throw error;
-  return data;
+
+  const raw = data as {
+    helpful_count?: number | null;
+    user_reaction?: string | null;
+  } | null;
+  const reaction = raw?.user_reaction === 'helpful' ? ('helpful' as const) : null;
+
+  return {
+    helpful_count: raw?.helpful_count ?? 0,
+    user_reaction: reaction,
+  } as PlanReactionSummary;
 };
 
 export const reportPlan = async (reason: string, planId: string) => {

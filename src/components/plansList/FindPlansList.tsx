@@ -1,6 +1,8 @@
 import { GridCard, ListCard } from '@/src/components/DevoCard';
 import LoadingSpinner from '@/src/components/LoadingSpinner';
 import { usePlans } from '@/src/hooks/useDevotionalPlans';
+import { useUserHelpfulPlanReactions } from '@/src/hooks/usePlanReactions';
+import { useAuth } from '@/src/state/AuthContext';
 import { useAppStore } from '@/src/state/useAppStore';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
@@ -9,13 +11,36 @@ import { FlatList, Text, useColorScheme, View } from 'react-native';
 
 export default function FindPlansList() {
   const { plansQuery } = usePlans();
+  const { session } = useAuth();
   const colorScheme = useColorScheme();
 
   const { sort, isGrid } = useAppStore();
   const flatData = useMemo(() => {
-    const items = plansQuery.data?.pages.flatMap((page) => page.items) || [];
+    const items =
+      plansQuery.data?.pages.flatMap((page) =>
+        page.items.map((item) => ({
+          ...item,
+          helpful_count: (item as { helpful_count?: number | null }).helpful_count ?? 0,
+        })),
+      ) || [];
     return items;
   }, [plansQuery.data]);
+  const planIds = useMemo(
+    () =>
+      Array.from(
+        new Set(
+          flatData
+            .map((item) => item.id)
+            .filter((planId): planId is string => typeof planId === 'string'),
+        ),
+      ).sort(),
+    [flatData],
+  );
+  const userHelpfulReactionsQuery = useUserHelpfulPlanReactions(planIds, session?.user?.id);
+  const myHelpfulPlanIds = useMemo(
+    () => new Set(userHelpfulReactionsQuery.data ?? []),
+    [userHelpfulReactionsQuery.data],
+  );
 
   const [refreshing, setRefreshing] = useState(false);
 
@@ -29,18 +54,24 @@ export default function FindPlansList() {
 
   const sortedPlans = useMemo(() => {
     if (!flatData) return [];
+
+    const withUserReaction = flatData.map((item) => ({
+      ...item,
+      user_reaction: item.id && myHelpfulPlanIds.has(item.id) ? ('helpful' as const) : null,
+    }));
+
     if (sort === 'Recent') {
-      return [...flatData].sort(
+      return [...withUserReaction].sort(
         (a, b) => new Date(b.created_at!).getTime() - new Date(a.created_at!).getTime(),
       );
     }
 
     if (sort === 'Trending') {
-      return [...flatData].sort((a, b) => (b.likes_count || 0) - (a.likes_count || 0));
+      return [...withUserReaction].sort((a, b) => (b.helpful_count || 0) - (a.helpful_count || 0));
     }
 
-    return flatData;
-  }, [sort, flatData]);
+    return withUserReaction;
+  }, [sort, flatData, myHelpfulPlanIds]);
 
   if (plansQuery.isLoading) {
     return <LoadingSpinner />;

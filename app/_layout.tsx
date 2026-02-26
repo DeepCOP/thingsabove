@@ -109,11 +109,10 @@ function RootLayoutContent() {
         return;
       }
       if (key === 'toggle_reaction') {
-        const { plan_id, user_id, type } = payload;
+        const { plan_id } = payload;
         await supabase.rpc('toggle_reaction', {
           p_plan_id: plan_id,
-          p_user_id: user_id,
-          p_reaction_type: type,
+          p_reaction_type: 'helpful',
         });
         return;
       }
