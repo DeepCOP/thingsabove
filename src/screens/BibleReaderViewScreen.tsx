@@ -15,7 +15,6 @@ import {
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import ScriptureNotesModal from '../components/ScriptureNotesModal';
 import { useBible } from '../state/BibleContext';
 
 export default function BibleReaderView({
@@ -33,8 +32,6 @@ export default function BibleReaderView({
       text: string;
     }[]
   >([]);
-  const [showScriptureNotes, setShowScriptureNotes] = useState(false);
-  const [notesVerse, setNotesVerse] = useState<{ number: number; text: string } | null>(null);
 
   const [showMenu, setShowMenu] = useState(false);
   const [menuAnchor, setMenuAnchor] = useState({ x: 0, y: 0 });
@@ -132,9 +129,13 @@ export default function BibleReaderView({
     return { header, ranges, sorted };
   };
 
-  const getPrimarySelectedVerse = () => {
+  const getSelectedVerseRange = () => {
     if (selectedVerse.length === 0) return null;
-    return [...selectedVerse].sort((a, b) => a.number - b.number)[0];
+    const sorted = [...selectedVerse].sort((a, b) => a.number - b.number);
+    return {
+      start: sorted[0],
+      end: sorted[sorted.length - 1],
+    };
   };
   const chapters = bible.books.find((book) => book.name === selectedBook.name)?.chapters;
   const chapterCount = chapters?.length || 0;
@@ -269,19 +270,6 @@ export default function BibleReaderView({
             </TouchableOpacity>
           </View>
         </Animated.View>
-        <ScriptureNotesModal
-          visible={showScriptureNotes}
-          onClose={() => {
-            setShowScriptureNotes(false);
-            setNotesVerse(null);
-            setSelectedVerse([]);
-          }}
-          verse={notesVerse}
-          book={selectedBook.name}
-          chapter={chapterNumber}
-          verseCount={verses?.length ?? 0}
-          version={version}
-        />
         <Modal
           visible={showMenu}
           transparent
@@ -306,12 +294,26 @@ export default function BibleReaderView({
                   className="px-4 py-3 flex-row items-center"
                   disabled={selectedVerse.length === 0}
                   onPress={() => {
-                    const target = getPrimarySelectedVerse();
-                    if (!target) return;
-                    setSelectedVerse([target]);
-                    setNotesVerse(target);
+                    const selectedRange = getSelectedVerseRange();
+                    if (!selectedRange) return;
                     setShowMenu(false);
-                    setShowScriptureNotes(true);
+                    router.push({
+                      pathname: '/scripture_notes',
+                      params: {
+                        book: selectedBook.name,
+                        chapter: String(chapterNumber),
+                        verseNumber: String(selectedRange.start.number),
+                        verseText: selectedRange.start.text,
+                        selectionStart: String(selectedRange.start.number),
+                        selectionEnd: String(selectedRange.end.number),
+                        selectionVerses: [...selectedVerse]
+                          .sort((a, b) => a.number - b.number)
+                          .map((entry) => entry.number)
+                          .join(','),
+                        verseCount: String(verses?.length ?? 0),
+                        version,
+                      },
+                    } as never);
                   }}>
                   <Ionicons
                     name="chatbubble-ellipses-outline"

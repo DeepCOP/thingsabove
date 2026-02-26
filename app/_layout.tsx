@@ -139,6 +139,7 @@ function RootLayoutContent() {
         <Stack.Screen name="index" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="bible/[book]/index" />
+        <Stack.Screen name="scripture_notes/index" options={{ headerShown: false }} />
         <Stack.Screen name="search/devotionals/index" options={{ title: 'search devotionals' }} />
         <Stack.Screen name="devotional_detail/[id]/index" options={{ title: '' }} />
         <Stack.Protected guard={session == null}>
