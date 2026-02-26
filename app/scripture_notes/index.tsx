@@ -1,4 +1,4 @@
-import ScriptureNotesScreen from '@/src/components/ScriptureNotesScreen';
+import ScriptureNotesScreen from '@/src/screens/ScriptureNotesScreen';
 import { useBible } from '@/src/state/BibleContext';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useMemo } from 'react';

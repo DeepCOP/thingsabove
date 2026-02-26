@@ -6,9 +6,9 @@ import dayjs from 'dayjs';
 import { useEffect, useMemo, useState } from 'react';
 import { ScrollView, Text, TextInput, TouchableOpacity, useColorScheme, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import LoadingSpinner from '../components/LoadingSpinner';
+import UserAvatar from '../components/UserAvatar';
 import { ScriptureNote, ScriptureNoteContext, ScriptureNoteType } from '../types/types';
-import LoadingSpinner from './LoadingSpinner';
-import UserAvatar from './UserAvatar';
 
 type VerseTarget = {
   number: number;
