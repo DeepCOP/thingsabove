@@ -1,6 +1,7 @@
 import { GridCard, ListCard } from '@/src/components/DevoCard';
 import LoadingSpinner from '@/src/components/LoadingSpinner';
 import { useFetchUserPlans } from '@/src/hooks/useDevotionalPlans';
+import { useUserHelpfulPlanReactions } from '@/src/hooks/usePlanReactions';
 import { useUserPlanProgressList } from '@/src/hooks/usePlanProgress';
 import { useAuth } from '@/src/state/AuthContext';
 import { useAppStore } from '@/src/state/useAppStore';
@@ -47,6 +48,22 @@ export default function MyPlansList({
       })
       .filter((plan) => plan !== null);
   }, [userPlanProgress, plansQuery.data]);
+  const planIds = useMemo(
+    () =>
+      Array.from(
+        new Set(
+          flataData
+            .map((item) => item?.id)
+            .filter((planId): planId is string => typeof planId === 'string'),
+        ),
+      ).sort(),
+    [flataData],
+  );
+  const userHelpfulReactionsQuery = useUserHelpfulPlanReactions(planIds, session?.user?.id);
+  const myHelpfulPlanIds = useMemo(
+    () => new Set(userHelpfulReactionsQuery.data ?? []),
+    [userHelpfulReactionsQuery.data],
+  );
 
   const { sort, isGrid } = useAppStore();
 
@@ -81,18 +98,24 @@ export default function MyPlansList({
 
   const sortedPlans = useMemo(() => {
     if (!flataData) return [];
+
+    const withUserReaction = flataData.map((item) => ({
+      ...item,
+      user_reaction: item.id && myHelpfulPlanIds.has(item.id) ? ('helpful' as const) : null,
+    }));
+
     if (sort === 'Recent') {
-      return [...flataData].sort(
+      return [...withUserReaction].sort(
         (a, b) => new Date(b.created_at!).getTime() - new Date(a.created_at!).getTime(),
       );
     }
 
     if (sort === 'Trending') {
-      return [...flataData].sort((a, b) => (b.helpful_count || 0) - (a.helpful_count || 0));
+      return [...withUserReaction].sort((a, b) => (b.helpful_count || 0) - (a.helpful_count || 0));
     }
 
-    return flataData;
-  }, [sort, flataData]);
+    return withUserReaction;
+  }, [sort, flataData, myHelpfulPlanIds]);
   if (!session && !sessionLoading) {
     return (
       <View className="flex-1 items-center justify-center px-4">
