@@ -292,7 +292,7 @@ export default function ScriptureNotesScreen({
                             ? 'text-yellow-600 dark:text-yellow-400'
                             : 'text-gray-500 dark:text-gray-300'
                         }`}>
-                        Helpful {note.helpful_count}
+                        {note.helpful_count}
                       </Text>
                     </TouchableOpacity>
 
@@ -359,7 +359,7 @@ export default function ScriptureNotesScreen({
                               ? 'text-yellow-600 dark:text-yellow-400'
                               : 'text-gray-500 dark:text-gray-300'
                           }`}>
-                          Helpful {reply.helpful_count}
+                          {reply.helpful_count}
                         </Text>
                       </TouchableOpacity>
                     </View>

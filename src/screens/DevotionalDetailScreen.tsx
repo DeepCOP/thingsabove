@@ -96,7 +96,7 @@ export default function DevotionalDetailScreen({
               className={` ${
                 currentReaction?.user_reaction === 'helpful' ? 'text-yellow-500' : 'text-gray-500'
               }`}>
-              Helpful {currentReaction?.helpful_count ?? 0}
+              {currentReaction?.helpful_count ?? 0}
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
