@@ -1,7 +1,6 @@
 import { GridCard, ListCard } from '@/src/components/DevoCard';
 import LoadingSpinner from '@/src/components/LoadingSpinner';
 import { useFetchUserPlans } from '@/src/hooks/useDevotionalPlans';
-import { useUserHelpfulPlanReactions } from '@/src/hooks/usePlanReactions';
 import { useUserPlanProgressList } from '@/src/hooks/usePlanProgress';
 import { useAuth } from '@/src/state/AuthContext';
 import { useAppStore } from '@/src/state/useAppStore';
@@ -43,27 +42,15 @@ export default function MyPlansList({
               group_id: progress.group_id,
               completed_days: progress.completed_days?.length || 0,
               helpful_count: (plan as { helpful_count?: number | null }).helpful_count ?? 0,
+              user_reaction:
+                (plan as { user_reaction?: string | null }).user_reaction === 'helpful'
+                  ? ('helpful' as const)
+                  : null,
             }
           : null;
       })
       .filter((plan) => plan !== null);
   }, [userPlanProgress, plansQuery.data]);
-  const planIds = useMemo(
-    () =>
-      Array.from(
-        new Set(
-          flataData
-            .map((item) => item?.id)
-            .filter((planId): planId is string => typeof planId === 'string'),
-        ),
-      ).sort(),
-    [flataData],
-  );
-  const userHelpfulReactionsQuery = useUserHelpfulPlanReactions(planIds, session?.user?.id);
-  const myHelpfulPlanIds = useMemo(
-    () => new Set(userHelpfulReactionsQuery.data ?? []),
-    [userHelpfulReactionsQuery.data],
-  );
 
   const { sort, isGrid } = useAppStore();
 
@@ -99,23 +86,18 @@ export default function MyPlansList({
   const sortedPlans = useMemo(() => {
     if (!flataData) return [];
 
-    const withUserReaction = flataData.map((item) => ({
-      ...item,
-      user_reaction: item.id && myHelpfulPlanIds.has(item.id) ? ('helpful' as const) : null,
-    }));
-
     if (sort === 'Recent') {
-      return [...withUserReaction].sort(
+      return [...flataData].sort(
         (a, b) => new Date(b.created_at!).getTime() - new Date(a.created_at!).getTime(),
       );
     }
 
     if (sort === 'Trending') {
-      return [...withUserReaction].sort((a, b) => (b.helpful_count || 0) - (a.helpful_count || 0));
+      return [...flataData].sort((a, b) => (b.helpful_count || 0) - (a.helpful_count || 0));
     }
 
-    return withUserReaction;
-  }, [sort, flataData, myHelpfulPlanIds]);
+    return flataData;
+  }, [sort, flataData]);
   if (!session && !sessionLoading) {
     return (
       <View className="flex-1 items-center justify-center px-4">

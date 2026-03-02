@@ -240,23 +240,6 @@ export const togglePlanReaction = async (planId: string, userId: string) => {
   return data;
 };
 
-export const fetchUserHelpfulPlanReactions = async (planIds: string[], userId: string) => {
-  if (!userId || !planIds.length) return [];
-
-  const { data, error } = await supabase
-    .from('plan_reactions')
-    .select('plan_id')
-    .eq('user_id', userId)
-    .eq('reaction_type', 'helpful')
-    .in('plan_id', planIds);
-
-  if (error) throw error;
-
-  return (data ?? [])
-    .map((row) => row.plan_id)
-    .filter((planId): planId is string => typeof planId === 'string');
-};
-
 export type PlanReactionSummary = {
   helpful_count: number;
   user_reaction: 'helpful' | null;
