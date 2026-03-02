@@ -1,8 +1,10 @@
+const { version } = require('./package.json');
+
 export default ({ config }) => ({
   expo: {
     name: 'thingsabove',
     slug: 'thingsabove',
-    version: '0.2.0-beta.1',
+    version,
     orientation: 'portrait',
     icon: './assets/images/icon.png',
     scheme: 'thingsabove',

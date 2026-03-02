@@ -3,7 +3,7 @@ name: EAS Build and Upload Android Release Asset
 on:
   push:
     tags:
-      - 'v*'
+      - '*'
 
 jobs:
   build_android_release:
@@ -27,6 +27,9 @@ jobs:
 
       - name: 📦 Install dependencies
         run: pnpm install --frozen-lockfile
+
+      - name: 🔖 Get app version
+        run: echo "APP_VERSION=$(node -p "require('./package.json').version")" >> $GITHUB_ENV
 
       - name: 🏗️ Setup EAS
         uses: expo/expo-github-action@v8
@@ -56,11 +59,11 @@ jobs:
           fs.writeFileSync('android-build-url.txt', url);
           NODE
           mkdir -p build
-          curl -L "$(cat android-build-url.txt)" -o build/app-android.apk
+          curl -L "$(cat android-build-url.txt)" -o build/thingsabove-${{ env.APP_VERSION }}.apk
 
       - name: 🔍 Verify APK exists
         run: |
-          if [ ! -f build/app-android.apk ]; then
+          if [ ! -f build/thingsabove-${{ env.APP_VERSION }}.apk ]; then
             echo "❌ APK not found"
             exit 1
           fi
@@ -70,15 +73,17 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.ref_name }}
-          name: Release ${{ github.ref_name }}
+          name: Release ${{ env.APP_VERSION }}
           body: |
             🚀 Android Production Build
 
-            Version: ${{ github.ref_name }}
+            Version: ${{ env.APP_VERSION }}
+            Tag: ${{ github.ref_name }}
             Profile: ${{ env.EAS_PROFILE }}
 
             Built via EAS Cloud.
+          generate_release_notes: true
           draft: false
           prerelease: false
           files: |
-            build/app-android.apk
+            build/thingsabove-${{ env.APP_VERSION }}.apk
