@@ -1,6 +1,7 @@
 import { supabase } from '@/src/lib/supabaseClient';
 import { Session } from '@supabase/supabase-js';
 import { createContext, useContext, useEffect, useState } from 'react';
+import { clearPushNotificationSetup } from '../api/mutations';
 
 type AuthContextType = {
   session: Session | null;
@@ -23,6 +24,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const isGuest = !session;
 
   const signOut = async () => {
+    if (session?.user?.id) {
+      await clearPushNotificationSetup(session.user.id);
+    }
+
     await supabase.auth.signOut();
   };
   useEffect(() => {

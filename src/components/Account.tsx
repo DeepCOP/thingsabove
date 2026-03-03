@@ -5,8 +5,10 @@ import { Session } from '@supabase/supabase-js';
 import { useEffect, useState } from 'react';
 import { Alert, StyleSheet, View } from 'react-native';
 import { supabase } from '../lib/supabaseClient';
+import { useAuth } from '../state/AuthContext';
 
 export default function Account({ session }: { session: Session }) {
+  const { signOut } = useAuth();
   const [loading, setLoading] = useState(true);
   const [username, setUsername] = useState('');
   const [website, setWebsite] = useState('');
@@ -110,7 +112,7 @@ export default function Account({ session }: { session: Session }) {
       </View>
 
       <View style={styles.verticallySpaced}>
-        <Button title="Sign Out" onPress={() => supabase.auth.signOut()} />
+        <Button title="Sign Out" onPress={signOut} />
       </View>
     </View>
   );

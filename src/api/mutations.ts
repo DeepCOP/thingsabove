@@ -1,4 +1,5 @@
 import { supabase } from '../lib/supabaseClient';
+import { getCurrentDeviceExpoPushToken } from '../lib/pushToken';
 
 export const toggleItemCompletion = async ({
   item_type,
@@ -280,4 +281,19 @@ export const pushNotificationSetup = async (userTimeZone: string, token: string)
     p_timezone: userTimeZone,
     p_expo_push_token: token,
   });
+};
+
+export const clearPushNotificationSetup = async (userId?: string) => {
+  if (!userId) return;
+
+  const currentDeviceToken = await getCurrentDeviceExpoPushToken();
+  if (!currentDeviceToken) return;
+
+  const { error } = await supabase
+    .from('profiles')
+    .update({ expo_push_token: null })
+    .eq('id', userId)
+    .eq('expo_push_token', currentDeviceToken);
+
+  if (error) throw error;
 };
