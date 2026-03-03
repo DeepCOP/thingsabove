@@ -18,6 +18,7 @@ create or replace function public.handle_new_user()
 returns trigger
 language plpgsql
 security definer
+set search_path = pg_catalog, public
 as $$
 begin
   insert into public.profiles (id, first_name,last_name, email)
@@ -39,6 +40,7 @@ create or replace function public.update_profile(
 returns void
 language plpgsql
 security definer
+set search_path = pg_catalog, public
 as $$
 begin
   update public.profiles
@@ -136,6 +138,7 @@ create or replace function save_devotional_draft(
 returns void
 language plpgsql
 security definer
+set search_path = pg_catalog, public
 as $$
 begin
   -- Insert / update days
@@ -185,6 +188,7 @@ returns table (
 )
 language plpgsql
 security definer
+set search_path = pg_catalog, public
 as $$
 begin
   return query
@@ -217,6 +221,7 @@ create or replace function public.publish_devotional_plan(
 returns void
 language plpgsql
 security definer
+set search_path = pg_catalog, public
 as $$
 declare
   day_item jsonb;
@@ -514,6 +519,7 @@ returns table (
 )
 language plpgsql
 security definer
+set search_path = pg_catalog, public
 as $$
 begin
   return query
@@ -660,6 +666,7 @@ create or replace function public.report_plan(
 returns void
 language plpgsql
 security definer
+set search_path = pg_catalog, public
 as $$
 begin
   insert into reports (user_id, plan_id, reason)
@@ -724,6 +731,7 @@ returns table (
 )
 language plpgsql
 security definer
+set search_path = pg_catalog, public
 as $$
 begin
   return query
@@ -1021,6 +1029,7 @@ create or replace function public.send_friend_request(
 returns void
 language plpgsql
 security definer
+set search_path = pg_catalog, public
 as $$
 begin
   -- Prevent self request
@@ -1062,6 +1071,7 @@ create or replace function public.accept_friend_request(
 returns void
 language plpgsql
 security definer
+set search_path = pg_catalog, public
 as $$
 begin
   update friends
@@ -1083,6 +1093,7 @@ create or replace function public.decline_friend_request(
 returns void
 language plpgsql
 security definer
+set search_path = pg_catalog, public
 as $$
 begin
   delete from friends
@@ -1112,6 +1123,7 @@ returns table (
   receiver_id uuid
 )
 security definer
+set search_path = pg_catalog, public
 language plpgsql
 as $$
 begin
@@ -1148,6 +1160,7 @@ returns table (
 )
 language sql
 security definer
+set search_path = pg_catalog, public
 as $$
   select
     f.id,
@@ -1196,6 +1209,7 @@ create or replace function public.create_plan_group(
 returns uuid
 language plpgsql
 security definer
+set search_path = pg_catalog, public
 as $$
 declare
   v_group_id uuid;
@@ -1284,6 +1298,7 @@ create or replace function public.add_user_to_existing_plan_group(
 returns void
 language plpgsql
 security definer
+set search_path = pg_catalog, public
 as $$
 declare
   v_plan_id uuid;
@@ -1431,6 +1446,7 @@ create or replace function public.start_plan_progress(
 returns uuid
 language plpgsql
 security definer
+set search_path = pg_catalog, public
 as $$
 declare
   v_progress_id uuid;
@@ -1969,6 +1985,7 @@ create or replace function public.add_plan_day_comment(
 returns void
 language plpgsql
 security definer
+set search_path = pg_catalog, public
 as $$
 begin
   insert into comments (
@@ -2130,6 +2147,7 @@ create or replace function unread_notifications_count()
 returns integer
 language sql
 security definer
+set search_path = pg_catalog, public
 as $$
   select count(*)
   from notifications
@@ -2148,7 +2166,7 @@ create or replace function public.is_group_member(p_group_id uuid)
 returns boolean
 language sql
 security definer
-set search_path = public
+set search_path = pg_catalog, public
 as $$
   select exists (
     select 1
@@ -2346,6 +2364,7 @@ create or replace function queue_daily_notifications()
 returns void
 language plpgsql
 security definer
+set search_path = pg_catalog, public
 as $$
 declare
   send_hour int := 7; -- 7 AM local time
@@ -2417,6 +2436,7 @@ create or replace function upsert_push_notification_setup(
 returns void
 language plpgsql
 security definer
+set search_path = pg_catalog, public
 as $$
 begin
   -- 1?? Update profile
@@ -2548,6 +2568,7 @@ create or replace function generate_ai_triggers()
 returns void
 language plpgsql
 security definer
+set search_path = pg_catalog, public
 as $$
 begin
   /* =====================================================

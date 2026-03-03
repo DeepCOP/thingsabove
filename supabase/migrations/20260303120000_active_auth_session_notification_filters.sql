@@ -4,7 +4,7 @@ create or replace function public.user_has_active_auth_session(
 returns boolean
 language sql
 security definer
-set search_path = public, auth
+set search_path = pg_catalog, public, auth
 as $$
   select exists (
     select 1
@@ -18,6 +18,7 @@ create or replace function queue_daily_notifications()
 returns void
 language plpgsql
 security definer
+set search_path = pg_catalog, public
 as $$
 declare
   send_hour int := 7;
@@ -59,6 +60,7 @@ create or replace function generate_ai_triggers()
 returns void
 language plpgsql
 security definer
+set search_path = pg_catalog, public
 as $$
 begin
   insert into ai_triggers (
