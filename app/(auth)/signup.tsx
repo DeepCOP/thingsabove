@@ -1,5 +1,7 @@
 import { useSignUpUser } from '@/src/hooks/useProfile';
+import { Ionicons } from '@expo/vector-icons';
 import { Input } from '@rneui/themed';
+import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import {
   Alert,
@@ -14,9 +16,12 @@ import {
 } from 'react-native';
 
 export default function SignUp() {
+  const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const colorScheme = useColorScheme();
@@ -68,10 +73,7 @@ export default function SignUp() {
       { email: trimmedEmail, password, firstName: trimmedFirstName, lastName: trimmedLastName },
       {
         onSuccess: () => {
-          Alert.alert(
-            'Confirm your email',
-            'We sent a confirmation link to your email. Please verify to continue.',
-          );
+          router.replace(`../confirm-email?email=${encodeURIComponent(trimmedEmail)}`);
         },
       },
     );
@@ -116,19 +118,37 @@ export default function SignUp() {
           />
           <Input
             label="Password"
-            secureTextEntry
+            secureTextEntry={!showPassword}
             value={password}
             onChangeText={setPassword}
             style={{ color: colorScheme === 'dark' ? '#F5F5F5' : '#424242' }}
             placeholderTextColor={colorScheme === 'dark' ? '#F5F5F5' : '#424242'}
+            rightIcon={
+              <TouchableOpacity onPress={() => setShowPassword((prev) => !prev)}>
+                <Ionicons
+                  name={showPassword ? 'eye-off-outline' : 'eye-outline'}
+                  size={20}
+                  color={colorScheme === 'dark' ? '#F5F5F5' : '#424242'}
+                />
+              </TouchableOpacity>
+            }
           />
           <Input
             label="Confirm Password"
-            secureTextEntry
+            secureTextEntry={!showConfirmPassword}
             value={confirmPassword}
             onChangeText={setConfirmPassword}
             style={{ color: colorScheme === 'dark' ? '#F5F5F5' : '#424242' }}
             placeholderTextColor={colorScheme === 'dark' ? '#F5F5F5' : '#424242'}
+            rightIcon={
+              <TouchableOpacity onPress={() => setShowConfirmPassword((prev) => !prev)}>
+                <Ionicons
+                  name={showConfirmPassword ? 'eye-off-outline' : 'eye-outline'}
+                  size={20}
+                  color={colorScheme === 'dark' ? '#F5F5F5' : '#424242'}
+                />
+              </TouchableOpacity>
+            }
           />
 
           <TouchableOpacity

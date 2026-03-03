@@ -1,4 +1,5 @@
 import { useSignInUserWithPassword } from '@/src/hooks/useProfile';
+import { Ionicons } from '@expo/vector-icons';
 import { Input } from '@rneui/themed';
 import { useState } from 'react';
 import {
@@ -16,6 +17,7 @@ import {
 export default function SignIn() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const colorScheme = useColorScheme();
   const signInWithPassword = useSignInUserWithPassword();
   async function signIn() {
@@ -47,9 +49,18 @@ export default function SignIn() {
           <Input
             style={{ color: colorScheme === 'dark' ? '#F5F5F5' : '#424242' }}
             label="Password"
-            secureTextEntry
+            secureTextEntry={!showPassword}
             value={password}
             onChangeText={setPassword}
+            rightIcon={
+              <TouchableOpacity onPress={() => setShowPassword((prev) => !prev)}>
+                <Ionicons
+                  name={showPassword ? 'eye-off-outline' : 'eye-outline'}
+                  size={20}
+                  color={colorScheme === 'dark' ? '#F5F5F5' : '#424242'}
+                />
+              </TouchableOpacity>
+            }
           />
           <TouchableOpacity
             className="self-end mt-1"
