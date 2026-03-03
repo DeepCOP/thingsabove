@@ -2364,7 +2364,7 @@ begin
     dm.content,
     (
       (current_date + make_interval(hours => send_hour))
-        at time zone p.timezone
+        at time zone coalesce(p.timezone, 'UTC')
     ) at time zone 'UTC'
   from notification_preferences np
   join public.profiles p on p.id = np.user_id
