@@ -143,6 +143,7 @@ function RootLayoutContent() {
         <Stack.Screen name="devotional_detail/[id]/index" options={{ title: '' }} />
         <Stack.Protected guard={session == null}>
           <Stack.Screen name="(auth)" options={{ presentation: 'modal', headerShown: false }} />
+          <Stack.Screen name="confirm-email" options={{ title: 'Confirm Email' }} />
         </Stack.Protected>
         {/* 🔒 AUTH-REQUIRED ROUTES */}
         <Stack.Protected guard={session != null}>
