@@ -509,8 +509,7 @@ returns table (
   total_days int,
   cover_image text,
   created_at timestamptz,
-  likes_count int,
-  dislikes_count int
+  helpful_count int
 )
 language plpgsql
 security definer
@@ -526,11 +525,7 @@ begin
     p.cover_image,
     p.created_at,
 
-    -- ?? likes
-    count(*) filter (where r.reaction_type = 'like')::int as likes_count,
-
-    -- ?? dislikes
-    count(*) filter (where r.reaction_type = 'dislike')::int as dislikes_count
+    count(*) filter (where r.reaction_type = 'helpful')::int as helpful_count
 
   from public.devotional_plans p
   left join public.plan_reactions r
@@ -703,12 +698,12 @@ create index if not exists idx_reports_plan_id
 
 
 
--- Reactions: like / dislike
+-- Reactions: helpful
 create table if not exists public.plan_reactions (
   id uuid primary key default gen_random_uuid(),
   user_id uuid references auth.users(id) on delete cascade,
   plan_id uuid references public.devotional_plans(id) on delete cascade,
-  reaction_type text check (reaction_type in ('like', 'dislike')),
+  reaction_type text check (reaction_type in ('helpful')),
   created_at timestamptz default now(),
   unique (user_id, plan_id)
 );
@@ -718,8 +713,7 @@ create or replace function public.get_plan_reaction_summary(
   p_plan_id uuid
 )
 returns table (
-  likes int,
-  dislikes int,
+  helpful_count int,
   user_reaction text
 )
 language plpgsql
@@ -728,8 +722,7 @@ as $$
 begin
   return query
   select
-    count(*) filter (where reaction_type = 'like')::int as likes,
-    count(*) filter (where reaction_type = 'dislike')::int as dislikes,
+    count(*) filter (where reaction_type = 'helpful')::int as helpful_count,
     (
       select reaction_type
       from plan_reactions
@@ -752,46 +745,26 @@ returns text
 language plpgsql
 as $$
 declare
-  existing_like uuid;
-  existing_dislike uuid;
+  existing_reaction uuid;
 begin
-  if p_reaction_type not in ('like', 'dislike') then
+  if p_reaction_type <> 'helpful' then
     return 'invalid reaction type';
   end if;
 
-  -- Check existing reactions
-  select id into existing_like
+  select id into existing_reaction
   from public.plan_reactions
   where plan_id = p_plan_id
     and user_id = auth.uid()
-    and reaction_type = 'like'
+    and reaction_type = 'helpful'
   limit 1;
 
-  select id into existing_dislike
-  from public.plan_reactions
-  where plan_id = p_plan_id
-    and user_id = auth.uid()
-    and reaction_type = 'dislike'
-  limit 1;
-
-  -- CASE 1: Toggle off (remove)
-  if (p_reaction_type = 'like' and existing_like is not null) or
-     (p_reaction_type = 'dislike' and existing_dislike is not null)
-  then
-    delete from public.plan_reactions where id = coalesce(existing_like, existing_dislike);
+  if existing_reaction is not null then
+    delete from public.plan_reactions where id = existing_reaction;
     return 'removed';
   end if;
 
-  -- CASE 2: Switch from like -> dislike OR dislike -> like
-  if existing_like is not null and p_reaction_type = 'dislike' then
-    delete from public.plan_reactions where id = existing_like;
-  elsif existing_dislike is not null and p_reaction_type = 'like' then
-    delete from public.plan_reactions where id = existing_dislike;
-  end if;
-
-  -- CASE 3: Insert new reaction
   insert into public.plan_reactions (plan_id, user_id, reaction_type)
-  values (p_plan_id, auth.uid(), p_reaction_type);
+  values (p_plan_id, auth.uid(), 'helpful');
 
   return 'added';
 end;
@@ -929,13 +902,9 @@ as select
   p.status,
   p.updated_at,
 
-  -- like count
+  -- helpful count
   (select count(*) from public.plan_reactions r 
-   where r.plan_id = p.id and r.reaction_type = 'like') as likes_count,
-
-  -- dislike count
-  (select count(*) from public.plan_reactions r 
-   where r.plan_id = p.id and r.reaction_type = 'dislike') as dislikes_count
+   where r.plan_id = p.id and r.reaction_type = 'helpful') as helpful_count
 
 from public.devotional_plans p;
 

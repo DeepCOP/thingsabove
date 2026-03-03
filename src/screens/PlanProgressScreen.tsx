@@ -14,6 +14,7 @@ import { DayItemsProgress, DevotionalDays, PlanProgress } from '@/src/types/type
 
 type Props = {
   insetsBottom: number;
+  insetsTop: number;
   title: string;
   coverImage?: string;
   days: any[];
@@ -39,6 +40,7 @@ type Props = {
 
 export default function PlanProgressScreen({
   insetsBottom,
+  insetsTop,
   title,
   coverImage,
   days,
@@ -66,7 +68,7 @@ export default function PlanProgressScreen({
     <>
       <ScrollView
         className="flex-1 bg-white dark:bg-black"
-        style={{ marginBottom: insetsBottom + 70 }}>
+        style={{ marginBottom: insetsBottom + 70, paddingTop: 70 + insetsTop }}>
         <PlanHeader title={title} coverImage={coverImage} selectedDay={selectedDay} />
 
         <DaysCarousel

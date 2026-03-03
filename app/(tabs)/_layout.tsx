@@ -45,7 +45,6 @@ export default function TabLayout() {
               return (
                 <Ionicons name={`${focused ? 'home' : 'home-outline'}`} size={size} color={color} />
               );
-              // return <TabIconComponent focused={focused} icon={icons.home} title="Devotionals" />;
             },
           }}
         />

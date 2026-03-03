@@ -6,9 +6,10 @@ import { Ionicons } from '@expo/vector-icons';
 import BottomSheet from '@gorhom/bottom-sheet';
 import { useRef } from 'react';
 
-import { usePlanReactions, useTogglePlanReaction } from '@/src/hooks/usePlanReactions';
+import { useTogglePlanReaction } from '@/src/hooks/usePlanReactions';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
-import { Share, TouchableOpacity, useColorScheme } from 'react-native';
+import { Platform, Share, TouchableOpacity, useColorScheme, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function DevotionalDetail() {
   const { id } = useLocalSearchParams();
@@ -16,9 +17,9 @@ export default function DevotionalDetail() {
   const reportSheetRef = useRef<BottomSheet>(null);
   const { isGuest, session } = useAuth();
   const toggleReaction = useTogglePlanReaction(planId, session?.user?.id || '');
-  const { data: currentReaction } = usePlanReactions(planId, session?.user?.id || '');
 
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const colorScheme = useColorScheme();
   const startPlanProgressMutation = useStartPlanProgress();
   const userPlanProgressQuery = useUserPlanProgressList(session?.user.id);
@@ -29,12 +30,16 @@ export default function DevotionalDetail() {
 
   const planQuery = useFetchDevotionalPlanById(planId);
   const plan = planQuery.data;
-  const handleToggleReaction = (reaction: 'like' | 'dislike') => {
+  const currentReaction = {
+    helpful_count: plan?.helpful_count ?? 0,
+    user_reaction: plan?.user_reaction === 'helpful' ? ('helpful' as const) : null,
+  };
+  const handleToggleReaction = () => {
     if (isGuest) {
       router.push('/(auth)/signin');
       return;
     }
-    toggleReaction.mutate(reaction);
+    toggleReaction.mutate();
   };
   const onReportPress = () => {
     if (isGuest) {
@@ -61,6 +66,21 @@ export default function DevotionalDetail() {
                 />
               </TouchableOpacity>
             );
+          },
+          headerTransparent: true,
+          headerBlurEffect:
+            Platform.OS === 'ios'
+              ? colorScheme === 'dark'
+                ? 'systemMaterialDark'
+                : 'systemMaterialLight'
+              : undefined,
+          headerStyle: {
+            backgroundColor:
+              Platform.OS === 'ios'
+                ? 'transparent'
+                : colorScheme === 'dark'
+                  ? 'rgba(0, 0, 0, 0.65)'
+                  : 'rgba(255, 255, 255, 0.65)',
           },
         }}
       />

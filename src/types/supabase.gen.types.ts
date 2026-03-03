@@ -1031,14 +1031,14 @@ export type Database = {
           cover_image: string | null;
           created_at: string | null;
           description: string | null;
-          dislikes_count: number | null;
+          helpful_count: number | null;
           id: string | null;
-          likes_count: number | null;
           status: string | null;
           tags: string[] | null;
           title: string | null;
           total_days: number | null;
           updated_at: string | null;
+          user_reaction: string | null;
         };
         Insert: {
           author_id?: string | null;
@@ -1046,14 +1046,14 @@ export type Database = {
           cover_image?: string | null;
           created_at?: string | null;
           description?: string | null;
-          dislikes_count?: never;
+          helpful_count?: never;
           id?: string | null;
-          likes_count?: never;
           status?: string | null;
           tags?: string[] | null;
           title?: string | null;
           total_days?: number | null;
           updated_at?: string | null;
+          user_reaction?: never;
         };
         Update: {
           author_id?: string | null;
@@ -1061,14 +1061,14 @@ export type Database = {
           cover_image?: string | null;
           created_at?: string | null;
           description?: string | null;
-          dislikes_count?: never;
+          helpful_count?: never;
           id?: string | null;
-          likes_count?: never;
           status?: string | null;
           tags?: string[] | null;
           title?: string | null;
           total_days?: number | null;
           updated_at?: string | null;
+          user_reaction?: never;
         };
         Relationships: [];
       };
@@ -1110,32 +1110,19 @@ export type Database = {
         };
         Returns: undefined;
       };
-      add_scripture_note:
-        | {
-            Args: {
-              p_book: string;
-              p_chapter?: number;
-              p_content?: string;
-              p_note_type: string;
-              p_scope_key: string;
-              p_verse_end?: number;
-              p_verse_start?: number;
-            };
-            Returns: string;
-          }
-        | {
-            Args: {
-              p_book: string;
-              p_chapter?: number;
-              p_content?: string;
-              p_note_type: string;
-              p_parent_note_id?: string;
-              p_scope_key: string;
-              p_verse_end?: number;
-              p_verse_start?: number;
-            };
-            Returns: string;
-          };
+      add_scripture_note: {
+        Args: {
+          p_book: string;
+          p_chapter?: number;
+          p_content?: string;
+          p_note_type: string;
+          p_parent_note_id?: string;
+          p_scope_key: string;
+          p_verse_end?: number;
+          p_verse_start?: number;
+        };
+        Returns: string;
+      };
       add_user_to_existing_plan_group: {
         Args: { p_friends_ids: string[]; p_group_id: string };
         Returns: undefined;
@@ -1231,9 +1218,8 @@ export type Database = {
           cover_image: string;
           created_at: string;
           description: string;
-          dislikes_count: number;
+          helpful_count: number;
           id: string;
-          likes_count: number;
           status: string;
           title: string;
           total_days: number;
@@ -1278,8 +1264,7 @@ export type Database = {
       get_plan_reaction_summary: {
         Args: { p_plan_id: string };
         Returns: {
-          dislikes: number;
-          likes: number;
+          helpful_count: number;
           user_reaction: string;
         }[];
       };
@@ -1354,14 +1339,14 @@ export type Database = {
           cover_image: string | null;
           created_at: string | null;
           description: string | null;
-          dislikes_count: number | null;
+          helpful_count: number | null;
           id: string | null;
-          likes_count: number | null;
           status: string | null;
           tags: string[] | null;
           title: string | null;
           total_days: number | null;
           updated_at: string | null;
+          user_reaction: string | null;
         }[];
         SetofOptions: {
           from: '*';

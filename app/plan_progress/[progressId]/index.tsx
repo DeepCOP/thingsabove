@@ -16,10 +16,12 @@ import LoadingSpinner from '@/src/components/LoadingSpinner';
 import { usePlanGroupMembers } from '@/src/hooks/usePlanGroup';
 import PlanProgressScreen from '@/src/screens/PlanProgressScreen';
 import { DayItemsProgress } from '@/src/types/types';
-import { Text, View } from 'react-native';
+import { Platform, Text, useColorScheme, View } from 'react-native';
 
 dayjs.extend(utc);
 export default function PlanProgress() {
+  const colorScheme = useColorScheme();
+
   const insets = useSafeAreaInsets();
   const { progressId } = useLocalSearchParams();
   const router = useRouter();
@@ -79,6 +81,8 @@ export default function PlanProgress() {
   const prevCompletedCount = useRef<number | null>(null);
   const [pendingToggleItemId, setPendingToggleItemId] = useState<string | null>(null);
   const devotional = dayItemsProgress?.items.find((item) => item.item_type === 'devotional');
+  const planTitle = plan?.title ?? 'Plan Progress';
+  const planTotalDays = plan?.total_days ?? days?.length ?? 0;
 
   useEffect(() => {
     if (!planProgress || !plan) return;
@@ -91,7 +95,7 @@ export default function PlanProgress() {
     }
 
     const justCompleted =
-      prevCompletedCount.current < plan.total_days && completedCount === plan.total_days;
+      prevCompletedCount.current < planTotalDays && completedCount === planTotalDays;
 
     if (justCompleted) {
       router.replace({
@@ -101,7 +105,7 @@ export default function PlanProgress() {
     }
 
     prevCompletedCount.current = completedCount;
-  }, [planProgress?.completed_days?.length, plan?.total_days]);
+  }, [planProgress?.completed_days?.length, planTotalDays]);
 
   useEffect(() => {
     setSelectedDay(currentDayData?.day_number || 1);
@@ -159,17 +163,37 @@ export default function PlanProgress() {
 
   return (
     <>
-      <Stack.Screen options={{ title: plan.title }} />
+      <Stack.Screen
+        options={{
+          title: planTitle,
+          headerTransparent: true,
+          headerBlurEffect:
+            Platform.OS === 'ios'
+              ? colorScheme === 'dark'
+                ? 'systemMaterialDark'
+                : 'systemMaterialLight'
+              : undefined,
+          headerStyle: {
+            backgroundColor:
+              Platform.OS === 'ios'
+                ? 'transparent'
+                : colorScheme === 'dark'
+                  ? 'rgba(0, 0, 0, 0.65)'
+                  : 'rgba(255, 255, 255, 0.65)',
+          },
+        }}
+      />
 
       <PlanProgressScreen
         insetsBottom={insets.bottom}
-        title={plan.title}
+        insetsTop={insets.top}
+        title={planTitle}
         coverImage={plan.cover_image || undefined}
         days={days}
         selectedDay={selectedDayNumber}
         selectedDayData={selectedDay}
         currentDayId={currentDayData?.id}
-        totalDays={plan.total_days}
+        totalDays={planTotalDays}
         missedCount={missedDays?.length || 0}
         members={planGroupMembersQuery.data}
         items={dayItemsProgress?.items}
@@ -187,9 +211,9 @@ export default function PlanProgress() {
           router.push({
             pathname: `/devotional_detail/[id]/participants`,
             params: {
-              id: plan.id,
+              id: plan.id ?? '',
               groupId: planProgress.group_id,
-              totalDays: plan.total_days,
+              totalDays: planTotalDays,
               progressId: planProgress.id,
             },
           })

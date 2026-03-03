@@ -41,6 +41,11 @@ export default function MyPlansList({
               progress_id: progress.id,
               group_id: progress.group_id,
               completed_days: progress.completed_days?.length || 0,
+              helpful_count: (plan as { helpful_count?: number | null }).helpful_count ?? 0,
+              user_reaction:
+                (plan as { user_reaction?: string | null }).user_reaction === 'helpful'
+                  ? ('helpful' as const)
+                  : null,
             }
           : null;
       })
@@ -80,6 +85,7 @@ export default function MyPlansList({
 
   const sortedPlans = useMemo(() => {
     if (!flataData) return [];
+
     if (sort === 'Recent') {
       return [...flataData].sort(
         (a, b) => new Date(b.created_at!).getTime() - new Date(a.created_at!).getTime(),
@@ -87,7 +93,7 @@ export default function MyPlansList({
     }
 
     if (sort === 'Trending') {
-      return [...flataData].sort((a, b) => (b.likes_count || 0) - (a.likes_count || 0));
+      return [...flataData].sort((a, b) => (b.helpful_count || 0) - (a.helpful_count || 0));
     }
 
     return flataData;

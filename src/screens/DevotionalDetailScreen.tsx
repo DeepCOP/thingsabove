@@ -5,18 +5,18 @@ import { Ionicons } from '@expo/vector-icons';
 import BottomSheet from '@gorhom/bottom-sheet';
 import { useRef } from 'react';
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import ReportPlanSheet from '../components/ReportPlanModal';
 import StartPlanBottomSheet from '../components/StartPlanBottomSheet';
 import { useAuth } from '../state/AuthContext';
 
 type Props = {
   onReportPress: () => void;
-  handleToggleReaction: (reaction: 'like' | 'dislike') => void;
+  handleToggleReaction: () => void;
   currentReaction:
     | {
-        dislikes: number;
-        likes: number;
-        user_reaction: string;
+        helpful_count: number;
+        user_reaction: 'helpful' | null;
       }
     | undefined;
   reportSheetRef: React.RefObject<BottomSheet | null>;
@@ -39,7 +39,10 @@ export default function DevotionalDetailScreen({
   onMyPlansPress,
 }: Props) {
   const bottomSheetRef = useRef<BottomSheet>(null);
+  const insets = useSafeAreaInsets();
+
   const { isGuest } = useAuth();
+  const resolvedTopInset = insets.top;
   if (isLoading) {
     return <LoadingSpinner style={{ marginTop: 30 }} />;
   }
@@ -60,7 +63,7 @@ export default function DevotionalDetailScreen({
         className="flex-1 bg-white dark:bg-black"
         nestedScrollEnabled={true}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 80 }}>
+        contentContainerStyle={{ paddingTop: resolvedTopInset + 70, paddingBottom: insets.bottom }}>
         {/* Cover Image */}
         <View>
           <PlanCoverImage uri={plan?.cover_image} className="w-full h-60 rounded-2xl" />
@@ -87,40 +90,17 @@ export default function DevotionalDetailScreen({
           <TouchableOpacity
             className="flex-row items-center gap-1 justify-center"
             disabled={isGuest}
-            onPress={() => {
-              handleToggleReaction('like');
-            }}>
+            onPress={handleToggleReaction}>
             <Ionicons
-              name={currentReaction?.user_reaction === 'like' ? 'thumbs-up' : 'thumbs-up-outline'}
+              name={currentReaction?.user_reaction === 'helpful' ? 'heart' : 'heart-outline'}
               size={22}
-              color={currentReaction?.user_reaction === 'like' ? '#22c55e' : '#9ca3af'}
+              color={currentReaction?.user_reaction === 'helpful' ? '#EAB308' : '#9ca3af'}
             />
             <Text
               className={` ${
-                currentReaction?.user_reaction === 'like' ? 'text-green-500' : 'text-gray-500'
+                currentReaction?.user_reaction === 'helpful' ? 'text-yellow-500' : 'text-gray-500'
               }`}>
-              {currentReaction?.likes ?? 0}
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            className="flex-row items-start gap-1 justify-center"
-            disabled={isGuest}
-            onPress={() => {
-              handleToggleReaction('dislike');
-            }}>
-            <Ionicons
-              name={
-                currentReaction?.user_reaction === 'dislike' ? 'thumbs-down' : 'thumbs-down-outline'
-              }
-              size={22}
-              color={currentReaction?.user_reaction === 'dislike' ? '#ef4444' : '#9ca3af'}
-            />
-            <Text
-              className={` ${
-                currentReaction?.user_reaction === 'dislike' ? 'text-red-500' : 'text-gray-500'
-              }`}>
-              {currentReaction?.dislikes ?? 0}
+              {currentReaction?.helpful_count ?? 0}
             </Text>
           </TouchableOpacity>
           <TouchableOpacity

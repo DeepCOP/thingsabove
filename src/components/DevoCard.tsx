@@ -12,10 +12,14 @@ export function ListCard({
 }: {
   item: DevotionalPlanView & {
     completed_days?: number | null;
+    helpful_count?: number | null;
+    user_reaction?: 'helpful' | null;
   };
   onPress: () => void;
 }) {
   const percentageCompletion = ((item.completed_days ?? 0) / (item?.total_days ?? 1)) * 100;
+  const helpfulCount = item.helpful_count ?? 0;
+  const isHelpfulMarkedByMe = item.user_reaction === 'helpful';
   return (
     <TouchableOpacity
       className="bg-white dark:bg-neutral-900 rounded-xl p-3 mb-3 shadow-sm "
@@ -36,8 +40,12 @@ export function ListCard({
 
           {/* Icons Row */}
           <View className="flex-row items-center gap-4 mt-2">
-            <Stat icon="thumbs-up-outline" count={item.likes_count ?? 0} />
-            <Stat icon="thumbs-down-outline" count={item.dislikes_count ?? 0} />
+            <Stat
+              icon="heart"
+              label="Helpful"
+              iconColor={isHelpfulMarkedByMe ? '#EAB308' : '#9CA3AF'}
+              count={helpfulCount}
+            />
             <Stat icon="people-outline" count={item.completions ?? 0} />
           </View>
         </View>
@@ -62,10 +70,14 @@ export function GridCard({
 }: {
   item: DevotionalPlanView & {
     completed_days?: number | null;
+    helpful_count?: number | null;
+    user_reaction?: 'helpful' | null;
   };
   onPress: () => void;
 }) {
   const percentageCompletion = ((item.completed_days ?? 0) / (item?.total_days ?? 1)) * 100;
+  const helpfulCount = item.helpful_count ?? 0;
+  const isHelpfulMarkedByMe = item.user_reaction === 'helpful';
 
   return (
     <TouchableOpacity
@@ -81,8 +93,12 @@ export function GridCard({
       <Text className="text-gray-600 dark:text-gray-200 text-sm mt-1">{item.total_days} Days</Text>
       {/* Icons Row */}
       <View className="flex-row items-center gap-4 mt-2">
-        <Stat icon="thumbs-up-outline" count={item.likes_count ?? 0} />
-        <Stat icon="thumbs-down-outline" count={item.dislikes_count ?? 0} />
+        <Stat
+          icon="heart"
+          label="Helpful"
+          iconColor={isHelpfulMarkedByMe ? '#EAB308' : '#9CA3AF'}
+          count={helpfulCount}
+        />
         <Stat icon="people-outline" count={item.completions ?? 0} />
       </View>
       {(item.completed_days ?? 0) > 0 && (

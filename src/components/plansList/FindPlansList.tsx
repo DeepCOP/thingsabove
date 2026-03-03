@@ -13,7 +13,17 @@ export default function FindPlansList() {
 
   const { sort, isGrid } = useAppStore();
   const flatData = useMemo(() => {
-    const items = plansQuery.data?.pages.flatMap((page) => page.items) || [];
+    const items =
+      plansQuery.data?.pages.flatMap((page) =>
+        page.items.map((item) => ({
+          ...item,
+          helpful_count: (item as { helpful_count?: number | null }).helpful_count ?? 0,
+          user_reaction:
+            (item as { user_reaction?: string | null }).user_reaction === 'helpful'
+              ? ('helpful' as const)
+              : null,
+        })),
+      ) || [];
     return items;
   }, [plansQuery.data]);
 
@@ -29,6 +39,7 @@ export default function FindPlansList() {
 
   const sortedPlans = useMemo(() => {
     if (!flatData) return [];
+
     if (sort === 'Recent') {
       return [...flatData].sort(
         (a, b) => new Date(b.created_at!).getTime() - new Date(a.created_at!).getTime(),
@@ -36,7 +47,7 @@ export default function FindPlansList() {
     }
 
     if (sort === 'Trending') {
-      return [...flatData].sort((a, b) => (b.likes_count || 0) - (a.likes_count || 0));
+      return [...flatData].sort((a, b) => (b.helpful_count || 0) - (a.helpful_count || 0));
     }
 
     return flatData;
