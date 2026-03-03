@@ -73,7 +73,7 @@ export const fetchPlans = async ({
 
 export const fetchPlanById = async (id: string) => {
   let { data, error } = await supabase
-    .from('devotional_plans')
+    .from('devotional_plans_view')
     .select('*')
     .eq('id', id)
     .neq('status', 'draft')
@@ -243,25 +243,6 @@ export const togglePlanReaction = async (planId: string, userId: string) => {
 export type PlanReactionSummary = {
   helpful_count: number;
   user_reaction: 'helpful' | null;
-};
-
-export const getPlanReactionSummary = async (planId: string) => {
-  const { data, error } = await supabase
-    .rpc('get_plan_reaction_summary', { p_plan_id: planId })
-    .single();
-
-  if (error) throw error;
-
-  const raw = data as {
-    helpful_count?: number | null;
-    user_reaction?: string | null;
-  } | null;
-  const reaction = raw?.user_reaction === 'helpful' ? ('helpful' as const) : null;
-
-  return {
-    helpful_count: raw?.helpful_count ?? 0,
-    user_reaction: reaction,
-  } as PlanReactionSummary;
 };
 
 export const reportPlan = async (reason: string, planId: string) => {

@@ -5,6 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import BottomSheet from '@gorhom/bottom-sheet';
 import { useRef } from 'react';
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import ReportPlanSheet from '../components/ReportPlanModal';
 import StartPlanBottomSheet from '../components/StartPlanBottomSheet';
 import { useAuth } from '../state/AuthContext';
@@ -38,7 +39,10 @@ export default function DevotionalDetailScreen({
   onMyPlansPress,
 }: Props) {
   const bottomSheetRef = useRef<BottomSheet>(null);
+  const insets = useSafeAreaInsets();
+
   const { isGuest } = useAuth();
+  const resolvedTopInset = insets.top;
   if (isLoading) {
     return <LoadingSpinner style={{ marginTop: 30 }} />;
   }
@@ -59,7 +63,7 @@ export default function DevotionalDetailScreen({
         className="flex-1 bg-white dark:bg-black"
         nestedScrollEnabled={true}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 80 }}>
+        contentContainerStyle={{ paddingTop: resolvedTopInset + 70, paddingBottom: insets.bottom }}>
         {/* Cover Image */}
         <View>
           <PlanCoverImage uri={plan?.cover_image} className="w-full h-60 rounded-2xl" />
