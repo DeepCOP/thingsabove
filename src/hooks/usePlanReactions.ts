@@ -223,9 +223,6 @@ export function useTogglePlanReaction(planId: string, userId: string) {
     onSettled: () => {
       qc.invalidateQueries({ queryKey: reactionKey });
       qc.invalidateQueries({ queryKey: planKey });
-      qc.invalidateQueries({ queryKey: ['plans'] });
-      qc.invalidateQueries({ queryKey: ['user-plans'] });
-      qc.invalidateQueries({ queryKey: ['search_plans'] });
     },
   });
 }

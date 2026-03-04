@@ -6,7 +6,12 @@ import { useFetchDevotionalPlanById } from '@/src/hooks/useDevotionalPlans';
 import { useDevotionalDays, usePlanProgress } from '@/src/hooks/usePlanProgress';
 import { useAuth } from '@/src/state/AuthContext';
 import { BibleBook, useAppStore } from '@/src/state/useAppStore';
-import { parseVerseRef, sortByItemKey } from '@/src/utils';
+import {
+  incrementPlanCompletions,
+  incrementPlanCompletionsInInfiniteData,
+  parseVerseRef,
+  sortByItemKey,
+} from '@/src/utils';
 import { useQueryClient } from '@tanstack/react-query';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
@@ -20,6 +25,7 @@ import { DayItemsProgress } from '@/src/types/types';
 import { Platform, Text, useColorScheme, View } from 'react-native';
 
 dayjs.extend(utc);
+
 export default function PlanProgress() {
   const colorScheme = useColorScheme();
 
@@ -100,13 +106,22 @@ export default function PlanProgress() {
     const justCompletedFirstTime = prevCompletedOnce.current === false && completedOnce === true;
 
     if (justCompleted) {
-      const planKey = ['plan', plan.id] as const;
-      void Promise.all([
-        qc.invalidateQueries({ queryKey: planKey }),
-        qc.invalidateQueries({ queryKey: ['plans'] }),
-        qc.invalidateQueries({ queryKey: ['user-plans'] }),
-        qc.invalidateQueries({ queryKey: ['search_plans'] }),
-      ]);
+      const planId = plan.id;
+      if (!planId) return;
+
+      const planKey = ['plan', planId] as const;
+      qc.setQueryData(planKey, (old: unknown) => incrementPlanCompletions(old, planId));
+      qc.setQueriesData({ queryKey: ['plans'] }, (old: unknown) =>
+        incrementPlanCompletionsInInfiniteData(old, planId),
+      );
+      qc.setQueriesData({ queryKey: ['search_plans'] }, (old: unknown) =>
+        incrementPlanCompletionsInInfiniteData(old, planId),
+      );
+      qc.setQueriesData({ queryKey: ['user-plans'] }, (old: unknown) => {
+        if (!Array.isArray(old)) return old;
+        return old.map((item) => incrementPlanCompletions(item, planId));
+      });
+      void qc.invalidateQueries({ queryKey: planKey });
 
       router.replace({
         pathname: `/plan_progress/[progressId]/plan-complete`,

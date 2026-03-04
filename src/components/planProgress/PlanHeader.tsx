@@ -16,7 +16,9 @@ export function PlanHeader({ title, coverImage, selectedDay, completions }: Prop
 
         {(completions ?? 0) > 0 && (
           <View className="absolute bottom-0 left-0 right-0 bg-black/50 py-2 rounded-b-2xl">
-            <Text className="text-center text-white font-semibold">Over {completions} completions</Text>
+            <Text className="text-center text-white font-semibold">
+              Over {completions} completions
+            </Text>
           </View>
         )}
       </View>
