@@ -17,6 +17,7 @@ type Props = {
   insetsTop: number;
   title: string;
   coverImage?: string;
+  completions?: number;
   days: any[];
   selectedDay: number;
   currentDayId?: string;
@@ -43,6 +44,7 @@ export default function PlanProgressScreen({
   insetsTop,
   title,
   coverImage,
+  completions,
   days,
   selectedDay,
   selectedDayData,
@@ -69,7 +71,12 @@ export default function PlanProgressScreen({
       <ScrollView
         className="flex-1 bg-white dark:bg-black"
         style={{ marginBottom: insetsBottom + 70, paddingTop: 70 + insetsTop }}>
-        <PlanHeader title={title} coverImage={coverImage} selectedDay={selectedDay} />
+        <PlanHeader
+          title={title}
+          coverImage={coverImage}
+          selectedDay={selectedDay}
+          completions={completions}
+        />
 
         <DaysCarousel
           days={days}

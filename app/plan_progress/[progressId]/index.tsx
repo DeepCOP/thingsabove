@@ -7,6 +7,7 @@ import { useDevotionalDays, usePlanProgress } from '@/src/hooks/usePlanProgress'
 import { useAuth } from '@/src/state/AuthContext';
 import { BibleBook, useAppStore } from '@/src/state/useAppStore';
 import { parseVerseRef, sortByItemKey } from '@/src/utils';
+import { useQueryClient } from '@tanstack/react-query';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
@@ -25,6 +26,7 @@ export default function PlanProgress() {
   const insets = useSafeAreaInsets();
   const { progressId } = useLocalSearchParams();
   const router = useRouter();
+  const qc = useQueryClient();
   const { setMissedDays } = useAppStore();
   const { session, loading: sessionLoading } = useAuth();
   const { planProgressQuery } = usePlanProgress(progressId as string, session?.user?.id as string);
@@ -97,7 +99,15 @@ export default function PlanProgress() {
 
     const justCompletedFirstTime = prevCompletedOnce.current === false && completedOnce === true;
 
-    if (justCompletedFirstTime) {
+    if (justCompleted) {
+      const planKey = ['plan', plan.id] as const;
+      void Promise.all([
+        qc.invalidateQueries({ queryKey: planKey }),
+        qc.invalidateQueries({ queryKey: ['plans'] }),
+        qc.invalidateQueries({ queryKey: ['user-plans'] }),
+        qc.invalidateQueries({ queryKey: ['search_plans'] }),
+      ]);
+
       router.replace({
         pathname: `/plan_progress/[progressId]/plan-complete`,
         params: { progressId: planProgress.id, planId },
@@ -189,6 +199,7 @@ export default function PlanProgress() {
         insetsTop={insets.top}
         title={planTitle}
         coverImage={plan.cover_image || undefined}
+        completions={plan.completions ?? 0}
         days={days}
         selectedDay={selectedDayNumber}
         selectedDayData={selectedDay}
