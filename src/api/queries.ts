@@ -278,3 +278,12 @@ export const getNotificationsPreferences = async (userId: string) => {
 export const updateLastSeen = async (userId: string) => {
   await supabase.from('profiles').update({ last_seen: new Date().toISOString() }).eq('id', userId);
 };
+
+export const fetchMyPlanRating = async (planId: string) => {
+  const { data, error } = await (supabase as any).rpc('get_my_plan_rating', {
+    p_plan_id: planId,
+  });
+
+  if (error) throw error;
+  return typeof data === 'number' ? data : null;
+};
