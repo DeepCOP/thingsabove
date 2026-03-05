@@ -24,11 +24,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const isGuest = !session;
 
   const signOut = async () => {
-    if (session?.user?.id) {
-      await clearPushNotificationSetup(session.user.id);
+    try {
+      if (session?.user?.id) {
+        await clearPushNotificationSetup(session.user.id);
+      }
+    } catch (_error) {
+    } finally {
+      await supabase.auth.signOut();
     }
-
-    await supabase.auth.signOut();
   };
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
