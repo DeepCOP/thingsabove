@@ -23,6 +23,7 @@ export default function App() {
     <ProfileScreen
       profile={profileQuery.data}
       onSignOut={onSignOut}
+      onSetting={() => router.push('/settings')}
       handleUpdateProfile={updateProfile.mutate}
       handleUploadAvatar={uploadAvatar.mutate}
       uploading={uploadAvatar.isPending}

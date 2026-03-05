@@ -2,6 +2,8 @@ import LoadingSpinner from '@/src/components/LoadingSpinner';
 import { useNotificationSettings } from '@/src/hooks/useNotificationSetting';
 import { registerForPushNotificationsAsync } from '@/src/hooks/usePushNotifications';
 import { useAppStore } from '@/src/state/useAppStore';
+import * as Application from 'expo-application';
+import Constants from 'expo-constants';
 import { Switch, Text, TouchableOpacity, View } from 'react-native';
 
 export default function NotificationSettingsScreen() {
@@ -9,6 +11,15 @@ export default function NotificationSettingsScreen() {
     useNotificationSettings();
 
   const { theme, setTheme } = useAppStore();
+  const appVersion =
+    Application.nativeApplicationVersion ?? Constants.expoConfig?.version ?? 'Unknown';
+  const buildNumber =
+    Application.nativeBuildVersion ??
+    String(
+      Constants.expoConfig?.ios?.buildNumber ??
+        Constants.expoConfig?.android?.versionCode ??
+        'Unknown',
+    );
 
   if (loading) {
     return (
@@ -59,6 +70,16 @@ export default function NotificationSettingsScreen() {
             )}
           </TouchableOpacity>
         ))}
+      </View>
+
+      <View className="mt-8">
+        <Text className="text-lg font-semibold dark:text-white mb-3">About</Text>
+
+        <View className="py-3 border-b border-gray-200 dark:border-neutral-800">
+          <Text className="dark:text-white">
+            Version {appVersion} ({buildNumber})
+          </Text>
+        </View>
       </View>
     </View>
   );

@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { UseMutateFunction } from '@tanstack/react-query';
 import { useState } from 'react';
-import { Alert, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Alert, Text, TextInput, TouchableOpacity, View, useColorScheme } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Avatar from '../components/Avatar';
 import MyPlansList from '../components/plansList/MyPlansList';
@@ -16,9 +16,11 @@ export default function ProfileScreen({
   uploading,
   deleting,
   handleDeleteAvatar,
+  onSetting,
 }: {
   profile: Profiles | undefined;
   onSignOut: () => void;
+  onSetting: () => void;
   handleUpdateProfile: UseMutateFunction<
     void,
     Error,
@@ -49,6 +51,7 @@ export default function ProfileScreen({
   deleting?: boolean;
   handleDeleteAvatar: (filePath: string) => void;
 }) {
+  const colorScheme = useColorScheme();
   const insets = useSafeAreaInsets();
   const [isEditingBio, setIsEditingBio] = useState(false);
   const [bio, setBio] = useState(profile?.bio ?? '');
@@ -66,8 +69,18 @@ export default function ProfileScreen({
       <MyPlansList
         listHeaderComponent={
           <>
-            <View className="py-4 border-b border-gray-200 dark:border-neutral-800">
-              <Text className="text-center text-lg font-semibold dark:text-white">Profile</Text>
+            <View className="py-4 px-4 border-b border-gray-200 dark:border-neutral-800 flex-row items-center">
+              <View className="w-6" />
+              <Text className="flex-1 text-center text-lg font-semibold dark:text-white">
+                Profile
+              </Text>
+              <TouchableOpacity onPress={onSetting} hitSlop={8}>
+                <Ionicons
+                  name="settings-outline"
+                  size={22}
+                  color={colorScheme === 'dark' ? '#fff' : '#222'}
+                />
+              </TouchableOpacity>
             </View>
             {/* User Info */}
             <View className="items-center mt-6">
