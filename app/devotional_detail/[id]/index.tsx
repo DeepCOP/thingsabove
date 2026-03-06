@@ -8,8 +8,7 @@ import { useRef } from 'react';
 
 import { useTogglePlanReaction } from '@/src/hooks/usePlanReactions';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
-import { Platform, Share, TouchableOpacity, useColorScheme, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Platform, Share, TouchableOpacity, useColorScheme } from 'react-native';
 
 export default function DevotionalDetail() {
   const { id } = useLocalSearchParams();
@@ -19,7 +18,6 @@ export default function DevotionalDetail() {
   const toggleReaction = useTogglePlanReaction(planId, session?.user?.id || '');
 
   const router = useRouter();
-  const insets = useSafeAreaInsets();
   const colorScheme = useColorScheme();
   const startPlanProgressMutation = useStartPlanProgress();
   const userPlanProgressQuery = useUserPlanProgressList(session?.user.id);

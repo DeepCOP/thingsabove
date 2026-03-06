@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { reportPlan, togglePlanReaction } from '../api/queries';
 
 type ReactionState = 'helpful' | null;
