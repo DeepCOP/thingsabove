@@ -13,10 +13,12 @@ export default function MyPlansList({
   listHeaderComponent,
   listFooterComponent,
   containterStyle,
+  mode = 'all',
 }: {
   listHeaderComponent?: React.JSX.Element;
   listFooterComponent?: React.JSX.Element;
   containterStyle?: object;
+  mode?: 'all' | 'completed';
 }) {
   const { session, loading: sessionLoading } = useAuth();
   const userPlanProgressQuery = useUserPlanProgressList(session?.user?.id);
@@ -41,6 +43,7 @@ export default function MyPlansList({
               progress_id: progress.id,
               group_id: progress.group_id,
               completed_days: progress.completed_days?.length || 0,
+              completed_once: !!progress.completed_once,
               helpful_count: (plan as { helpful_count?: number | null }).helpful_count ?? 0,
               user_reaction:
                 (plan as { user_reaction?: string | null }).user_reaction === 'helpful'
@@ -51,6 +54,16 @@ export default function MyPlansList({
       })
       .filter((plan) => plan !== null);
   }, [userPlanProgress, plansQuery.data]);
+
+  const visibleData = useMemo(() => {
+    if (mode !== 'completed') return flataData;
+
+    return flataData.filter(
+      (plan) =>
+        plan.completed_once === true ||
+        (plan.completed_days ?? 0) >= (typeof plan.total_days === 'number' ? plan.total_days : 0),
+    );
+  }, [flataData, mode]);
 
   const { sort, isGrid } = useAppStore();
 
@@ -73,31 +86,44 @@ export default function MyPlansList({
             color={colorScheme === 'dark' ? '#E5E7EB' : '#6B7280'}
           />
         </View>
-        <Text className="text-lg font-semibold text-gray-900 dark:text-white mb-2 text-center">
-          You don&apos;t have any plans yet
-        </Text>
-        <Text className="text-center text-gray-600 dark:text-gray-400">
-          Find a plan to start your first streak.
-        </Text>
+        {mode === 'completed' ? (
+          <>
+            <Text className="text-lg font-semibold text-gray-900 dark:text-white mb-2 text-center">
+              No completed plans yet
+            </Text>
+            <Text className="text-center text-gray-600 dark:text-gray-400">
+              Finish a plan and it will appear here.
+            </Text>
+          </>
+        ) : (
+          <>
+            <Text className="text-lg font-semibold text-gray-900 dark:text-white mb-2 text-center">
+              You don&apos;t have any plans yet
+            </Text>
+            <Text className="text-center text-gray-600 dark:text-gray-400">
+              Find a plan to start your first streak.
+            </Text>
+          </>
+        )}
       </View>
     </View>
   );
 
   const sortedPlans = useMemo(() => {
-    if (!flataData) return [];
+    if (!visibleData) return [];
 
     if (sort === 'Recent') {
-      return [...flataData].sort(
+      return [...visibleData].sort(
         (a, b) => new Date(b.created_at!).getTime() - new Date(a.created_at!).getTime(),
       );
     }
 
     if (sort === 'Trending') {
-      return [...flataData].sort((a, b) => (b.helpful_count || 0) - (a.helpful_count || 0));
+      return [...visibleData].sort((a, b) => (b.helpful_count || 0) - (a.helpful_count || 0));
     }
 
-    return flataData;
-  }, [sort, flataData]);
+    return visibleData;
+  }, [sort, visibleData]);
   if (!session && !sessionLoading) {
     return (
       <View className="flex-1 items-center justify-center px-4">

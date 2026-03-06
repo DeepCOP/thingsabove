@@ -8,10 +8,10 @@ import MyPlansList from '../components/plansList/MyPlansList';
 type Props = {
   isGrid: boolean;
   sort: 'Recent' | 'Trending';
-  activeTab: 'my-plans' | 'find-plans';
+  activeTab: 'my-plans' | 'completed-plans' | 'find-plans';
   isAuthenticated: boolean;
   onToggleGrid: () => void;
-  onChangeTab: (tab: 'my-plans' | 'find-plans') => void;
+  onChangeTab: (tab: 'my-plans' | 'completed-plans' | 'find-plans') => void;
   onChangeSort: (sort: 'Recent' | 'Trending') => void;
   onSearch: () => void;
   onLogin: () => void;
@@ -84,7 +84,11 @@ export default function PlansScreen({
         />
       </View>
 
-      {activeTab === 'my-plans' ? <MyPlansList /> : <FindPlansList />}
+      {activeTab === 'find-plans' ? (
+        <FindPlansList />
+      ) : (
+        <MyPlansList mode={activeTab === 'completed-plans' ? 'completed' : 'all'} />
+      )}
 
       <TouchableOpacity
         onPress={onContribute}
