@@ -10,7 +10,7 @@ export function useInviteFriends(groupId: string) {
       await inviteFriendsToPlanGroup({ groupId, userIds });
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['plan-group-members', groupId] });
+      qc.invalidateQueries({ queryKey: ['plan_group_members', groupId] });
     },
   });
 }
@@ -33,10 +33,10 @@ export function useAcceptPlanInvite(
         });
       }
       qc.invalidateQueries({
-        queryKey: ['plan-group-members', group_id],
+        queryKey: ['plan_group_members', group_id],
       });
       qc.invalidateQueries({
-        queryKey: ['plan-group', group_id],
+        queryKey: ['plan_group', group_id],
       });
       qc.invalidateQueries({ queryKey: ['user_plans_progresses', user_id] });
     },

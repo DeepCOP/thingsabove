@@ -135,7 +135,7 @@ function updateInfinitePlanPages(
 
 export function useTogglePlanReaction(planId: string, userId: string) {
   const qc = useQueryClient();
-  const reactionKey = ['plan-reactions', planId, userId] as const;
+  const reactionKey = ['plan_reactions', planId, userId] as const;
   const planKey = ['plan', planId] as const;
 
   return useMutation({
@@ -145,15 +145,15 @@ export function useTogglePlanReaction(planId: string, userId: string) {
       await Promise.all([
         qc.cancelQueries({ queryKey: reactionKey }),
         qc.cancelQueries({ queryKey: planKey }),
-        qc.cancelQueries({ queryKey: ['plans'] }),
-        qc.cancelQueries({ queryKey: ['user-plans'] }),
+        qc.cancelQueries({ queryKey: ['discover_plans'] }),
+        qc.cancelQueries({ queryKey: ['user_plans'] }),
         qc.cancelQueries({ queryKey: ['search_plans'] }),
       ]);
 
       const previousReaction = qc.getQueryData<PlanReactionCache>(reactionKey);
       const previousPlan = qc.getQueryData(planKey);
-      const previousPlans = qc.getQueriesData({ queryKey: ['plans'] });
-      const previousUserPlans = qc.getQueriesData({ queryKey: ['user-plans'] });
+      const previousPlans = qc.getQueriesData({ queryKey: ['discover_plans'] });
+      const previousUserPlans = qc.getQueriesData({ queryKey: ['user_plans'] });
       const previousSearchPlans = qc.getQueriesData({ queryKey: ['search_plans'] });
 
       const baseline = resolveBaselineReaction({
@@ -175,13 +175,13 @@ export function useTogglePlanReaction(planId: string, userId: string) {
       });
       qc.setQueryData(planKey, (old) => updatePlanItemReaction(old, planId, delta, nextReaction));
 
-      qc.setQueriesData({ queryKey: ['plans'] }, (old) =>
+      qc.setQueriesData({ queryKey: ['discover_plans'] }, (old) =>
         updateInfinitePlanPages(old, planId, delta, nextReaction),
       );
       qc.setQueriesData({ queryKey: ['search_plans'] }, (old) =>
         updateInfinitePlanPages(old, planId, delta, nextReaction),
       );
-      qc.setQueriesData({ queryKey: ['user-plans'] }, (old) => {
+      qc.setQueriesData({ queryKey: ['user_plans'] }, (old) => {
         if (!Array.isArray(old)) return old;
         return old.map((item) => updatePlanItemReaction(item, planId, delta, nextReaction));
       });

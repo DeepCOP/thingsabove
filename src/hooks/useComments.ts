@@ -5,7 +5,7 @@ import { fetchPlanDayComments } from '../api/groupQueries';
 export function useComments(planId: string, dayId: string, group_id?: string) {
   const queryClient = useQueryClient();
   const fetchComments = useQuery({
-    queryKey: ['day-comments', planId, dayId, group_id],
+    queryKey: ['day_comments', planId, dayId, group_id],
     enabled: !!planId && !!dayId,
     staleTime: 0,
     queryFn: async () => await fetchPlanDayComments({ planId, dayId, group_id }),
@@ -15,7 +15,7 @@ export function useComments(planId: string, dayId: string, group_id?: string) {
     mutationFn: async (content: string) =>
       await addPlanDayComment({ planId, dayId, content, group_id }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['day-comments', planId, dayId, group_id] });
+      queryClient.invalidateQueries({ queryKey: ['day_comments', planId, dayId, group_id] });
     },
   });
 

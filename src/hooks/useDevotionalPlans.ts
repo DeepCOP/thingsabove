@@ -8,7 +8,7 @@ import {
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 export const useRelatedPlans = (tags: string[], currentPlanId: string) => {
   return useQuery({
-    queryKey: ['related-plans', currentPlanId],
+    queryKey: ['related_plans', currentPlanId],
     enabled: !!tags.length && !!currentPlanId,
 
     queryFn: async () => searchRelatedPlans(currentPlanId, tags),
@@ -41,7 +41,7 @@ export const useFetchDevotionalPlanById = (id: string) => {
 };
 export const usePlans = () => {
   const plansQuery = useInfiniteQuery({
-    queryKey: ['plans'],
+    queryKey: ['discover_plans'],
     staleTime: 1000 * 60 * 60 * 24,
     queryFn: async ({
       pageParam,
@@ -59,7 +59,7 @@ export const usePlans = () => {
 
 export const useFetchUserPlans = (planId: string[], userId: string) => {
   return useQuery({
-    queryKey: ['user-plans', planId, userId],
+    queryKey: ['user_plans', planId, userId],
     enabled: !!planId && planId.length > 0 && !!userId,
 
     queryFn: async () => await fetchUserPlans(planId),

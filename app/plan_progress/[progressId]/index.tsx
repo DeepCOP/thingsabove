@@ -111,13 +111,13 @@ export default function PlanProgress() {
 
       const planKey = ['plan', planId] as const;
       qc.setQueryData(planKey, (old: unknown) => incrementPlanCompletions(old, planId));
-      qc.setQueriesData({ queryKey: ['plans'] }, (old: unknown) =>
+      qc.setQueriesData({ queryKey: ['discover_plans'] }, (old: unknown) =>
         incrementPlanCompletionsInInfiniteData(old, planId),
       );
       qc.setQueriesData({ queryKey: ['search_plans'] }, (old: unknown) =>
         incrementPlanCompletionsInInfiniteData(old, planId),
       );
-      qc.setQueriesData({ queryKey: ['user-plans'] }, (old: unknown) => {
+      qc.setQueriesData({ queryKey: ['user_plans'] }, (old: unknown) => {
         if (!Array.isArray(old)) return old;
         return old.map((item) => incrementPlanCompletions(item, planId));
       });
