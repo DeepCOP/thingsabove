@@ -1,10 +1,10 @@
 import { useAuth } from '@/src/state/AuthContext';
-import Constants from 'expo-constants';
 import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
 import { useEffect, useState } from 'react';
 import { Alert, Platform } from 'react-native';
 import { pushNotificationSetup } from '../api/mutations';
+import { getCurrentDeviceExpoPushToken, getExpoProjectId } from '../lib/pushToken';
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -48,7 +48,7 @@ export async function registerForPushNotificationsAsync(): Promise<string | null
   }
 
   // 4️⃣ Get Expo project ID
-  const projectId = Constants?.expoConfig?.extra?.eas?.projectId ?? Constants?.easConfig?.projectId;
+  const projectId = getExpoProjectId();
 
   if (!projectId) {
     console.warn('Expo project ID not found');
@@ -56,7 +56,7 @@ export async function registerForPushNotificationsAsync(): Promise<string | null
   }
 
   // 5️⃣ Get push token
-  const token = (await Notifications.getExpoPushTokenAsync({ projectId })).data;
+  const token = await getCurrentDeviceExpoPushToken();
 
   if (!token) return null;
 
@@ -75,7 +75,10 @@ export function usePushNotifications() {
   const [notification, setNotification] = useState<Notifications.Notification>();
 
   useEffect(() => {
-    if (!session?.user?.id) return;
+    if (!session?.user?.id) {
+      setExpoPushToken(undefined);
+      return;
+    }
 
     registerForPushNotificationsAsync().then(async (token) => {
       if (!token) return;
