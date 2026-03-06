@@ -69,18 +69,22 @@ export default function ProfileScreen({
       <MyPlansList
         listHeaderComponent={
           <>
-            <View className="py-4 px-4 border-b border-gray-200 dark:border-neutral-800 flex-row items-center">
-              <View className="w-6" />
-              <Text className="flex-1 text-center text-lg font-semibold dark:text-white">
-                Profile
-              </Text>
-              <TouchableOpacity onPress={onSetting} hitSlop={8}>
-                <Ionicons
-                  name="settings-outline"
-                  size={22}
-                  color={colorScheme === 'dark' ? '#fff' : '#222'}
-                />
-              </TouchableOpacity>
+            <View className="relative h-14 px-4 border-b border-gray-200 dark:border-neutral-800 justify-center">
+              <View
+                pointerEvents="none"
+                className="absolute top-0 bottom-0 left-0 right-0 items-center justify-center">
+                <Text className="text-center text-lg font-semibold dark:text-white">Profile</Text>
+              </View>
+
+              <View className="flex-row justify-end items-center">
+                <TouchableOpacity onPress={onSetting} hitSlop={8}>
+                  <Ionicons
+                    name="settings-outline"
+                    size={22}
+                    color={colorScheme === 'dark' ? '#fff' : '#222'}
+                  />
+                </TouchableOpacity>
+              </View>
             </View>
             {/* User Info */}
             <View className="items-center mt-6">
