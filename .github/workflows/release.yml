@@ -85,8 +85,8 @@ jobs:
             - `thingsabove-${{ env.APP_VERSION }}.apk`
 
             iOS Build (TestFlight)
-              Install via TestFlight:
-              https://testflight.apple.com/join/j6Qs882p
+            - Install via TestFlight:
+            - https://testflight.apple.com/join/j6Qs882p
           generate_release_notes: true
           draft: false
           prerelease: false
