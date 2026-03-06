@@ -1,3 +1,4 @@
+import { useNotifications } from '@/src/hooks/useNotifications';
 import PlansScreen from '@/src/screens/PlansScreen';
 import { useAuth } from '@/src/state/AuthContext';
 import { useAppStore } from '@/src/state/useAppStore';
@@ -10,6 +11,7 @@ export default function PlansTab() {
   const [activeTab, setActiveTab] = useState<'my-plans' | 'completed-plans' | 'find-plans'>(
     'my-plans',
   );
+  const { notificationsCountQuery } = useNotifications(session?.user?.id);
 
   const { sort, setSort, isGrid, setIsGrid } = useAppStore();
 
@@ -23,6 +25,8 @@ export default function PlansTab() {
       onChangeTab={setActiveTab}
       onChangeSort={setSort}
       onSearch={() => router.push('/search/devotionals')}
+      onNotifications={() => router.push('/notifications/index')}
+      notificationCount={notificationsCountQuery.data ?? 0}
       onLogin={() => router.push('/(auth)/signin')}
       onContribute={() => Linking.openURL(`${process.env.EXPO_PUBLIC_WEB_INTERFACE_URL}/plans/new`)}
     />
