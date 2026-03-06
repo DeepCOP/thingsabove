@@ -297,3 +297,12 @@ export const clearPushNotificationSetup = async (userId?: string) => {
 
   if (error) throw error;
 };
+
+export const upsertPlanRating = async ({ planId, rating }: { planId: string; rating: number }) => {
+  const { error } = await (supabase as any).rpc('upsert_plan_rating', {
+    p_plan_id: planId,
+    p_rating: rating,
+  });
+
+  if (error) throw error;
+};

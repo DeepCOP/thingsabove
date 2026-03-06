@@ -78,7 +78,7 @@ export default function PlanProgress() {
     };
   }, [dayItemsProgressQuery?.data]);
 
-  const prevCompletedCount = useRef<number | null>(null);
+  const prevCompletedOnce = useRef<boolean | null>(null);
   const [pendingToggleItemId, setPendingToggleItemId] = useState<string | null>(null);
   const devotional = dayItemsProgress?.items.find((item) => item.item_type === 'devotional');
   const planTitle = plan?.title ?? 'Plan Progress';
@@ -86,26 +86,26 @@ export default function PlanProgress() {
 
   useEffect(() => {
     if (!planProgress || !plan) return;
+    const completedOnce = !!planProgress.completed_once;
+    const planId = plan.id;
+    if (!planId) return;
 
-    const completedCount = planProgress.completed_days?.length ?? 0;
-
-    if (prevCompletedCount.current === null) {
-      prevCompletedCount.current = completedCount;
+    if (prevCompletedOnce.current === null) {
+      prevCompletedOnce.current = completedOnce;
       return;
     }
 
-    const justCompleted =
-      prevCompletedCount.current < planTotalDays && completedCount === planTotalDays;
+    const justCompletedFirstTime = prevCompletedOnce.current === false && completedOnce === true;
 
-    if (justCompleted) {
+    if (justCompletedFirstTime) {
       router.replace({
         pathname: `/plan_progress/[progressId]/plan-complete`,
-        params: { progressId: planProgress.id, planId: plan.id },
+        params: { progressId: planProgress.id, planId },
       });
     }
 
-    prevCompletedCount.current = completedCount;
-  }, [planProgress?.completed_days?.length, planTotalDays]);
+    prevCompletedOnce.current = completedOnce;
+  }, [planProgress?.completed_once, planProgress?.id, plan?.id]);
 
   useEffect(() => {
     setSelectedDay(currentDayData?.day_number || 1);

@@ -7,18 +7,27 @@ type Props = {
   plan: any;
   progressAnim: Animated.Value;
   animationComplete: boolean;
+  currentRating: number;
+  ratingLoading: boolean;
+  ratingSaving: boolean;
   onBack: () => void;
   onShare: () => void;
+  onRate: (rating: number) => void;
 };
 
 export default function PlanCompleteScreen({
   plan,
   progressAnim,
   animationComplete,
+  currentRating,
+  ratingLoading,
+  ratingSaving,
   onBack,
   onShare,
+  onRate,
 }: Props) {
   const colorScheme = useColorScheme();
+  const hasRating = currentRating > 0;
   return (
     <View className="flex-1 bg-white dark:bg-black">
       {/* HEADER */}
@@ -49,19 +58,27 @@ export default function PlanCompleteScreen({
       {animationComplete ? (
         <View className="mx-4 mt-6 bg-gray-300 dark:bg-neutral-900 rounded-2xl py-6 items-center">
           <Text className="text-lg font-semibold mb-3 text-gray-800 dark:text-white">
-            You rated this Plan
+            {hasRating ? 'You rated this Plan' : 'Rate this Plan'}
           </Text>
 
           <View className="flex-row gap-2">
             {[1, 2, 3, 4, 5].map((i) => (
-              <Ionicons
+              <TouchableOpacity
                 key={i}
-                name="star"
-                size={26}
-                color={colorScheme === 'dark' ? '#fff' : '#000'}
-              />
+                onPress={() => onRate(i)}
+                disabled={ratingLoading || ratingSaving}>
+                <Ionicons
+                  name={i <= currentRating ? 'star' : 'star-outline'}
+                  size={26}
+                  color={i <= currentRating ? '#EAB308' : colorScheme === 'dark' ? '#fff' : '#000'}
+                />
+              </TouchableOpacity>
             ))}
           </View>
+
+          {ratingSaving && (
+            <Text className="text-xs text-gray-500 dark:text-gray-400 mt-3">Saving rating...</Text>
+          )}
         </View>
       ) : (
         <View className="mx-4 mt-6 h-[3px] bg-black/10 overflow-hidden">
