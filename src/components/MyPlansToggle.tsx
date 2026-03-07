@@ -12,8 +12,8 @@ type Props = {
 
 const tabs: Tab[] = [
   { key: 'my-plans', label: 'My Plans' },
-  { key: 'completed-plans', label: 'Completed Plans' },
   { key: 'find-plans', label: 'Find Plans' },
+  { key: 'completed-plans', label: 'Completed Plans' },
 ];
 
 export function MyPlansToggle({ activeTab, onChange }: Props) {
@@ -26,7 +26,7 @@ export function MyPlansToggle({ activeTab, onChange }: Props) {
           <TouchableOpacity
             key={tab.key}
             onPress={() => onChange(tab.key as 'my-plans' | 'completed-plans' | 'find-plans')}
-            className={`flex-1 h-12 rounded-full items-center justify-center px-1 ${
+            className={`flex-1 rounded-full items-center justify-center px-1 py-2 ${
               isActive ? 'bg-white' : ''
             }`}>
             <Text
