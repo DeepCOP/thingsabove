@@ -103,7 +103,7 @@ export default function PlanProgress() {
       return;
     }
 
-    const justCompletedFirstTime = prevCompletedOnce.current === false && completedOnce === true;
+    const justCompleted = prevCompletedOnce.current === false && completedOnce === true;
 
     if (justCompleted) {
       const planId = plan.id;
