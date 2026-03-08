@@ -81,12 +81,13 @@ jobs:
 
             Built via EAS Cloud.
 
-            Android Production Build
-            - `thingsabove-${{ env.APP_VERSION }}.apk`
-
-            iOS Build (TestFlight)
+            iOS Beta Build (TestFlight)
             - Install via TestFlight:
             - https://testflight.apple.com/join/j6Qs882p
+
+            Android Beta Build
+            - `thingsabove-${{ env.APP_VERSION }}.apk`
+
           generate_release_notes: true
           draft: false
           prerelease: false
