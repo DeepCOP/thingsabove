@@ -1,4 +1,4 @@
-name: EAS Build and Upload Android Release Asset
+name: EAS Build and Upload Mobile Release Assets
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
       - '*'
 
 jobs:
-  build_android_release:
+  build_mobile_release:
     runs-on: ubuntu-latest
     env:
       EAS_PROFILE: preview
@@ -69,19 +69,25 @@ jobs:
           fi
           echo "✅ APK ready"
 
-      - name: 🚀 Upload to GitHub Release
+      - name: Upload to GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.ref_name }}
           name: Release ${{ env.APP_VERSION }}
           body: |
-            🚀 Android Production Build
-
             Version: ${{ env.APP_VERSION }}
             Tag: ${{ github.ref_name }}
             Profile: ${{ env.EAS_PROFILE }}
 
             Built via EAS Cloud.
+
+            iOS Beta Build (TestFlight)
+            - Install via TestFlight:
+            - https://testflight.apple.com/join/j6Qs882p
+
+            Android Beta Build
+            - `thingsabove-${{ env.APP_VERSION }}.apk`
+
           generate_release_notes: true
           draft: false
           prerelease: false
