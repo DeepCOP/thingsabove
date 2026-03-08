@@ -15,7 +15,7 @@ export function useNotifications(userId: string | undefined) {
   });
 
   const notificationsCountQuery = useQuery({
-    queryKey: ['notifications-count', userId],
+    queryKey: ['notifications_count', userId],
     staleTime: 0,
     enabled: !!userId,
     refetchOnReconnect: 'always',
@@ -26,7 +26,7 @@ export function useNotifications(userId: string | undefined) {
   const markRead = useMutation({
     mutationFn: async (id: string) => await markNotificationRead(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['notifications-count'] });
+      queryClient.invalidateQueries({ queryKey: ['notifications_count'] });
       queryClient.invalidateQueries({ queryKey: ['notifications'] });
     },
   });

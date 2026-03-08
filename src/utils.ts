@@ -66,3 +66,41 @@ export function useDebounce<T>(value: T, delay = 500) {
 export function isValidEmail(email: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
+
+export function incrementPlanCompletions(item: unknown, planId: string) {
+  if (!item || typeof item !== 'object') return item;
+
+  const planItem = item as {
+    id?: string | null;
+    completions?: number | null;
+  };
+
+  if (planItem.id !== planId) return item;
+
+  return {
+    ...planItem,
+    completions: Math.max(0, (planItem.completions ?? 0) + 1),
+  };
+}
+
+export function incrementPlanCompletionsInInfiniteData(data: unknown, planId: string) {
+  if (!data || typeof data !== 'object') return data;
+
+  const typed = data as { pages?: unknown[]; pageParams?: unknown[] };
+  if (!Array.isArray(typed.pages)) return data;
+
+  return {
+    ...typed,
+    pages: typed.pages.map((page) => {
+      if (!page || typeof page !== 'object') return page;
+
+      const typedPage = page as { items?: unknown[] };
+      if (!Array.isArray(typedPage.items)) return page;
+
+      return {
+        ...typedPage,
+        items: typedPage.items.map((item) => incrementPlanCompletions(item, planId)),
+      };
+    }),
+  };
+}

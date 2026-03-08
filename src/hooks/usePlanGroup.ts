@@ -3,7 +3,7 @@ import { fetchPlanGroupByGroupId, fetchPlanGroupMembers } from '../api/groupQuer
 
 export function usePlanGroup(groupId: string) {
   return useQuery({
-    queryKey: ['plan-group', groupId],
+    queryKey: ['plan_group', groupId],
     enabled: !!groupId,
     queryFn: async () => await fetchPlanGroupByGroupId({ groupId }),
   });
@@ -11,7 +11,7 @@ export function usePlanGroup(groupId: string) {
 
 export function usePlanGroupMembers(groupId: string) {
   return useQuery({
-    queryKey: ['plan-group-members', groupId],
+    queryKey: ['plan_group_members', groupId],
     enabled: !!groupId,
     staleTime: 1000 * 60 * 30,
     queryFn: async () => await fetchPlanGroupMembers({ groupId }),

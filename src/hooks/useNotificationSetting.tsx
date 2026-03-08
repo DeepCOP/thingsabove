@@ -12,7 +12,7 @@ export function useNotificationSettings() {
 
   // 1️⃣ Fetch preferences
   const { data, isLoading: loading } = useQuery({
-    queryKey: ['notification-preferences', userId],
+    queryKey: ['notification_preferences', userId],
     enabled: !!userId,
     queryFn: async () => getNotificationsPreferences(userId!),
   });
@@ -26,16 +26,16 @@ export function useNotificationSettings() {
     // 3️⃣ Optimistic update
     onMutate: async (value) => {
       await queryClient.cancelQueries({
-        queryKey: ['notification-preferences', userId],
+        queryKey: ['notification_preferences', userId],
       });
 
       const previous = queryClient.getQueryData<NotificationPreferences>([
-        'notification-preferences',
+        'notification_preferences',
         userId,
       ]);
 
       queryClient.setQueryData(
-        ['notification-preferences', userId],
+        ['notification_preferences', userId],
         (old: NotificationPreferences | undefined) => {
           return {
             ...old,
@@ -49,13 +49,13 @@ export function useNotificationSettings() {
 
     onError: (_err, _value, context) => {
       if (context?.previous) {
-        queryClient.setQueryData(['notification-preferences', userId], context.previous);
+        queryClient.setQueryData(['notification_preferences', userId], context.previous);
       }
     },
 
     onSettled: () => {
       queryClient.invalidateQueries({
-        queryKey: ['notification-preferences', userId],
+        queryKey: ['notification_preferences', userId],
       });
     },
   });

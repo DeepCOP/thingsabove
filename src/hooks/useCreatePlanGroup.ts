@@ -17,7 +17,7 @@ export function useCreatePlanGroup() {
 
     onSuccess: (_progressId, variables) => {
       queryClient.invalidateQueries({ queryKey: ['plan_progress'] });
-      queryClient.invalidateQueries({ queryKey: ['plan-group'] });
+      queryClient.invalidateQueries({ queryKey: ['plan_group'] });
       queryClient.invalidateQueries({ queryKey: ['user_plans_progresses', variables.user_id] });
     },
     onError: (error) => {

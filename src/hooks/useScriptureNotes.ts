@@ -12,7 +12,7 @@ export function useScriptureNotes(context: ScriptureNoteContext | null) {
   const qc = useQueryClient();
 
   const notesQuery = useInfiniteQuery({
-    queryKey: ['scripture-notes', context?.noteType, context?.scopeKey],
+    queryKey: ['scripture_notes', context?.noteType, context?.scopeKey],
     enabled: !!context,
     staleTime: 0,
     queryFn: async ({ pageParam }: { pageParam: number }) => {
@@ -49,14 +49,14 @@ export function useScriptureNotes(context: ScriptureNoteContext | null) {
       });
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['scripture-notes'] });
+      qc.invalidateQueries({ queryKey: ['scripture_notes'] });
     },
   });
 
   const toggleHelpful = useMutation({
     mutationFn: async (noteId: string) => toggleScriptureNoteHelpful(noteId),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['scripture-notes'] });
+      qc.invalidateQueries({ queryKey: ['scripture_notes'] });
     },
   });
 

@@ -6,7 +6,13 @@ import { useFetchDevotionalPlanById } from '@/src/hooks/useDevotionalPlans';
 import { useDevotionalDays, usePlanProgress } from '@/src/hooks/usePlanProgress';
 import { useAuth } from '@/src/state/AuthContext';
 import { BibleBook, useAppStore } from '@/src/state/useAppStore';
-import { parseVerseRef, sortByItemKey } from '@/src/utils';
+import {
+  incrementPlanCompletions,
+  incrementPlanCompletionsInInfiniteData,
+  parseVerseRef,
+  sortByItemKey,
+} from '@/src/utils';
+import { useQueryClient } from '@tanstack/react-query';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
@@ -19,12 +25,14 @@ import { DayItemsProgress } from '@/src/types/types';
 import { Platform, Text, useColorScheme, View } from 'react-native';
 
 dayjs.extend(utc);
+
 export default function PlanProgress() {
   const colorScheme = useColorScheme();
 
   const insets = useSafeAreaInsets();
   const { progressId } = useLocalSearchParams();
   const router = useRouter();
+  const qc = useQueryClient();
   const { setMissedDays } = useAppStore();
   const { session, loading: sessionLoading } = useAuth();
   const { planProgressQuery } = usePlanProgress(progressId as string, session?.user?.id as string);
@@ -95,9 +103,26 @@ export default function PlanProgress() {
       return;
     }
 
-    const justCompletedFirstTime = prevCompletedOnce.current === false && completedOnce === true;
+    const justCompleted = prevCompletedOnce.current === false && completedOnce === true;
 
-    if (justCompletedFirstTime) {
+    if (justCompleted) {
+      const planId = plan.id;
+      if (!planId) return;
+
+      const planKey = ['plan', planId] as const;
+      qc.setQueryData(planKey, (old: unknown) => incrementPlanCompletions(old, planId));
+      qc.setQueriesData({ queryKey: ['discover_plans'] }, (old: unknown) =>
+        incrementPlanCompletionsInInfiniteData(old, planId),
+      );
+      qc.setQueriesData({ queryKey: ['search_plans'] }, (old: unknown) =>
+        incrementPlanCompletionsInInfiniteData(old, planId),
+      );
+      qc.setQueriesData({ queryKey: ['user_plans'] }, (old: unknown) => {
+        if (!Array.isArray(old)) return old;
+        return old.map((item) => incrementPlanCompletions(item, planId));
+      });
+      void qc.invalidateQueries({ queryKey: planKey });
+
       router.replace({
         pathname: `/plan_progress/[progressId]/plan-complete`,
         params: { progressId: planProgress.id, planId },
@@ -189,6 +214,7 @@ export default function PlanProgress() {
         insetsTop={insets.top}
         title={planTitle}
         coverImage={plan.cover_image || undefined}
+        completions={plan.completions ?? 0}
         days={days}
         selectedDay={selectedDayNumber}
         selectedDayData={selectedDay}
