@@ -1,5 +1,6 @@
 import { supabase } from '../lib/supabaseClient';
 import { getCurrentDeviceExpoPushToken } from '../lib/pushToken';
+import { SignUpProfileInput, UpdateProfileInput } from '../types/types';
 
 export const toggleItemCompletion = async ({
   item_type,
@@ -212,17 +213,30 @@ export const updateProfile = async ({
   last_name,
   avatar_url,
   bio,
-}: {
-  first_name?: string;
-  last_name?: string;
-  avatar_url?: string;
-  bio?: string;
-}) => {
+  is_believer,
+  year_believed,
+  is_baptized,
+  year_baptized,
+  attends_church_regularly,
+  church_name,
+  church_address,
+  church_website_url,
+  clear_church,
+}: UpdateProfileInput) => {
   const { error } = await supabase.rpc('update_profile', {
+    p_attends_church_regularly: attends_church_regularly ?? undefined,
     p_first_name: first_name,
     p_last_name: last_name,
     p_avatar_url: avatar_url,
     p_bio: bio,
+    p_is_believer: is_believer ?? undefined,
+    p_year_believed: year_believed ?? undefined,
+    p_is_baptized: is_baptized ?? undefined,
+    p_year_baptized: year_baptized ?? undefined,
+    p_church_name: church_name ?? undefined,
+    p_church_address: church_address ?? undefined,
+    p_church_website_url: church_website_url ?? undefined,
+    p_clear_church: clear_church ?? false,
   });
 
   if (error) throw error;
@@ -234,12 +248,20 @@ export const deleteAvatarFromStorage = async (filePath: string) => {
   if (error) throw error;
 };
 
-export const signUpUser = async (
-  email: string,
-  password: string,
-  firstName: string,
-  lastName: string,
-) => {
+export const signUpUser = async ({
+  email,
+  password,
+  firstName,
+  lastName,
+  isBeliever,
+  yearBelieved,
+  isBaptized,
+  yearBaptized,
+  attendsChurchRegularly,
+  churchName,
+  churchAddress,
+  churchWebsiteUrl,
+}: SignUpProfileInput) => {
   const { error } = await supabase.auth.signUp({
     email,
     password,
@@ -248,6 +270,14 @@ export const signUpUser = async (
       data: {
         first_name: firstName,
         last_name: lastName,
+        is_believer: isBeliever,
+        year_believed: yearBelieved ?? null,
+        is_baptized: isBaptized ?? null,
+        year_baptized: yearBaptized ?? null,
+        attends_church_regularly: attendsChurchRegularly,
+        church_name: churchName ?? null,
+        church_address: churchAddress ?? null,
+        church_website_url: churchWebsiteUrl ?? null,
       },
     },
   });

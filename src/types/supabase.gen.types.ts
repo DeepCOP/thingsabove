@@ -203,6 +203,42 @@ export type Database = {
           },
         ];
       };
+      churches: {
+        Row: {
+          address: string | null;
+          created_at: string;
+          id: string;
+          name: string;
+          normalized_address: string | null;
+          normalized_name: string | null;
+          normalized_website_url: string | null;
+          updated_at: string;
+          website_url: string | null;
+        };
+        Insert: {
+          address?: string | null;
+          created_at?: string;
+          id?: string;
+          name: string;
+          normalized_address?: string | null;
+          normalized_name?: string | null;
+          normalized_website_url?: string | null;
+          updated_at?: string;
+          website_url?: string | null;
+        };
+        Update: {
+          address?: string | null;
+          created_at?: string;
+          id?: string;
+          name?: string;
+          normalized_address?: string | null;
+          normalized_name?: string | null;
+          normalized_website_url?: string | null;
+          updated_at?: string;
+          website_url?: string | null;
+        };
+        Relationships: [];
+      };
       day_items_progress: {
         Row: {
           completed: boolean | null;
@@ -766,45 +802,71 @@ export type Database = {
       };
       profiles: {
         Row: {
+          attends_church_regularly: boolean | null;
           avatar_url: string | null;
           bio: string | null;
+          church_id: string | null;
           created_at: string | null;
           email: string;
           expo_push_token: string | null;
           first_name: string;
           id: string;
+          is_baptized: boolean | null;
+          is_believer: boolean | null;
           last_name: string;
           last_seen: string | null;
           timezone: string | null;
           updated_at: string | null;
+          year_baptized: number | null;
+          year_believed: number | null;
         };
         Insert: {
+          attends_church_regularly?: boolean | null;
           avatar_url?: string | null;
           bio?: string | null;
+          church_id?: string | null;
           created_at?: string | null;
           email: string;
           expo_push_token?: string | null;
           first_name: string;
           id: string;
+          is_baptized?: boolean | null;
+          is_believer?: boolean | null;
           last_name: string;
           last_seen?: string | null;
           timezone?: string | null;
           updated_at?: string | null;
+          year_baptized?: number | null;
+          year_believed?: number | null;
         };
         Update: {
+          attends_church_regularly?: boolean | null;
           avatar_url?: string | null;
           bio?: string | null;
+          church_id?: string | null;
           created_at?: string | null;
           email?: string;
           expo_push_token?: string | null;
           first_name?: string;
           id?: string;
+          is_baptized?: boolean | null;
+          is_believer?: boolean | null;
           last_name?: string;
           last_seen?: string | null;
           timezone?: string | null;
           updated_at?: string | null;
+          year_baptized?: number | null;
+          year_believed?: number | null;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: 'profiles_church_id_fkey';
+            columns: ['church_id'];
+            isOneToOne: false;
+            referencedRelation: 'churches';
+            referencedColumns: ['id'];
+          },
+        ];
       };
       reports: {
         Row: {
@@ -1409,10 +1471,19 @@ export type Database = {
       unread_notifications_count: { Args: never; Returns: number };
       update_profile: {
         Args: {
+          p_attends_church_regularly?: boolean;
           p_avatar_url?: string;
           p_bio?: string;
+          p_church_address?: string;
+          p_church_name?: string;
+          p_church_website_url?: string;
+          p_clear_church?: boolean;
           p_first_name?: string;
+          p_is_baptized?: boolean;
+          p_is_believer?: boolean;
           p_last_name?: string;
+          p_year_baptized?: number;
+          p_year_believed?: number;
         };
         Returns: undefined;
       };

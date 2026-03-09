@@ -1,4 +1,5 @@
 import { supabase } from '../lib/supabaseClient';
+import { ProfileWithChurch } from '../types/types';
 
 export const searchRelatedPlans = async (currentPlanId: string, tags: string[]) => {
   if (!tags.length) return [];
@@ -254,11 +255,30 @@ export const reportPlan = async (reason: string, planId: string) => {
 };
 
 export const getProfile = async (userId: string) => {
-  const { data, error } = await supabase.from('profiles').select(`*`).eq('id', userId).single();
+  const { data, error } = await supabase
+    .from('profiles')
+    .select(
+      `
+        *,
+        church:churches (
+          id,
+          name,
+          address,
+          website_url,
+          created_at,
+          updated_at,
+          normalized_name,
+          normalized_address,
+          normalized_website_url
+        )
+      `,
+    )
+    .eq('id', userId)
+    .single();
   if (error) {
     throw error;
   }
-  return data;
+  return data as ProfileWithChurch;
 };
 
 export const getNotificationsPreferences = async (userId: string) => {

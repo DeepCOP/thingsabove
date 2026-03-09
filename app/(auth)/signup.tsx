@@ -1,3 +1,11 @@
+import ProfileDetailsForm from '@/src/components/ProfileDetailsForm';
+import {
+  ProfileDetailsFormErrors,
+  buildProfileDetailsFormValues,
+  hasProfileDetailsErrors,
+  toSignUpProfileInput,
+  validateProfileDetailsForm,
+} from '@/src/profileDetails';
 import { useSignUpUser } from '@/src/hooks/useProfile';
 import { Ionicons } from '@expo/vector-icons';
 import { Input } from '@rneui/themed';
@@ -22,22 +30,18 @@ export default function SignUp() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
+  const [detailsForm, setDetailsForm] = useState(() => buildProfileDetailsFormValues());
+  const [detailsErrors, setDetailsErrors] = useState<ProfileDetailsFormErrors>({});
   const colorScheme = useColorScheme();
   const signUpWithEmail = useSignUpUser();
-  const MIN_NAME_LENGTH = 2;
-  const MAX_NAME_LENGTH = 50;
   const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
   const trimmedEmail = email.trim();
-  const trimmedFirstName = firstName.trim();
-  const trimmedLastName = lastName.trim();
   const isEmailValid = EMAIL_REGEX.test(trimmedEmail);
-  const isFirstNameValid =
-    trimmedFirstName.length >= MIN_NAME_LENGTH && trimmedFirstName.length <= MAX_NAME_LENGTH;
-  const isLastNameValid =
-    trimmedLastName.length >= MIN_NAME_LENGTH && trimmedLastName.length <= MAX_NAME_LENGTH;
+  const profileErrors = validateProfileDetailsForm(detailsForm, {
+    requireName: true,
+    requireChoices: true,
+  });
 
   const isDisabled =
     !trimmedEmail ||
@@ -45,38 +49,41 @@ export default function SignUp() {
     !confirmPassword ||
     password !== confirmPassword ||
     !isEmailValid ||
-    !isFirstNameValid ||
-    !isLastNameValid ||
+    hasProfileDetailsErrors(profileErrors) ||
     signUpWithEmail.isPending;
 
   async function signUp() {
-    if (!trimmedEmail || !password || !confirmPassword || !trimmedFirstName || !trimmedLastName) {
-      Alert.alert('Missing fields', 'Please fill in all fields.');
+    if (!trimmedEmail || !password || !confirmPassword) {
+      Alert.alert('Missing fields', 'Please fill in all required fields.');
       return;
     }
+
     if (!isEmailValid) {
       Alert.alert('Invalid email', 'Please enter a valid email address.');
       return;
     }
-    if (!isFirstNameValid || !isLastNameValid) {
-      Alert.alert(
-        'Invalid name',
-        `First and last name must be between ${MIN_NAME_LENGTH} and ${MAX_NAME_LENGTH} characters.`,
-      );
-      return;
-    }
+
     if (password !== confirmPassword) {
       Alert.alert('Password mismatch', 'Passwords do not match.');
       return;
     }
-    signUpWithEmail.mutate(
-      { email: trimmedEmail, password, firstName: trimmedFirstName, lastName: trimmedLastName },
-      {
-        onSuccess: () => {
-          router.replace(`../confirm-email?email=${encodeURIComponent(trimmedEmail)}`);
-        },
+
+    const nextErrors = validateProfileDetailsForm(detailsForm, {
+      requireName: true,
+      requireChoices: true,
+    });
+    setDetailsErrors(nextErrors);
+
+    if (hasProfileDetailsErrors(nextErrors)) {
+      Alert.alert('Complete your profile', 'Please finish the faith and church details.');
+      return;
+    }
+
+    signUpWithEmail.mutate(toSignUpProfileInput(trimmedEmail, password, detailsForm), {
+      onSuccess: () => {
+        router.replace(`../confirm-email?email=${encodeURIComponent(trimmedEmail)}`);
       },
-    );
+    });
   }
 
   return (
@@ -87,32 +94,38 @@ export default function SignUp() {
         <ScrollView
           contentContainerStyle={{
             flexGrow: 1,
-            justifyContent: 'center',
             paddingHorizontal: 24,
             paddingVertical: 24,
           }}
           keyboardShouldPersistTaps="handled"
           automaticallyAdjustKeyboardInsets>
-          <Input
-            label="First Name"
-            value={firstName}
-            onChangeText={setFirstName}
-            maxLength={MAX_NAME_LENGTH}
-            style={{ color: colorScheme === 'dark' ? '#F5F5F5' : '#424242' }}
-            placeholderTextColor={colorScheme === 'dark' ? '#F5F5F5' : '#424242'}
+          <Text className="mb-6 text-2xl font-semibold text-gray-900 dark:text-white">
+            Create Your Account
+          </Text>
+
+          <ProfileDetailsForm
+            values={detailsForm}
+            errors={detailsErrors}
+            onChange={(patch) => {
+              setDetailsForm((current) => ({ ...current, ...patch }));
+              setDetailsErrors((current) => {
+                const next = { ...current };
+                for (const key of Object.keys(patch) as Array<keyof ProfileDetailsFormErrors>) {
+                  delete next[key];
+                }
+                return next;
+              });
+            }}
           />
-          <Input
-            label="Last Name"
-            value={lastName}
-            onChangeText={setLastName}
-            maxLength={MAX_NAME_LENGTH}
-            style={{ color: colorScheme === 'dark' ? '#F5F5F5' : '#424242' }}
-            placeholderTextColor={colorScheme === 'dark' ? '#F5F5F5' : '#424242'}
-          />
+
           <Input
             label="Email"
             value={email}
             onChangeText={setEmail}
+            autoCapitalize="none"
+            autoCorrect={false}
+            keyboardType="email-address"
+            errorMessage={trimmedEmail && !isEmailValid ? 'Enter a valid email address.' : ''}
             style={{ color: colorScheme === 'dark' ? '#F5F5F5' : '#424242' }}
             placeholderTextColor={colorScheme === 'dark' ? '#F5F5F5' : '#424242'}
           />
@@ -121,6 +134,8 @@ export default function SignUp() {
             secureTextEntry={!showPassword}
             value={password}
             onChangeText={setPassword}
+            autoCapitalize="none"
+            autoCorrect={false}
             style={{ color: colorScheme === 'dark' ? '#F5F5F5' : '#424242' }}
             placeholderTextColor={colorScheme === 'dark' ? '#F5F5F5' : '#424242'}
             rightIcon={
@@ -138,6 +153,11 @@ export default function SignUp() {
             secureTextEntry={!showConfirmPassword}
             value={confirmPassword}
             onChangeText={setConfirmPassword}
+            autoCapitalize="none"
+            autoCorrect={false}
+            errorMessage={
+              confirmPassword && password !== confirmPassword ? 'Passwords do not match.' : ''
+            }
             style={{ color: colorScheme === 'dark' ? '#F5F5F5' : '#424242' }}
             placeholderTextColor={colorScheme === 'dark' ? '#F5F5F5' : '#424242'}
             rightIcon={
@@ -152,13 +172,13 @@ export default function SignUp() {
           />
 
           <TouchableOpacity
-            className={`p-3 rounded-lg mt-4 ${
+            className={`mt-4 rounded-lg p-3 ${
               isDisabled ? 'bg-gray-300 dark:bg-gray-700' : 'bg-black dark:bg-white'
             }`}
             onPress={signUp}
             disabled={isDisabled}>
             <Text
-              className="text-white dark:text-black text-center font-bold"
+              className="text-center font-bold text-white dark:text-black"
               style={{ opacity: isDisabled ? 0.6 : 1 }}>
               Sign Up
             </Text>
