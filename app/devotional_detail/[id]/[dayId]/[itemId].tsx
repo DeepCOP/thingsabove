@@ -34,22 +34,28 @@ export default function DevotionalDayScreen() {
   }, [routeItemId]);
 
   const HandleNext = (currentItemId: string) => {
-    const currentItemIdx = dayItemsProgress?.items?.findIndex((item) => item.id === currentItemId);
-    if (currentItemIdx === undefined || !dayItemsProgress?.items) return;
-    if (currentItemIdx === -1 || currentItemIdx === dayItemsProgress.items.length - 1) {
-      return;
-    }
-    const nextItem = dayItemsProgress.items[currentItemIdx + 1];
+    const items = dayItemsProgress?.items;
+    if (!items) return;
+
+    const currentItemIdx = items.findIndex((item) => item.id === currentItemId);
+    if (currentItemIdx < 0 || currentItemIdx >= items.length - 1) return;
+
+    const nextItem = items[currentItemIdx + 1];
     setActiveItemId(nextItem?.id || '');
   };
   const HandlePrevious = (currentItemId: string) => {
-    const currentItem = dayItemsProgress?.items?.find((item) => item.id === currentItemId);
+    const items = dayItemsProgress?.items;
+    if (!items) return;
+
+    const currentItem = items.find((item) => item.id === currentItemId);
     if (currentItem?.item_type === 'devotional') {
       return;
     }
-    const currentItemIdx = dayItemsProgress?.items?.findIndex((item) => item.id === currentItemId);
-    if (!currentItemIdx || !dayItemsProgress?.items) return;
-    const prevItem = dayItemsProgress.items[currentItemIdx - 1];
+
+    const currentItemIdx = items.findIndex((item) => item.id === currentItemId);
+    if (currentItemIdx <= 0) return;
+
+    const prevItem = items[currentItemIdx - 1];
     setActiveItemId(prevItem?.id || '');
   };
   const item = dayItemsProgress?.items.find((item) => item.id === activeItemId);
