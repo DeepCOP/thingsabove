@@ -5,11 +5,11 @@ import { useDayItemsProgress } from '@/src/hooks/useDayItemsProgress';
 import { useFetchDevotionalPlanById } from '@/src/hooks/useDevotionalPlans';
 import { useDevotionalDays, usePlanProgress } from '@/src/hooks/usePlanProgress';
 import { useAuth } from '@/src/state/AuthContext';
-import { BibleBook, useAppStore } from '@/src/state/useAppStore';
+import { useAppStore } from '@/src/state/useAppStore';
 import {
   incrementPlanCompletions,
   incrementPlanCompletionsInInfiniteData,
-  parseVerseRef,
+ 
   sortByItemKey,
 } from '@/src/utils';
 import { useQueryClient } from '@tanstack/react-query';
@@ -46,7 +46,6 @@ export default function PlanProgress() {
   const planQuery = useFetchDevotionalPlanById(planProgress?.plan_id as string);
   const plan = planQuery.data;
   const [selectedDayNumber, setSelectedDay] = useState<number>(1);
-  const { setSelectedBook, setItemId } = useAppStore();
 
   const currentDayData = days?.find(
     (d) =>
@@ -58,17 +57,6 @@ export default function PlanProgress() {
 
   const selectedDay = days?.find((d) => d.day_number === selectedDayNumber);
 
-  const setFromVerseRef = (ref: string, setSelectedBook: (b: BibleBook) => void) => {
-    const parsed = parseVerseRef(ref);
-    if (!parsed) return;
-
-    setSelectedBook({
-      name: parsed.book,
-      chapter: parsed.chapter,
-      verseEnd: parsed.verseEnd,
-      verseStart: parsed.verseStart,
-    });
-  };
   const { dayItemsProgressQuery, toggleMutation } = useDayItemsProgress({
     user_id: session?.user?.id!,
     plan_id: planProgress?.plan_id as string,
@@ -156,12 +144,6 @@ export default function PlanProgress() {
   }, [planProgress, currentDayData, plan]);
 
   function handleItemPress(item: DayItemsProgress) {
-    setItemId(item.id);
-
-    if (item.item_type === 'scripture') {
-      setFromVerseRef(item.item_key || '', setSelectedBook);
-    }
-
     router.push({
       pathname: `/devotional_detail/[id]/[dayId]/[itemId]`,
       params: {

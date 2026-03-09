@@ -26,9 +26,6 @@ type AppState = {
   user: any;
   setUser: (u: any) => void;
 
-  itemId: string;
-  setItemId: (id: string) => void;
-
   // BIBLE
   selectedBook: BibleBook;
   setSelectedBook: (book: BibleBook) => void;
@@ -57,10 +54,6 @@ export const useAppStore = create<AppState>()(
       setUser: (user) => set({ user }),
       isGrid: false,
       setIsGrid: (isGrid) => set({ isGrid }),
-
-      // ITEM
-      itemId: '',
-      setItemId: (id) => set({ itemId: id }),
 
       // BIBLE
       selectedBook: {
@@ -93,7 +86,6 @@ export const useAppStore = create<AppState>()(
         isGrid: state.isGrid,
         sort: state.sort,
         version: state.version,
-        itemId: state.itemId,
         selectedBook: state.selectedBook,
         selectedChapter: state.selectedChapter,
         currentPlan: state.currentPlan,
