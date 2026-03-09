@@ -9,7 +9,6 @@ import { useAppStore } from '@/src/state/useAppStore';
 import {
   incrementPlanCompletions,
   incrementPlanCompletionsInInfiniteData,
- 
   sortByItemKey,
 } from '@/src/utils';
 import { useQueryClient } from '@tanstack/react-query';
