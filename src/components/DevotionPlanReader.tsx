@@ -488,16 +488,10 @@ export default function DevotionalPlanReader({
           <View className="flex-row bg-black px-4 py-3 rounded-full items-center">
             <TouchableOpacity
               className="py-2 mr-8"
-              disabled={chapterNumber === 1}
               onPress={() => {
                 HandlePrevious(item.id);
               }}>
-              <Ionicons
-                name="chevron-back"
-                size={20}
-                color="white"
-                style={{ opacity: chapterNumber === 1 ? 0.3 : 1 }}
-              />
+              <Ionicons name="chevron-back" size={20} color="white" />
             </TouchableOpacity>
 
             {isDevotionalItem ? (
