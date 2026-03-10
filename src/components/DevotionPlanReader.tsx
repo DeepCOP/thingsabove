@@ -1,4 +1,4 @@
-import { useAppStore } from '@/src/state/useAppStore';
+import { BibleBook, useAppStore } from '@/src/state/useAppStore';
 import { Ionicons } from '@expo/vector-icons';
 import * as Clipboard from 'expo-clipboard';
 import { useRouter } from 'expo-router';
@@ -22,7 +22,6 @@ import {
 import RenderHTML from 'react-native-render-html';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useBible } from '../state/BibleContext';
-import { BibleBook } from '../state/useAppStore';
 import { DayItemsProgress } from '../types/types';
 import { parseVerseRef } from '../utils';
 
