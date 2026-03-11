@@ -435,8 +435,9 @@ export default function DevotionalPlanReader({
             paddingBottom: insets.bottom,
             zIndex: 10,
           }}>
-          <View className="flex-row bg-black px-6 py-3 rounded-full items-center">
+          <View className="flex-row bg-black px-4 py-3 rounded-full items-center">
             <TouchableOpacity
+              className="py-2 mr-8"
               disabled={chapterNumber === 1}
               onPress={() => {
                 HandlePrevious();
@@ -450,11 +451,13 @@ export default function DevotionalPlanReader({
             </TouchableOpacity>
 
             {item?.item_type === 'devotional' && item?.item_key === 'main' ? (
-              <TouchableOpacity>
+              <TouchableOpacity className="px-2 py-1">
                 <Text className="text-white font-semibold mx-4">Devotional</Text>
               </TouchableOpacity>
             ) : (
-              <TouchableOpacity onPress={() => router.push(`/bible/${selectedBook.name}`)}>
+              <TouchableOpacity
+                className="px-2 py-1"
+                onPress={() => router.push(`/bible/${selectedBook.name}`)}>
                 <Text className="text-white font-semibold mx-4">
                   {`${selectedBook.name} ${selectedBook.chapter}`}
                 </Text>
@@ -462,26 +465,29 @@ export default function DevotionalPlanReader({
             )}
 
             {last ? (
-              <TouchableOpacity
-                onPress={() =>
-                  toggleItem.mutate(
-                    {
-                      item_type: item?.item_type as 'devotional' | 'scripture',
-                      item_key: item?.item_key || '',
-                      completed: true,
-                    },
-                    {
-                      onSuccess: async () => {
-                        router.back();
+              <View className="ml-8">
+                <TouchableOpacity
+                  onPress={() =>
+                    toggleItem.mutate(
+                      {
+                        item_type: item?.item_type as 'devotional' | 'scripture',
+                        item_key: item?.item_key || '',
+                        completed: true,
                       },
-                    },
-                  )
-                }
-                className={`rounded-full p-1 border mr-3 border-white ${'bg-green-500'}`}>
-                <Ionicons name="checkmark" size={12} color="white" />
-              </TouchableOpacity>
+                      {
+                        onSuccess: async () => {
+                          router.back();
+                        },
+                      },
+                    )
+                  }
+                  className={`rounded-full p-2 border border-white ${'bg-green-500'}`}>
+                  <Ionicons name="checkmark" size={12} color="white" />
+                </TouchableOpacity>
+              </View>
             ) : (
               <TouchableOpacity
+                className="py-2 ml-8"
                 onPress={() => {
                   toggleItem.mutate(
                     {
