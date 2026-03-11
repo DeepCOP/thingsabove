@@ -25,7 +25,7 @@ export function DayItemsList({
         return (
           <TouchableOpacity
             key={item.id}
-            className="flex-row items-center justify-between"
+            className="flex-row items-center justify-between mb-3"
             onPress={() => onPressItem(item)}>
             <View className="flex-row items-center gap-3">
               {isItemLoading ? (
