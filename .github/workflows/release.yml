@@ -41,6 +41,10 @@ jobs:
         run: |
           eas build --platform android --profile $EAS_PROFILE --non-interactive --wait --json > android-build.json
 
+      - name: 📦 Build iOS (Production) and Auto-Submit
+        run: |
+          eas build --platform ios --profile production --auto-submit --non-interactive --wait
+
       - name: ⬇️ Download Android artifact
         run: |
           node - <<'NODE'
