@@ -159,6 +159,156 @@ end;
 $$;
 
 
+create or replace function public.save_signup_about_details(
+  p_user_id uuid,
+  p_email text,
+  p_year_believed integer default null,
+  p_year_baptized integer default null,
+  p_church_id uuid default null,
+  p_church_name text default null,
+  p_church_address text default null,
+  p_church_website_url text default null,
+  p_clear_church boolean default false
+)
+returns void
+language plpgsql
+security definer
+set search_path = pg_catalog, public
+as $$
+declare
+  v_should_update_church boolean := p_clear_church
+    or p_church_id is not null
+    or nullif(trim(coalesce(p_church_name, '')), '') is not null;
+  v_church_id uuid;
+  v_user_email text;
+begin
+  if p_user_id is null then
+    raise exception 'User id required';
+  end if;
+
+  if auth.uid() is not null and auth.uid() <> p_user_id then
+    raise exception 'Not authorized';
+  end if;
+
+  if auth.uid() is null then
+    select email
+      into v_user_email
+    from auth.users
+    where id = p_user_id;
+
+    if v_user_email is null or p_email is null then
+      raise exception 'Invalid signup user';
+    end if;
+
+    if lower(v_user_email) <> lower(trim(p_email)) then
+      raise exception 'Invalid signup user';
+    end if;
+  end if;
+
+  if v_should_update_church then
+    if p_clear_church then
+      v_church_id := null;
+    elsif p_church_id is not null then
+      select id
+        into v_church_id
+      from public.churches
+      where id = p_church_id;
+
+      if v_church_id is null then
+        raise exception 'Church not found';
+      end if;
+    else
+      v_church_id := public.find_or_create_church(
+        p_church_name,
+        p_church_address,
+        p_church_website_url
+      );
+    end if;
+  end if;
+
+  update public.profiles
+  set
+    year_believed = coalesce(p_year_believed, year_believed),
+    year_baptized = coalesce(p_year_baptized, year_baptized),
+    church_id = case
+      when v_should_update_church then v_church_id
+      else church_id
+    end,
+    updated_at = now()
+  where id = p_user_id;
+
+  if not found then
+    raise exception 'Profile not found for user %', p_user_id;
+  end if;
+end;
+$$;
+
+create or replace function public.update_profile(
+  p_first_name text default null,
+  p_last_name text default null,
+  p_avatar_url text default null,
+  p_bio text default null,
+  p_year_believed integer default null,
+  p_year_baptized integer default null,
+  p_church_id uuid default null,
+  p_church_name text default null,
+  p_church_address text default null,
+  p_church_website_url text default null,
+  p_clear_church boolean default false
+)
+returns void
+language plpgsql
+as $$
+declare
+  v_should_update_church boolean := p_clear_church
+    or p_church_id is not null
+    or nullif(trim(coalesce(p_church_name, '')), '') is not null;
+  v_church_id uuid;
+begin
+  if v_should_update_church then
+    if p_clear_church then
+      v_church_id := null;
+    elsif p_church_id is not null then
+      select id
+        into v_church_id
+      from public.churches
+      where id = p_church_id;
+
+      if v_church_id is null then
+        raise exception 'Church not found';
+      end if;
+    else
+      v_church_id := public.find_or_create_church(
+        p_church_name,
+        p_church_address,
+        p_church_website_url
+      );
+    end if;
+  end if;
+
+  update public.profiles
+  set
+    first_name = coalesce(nullif(trim(p_first_name), ''), first_name),
+    last_name = coalesce(nullif(trim(p_last_name), ''), last_name),
+    avatar_url = coalesce(p_avatar_url, avatar_url),
+    bio = coalesce(p_bio, bio),
+    year_believed = coalesce(p_year_believed, year_believed),
+    year_baptized = coalesce(p_year_baptized, year_baptized),
+    church_id = case
+      when v_should_update_church then v_church_id
+      else church_id
+    end,
+    updated_at = now()
+  where id = auth.uid();
+
+  if not found then
+    raise exception 'Profile not found for user %', auth.uid();
+  end if;
+end;
+$$;
+
+
+
 alter table public.profiles
   add column if not exists year_believed integer,
   add column if not exists year_baptized integer,
@@ -206,60 +356,5 @@ begin
   );
 
   return new;
-end;
-$$;
-
-create or replace function public.update_profile(
-  p_first_name text default null,
-  p_last_name text default null,
-  p_avatar_url text default null,
-  p_bio text default null,
-  p_year_believed integer default null,
-  p_year_baptized integer default null,
-  p_church_name text default null,
-  p_church_address text default null,
-  p_church_website_url text default null,
-  p_clear_church boolean default false
-)
-returns void
-language plpgsql
-security definer
-set search_path = pg_catalog, public
-as $$
-declare
-  v_should_update_church boolean := p_clear_church
-    or nullif(trim(coalesce(p_church_name, '')), '') is not null;
-  v_church_id uuid;
-begin
-  if v_should_update_church then
-    if p_clear_church then
-      v_church_id := null;
-    else
-      v_church_id := public.find_or_create_church(
-        p_church_name,
-        p_church_address,
-        p_church_website_url
-      );
-    end if;
-  end if;
-
-  update public.profiles
-  set
-    first_name = coalesce(nullif(trim(p_first_name), ''), first_name),
-    last_name = coalesce(nullif(trim(p_last_name), ''), last_name),
-    avatar_url = coalesce(p_avatar_url, avatar_url),
-    bio = coalesce(p_bio, bio),
-    year_believed = coalesce(p_year_believed, year_believed),
-    year_baptized = coalesce(p_year_baptized, year_baptized),
-    church_id = case
-      when v_should_update_church then v_church_id
-      else church_id
-    end,
-    updated_at = now()
-  where id = auth.uid();
-
-  if not found then
-    raise exception 'Profile not found for user %', auth.uid();
-  end if;
 end;
 $$;
