@@ -1,5 +1,6 @@
 import { supabase } from '../lib/supabaseClient';
 import { getCurrentDeviceExpoPushToken } from '../lib/pushToken';
+import { SignUpAboutDetailsInput, SignUpProfileInput, UpdateProfileInput } from '../types/types';
 
 export const toggleItemCompletion = async ({
   item_type,
@@ -212,17 +213,52 @@ export const updateProfile = async ({
   last_name,
   avatar_url,
   bio,
-}: {
-  first_name?: string;
-  last_name?: string;
-  avatar_url?: string;
-  bio?: string;
-}) => {
+  year_believed,
+  year_baptized,
+  church_id,
+  church_name,
+  church_address,
+  church_website_url,
+  clear_church,
+}: UpdateProfileInput) => {
   const { error } = await supabase.rpc('update_profile', {
     p_first_name: first_name,
     p_last_name: last_name,
     p_avatar_url: avatar_url,
     p_bio: bio,
+    p_year_believed: year_believed ?? undefined,
+    p_year_baptized: year_baptized ?? undefined,
+    p_church_id: church_id ?? undefined,
+    p_church_name: church_name ?? undefined,
+    p_church_address: church_address ?? undefined,
+    p_church_website_url: church_website_url ?? undefined,
+    p_clear_church: clear_church ?? false,
+  });
+
+  if (error) throw error;
+};
+
+export const saveSignupAboutDetails = async ({
+  user_id,
+  email,
+  year_believed,
+  year_baptized,
+  church_id,
+  church_name,
+  church_address,
+  church_website_url,
+  clear_church,
+}: SignUpAboutDetailsInput) => {
+  const { error } = await supabase.rpc('save_signup_about_details', {
+    p_user_id: user_id,
+    p_email: email,
+    p_year_believed: year_believed ?? undefined,
+    p_year_baptized: year_baptized ?? undefined,
+    p_church_id: church_id ?? undefined,
+    p_church_name: church_name ?? undefined,
+    p_church_address: church_address ?? undefined,
+    p_church_website_url: church_website_url ?? undefined,
+    p_clear_church: clear_church ?? false,
   });
 
   if (error) throw error;
@@ -234,13 +270,18 @@ export const deleteAvatarFromStorage = async (filePath: string) => {
   if (error) throw error;
 };
 
-export const signUpUser = async (
-  email: string,
-  password: string,
-  firstName: string,
-  lastName: string,
-) => {
-  const { error } = await supabase.auth.signUp({
+export const signUpUser = async ({
+  email,
+  password,
+  firstName,
+  lastName,
+  yearBelieved,
+  yearBaptized,
+  churchName,
+  churchAddress,
+  churchWebsiteUrl,
+}: SignUpProfileInput) => {
+  const { data, error } = await supabase.auth.signUp({
     email,
     password,
     options: {
@@ -248,10 +289,23 @@ export const signUpUser = async (
       data: {
         first_name: firstName,
         last_name: lastName,
+        year_believed: yearBelieved ?? null,
+        year_baptized: yearBaptized ?? null,
+        church_name: churchName ?? null,
+        church_address: churchAddress ?? null,
+        church_website_url: churchWebsiteUrl ?? null,
       },
     },
   });
   if (error) throw error;
+
+  // Supabase returns an obfuscated/fake user with empty identities for existing confirmed users
+  // when email confirmations are enabled. Treat this as "already registered".
+  if (data?.user?.identities && data.user.identities.length === 0) {
+    throw new Error('Email already registered. Please sign in or check your inbox.');
+  }
+
+  return data;
 };
 
 export const signInUserWithPassword = async (email: string, password: string) => {

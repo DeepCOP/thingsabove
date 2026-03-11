@@ -2,12 +2,14 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Alert } from 'react-native';
 import {
   deleteAvatarFromStorage,
+  saveSignupAboutDetails,
   signInUserWithPassword,
   signUpUser,
   updateProfile,
   uploadAvatar,
 } from '../api/mutations';
 import { getProfile } from '../api/queries';
+import { SignUpAboutDetailsInput, SignUpProfileInput, UpdateProfileInput } from '../types/types';
 
 export const useProfile = (userId: string | undefined) => {
   // Placeholder for future profile-related hooks
@@ -52,28 +54,23 @@ export const useUpdateProfile = (userId: string | undefined) => {
   const qc = useQueryClient();
   return useMutation({
     mutationKey: ['update_profile', userId],
-    mutationFn: async (profileData: {
-      first_name?: string;
-      last_name?: string;
-      avatar_url?: string;
-      bio?: string;
-    }) => updateProfile(profileData),
+    mutationFn: async (profileData: UpdateProfileInput) => updateProfile(profileData),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['profile', userId] });
     },
   });
 };
 
+export const useSaveSignupAboutDetails = () => {
+  return useMutation({
+    mutationKey: ['save_signup_about_details'],
+    mutationFn: async (params: SignUpAboutDetailsInput) => saveSignupAboutDetails(params),
+  });
+};
+
 export const useSignUpUser = () => {
   return useMutation({
-    mutationFn: async (params: {
-      email: string;
-      password: string;
-      firstName: string;
-      lastName: string;
-    }) => {
-      return signUpUser(params.email, params.password, params.firstName, params.lastName);
-    },
+    mutationFn: async (params: SignUpProfileInput) => signUpUser(params),
     onError: (error) => {
       Alert.alert('Sign Up Error', error.message);
     },

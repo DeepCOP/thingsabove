@@ -12,6 +12,54 @@ export type ProfilesInsert = Database['public']['Tables']['profiles']['Insert'];
 
 export type ProfilesUpdate = Database['public']['Tables']['profiles']['Update'];
 
+export type Church = Database['public']['Tables']['churches']['Row'];
+
+export type ChurchInsert = Database['public']['Tables']['churches']['Insert'];
+
+export type ChurchUpdate = Database['public']['Tables']['churches']['Update'];
+
+export type ProfileWithChurch = Profiles & {
+  church: Church | null;
+};
+
+export type UpdateProfileInput = {
+  first_name?: string;
+  last_name?: string;
+  avatar_url?: string;
+  bio?: string;
+  year_believed?: number | null;
+  year_baptized?: number | null;
+  church_id?: string | null;
+  church_name?: string | null;
+  church_address?: string | null;
+  church_website_url?: string | null;
+  clear_church?: boolean;
+};
+
+export type SignUpAboutDetailsInput = {
+  user_id: string;
+  email: string;
+  year_believed?: number | null;
+  year_baptized?: number | null;
+  church_id?: string | null;
+  church_name?: string | null;
+  church_address?: string | null;
+  church_website_url?: string | null;
+  clear_church?: boolean;
+};
+
+export type SignUpProfileInput = {
+  email: string;
+  password: string;
+  firstName: string;
+  lastName: string;
+  yearBelieved?: number | null;
+  yearBaptized?: number | null;
+  churchName?: string | null;
+  churchAddress?: string | null;
+  churchWebsiteUrl?: string | null;
+};
+
 export type DevotionalDays = Database['public']['Tables']['devotional_days']['Row'];
 
 export type DevotionalDaysInsert = Database['public']['Tables']['devotional_days']['Insert'];

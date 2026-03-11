@@ -3,22 +3,12 @@ import { UseMutateFunction } from '@tanstack/react-query';
 import * as ImagePicker from 'expo-image-picker';
 import { Alert, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { useAuth } from '../state/AuthContext';
-import { Profiles } from '../types/types';
+import { Profiles, UpdateProfileInput } from '../types/types';
 import UserAvatar from './UserAvatar';
 
 interface Props {
   size: number;
-  handleUpdateProfile: UseMutateFunction<
-    void,
-    Error,
-    {
-      first_name?: string;
-      last_name?: string;
-      avatar_url?: string;
-      bio?: string;
-    },
-    unknown
-  >;
+  handleUpdateProfile: UseMutateFunction<void, Error, UpdateProfileInput, unknown>;
   handleUploadAvatar: UseMutateFunction<
     {
       id: string;
