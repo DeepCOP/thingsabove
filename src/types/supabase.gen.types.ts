@@ -141,6 +141,42 @@ export type Database = {
           },
         ];
       };
+      churches: {
+        Row: {
+          address: string | null;
+          created_at: string;
+          id: string;
+          name: string;
+          normalized_address: string | null;
+          normalized_name: string | null;
+          normalized_website_url: string | null;
+          updated_at: string;
+          website_url: string | null;
+        };
+        Insert: {
+          address?: string | null;
+          created_at?: string;
+          id?: string;
+          name: string;
+          normalized_address?: string | null;
+          normalized_name?: string | null;
+          normalized_website_url?: string | null;
+          updated_at?: string;
+          website_url?: string | null;
+        };
+        Update: {
+          address?: string | null;
+          created_at?: string;
+          id?: string;
+          name?: string;
+          normalized_address?: string | null;
+          normalized_name?: string | null;
+          normalized_website_url?: string | null;
+          updated_at?: string;
+          website_url?: string | null;
+        };
+        Relationships: [];
+      };
       comments: {
         Row: {
           content: string;
@@ -202,42 +238,6 @@ export type Database = {
             referencedColumns: ['id'];
           },
         ];
-      };
-      churches: {
-        Row: {
-          address: string | null;
-          created_at: string;
-          id: string;
-          name: string;
-          normalized_address: string | null;
-          normalized_name: string | null;
-          normalized_website_url: string | null;
-          updated_at: string;
-          website_url: string | null;
-        };
-        Insert: {
-          address?: string | null;
-          created_at?: string;
-          id?: string;
-          name: string;
-          normalized_address?: string | null;
-          normalized_name?: string | null;
-          normalized_website_url?: string | null;
-          updated_at?: string;
-          website_url?: string | null;
-        };
-        Update: {
-          address?: string | null;
-          created_at?: string;
-          id?: string;
-          name?: string;
-          normalized_address?: string | null;
-          normalized_name?: string | null;
-          normalized_website_url?: string | null;
-          updated_at?: string;
-          website_url?: string | null;
-        };
-        Relationships: [];
       };
       day_items_progress: {
         Row: {
@@ -761,6 +761,48 @@ export type Database = {
           },
         ];
       };
+      plan_ratings: {
+        Row: {
+          created_at: string;
+          id: string;
+          plan_id: string;
+          rating: number;
+          updated_at: string;
+          user_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          id?: string;
+          plan_id: string;
+          rating: number;
+          updated_at?: string;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          plan_id?: string;
+          rating?: number;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'plan_ratings_plan_id_fkey';
+            columns: ['plan_id'];
+            isOneToOne: false;
+            referencedRelation: 'devotional_plans';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'plan_ratings_plan_id_fkey';
+            columns: ['plan_id'];
+            isOneToOne: false;
+            referencedRelation: 'devotional_plans_view';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       plan_reactions: {
         Row: {
           created_at: string | null;
@@ -802,7 +844,6 @@ export type Database = {
       };
       profiles: {
         Row: {
-          attends_church_regularly: boolean | null;
           avatar_url: string | null;
           bio: string | null;
           church_id: string | null;
@@ -811,8 +852,6 @@ export type Database = {
           expo_push_token: string | null;
           first_name: string;
           id: string;
-          is_baptized: boolean | null;
-          is_believer: boolean | null;
           last_name: string;
           last_seen: string | null;
           timezone: string | null;
@@ -821,7 +860,6 @@ export type Database = {
           year_believed: number | null;
         };
         Insert: {
-          attends_church_regularly?: boolean | null;
           avatar_url?: string | null;
           bio?: string | null;
           church_id?: string | null;
@@ -830,8 +868,6 @@ export type Database = {
           expo_push_token?: string | null;
           first_name: string;
           id: string;
-          is_baptized?: boolean | null;
-          is_believer?: boolean | null;
           last_name: string;
           last_seen?: string | null;
           timezone?: string | null;
@@ -840,7 +876,6 @@ export type Database = {
           year_believed?: number | null;
         };
         Update: {
-          attends_church_regularly?: boolean | null;
           avatar_url?: string | null;
           bio?: string | null;
           church_id?: string | null;
@@ -849,8 +884,6 @@ export type Database = {
           expo_push_token?: string | null;
           first_name?: string;
           id?: string;
-          is_baptized?: boolean | null;
-          is_believer?: boolean | null;
           last_name?: string;
           last_seen?: string | null;
           timezone?: string | null;
@@ -1146,8 +1179,8 @@ export type Database = {
           max_days_completed: number | null;
           plans_completed: number | null;
           plans_started: number | null;
-          time_since_last_activity: unknown;
-          time_since_last_seen: unknown;
+          time_since_last_activity: string | null;
+          time_since_last_seen: string | null;
           timezone: string | null;
           user_id: string | null;
         };
@@ -1221,6 +1254,10 @@ export type Database = {
           p_user_id: string;
         };
         Returns: undefined;
+      };
+      find_or_create_church: {
+        Args: { p_address?: string; p_name?: string; p_website_url?: string };
+        Returns: string;
       };
       generate_ai_triggers: { Args: never; Returns: undefined };
       get_day_items_progress: {
@@ -1299,6 +1336,7 @@ export type Database = {
           type: string;
         }[];
       };
+      get_my_plan_rating: { Args: { p_plan_id: string }; Returns: number };
       get_pending_friend_requests: {
         Args: never;
         Returns: {
@@ -1375,6 +1413,11 @@ export type Database = {
         Args: { p_notification_id: string };
         Returns: undefined;
       };
+      normalize_church_text: { Args: { p_value: string }; Returns: string };
+      normalize_church_website_url: {
+        Args: { p_value: string };
+        Returns: string;
+      };
       publish_devotional_plan: {
         Args: { p_days: Json; p_plan_id: string };
         Returns: undefined;
@@ -1388,6 +1431,34 @@ export type Database = {
         Args: { _days: Json; _plan_id: string };
         Returns: undefined;
       };
+      save_signup_about_details:
+        | {
+            Args: {
+              p_church_address?: string;
+              p_church_id?: string;
+              p_church_name?: string;
+              p_church_website_url?: string;
+              p_clear_church?: boolean;
+              p_email: string;
+              p_user_id: string;
+              p_year_baptized?: number;
+              p_year_believed?: number;
+            };
+            Returns: undefined;
+          }
+        | {
+            Args: {
+              p_church_address?: string;
+              p_church_name?: string;
+              p_church_website_url?: string;
+              p_clear_church?: boolean;
+              p_email: string;
+              p_user_id: string;
+              p_year_baptized?: number;
+              p_year_believed?: number;
+            };
+            Returns: undefined;
+          };
       search_plans: {
         Args: {
           cursor_created_at?: string;
@@ -1469,27 +1540,58 @@ export type Database = {
         }[];
       };
       unread_notifications_count: { Args: never; Returns: number };
-      update_profile: {
-        Args: {
-          p_attends_church_regularly?: boolean;
-          p_avatar_url?: string;
-          p_bio?: string;
-          p_church_address?: string;
-          p_church_name?: string;
-          p_church_website_url?: string;
-          p_clear_church?: boolean;
-          p_first_name?: string;
-          p_is_baptized?: boolean;
-          p_is_believer?: boolean;
-          p_last_name?: string;
-          p_year_baptized?: number;
-          p_year_believed?: number;
-        };
+      update_profile:
+        | {
+            Args: {
+              p_avatar_url?: string;
+              p_bio?: string;
+              p_first_name?: string;
+              p_last_name?: string;
+            };
+            Returns: undefined;
+          }
+        | {
+            Args: {
+              p_avatar_url?: string;
+              p_bio?: string;
+              p_church_address?: string;
+              p_church_id?: string;
+              p_church_name?: string;
+              p_church_website_url?: string;
+              p_clear_church?: boolean;
+              p_first_name?: string;
+              p_last_name?: string;
+              p_year_baptized?: number;
+              p_year_believed?: number;
+            };
+            Returns: undefined;
+          }
+        | {
+            Args: {
+              p_avatar_url?: string;
+              p_bio?: string;
+              p_church_address?: string;
+              p_church_name?: string;
+              p_church_website_url?: string;
+              p_clear_church?: boolean;
+              p_first_name?: string;
+              p_last_name?: string;
+              p_year_baptized?: number;
+              p_year_believed?: number;
+            };
+            Returns: undefined;
+          };
+      upsert_plan_rating: {
+        Args: { p_plan_id: string; p_rating: number };
         Returns: undefined;
       };
       upsert_push_notification_setup: {
         Args: { p_expo_push_token: string; p_timezone: string };
         Returns: undefined;
+      };
+      user_has_active_auth_session: {
+        Args: { p_user_id: string };
+        Returns: boolean;
       };
     };
     Enums: {

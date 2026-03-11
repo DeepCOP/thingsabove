@@ -1,4 +1,9 @@
-import { ProfileWithChurch, SignUpProfileInput, UpdateProfileInput } from './types/types';
+import {
+  ProfileWithChurch,
+  SignUpAboutDetailsInput,
+  SignUpProfileInput,
+  UpdateProfileInput,
+} from './types/types';
 
 const MIN_NAME_LENGTH = 2;
 const MAX_NAME_LENGTH = 50;
@@ -8,11 +13,9 @@ const CURRENT_YEAR = new Date().getFullYear();
 export type ProfileDetailsFormValues = {
   firstName: string;
   lastName: string;
-  isBeliever: boolean | null;
   yearBelieved: string;
-  isBaptized: boolean | null;
   yearBaptized: string;
-  attendsChurchRegularly: boolean | null;
+  churchId: string | null;
   churchName: string;
   churchAddress: string;
   churchWebsiteUrl: string;
@@ -64,11 +67,9 @@ export const buildProfileDetailsFormValues = (
 ): ProfileDetailsFormValues => ({
   firstName: profile?.first_name ?? '',
   lastName: profile?.last_name ?? '',
-  isBeliever: profile?.is_believer ?? null,
   yearBelieved: profile?.year_believed ? String(profile.year_believed) : '',
-  isBaptized: profile?.is_baptized ?? null,
   yearBaptized: profile?.year_baptized ? String(profile.year_baptized) : '',
-  attendsChurchRegularly: profile?.attends_church_regularly ?? null,
+  churchId: profile?.church?.id ?? null,
   churchName: profile?.church?.name ?? '',
   churchAddress: profile?.church?.address ?? '',
   churchWebsiteUrl: profile?.church?.website_url ?? '',
@@ -84,14 +85,13 @@ export const getYearsFollowingJesus = (value: string | number | null | undefined
 
 export const validateProfileDetailsForm = (
   values: ProfileDetailsFormValues,
-  {
-    requireName = true,
-    requireChoices = true,
-  }: { requireName?: boolean; requireChoices?: boolean } = {},
+  { requireName = true }: { requireName?: boolean } = {},
 ): ProfileDetailsFormErrors => {
   const errors: ProfileDetailsFormErrors = {};
   const yearBelieved = parseOptionalYear(values.yearBelieved);
   const yearBaptized = parseOptionalYear(values.yearBaptized);
+  const hasYearBelievedInput = Boolean(values.yearBelieved.trim());
+  const hasYearBaptizedInput = Boolean(values.yearBaptized.trim());
 
   if (requireName) {
     const firstName = values.firstName.trim();
@@ -106,40 +106,32 @@ export const validateProfileDetailsForm = (
     }
   }
 
-  if (requireChoices && values.isBeliever === null) {
-    errors.isBeliever = 'Choose whether you believe in Jesus.';
+  if (hasYearBelievedInput && !isValidYear(yearBelieved)) {
+    errors.yearBelieved = `Enter a valid year between ${MIN_YEAR} and ${CURRENT_YEAR}.`;
   }
 
-  if (values.isBeliever === true) {
-    if (!isValidYear(yearBelieved)) {
-      errors.yearBelieved = `Enter a valid year between ${MIN_YEAR} and ${CURRENT_YEAR}.`;
-    }
-
-    if (requireChoices && values.isBaptized === null) {
-      errors.isBaptized = 'Choose whether you have been baptized.';
-    }
-
-    if (values.isBaptized === true) {
-      if (!isValidYear(yearBaptized)) {
-        errors.yearBaptized = `Enter a valid year between ${MIN_YEAR} and ${CURRENT_YEAR}.`;
-      } else if (yearBelieved !== null && yearBaptized !== null && yearBaptized < yearBelieved) {
-        errors.yearBaptized = 'Year baptized cannot be earlier than year believed.';
-      }
-    }
+  if (hasYearBaptizedInput && !isValidYear(yearBaptized)) {
+    errors.yearBaptized = `Enter a valid year between ${MIN_YEAR} and ${CURRENT_YEAR}.`;
   }
 
-  if (requireChoices && values.attendsChurchRegularly === null) {
-    errors.attendsChurchRegularly = 'Choose whether you meet at a church regularly.';
+  if (yearBelieved !== null && yearBaptized !== null && yearBaptized < yearBelieved) {
+    errors.yearBaptized = 'Year baptized cannot be earlier than year believed.';
   }
 
-  if (values.attendsChurchRegularly === true) {
-    if (!values.churchName.trim()) {
-      errors.churchName = 'Enter your church name.';
-    }
+  const hasChurchId = Boolean(values.churchId);
+  const hasChurchName = Boolean(values.churchName.trim());
+  const hasChurchDetails =
+    hasChurchId ||
+    hasChurchName ||
+    Boolean(values.churchAddress.trim()) ||
+    Boolean(values.churchWebsiteUrl.trim());
 
-    if (!isValidWebsiteUrl(values.churchWebsiteUrl)) {
-      errors.churchWebsiteUrl = 'Enter a valid church website URL.';
-    }
+  if (hasChurchDetails && !hasChurchName && !hasChurchId) {
+    errors.churchName = 'Enter your church name.';
+  }
+
+  if (values.churchWebsiteUrl.trim() && !isValidWebsiteUrl(values.churchWebsiteUrl)) {
+    errors.churchWebsiteUrl = 'Enter a valid church website URL.';
   }
 
   return errors;
@@ -150,20 +142,51 @@ export const hasProfileDetailsErrors = (errors: ProfileDetailsFormErrors) =>
 
 export const toUpdateProfileInput = (values: ProfileDetailsFormValues): UpdateProfileInput => {
   const normalizedWebsiteUrl = normalizeWebsiteUrl(values.churchWebsiteUrl);
+  const yearBelieved = parseOptionalYear(values.yearBelieved);
+  const yearBaptized = parseOptionalYear(values.yearBaptized);
+  const hasChurchId = Boolean(values.churchId);
+  const hasChurchName = Boolean(values.churchName.trim());
+  const hasChurchDetails =
+    hasChurchId ||
+    hasChurchName ||
+    Boolean(values.churchAddress.trim()) ||
+    Boolean(values.churchWebsiteUrl.trim());
 
   return {
     first_name: values.firstName.trim() || undefined,
     last_name: values.lastName.trim() || undefined,
-    is_believer: values.isBeliever,
-    year_believed: values.isBeliever ? parseOptionalYear(values.yearBelieved) : null,
-    is_baptized: values.isBeliever ? values.isBaptized : null,
-    year_baptized:
-      values.isBeliever && values.isBaptized ? parseOptionalYear(values.yearBaptized) : null,
-    attends_church_regularly: values.attendsChurchRegularly,
-    church_name: values.attendsChurchRegularly ? emptyToNull(values.churchName) : null,
-    church_address: values.attendsChurchRegularly ? emptyToNull(values.churchAddress) : null,
-    church_website_url: values.attendsChurchRegularly ? emptyToNull(normalizedWebsiteUrl) : null,
-    clear_church: values.attendsChurchRegularly !== true || !values.churchName.trim(),
+    year_believed: yearBelieved,
+    year_baptized: yearBaptized,
+    church_id: hasChurchId ? values.churchId : null,
+    church_name: !hasChurchId && hasChurchName ? emptyToNull(values.churchName) : null,
+    church_address: !hasChurchId && hasChurchName ? emptyToNull(values.churchAddress) : null,
+    church_website_url: !hasChurchId && hasChurchName ? emptyToNull(normalizedWebsiteUrl) : null,
+    clear_church: !hasChurchDetails,
+  };
+};
+
+export const toSignUpAboutDetailsInput = (
+  values: ProfileDetailsFormValues,
+): Omit<SignUpAboutDetailsInput, 'user_id' | 'email'> => {
+  const normalizedWebsiteUrl = normalizeWebsiteUrl(values.churchWebsiteUrl);
+  const yearBelieved = parseOptionalYear(values.yearBelieved);
+  const yearBaptized = parseOptionalYear(values.yearBaptized);
+  const hasChurchId = Boolean(values.churchId);
+  const hasChurchName = Boolean(values.churchName.trim());
+  const hasChurchDetails =
+    hasChurchId ||
+    hasChurchName ||
+    Boolean(values.churchAddress.trim()) ||
+    Boolean(values.churchWebsiteUrl.trim());
+
+  return {
+    year_believed: yearBelieved,
+    year_baptized: yearBaptized,
+    church_id: hasChurchId ? values.churchId : null,
+    church_name: !hasChurchId && hasChurchName ? emptyToNull(values.churchName) : null,
+    church_address: !hasChurchId && hasChurchName ? emptyToNull(values.churchAddress) : null,
+    church_website_url: !hasChurchId && hasChurchName ? emptyToNull(normalizedWebsiteUrl) : null,
+    clear_church: !hasChurchDetails,
   };
 };
 
@@ -172,20 +195,20 @@ export const toSignUpProfileInput = (
   password: string,
   values: ProfileDetailsFormValues,
 ): SignUpProfileInput => {
-  const profileInput = toUpdateProfileInput(values);
+  const normalizedWebsiteUrl = normalizeWebsiteUrl(values.churchWebsiteUrl);
+  const yearBelieved = parseOptionalYear(values.yearBelieved);
+  const yearBaptized = parseOptionalYear(values.yearBaptized);
+  const hasChurchName = Boolean(values.churchName.trim());
 
   return {
     email,
     password,
     firstName: values.firstName.trim(),
     lastName: values.lastName.trim(),
-    isBeliever: values.isBeliever === true,
-    yearBelieved: profileInput.year_believed ?? null,
-    isBaptized: profileInput.is_baptized ?? null,
-    yearBaptized: profileInput.year_baptized ?? null,
-    attendsChurchRegularly: values.attendsChurchRegularly === true,
-    churchName: profileInput.church_name ?? null,
-    churchAddress: profileInput.church_address ?? null,
-    churchWebsiteUrl: profileInput.church_website_url ?? null,
+    yearBelieved,
+    yearBaptized,
+    churchName: hasChurchName ? emptyToNull(values.churchName) : null,
+    churchAddress: hasChurchName ? emptyToNull(values.churchAddress) : null,
+    churchWebsiteUrl: hasChurchName ? emptyToNull(normalizedWebsiteUrl) : null,
   };
 };

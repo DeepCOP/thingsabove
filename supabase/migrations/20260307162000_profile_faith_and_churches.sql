@@ -158,12 +158,10 @@ begin
 end;
 $$;
 
+
 alter table public.profiles
-  add column if not exists is_believer boolean,
   add column if not exists year_believed integer,
-  add column if not exists is_baptized boolean,
   add column if not exists year_baptized integer,
-  add column if not exists attends_church_regularly boolean,
   add column if not exists church_id uuid references public.churches(id) on delete set null;
 
 create index if not exists idx_profiles_church_id on public.profiles(church_id);
@@ -178,40 +176,23 @@ declare
   v_metadata jsonb := coalesce(new.raw_user_meta_data, '{}'::jsonb);
   v_first_name text := nullif(trim(v_metadata->>'first_name'), '');
   v_last_name text := nullif(trim(v_metadata->>'last_name'), '');
-  v_is_believer boolean := case
-    when v_metadata ? 'is_believer' then (v_metadata->>'is_believer')::boolean
-    else null
-  end;
   v_year_believed integer := nullif(trim(v_metadata->>'year_believed'), '')::integer;
-  v_is_baptized boolean := case
-    when v_metadata ? 'is_baptized' then (v_metadata->>'is_baptized')::boolean
-    else null
-  end;
   v_year_baptized integer := nullif(trim(v_metadata->>'year_baptized'), '')::integer;
-  v_attends_church_regularly boolean := case
-    when v_metadata ? 'attends_church_regularly' then (v_metadata->>'attends_church_regularly')::boolean
-    else null
-  end;
   v_church_id uuid;
 begin
-  if v_attends_church_regularly is true then
-    v_church_id := public.find_or_create_church(
-      v_metadata->>'church_name',
-      v_metadata->>'church_address',
-      v_metadata->>'church_website_url'
-    );
-  end if;
+  v_church_id := public.find_or_create_church(
+    v_metadata->>'church_name',
+    v_metadata->>'church_address',
+    v_metadata->>'church_website_url'
+  );
 
   insert into public.profiles (
     id,
     first_name,
     last_name,
     email,
-    is_believer,
     year_believed,
-    is_baptized,
     year_baptized,
-    attends_church_regularly,
     church_id
   )
   values (
@@ -219,12 +200,9 @@ begin
     coalesce(v_first_name, 'Friend'),
     coalesce(v_last_name, ''),
     new.email,
-    v_is_believer,
-    case when v_is_believer is true then v_year_believed else null end,
-    case when v_is_believer is true then v_is_baptized else null end,
-    case when v_is_believer is true and v_is_baptized is true then v_year_baptized else null end,
-    v_attends_church_regularly,
-    case when v_attends_church_regularly is true then v_church_id else null end
+    v_year_believed,
+    v_year_baptized,
+    v_church_id
   );
 
   return new;
@@ -236,11 +214,8 @@ create or replace function public.update_profile(
   p_last_name text default null,
   p_avatar_url text default null,
   p_bio text default null,
-  p_is_believer boolean default null,
   p_year_believed integer default null,
-  p_is_baptized boolean default null,
   p_year_baptized integer default null,
-  p_attends_church_regularly boolean default null,
   p_church_name text default null,
   p_church_address text default null,
   p_church_website_url text default null,
@@ -253,12 +228,11 @@ set search_path = pg_catalog, public
 as $$
 declare
   v_should_update_church boolean := p_clear_church
-    or p_attends_church_regularly = false
     or nullif(trim(coalesce(p_church_name, '')), '') is not null;
   v_church_id uuid;
 begin
   if v_should_update_church then
-    if p_clear_church or p_attends_church_regularly = false then
+    if p_clear_church then
       v_church_id := null;
     else
       v_church_id := public.find_or_create_church(
@@ -275,23 +249,8 @@ begin
     last_name = coalesce(nullif(trim(p_last_name), ''), last_name),
     avatar_url = coalesce(p_avatar_url, avatar_url),
     bio = coalesce(p_bio, bio),
-    is_believer = coalesce(p_is_believer, is_believer),
-    year_believed = case
-      when p_is_believer = false then null
-      when p_year_believed is not null then p_year_believed
-      else year_believed
-    end,
-    is_baptized = case
-      when p_is_believer = false then null
-      when p_is_baptized is not null then p_is_baptized
-      else is_baptized
-    end,
-    year_baptized = case
-      when p_is_believer = false or p_is_baptized = false then null
-      when p_year_baptized is not null then p_year_baptized
-      else year_baptized
-    end,
-    attends_church_regularly = coalesce(p_attends_church_regularly, attends_church_regularly),
+    year_believed = coalesce(p_year_believed, year_believed),
+    year_baptized = coalesce(p_year_baptized, year_baptized),
     church_id = case
       when v_should_update_church then v_church_id
       else church_id

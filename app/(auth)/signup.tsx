@@ -1,11 +1,3 @@
-import ProfileDetailsForm from '@/src/components/ProfileDetailsForm';
-import {
-  ProfileDetailsFormErrors,
-  buildProfileDetailsFormValues,
-  hasProfileDetailsErrors,
-  toSignUpProfileInput,
-  validateProfileDetailsForm,
-} from '@/src/profileDetails';
 import { useSignUpUser } from '@/src/hooks/useProfile';
 import { Ionicons } from '@expo/vector-icons';
 import { Input } from '@rneui/themed';
@@ -30,18 +22,24 @@ export default function SignUp() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [detailsForm, setDetailsForm] = useState(() => buildProfileDetailsFormValues());
-  const [detailsErrors, setDetailsErrors] = useState<ProfileDetailsFormErrors>({});
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const colorScheme = useColorScheme();
-  const signUpWithEmail = useSignUpUser();
+  const MIN_NAME_LENGTH = 2;
+  const MAX_NAME_LENGTH = 50;
+
   const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const signUpWithEmail = useSignUpUser();
 
   const trimmedEmail = email.trim();
+  const trimmedFirstName = firstName.trim();
+  const trimmedLastName = lastName.trim();
+
   const isEmailValid = EMAIL_REGEX.test(trimmedEmail);
-  const profileErrors = validateProfileDetailsForm(detailsForm, {
-    requireName: true,
-    requireChoices: true,
-  });
+  const isFirstNameValid =
+    trimmedFirstName.length >= MIN_NAME_LENGTH && trimmedFirstName.length <= MAX_NAME_LENGTH;
+  const isLastNameValid =
+    trimmedLastName.length >= MIN_NAME_LENGTH && trimmedLastName.length <= MAX_NAME_LENGTH;
 
   const isDisabled =
     !trimmedEmail ||
@@ -49,11 +47,12 @@ export default function SignUp() {
     !confirmPassword ||
     password !== confirmPassword ||
     !isEmailValid ||
-    hasProfileDetailsErrors(profileErrors) ||
+    !isFirstNameValid ||
+    !isLastNameValid ||
     signUpWithEmail.isPending;
 
-  async function signUp() {
-    if (!trimmedEmail || !password || !confirmPassword) {
+  function handleSignUp() {
+    if (!trimmedEmail || !password || !confirmPassword || !trimmedFirstName || !trimmedLastName) {
       Alert.alert('Missing fields', 'Please fill in all required fields.');
       return;
     }
@@ -62,28 +61,31 @@ export default function SignUp() {
       Alert.alert('Invalid email', 'Please enter a valid email address.');
       return;
     }
+    if (!isFirstNameValid || !isLastNameValid) {
+      Alert.alert(
+        'Invalid name',
+        `First and last name must be between ${MIN_NAME_LENGTH} and ${MAX_NAME_LENGTH} characters.`,
+      );
+      return;
+    }
 
     if (password !== confirmPassword) {
       Alert.alert('Password mismatch', 'Passwords do not match.');
       return;
     }
 
-    const nextErrors = validateProfileDetailsForm(detailsForm, {
-      requireName: true,
-      requireChoices: true,
-    });
-    setDetailsErrors(nextErrors);
-
-    if (hasProfileDetailsErrors(nextErrors)) {
-      Alert.alert('Complete your profile', 'Please finish the faith and church details.');
-      return;
-    }
-
-    signUpWithEmail.mutate(toSignUpProfileInput(trimmedEmail, password, detailsForm), {
-      onSuccess: () => {
-        router.replace(`../confirm-email?email=${encodeURIComponent(trimmedEmail)}`);
+    signUpWithEmail.mutate(
+      { email: trimmedEmail, password, firstName: trimmedFirstName, lastName: trimmedLastName },
+      {
+        onSuccess: (data) => {
+          const params: Record<string, string> = { email: trimmedEmail };
+          if (data?.user?.id) {
+            params.userId = data.user.id;
+          }
+          router.push({ pathname: '/about-details', params });
+        },
       },
-    });
+    );
   }
 
   return (
@@ -103,19 +105,21 @@ export default function SignUp() {
             Create Your Account
           </Text>
 
-          <ProfileDetailsForm
-            values={detailsForm}
-            errors={detailsErrors}
-            onChange={(patch) => {
-              setDetailsForm((current) => ({ ...current, ...patch }));
-              setDetailsErrors((current) => {
-                const next = { ...current };
-                for (const key of Object.keys(patch) as Array<keyof ProfileDetailsFormErrors>) {
-                  delete next[key];
-                }
-                return next;
-              });
-            }}
+          <Input
+            label="First Name"
+            value={firstName}
+            onChangeText={setFirstName}
+            maxLength={MAX_NAME_LENGTH}
+            style={{ color: colorScheme === 'dark' ? '#F5F5F5' : '#424242' }}
+            placeholderTextColor={colorScheme === 'dark' ? '#F5F5F5' : '#424242'}
+          />
+          <Input
+            label="Last Name"
+            value={lastName}
+            onChangeText={setLastName}
+            maxLength={MAX_NAME_LENGTH}
+            style={{ color: colorScheme === 'dark' ? '#F5F5F5' : '#424242' }}
+            placeholderTextColor={colorScheme === 'dark' ? '#F5F5F5' : '#424242'}
           />
 
           <Input
@@ -175,7 +179,7 @@ export default function SignUp() {
             className={`mt-4 rounded-lg p-3 ${
               isDisabled ? 'bg-gray-300 dark:bg-gray-700' : 'bg-black dark:bg-white'
             }`}
-            onPress={signUp}
+            onPress={handleSignUp}
             disabled={isDisabled}>
             <Text
               className="text-center font-bold text-white dark:text-black"

@@ -3,37 +3,17 @@ import { UseMutateFunction } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { Alert, Text, TextInput, TouchableOpacity, View, useColorScheme } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import ProfileDetailsForm from '../components/ProfileDetailsForm';
+import AboutDetailsForm from '../components/AboutDetailsForm';
 import Avatar from '../components/Avatar';
 import MyPlansList from '../components/plansList/MyPlansList';
 import {
   ProfileDetailsFormErrors,
   buildProfileDetailsFormValues,
-  getYearsFollowingJesus,
   hasProfileDetailsErrors,
   toUpdateProfileInput,
   validateProfileDetailsForm,
 } from '../profileDetails';
 import { ProfileWithChurch, UpdateProfileInput } from '../types/types';
-
-function ProfileDetailRow({ label, value }: { label: string; value: string | null | undefined }) {
-  return (
-    <View className="mb-3">
-      <Text className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
-        {label}
-      </Text>
-      <Text className="mt-1 text-sm text-gray-900 dark:text-white">
-        {value || 'Not shared yet'}
-      </Text>
-    </View>
-  );
-}
-
-const formatBoolean = (value: boolean | null | undefined, { falseLabel = 'No' } = {}) => {
-  if (value === true) return 'Yes';
-  if (value === false) return falseLabel;
-  return 'Not shared yet';
-};
 
 export default function ProfileScreen({
   profile,
@@ -72,21 +52,38 @@ export default function ProfileScreen({
   const colorScheme = useColorScheme();
   const insets = useSafeAreaInsets();
   const [isEditingBio, setIsEditingBio] = useState(false);
-  const [isEditingDetails, setIsEditingDetails] = useState(false);
   const [bio, setBio] = useState(profile?.bio ?? '');
   const [detailsForm, setDetailsForm] = useState(() => buildProfileDetailsFormValues(profile));
   const [detailsErrors, setDetailsErrors] = useState<ProfileDetailsFormErrors>({});
+  const [showDetailsForm, setShowDetailsForm] = useState(false);
+
+  const churchName = profile?.church?.name ?? '';
+  const churchAddress = profile?.church?.address ?? '';
+  const churchWebsite = profile?.church?.website_url ?? '';
+  const hasAboutDetails = Boolean(
+    profile?.year_believed ||
+    profile?.year_baptized ||
+    churchName ||
+    churchAddress ||
+    churchWebsite,
+  );
 
   useEffect(() => {
     if (!isEditingBio) {
       setBio(profile?.bio ?? '');
     }
+  }, [profile, isEditingBio]);
 
-    if (!isEditingDetails) {
-      setDetailsForm(buildProfileDetailsFormValues(profile));
-      setDetailsErrors({});
+  useEffect(() => {
+    setDetailsForm(buildProfileDetailsFormValues(profile));
+    setDetailsErrors({});
+  }, [profile]);
+
+  useEffect(() => {
+    if (hasAboutDetails) {
+      setShowDetailsForm(false);
     }
-  }, [profile, isEditingBio, isEditingDetails]);
+  }, [hasAboutDetails]);
 
   const onSaveBio = () => {
     if (bio.trim() === profile?.bio?.trim()) {
@@ -99,8 +96,7 @@ export default function ProfileScreen({
 
   const onSaveDetails = () => {
     const nextErrors = validateProfileDetailsForm(detailsForm, {
-      requireName: true,
-      requireChoices: true,
+      requireName: false,
     });
     setDetailsErrors(nextErrors);
 
@@ -109,11 +105,9 @@ export default function ProfileScreen({
     }
 
     handleUpdateProfile(toUpdateProfileInput(detailsForm), {
-      onSuccess: () => setIsEditingDetails(false),
+      onSuccess: () => setShowDetailsForm(false),
     });
   };
-
-  const yearsFollowingJesus = getYearsFollowingJesus(profile?.year_believed);
 
   return (
     <View
@@ -161,121 +155,79 @@ export default function ProfileScreen({
               </Text>
             </View>
 
-            <View className="mt-6 px-6">
-              <View className="rounded-2xl border border-gray-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-950">
-                <Text className="text-lg font-semibold text-gray-900 dark:text-white">About</Text>
+            <View className="mt-4 px-6 w-full">
+              {!isEditingBio ? (
+                <>
+                  <Text className="text-center text-gray-600 dark:text-gray-400">
+                    {profile?.bio || 'No bio yet'}
+                  </Text>
 
-                {!isEditingBio ? (
-                  <>
-                    <Text className="mt-3 text-gray-600 dark:text-gray-400">
-                      {profile?.bio || 'No bio yet'}
+                  <TouchableOpacity
+                    onPress={() => setIsEditingBio(true)}
+                    className="mt-3 self-center">
+                    <Text className="text-sm font-medium text-blue-600 dark:text-blue-400">
+                      Edit bio
                     </Text>
+                  </TouchableOpacity>
+                </>
+              ) : (
+                <>
+                  <TextInput
+                    value={bio}
+                    onChangeText={setBio}
+                    placeholder="Write something about yourself"
+                    multiline
+                    className="mt-3 rounded-xl border border-gray-300 p-3 text-gray-900 dark:border-neutral-700 dark:text-white"
+                    placeholderTextColor="#9ca3af"
+                  />
 
+                  <View className="mt-3 flex-row justify-end gap-3">
                     <TouchableOpacity
-                      onPress={() => setIsEditingBio(true)}
-                      className="mt-3 self-start">
-                      <Text className="text-sm font-medium text-blue-600 dark:text-blue-400">
-                        Edit bio
+                      onPress={() => {
+                        setBio(profile?.bio ?? '');
+                        setIsEditingBio(false);
+                      }}>
+                      <Text className="text-gray-500">Cancel</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity onPress={onSaveBio} disabled={updating}>
+                      <Text className="font-semibold text-blue-600 dark:text-blue-400">
+                        {updating ? 'Saving...' : 'Save'}
                       </Text>
                     </TouchableOpacity>
-                  </>
-                ) : (
-                  <>
-                    <TextInput
-                      value={bio}
-                      onChangeText={setBio}
-                      placeholder="Write something about yourself"
-                      multiline
-                      className="mt-3 rounded-xl border border-gray-300 p-3 text-gray-900 dark:border-neutral-700 dark:text-white"
-                      placeholderTextColor="#9ca3af"
-                    />
-
-                    <View className="mt-3 flex-row justify-end gap-3">
-                      <TouchableOpacity
-                        onPress={() => {
-                          setBio(profile?.bio ?? '');
-                          setIsEditingBio(false);
-                        }}>
-                        <Text className="text-gray-500">Cancel</Text>
-                      </TouchableOpacity>
-
-                      <TouchableOpacity onPress={onSaveBio} disabled={updating}>
-                        <Text className="font-semibold text-blue-600 dark:text-blue-400">
-                          {updating ? 'Saving...' : 'Save'}
-                        </Text>
-                      </TouchableOpacity>
-                    </View>
-                  </>
-                )}
-              </View>
+                  </View>
+                </>
+              )}
             </View>
 
             <View className="mt-4 px-6">
               <View className="rounded-2xl border border-gray-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-950">
                 <View className="flex-row items-center justify-between">
-                  <Text className="text-lg font-semibold text-gray-900 dark:text-white">
-                    Faith Journey
-                  </Text>
-
-                  {!isEditingDetails ? (
-                    <TouchableOpacity onPress={() => setIsEditingDetails(true)}>
-                      <Text className="text-sm font-medium text-blue-600 dark:text-blue-400">
-                        Edit details
-                      </Text>
-                    </TouchableOpacity>
+                  <Text className="text-lg font-semibold text-gray-900 dark:text-white">About</Text>
+                  {!showDetailsForm ? (
+                    hasAboutDetails ? (
+                      <TouchableOpacity
+                        onPress={() => setShowDetailsForm(true)}
+                        disabled={updating}>
+                        <Text className="text-sm font-medium text-blue-600 dark:text-blue-400">
+                          Edit
+                        </Text>
+                      </TouchableOpacity>
+                    ) : (
+                      <TouchableOpacity
+                        onPress={() => setShowDetailsForm(true)}
+                        disabled={updating}>
+                        <Text className="text-sm font-medium text-blue-600 dark:text-blue-400">
+                          Add your church
+                        </Text>
+                      </TouchableOpacity>
+                    )
                   ) : null}
                 </View>
 
-                {!isEditingDetails ? (
+                {showDetailsForm ? (
                   <View className="mt-4">
-                    <ProfileDetailRow
-                      label="Believes In Jesus"
-                      value={formatBoolean(profile?.is_believer, { falseLabel: 'Not yet' })}
-                    />
-                    {profile?.is_believer ? (
-                      <>
-                        <ProfileDetailRow
-                          label="Year Believed"
-                          value={profile?.year_believed ? String(profile.year_believed) : null}
-                        />
-                        <ProfileDetailRow
-                          label="Years Following Jesus"
-                          value={
-                            yearsFollowingJesus !== null
-                              ? `${yearsFollowingJesus} year${yearsFollowingJesus === 1 ? '' : 's'}`
-                              : null
-                          }
-                        />
-                        <ProfileDetailRow
-                          label="Baptized"
-                          value={formatBoolean(profile?.is_baptized)}
-                        />
-                        {profile?.is_baptized ? (
-                          <ProfileDetailRow
-                            label="Year Baptized"
-                            value={profile?.year_baptized ? String(profile.year_baptized) : null}
-                          />
-                        ) : null}
-                      </>
-                    ) : null}
-                    <ProfileDetailRow
-                      label="Meets At A Church Regularly"
-                      value={formatBoolean(profile?.attends_church_regularly)}
-                    />
-                    {profile?.attends_church_regularly ? (
-                      <>
-                        <ProfileDetailRow label="Church Name" value={profile?.church?.name} />
-                        <ProfileDetailRow label="Church Address" value={profile?.church?.address} />
-                        <ProfileDetailRow
-                          label="Church Website"
-                          value={profile?.church?.website_url}
-                        />
-                      </>
-                    ) : null}
-                  </View>
-                ) : (
-                  <View className="mt-4">
-                    <ProfileDetailsForm
+                    <AboutDetailsForm
                       values={detailsForm}
                       errors={detailsErrors}
                       onChange={(patch) => {
@@ -297,7 +249,7 @@ export default function ProfileScreen({
                         onPress={() => {
                           setDetailsForm(buildProfileDetailsFormValues(profile));
                           setDetailsErrors({});
-                          setIsEditingDetails(false);
+                          setShowDetailsForm(false);
                         }}>
                         <Text className="text-gray-500">Cancel</Text>
                       </TouchableOpacity>
@@ -308,6 +260,62 @@ export default function ProfileScreen({
                         </Text>
                       </TouchableOpacity>
                     </View>
+                  </View>
+                ) : hasAboutDetails ? (
+                  <View className="mt-4 space-y-4">
+                    <View>
+                      <Text className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                        Year You Believed
+                      </Text>
+                      <Text className="mt-1 text-base text-gray-900 dark:text-white">
+                        {profile?.year_believed ? String(profile.year_believed) : 'Not provided'}
+                      </Text>
+                    </View>
+
+                    <View>
+                      <Text className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                        Year You Were Baptized
+                      </Text>
+                      <Text className="mt-1 text-base text-gray-900 dark:text-white">
+                        {profile?.year_baptized ? String(profile.year_baptized) : 'Not provided'}
+                      </Text>
+                    </View>
+
+                    <View>
+                      <Text className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                        Church
+                      </Text>
+                      <Text className="mt-1 text-base text-gray-900 dark:text-white">
+                        {churchName || 'Not provided'}
+                      </Text>
+                      {churchAddress ? (
+                        <Text className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                          {churchAddress}
+                        </Text>
+                      ) : null}
+                      {churchWebsite ? (
+                        <Text className="mt-1 text-sm text-blue-600 dark:text-blue-400">
+                          {churchWebsite}
+                        </Text>
+                      ) : null}
+                    </View>
+                  </View>
+                ) : (
+                  <View className="mt-4 items-center rounded-xl border border-dashed border-gray-200 px-4 py-6 dark:border-neutral-800">
+                    <Text className="text-base font-semibold text-gray-900 dark:text-white">
+                      Add your church
+                    </Text>
+                    <Text className="mt-1 text-center text-sm text-gray-600 dark:text-gray-400">
+                      Share your church details and faith journey.
+                    </Text>
+                    <TouchableOpacity
+                      className="mt-4 rounded-full border border-blue-600 px-4 py-2"
+                      onPress={() => setShowDetailsForm(true)}
+                      disabled={updating}>
+                      <Text className="text-sm font-semibold text-blue-600 dark:text-blue-400">
+                        Add your church
+                      </Text>
+                    </TouchableOpacity>
                   </View>
                 )}
               </View>

@@ -27,11 +27,21 @@ export type UpdateProfileInput = {
   last_name?: string;
   avatar_url?: string;
   bio?: string;
-  is_believer?: boolean | null;
   year_believed?: number | null;
-  is_baptized?: boolean | null;
   year_baptized?: number | null;
-  attends_church_regularly?: boolean | null;
+  church_id?: string | null;
+  church_name?: string | null;
+  church_address?: string | null;
+  church_website_url?: string | null;
+  clear_church?: boolean;
+};
+
+export type SignUpAboutDetailsInput = {
+  user_id: string;
+  email: string;
+  year_believed?: number | null;
+  year_baptized?: number | null;
+  church_id?: string | null;
   church_name?: string | null;
   church_address?: string | null;
   church_website_url?: string | null;
@@ -43,11 +53,8 @@ export type SignUpProfileInput = {
   password: string;
   firstName: string;
   lastName: string;
-  isBeliever: boolean;
   yearBelieved?: number | null;
-  isBaptized?: boolean | null;
   yearBaptized?: number | null;
-  attendsChurchRegularly: boolean;
   churchName?: string | null;
   churchAddress?: string | null;
   churchWebsiteUrl?: string | null;

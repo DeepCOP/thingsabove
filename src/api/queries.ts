@@ -281,6 +281,22 @@ export const getProfile = async (userId: string) => {
   return data as ProfileWithChurch;
 };
 
+export const searchChurches = async (query: string) => {
+  const trimmed = query.trim();
+  if (!trimmed) return [];
+  const sanitized = trimmed.replace(/,/g, ' ');
+
+  const { data, error } = await supabase
+    .from('churches')
+    .select('id, name, address, website_url')
+    .or(`name.ilike.%${sanitized}%,address.ilike.%${sanitized}%,website_url.ilike.%${sanitized}%`)
+    .order('name')
+    .limit(8);
+
+  if (error) throw error;
+  return data ?? [];
+};
+
 export const getNotificationsPreferences = async (userId: string) => {
   const { data, error } = await supabase
     .from('notification_preferences')

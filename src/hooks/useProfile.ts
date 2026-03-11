@@ -2,13 +2,14 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Alert } from 'react-native';
 import {
   deleteAvatarFromStorage,
+  saveSignupAboutDetails,
   signInUserWithPassword,
   signUpUser,
   updateProfile,
   uploadAvatar,
 } from '../api/mutations';
 import { getProfile } from '../api/queries';
-import { SignUpProfileInput, UpdateProfileInput } from '../types/types';
+import { SignUpAboutDetailsInput, SignUpProfileInput, UpdateProfileInput } from '../types/types';
 
 export const useProfile = (userId: string | undefined) => {
   // Placeholder for future profile-related hooks
@@ -57,6 +58,13 @@ export const useUpdateProfile = (userId: string | undefined) => {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['profile', userId] });
     },
+  });
+};
+
+export const useSaveSignupAboutDetails = () => {
+  return useMutation({
+    mutationKey: ['save_signup_about_details'],
+    mutationFn: async (params: SignUpAboutDetailsInput) => saveSignupAboutDetails(params),
   });
 };
 
