@@ -25,7 +25,7 @@ export default function PlansTab() {
       onChangeTab={setActiveTab}
       onChangeSort={setSort}
       onSearch={() => router.push('/search/devotionals')}
-      onNotifications={() => router.push('/notifications/index')}
+      onNotifications={() => router.push('/notifications')}
       notificationCount={notificationsCountQuery.data ?? 0}
       onLogin={() => router.push('/(auth)/signin')}
       onContribute={() => Linking.openURL(`${process.env.EXPO_PUBLIC_WEB_INTERFACE_URL}/plans/new`)}
