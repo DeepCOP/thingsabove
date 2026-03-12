@@ -23,14 +23,11 @@ export function useDayItemsProgress({ user_id, plan_id, progress_id, day_id, gro
 
   const updateDayItemsForItem = (
     items: DayItemsProgress[] | undefined,
-    item_type: 'devotional' | 'scripture',
-    item_key: string,
+    item_id: string,
     completed: boolean,
   ) => {
     if (!items) return items;
-    return items.map((item) =>
-      item.item_type === item_type && item.item_key === item_key ? { ...item, completed } : item,
-    );
+    return items.map((item) => (item.id === item_id ? { ...item, completed } : item));
   };
 
   const updateDayItemsForDay = (items: DayItemsProgress[] | undefined, completed: boolean) => {
@@ -97,10 +94,12 @@ export function useDayItemsProgress({ user_id, plan_id, progress_id, day_id, gro
   // Toggle completion (using RPC)
   const toggleMutation = useMutation({
     mutationFn: async ({
+      item_id,
       item_type,
       item_key,
       completed,
     }: {
+      item_id: string;
       item_type: 'devotional' | 'scripture';
       item_key: string;
       completed: boolean;
@@ -132,8 +131,7 @@ export function useDayItemsProgress({ user_id, plan_id, progress_id, day_id, gro
 
       const nextDayItems = updateDayItemsForItem(
         previousDayItems,
-        variables.item_type,
-        variables.item_key,
+        variables.item_id,
         variables.completed,
       );
       queryClient.setQueryData(dayItemsKey, nextDayItems);
@@ -262,8 +260,13 @@ export function useDayItemsProgress({ user_id, plan_id, progress_id, day_id, gro
     },
   });
 
-  const toggleItem = (type: 'devotional' | 'scripture', key: string, completed: boolean) => {
-    toggleMutation.mutate({ item_type: type, item_key: key, completed });
+  const toggleItem = (
+    item_id: string,
+    type: 'devotional' | 'scripture',
+    key: string,
+    completed: boolean,
+  ) => {
+    toggleMutation.mutate({ item_id, item_type: type, item_key: key, completed });
   };
 
   return {

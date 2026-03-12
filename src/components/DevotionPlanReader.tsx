@@ -50,6 +50,7 @@ export default function DevotionalPlanReader({
     void,
     Error,
     {
+      item_id: string;
       item_type: 'devotional' | 'scripture';
       item_key: string;
       completed: boolean;
@@ -513,12 +514,13 @@ export default function DevotionalPlanReader({
                   onPress={() =>
                     toggleItem.mutate(
                       {
+                        item_id: item?.id || '',
                         item_type: item?.item_type as 'devotional' | 'scripture',
                         item_key: item?.item_key || '',
                         completed: true,
                       },
                       {
-                        onSuccess: async () => {
+                        onSettled: async () => {
                           router.back();
                         },
                       },
@@ -534,6 +536,7 @@ export default function DevotionalPlanReader({
                 onPress={() => {
                   toggleItem.mutate(
                     {
+                      item_id: item?.id || '',
                       item_type: item?.item_type as 'devotional' | 'scripture',
                       item_key: item?.item_key || '',
                       completed: true,

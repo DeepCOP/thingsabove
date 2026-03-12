@@ -226,6 +226,7 @@ export default function PlanProgress() {
         onPressItem={handleItemPress}
         onToggleItem={(item) => {
           toggleMutation.mutate({
+            item_id: item.id,
             item_type: item.item_type as 'scripture' | 'devotional',
             item_key: item.item_key as string,
             completed: !item.completed,
