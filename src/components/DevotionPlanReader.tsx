@@ -1,4 +1,3 @@
-import { useAppStore } from '@/src/state/useAppStore';
 import { Ionicons } from '@expo/vector-icons';
 import * as Clipboard from 'expo-clipboard';
 import { useRouter } from 'expo-router';
@@ -23,6 +22,14 @@ import RenderHTML from 'react-native-render-html';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useBible } from '../state/BibleContext';
 import { DayItemsProgress } from '../types/types';
+import { parseVerseRef } from '../utils';
+
+type BibleBook = {
+  name: string;
+  chapter: number;
+  verseStart?: number;
+  verseEnd?: number;
+};
 
 export default function DevotionalPlanReader({
   onScroll,
@@ -37,8 +44,8 @@ export default function DevotionalPlanReader({
   last: boolean;
   headerTranslateY?: Animated.AnimatedInterpolation<string | number>;
   item: DayItemsProgress;
-  HandleNext: () => void;
-  HandlePrevious: () => void;
+  HandleNext: (itemId: string) => void;
+  HandlePrevious: (itemId: string) => void;
   toggleItem: UseMutationResult<
     void,
     Error,
@@ -58,9 +65,6 @@ export default function DevotionalPlanReader({
   const [menuAnchor, setMenuAnchor] = useState({ x: 0, y: 0 });
   const [menuHeight, setMenuHeight] = useState(0);
 
-  const selectedBook = useAppStore((s) => s.selectedBook);
-  const setSelectedBook = useAppStore((s) => s.setSelectedBook);
-
   const router = useRouter();
   const { bible, version, setVersion } = useBible();
   const versePositions = useRef<Record<number, number>>({});
@@ -70,6 +74,41 @@ export default function DevotionalPlanReader({
   const devotionalTitle =
     item?.title?.trim() || (item?.day_number ? `Day ${item.day_number}` : 'Devotional');
   const devotionalHtml = item?.devotional_content ?? '';
+  const isDevotionalItem = item?.item_type === 'devotional' && item?.item_key === 'main';
+
+  const itemSelectedBook = useMemo<BibleBook | null>(() => {
+    if (item?.item_type !== 'scripture' || !item?.item_key) {
+      return null;
+    }
+
+    const parsed = parseVerseRef(item.item_key);
+    if (!parsed) {
+      return null;
+    }
+
+    return {
+      name: parsed.book,
+      chapter: parsed.chapter,
+      verseStart: parsed.verseStart,
+      verseEnd: parsed.verseEnd,
+    };
+  }, [item?.item_key, item?.item_type]);
+
+  const [selectedBook, setSelectedBook] = useState<BibleBook>(
+    itemSelectedBook ?? { name: 'John', chapter: 1 },
+  );
+  const hasUnavailableScriptureReference = item?.item_type === 'scripture' && !itemSelectedBook;
+
+  useEffect(() => {
+    if (item?.item_type !== 'scripture') return;
+    if (!itemSelectedBook) return;
+    setSelectedBook(itemSelectedBook);
+  }, [item?.id, item?.item_type, itemSelectedBook]);
+
+  useEffect(() => {
+    didScrollRef.current = false;
+    versePositions.current = {};
+  }, [item.id]);
 
   useEffect(() => {
     if (!selectedBook?.verseStart) return;
@@ -103,10 +142,6 @@ export default function DevotionalPlanReader({
       cancelled = true;
     };
   }, [selectedBook.name, selectedBook.chapter, selectedBook.verseStart]);
-  useEffect(() => {
-    didScrollRef.current = false;
-    versePositions.current = {};
-  }, [selectedBook.name, selectedBook.chapter]);
 
   const getSelectedRange = () => {
     if (!selectedBook?.verseStart) return '';
@@ -165,6 +200,9 @@ export default function DevotionalPlanReader({
   const verses = bible.books
     .find((book) => book.name === selectedBook.name)
     ?.chapters.find((chapter) => chapter.chapter === chapterNumber)?.verses;
+  const scriptureVerses = verses ?? [];
+  const showScriptureUnavailableFallback =
+    item?.item_type === 'scripture' && (hasUnavailableScriptureReference || !verses);
 
   const contextMenuStyle = useMemo(() => {
     const menuWidth = 220;
@@ -186,8 +224,6 @@ export default function DevotionalPlanReader({
     };
   }, [height, insets.bottom, insets.top, menuAnchor.x, menuAnchor.y, menuHeight, width]);
 
-  if (!verses) return null;
-
   return (
     <>
       <View className="absolute top-0 left-0 right-0 z-20 px-4 pt-14 pb-3 bg-white dark:bg-black">
@@ -207,7 +243,7 @@ export default function DevotionalPlanReader({
             />
           </View>
 
-          {item?.item_type === 'devotional' && item?.item_key === 'main' ? (
+          {isDevotionalItem ? (
             <TouchableOpacity
               onPress={async () => {
                 const content = `${plan?.title}: Day ${item?.day_number} · Devotional \n\n ${process.env.EXPO_PUBLIC_BASE_URL}/devotional_detail/${plan?.id}/${item?.day_id}/${item.id}`;
@@ -231,7 +267,7 @@ export default function DevotionalPlanReader({
       </View>
 
       <View className="flex-1 bg-white dark:bg-black" style={{ paddingBottom: insets.bottom }}>
-        {item?.item_type === 'devotional' && item?.item_key === 'main' ? (
+        {isDevotionalItem ? (
           <Animated.ScrollView className="px-5 pt-28 pb-32">
             <View className="items-center mb-6">
               <Text className="text-center text-gray-500 dark:text-gray-400 text-xl font-OpenSansSemiBold">
@@ -351,6 +387,15 @@ export default function DevotionalPlanReader({
               }}
             />
           </Animated.ScrollView>
+        ) : showScriptureUnavailableFallback ? (
+          <View className="flex-1 items-center justify-center px-6">
+            <Text className="text-center text-xl font-semibold text-gray-900 dark:text-white">
+              Scripture reference unavailable
+            </Text>
+            <Text className="mt-3 text-center text-base text-gray-500 dark:text-gray-400">
+              This reading item does not have a valid scripture reference.
+            </Text>
+          </View>
         ) : (
           <Animated.ScrollView
             scrollEventThrottle={16}
@@ -367,7 +412,7 @@ export default function DevotionalPlanReader({
               </Text>
             </View>
 
-            {verses.map(({ verse, text }) => {
+            {scriptureVerses.map(({ verse, text }) => {
               const verseNumber = Number(verse);
               const highlighted = isVerseInRange(verseNumber);
 
@@ -438,21 +483,19 @@ export default function DevotionalPlanReader({
           <View className="flex-row bg-black px-4 py-3 rounded-full items-center">
             <TouchableOpacity
               className="py-2 mr-8"
-              disabled={chapterNumber === 1}
               onPress={() => {
-                HandlePrevious();
+                HandlePrevious(item.id);
               }}>
-              <Ionicons
-                name="chevron-back"
-                size={20}
-                color="white"
-                style={{ opacity: chapterNumber === 1 ? 0.3 : 1 }}
-              />
+              <Ionicons name="chevron-back" size={20} color="white" />
             </TouchableOpacity>
 
-            {item?.item_type === 'devotional' && item?.item_key === 'main' ? (
+            {isDevotionalItem ? (
               <TouchableOpacity className="px-2 py-1">
                 <Text className="text-white font-semibold mx-4">Devotional</Text>
+              </TouchableOpacity>
+            ) : showScriptureUnavailableFallback ? (
+              <TouchableOpacity disabled>
+                <Text className="mx-4 font-semibold text-white/70">Scripture unavailable</Text>
               </TouchableOpacity>
             ) : (
               <TouchableOpacity
@@ -497,7 +540,7 @@ export default function DevotionalPlanReader({
                     },
                     {
                       onSuccess: () => {
-                        HandleNext();
+                        HandleNext(item.id);
                       },
                     },
                   );

@@ -2,17 +2,15 @@ import DevotionalPlanReader from '@/src/components/DevotionPlanReader';
 import LoadingSpinner from '@/src/components/LoadingSpinner';
 import { useDayItemsProgress } from '@/src/hooks/useDayItemsProgress';
 import { useAuth } from '@/src/state/AuthContext';
-import { BibleBook, useAppStore } from '@/src/state/useAppStore';
-import { parseVerseRef, sortByItemKey } from '@/src/utils';
+import { sortByItemKey } from '@/src/utils';
 import { useLocalSearchParams } from 'expo-router';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Text, View } from 'react-native';
 
 export default function DevotionalDayScreen() {
-  const { dayId, id: planId, progressId, groupId } = useLocalSearchParams();
-  const [last, setLast] = useState(false);
+  const { dayId, id: planId, progressId, groupId, itemId: routeItemId } = useLocalSearchParams();
   const { session } = useAuth();
-  const { itemId, setItemId, setSelectedBook } = useAppStore();
+  const [activeItemId, setActiveItemId] = useState((routeItemId as string) || '');
 
   const { dayItemsProgressQuery, toggleMutation } = useDayItemsProgress({
     progress_id: progressId as string,
@@ -31,52 +29,40 @@ export default function DevotionalDayScreen() {
     };
   }, [dayItemsProgressQuery?.data]);
 
-  const setFromVerseRef = (
-    ref: string,
-    // bibleBooks: BibleBook[],
-    setSelectedBook: (b: BibleBook) => void,
-  ) => {
-    const parsed = parseVerseRef(ref);
-    if (!parsed) return;
+  useEffect(() => {
+    setActiveItemId((routeItemId as string) || '');
+  }, [routeItemId]);
 
-    // const book = bibleBooks.find((b) => b.name.toLowerCase() === parsed.book.toLowerCase());
+  const HandleNext = (currentItemId: string) => {
+    const items = dayItemsProgress?.items;
+    if (!items) return;
 
-    // if (!book) return;
+    const currentItemIdx = items.findIndex((item) => item.id === currentItemId);
+    if (currentItemIdx < 0 || currentItemIdx >= items.length - 1) return;
 
-    setSelectedBook({
-      name: parsed.book,
-      chapter: parsed.chapter,
-      verseEnd: parsed.verseEnd,
-      verseStart: parsed.verseStart,
-    });
+    const nextItem = items[currentItemIdx + 1];
+    setActiveItemId(nextItem?.id || '');
   };
-  const HandleNext = () => {
-    setLast(false);
-    const currentItemIdx = dayItemsProgress?.items?.findIndex((item) => item.id === itemId);
-    if (currentItemIdx === undefined || !dayItemsProgress?.items) return;
-    if (currentItemIdx === dayItemsProgress?.items?.length - 1) {
-      setLast(true);
-      return;
-    }
-    const nextItem = dayItemsProgress?.items?.[currentItemIdx + 1];
-    setFromVerseRef(nextItem.item_key as string, setSelectedBook);
+  const HandlePrevious = (currentItemId: string) => {
+    const items = dayItemsProgress?.items;
+    if (!items) return;
 
-    setItemId(nextItem?.id || '');
-  };
-  const HandlePrevious = () => {
-    setLast(false);
-    const currentItem = dayItemsProgress?.items?.find((item) => item.id === itemId);
+    const currentItem = items.find((item) => item.id === currentItemId);
     if (currentItem?.item_type === 'devotional') {
       return;
     }
-    const currentItemIdx = dayItemsProgress?.items?.findIndex((item) => item.id === itemId);
-    if (!currentItemIdx || !dayItemsProgress?.items) return;
-    const prevItem = dayItemsProgress?.items?.[currentItemIdx - 1];
-    setFromVerseRef(prevItem.item_key as string, setSelectedBook);
 
-    setItemId(prevItem?.id || '');
+    const currentItemIdx = items.findIndex((item) => item.id === currentItemId);
+    if (currentItemIdx <= 0) return;
+
+    const prevItem = items[currentItemIdx - 1];
+    setActiveItemId(prevItem?.id || '');
   };
-  const item = dayItemsProgress?.items.find((item) => item.id === itemId);
+  const item = dayItemsProgress?.items.find((item) => item.id === activeItemId);
+  const last =
+    !!item &&
+    !!dayItemsProgress?.items?.length &&
+    dayItemsProgress.items[dayItemsProgress.items.length - 1]?.id === item.id;
   if (dayItemsProgressQuery.isLoading) {
     return <LoadingSpinner />;
   }

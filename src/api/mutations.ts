@@ -1,7 +1,6 @@
-import { supabase } from '../lib/supabaseClient';
 import { getCurrentDeviceExpoPushToken } from '../lib/pushToken';
+import { supabase } from '../lib/supabaseClient';
 import { SignUpAboutDetailsInput, SignUpProfileInput, UpdateProfileInput } from '../types/types';
-
 export const toggleItemCompletion = async ({
   item_type,
   item_key,
@@ -343,13 +342,11 @@ export const clearPushNotificationSetup = async (userId?: string) => {
   const currentDeviceToken = await getCurrentDeviceExpoPushToken();
   if (!currentDeviceToken) return;
 
-  const { error } = await supabase
+  await supabase
     .from('profiles')
     .update({ expo_push_token: null })
     .eq('id', userId)
     .eq('expo_push_token', currentDeviceToken);
-
-  if (error) throw error;
 };
 
 export const upsertPlanRating = async ({ planId, rating }: { planId: string; rating: number }) => {

@@ -28,6 +28,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (session?.user?.id) {
         await clearPushNotificationSetup(session.user.id);
       }
+    } catch (_error) {
     } finally {
       await supabase.auth.signOut();
     }
