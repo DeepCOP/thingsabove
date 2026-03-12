@@ -181,6 +181,7 @@ function RootLayoutContent() {
           <Stack.Screen name="add_friend/index" options={{ title: 'Add Friend' }} />
           <Stack.Screen name="accept_friend/index" options={{ title: 'Friend Requests' }} />
           <Stack.Screen name="settings/index" options={{ title: 'Settings' }} />
+          <Stack.Screen name="notifications/index" options={{ title: 'Notifications' }} />
         </Stack.Protected>
       </Stack>
     </>

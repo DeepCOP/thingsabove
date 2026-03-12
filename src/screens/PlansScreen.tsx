@@ -10,10 +10,12 @@ type Props = {
   sort: 'Recent' | 'Trending';
   activeTab: 'my-plans' | 'completed-plans' | 'find-plans';
   isAuthenticated: boolean;
+  notificationCount?: number;
   onToggleGrid: () => void;
   onChangeTab: (tab: 'my-plans' | 'completed-plans' | 'find-plans') => void;
   onChangeSort: (sort: 'Recent' | 'Trending') => void;
   onSearch: () => void;
+  onNotifications: () => void;
   onLogin: () => void;
   onContribute: () => void;
 };
@@ -23,10 +25,12 @@ export default function PlansScreen({
   sort,
   activeTab,
   isAuthenticated,
+  notificationCount = 0,
   onToggleGrid,
   onChangeTab,
   onChangeSort,
   onSearch,
+  onNotifications,
   onLogin,
   onContribute,
 }: Props) {
@@ -45,6 +49,24 @@ export default function PlansScreen({
         </TouchableOpacity>
 
         <View className="flex-row items-center gap-4">
+          {isAuthenticated && (
+            <TouchableOpacity onPress={onNotifications} className="relative">
+              {notificationCount > 0 && (
+                <View
+                  className="absolute -top-2 -right-2 min-w-[16px] h-4 rounded-full items-center justify-center px-1"
+                  style={{ backgroundColor: '#ef4444' }}>
+                  <Text className="text-[10px] leading-none text-white font-bold">
+                    {notificationCount > 99 ? '99+' : notificationCount}
+                  </Text>
+                </View>
+              )}
+              <Ionicons
+                name="notifications-outline"
+                size={22}
+                color={colorScheme === 'dark' ? '#fff' : '#222'}
+              />
+            </TouchableOpacity>
+          )}
           <Ionicons
             name="search"
             size={22}
