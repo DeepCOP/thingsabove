@@ -56,11 +56,14 @@ export default function MyPlansList({
   }, [userPlanProgress, plansQuery.data]);
 
   const visibleData = useMemo(() => {
-    if (mode !== 'completed') return flataData;
+    if (mode !== 'completed')
+      return flataData.filter(
+        (plan) =>
+          (plan.completed_days ?? 0) < (typeof plan.total_days === 'number' ? plan.total_days : 0),
+      );
 
     return flataData.filter(
       (plan) =>
-        plan.completed_once === true ||
         (plan.completed_days ?? 0) >= (typeof plan.total_days === 'number' ? plan.total_days : 0),
     );
   }, [flataData, mode]);
