@@ -29,7 +29,6 @@ type Props = {
   selectedDayData: DevotionalDays | undefined;
   itemsLoading: boolean;
   toggleLoading: boolean;
-  toggleLoadingItemId?: string | null;
   onSelectDay: (day: number) => void;
   onComments: () => void;
   onMissedDays: () => void;
@@ -56,7 +55,6 @@ export default function PlanProgressScreen({
   items,
   itemsLoading,
   toggleLoading,
-  toggleLoadingItemId,
   onSelectDay,
   onMissedDays,
   onParticipants,
@@ -106,7 +104,6 @@ export default function PlanProgressScreen({
             onPressItem={onPressItem}
             onToggle={(item) => onToggleItem(item)}
             toggleLoading={toggleLoading}
-            toggleLoadingItemId={toggleLoadingItemId}
           />
         ) : (
           <View className="items-center justify-center py-10">

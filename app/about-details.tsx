@@ -116,7 +116,7 @@ export default function AboutDetails() {
               setForm((current) => ({ ...current, ...patch }));
               setErrors((current) => {
                 const next = { ...current };
-                for (const key of Object.keys(patch) as Array<keyof ProfileDetailsFormErrors>) {
+                for (const key of Object.keys(patch) as (keyof ProfileDetailsFormErrors)[]) {
                   delete next[key];
                 }
                 return next;

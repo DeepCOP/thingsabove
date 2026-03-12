@@ -539,7 +539,7 @@ export default function DevotionalPlanReader({
                       completed: true,
                     },
                     {
-                      onSuccess: () => {
+                      onSettled: () => {
                         HandleNext(item.id);
                       },
                     },
