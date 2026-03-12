@@ -1,4 +1,3 @@
-import { BibleBook, useAppStore } from '@/src/state/useAppStore';
 import { Ionicons } from '@expo/vector-icons';
 import * as Clipboard from 'expo-clipboard';
 import { useRouter } from 'expo-router';
@@ -24,6 +23,13 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useBible } from '../state/BibleContext';
 import { DayItemsProgress } from '../types/types';
 import { parseVerseRef } from '../utils';
+
+type BibleBook = {
+  name: string;
+  chapter: number;
+  verseStart?: number;
+  verseEnd?: number;
+};
 
 export default function DevotionalPlanReader({
   onScroll,
@@ -59,15 +65,11 @@ export default function DevotionalPlanReader({
   const [menuAnchor, setMenuAnchor] = useState({ x: 0, y: 0 });
   const [menuHeight, setMenuHeight] = useState(0);
 
-  const storedSelectedBook = useAppStore((s) => s.selectedBook);
-  const setSelectedBook = useAppStore((s) => s.setSelectedBook);
-
   const router = useRouter();
   const { bible, version, setVersion } = useBible();
   const versePositions = useRef<Record<number, number>>({});
   const scrollRef = useRef<ScrollView | null>(null);
   const didScrollRef = useRef(false);
-  const syncedItemIdRef = useRef<string | null>(null);
 
   const devotionalTitle =
     item?.title?.trim() || (item?.day_number ? `Day ${item.day_number}` : 'Devotional');
@@ -92,27 +94,20 @@ export default function DevotionalPlanReader({
     };
   }, [item?.item_key, item?.item_type]);
 
-  const selectedBook =
-    itemSelectedBook && syncedItemIdRef.current !== item.id ? itemSelectedBook : storedSelectedBook;
+  const [selectedBook, setSelectedBook] = useState<BibleBook>(
+    itemSelectedBook ?? { name: 'John', chapter: 1 },
+  );
   const hasUnavailableScriptureReference = item?.item_type === 'scripture' && !itemSelectedBook;
 
   useEffect(() => {
-    if (item?.item_type !== 'scripture' || !itemSelectedBook) {
-      syncedItemIdRef.current = item?.id ?? null;
-      return;
-    }
-
-    syncedItemIdRef.current = item.id;
+    if (item?.item_type !== 'scripture') return;
+    if (!itemSelectedBook) return;
     setSelectedBook(itemSelectedBook);
-  }, [item?.id, item?.item_type, itemSelectedBook, setSelectedBook]);
+  }, [item?.id, item?.item_type, itemSelectedBook]);
 
   useEffect(() => {
     didScrollRef.current = false;
     versePositions.current = {};
-  }, [selectedBook.name, selectedBook.chapter]);
-
-  useEffect(() => {
-    didScrollRef.current = false;
   }, [item.id]);
 
   useEffect(() => {
