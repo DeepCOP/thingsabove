@@ -1,5 +1,5 @@
 import { useFetchDevotionalPlanById } from '@/src/hooks/useDevotionalPlans';
-import { useStartPlanProgress, useUserPlanProgressList } from '@/src/hooks/usePlanProgress';
+import { useUserPlanProgressList } from '@/src/hooks/usePlanProgress';
 import DevotionalDetailScreen from '@/src/screens/DevotionalDetailScreen';
 import { useAuth } from '@/src/state/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
@@ -19,12 +19,8 @@ export default function DevotionalDetail() {
 
   const router = useRouter();
   const colorScheme = useColorScheme();
-  const startPlanProgressMutation = useStartPlanProgress();
   const userPlanProgressQuery = useUserPlanProgressList(session?.user.id);
   const userPlanProgress = userPlanProgressQuery.data || [];
-  const existingSoloProgress = userPlanProgress.find(
-    (progress) => progress.plan_id === planId && !progress.group_id,
-  );
 
   const planQuery = useFetchDevotionalPlanById(planId);
   const plan = planQuery.data;
@@ -91,28 +87,24 @@ export default function DevotionalDetail() {
         isLoading={planQuery.isLoading || userPlanProgressQuery.isLoading}
         hasUserPlans={userPlanProgress.length > 0}
         onMyPlansPress={() => router.push('/PlansTab')}
-        onStartPress={(mode: string) => {
+        onStartPress={(mode: 'solo' | 'group') => {
           if (isGuest) {
             router.push('/(auth)/signin');
             return;
           }
 
           if (mode === 'group') {
-            router.push(`/devotional_detail/${planId}/start-date`);
+            router.push({
+              pathname: '/devotional_detail/[id]/start-date',
+              params: { id: planId, mode: 'group' },
+            });
             return;
           }
 
-          if (existingSoloProgress) {
-            router.push(`/plan_progress/${existingSoloProgress.id}`);
-            return;
-          }
-
-          startPlanProgressMutation.mutate(
-            { plan_id: planId, user_id: session?.user.id! },
-            {
-              onSuccess: (progressId) => router.push(`/plan_progress/${progressId}`),
-            },
-          );
+          router.push({
+            pathname: '/devotional_detail/[id]/start-date',
+            params: { id: planId, mode: 'solo' },
+          });
         }}
       />
     </>

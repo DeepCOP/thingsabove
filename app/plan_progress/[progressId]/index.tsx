@@ -3,7 +3,11 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useDayItemsProgress } from '@/src/hooks/useDayItemsProgress';
 import { useFetchDevotionalPlanById } from '@/src/hooks/useDevotionalPlans';
-import { useDevotionalDays, usePlanProgress } from '@/src/hooks/usePlanProgress';
+import {
+  useDevotionalDays,
+  usePlanProgress,
+  useStopPlanProgress,
+} from '@/src/hooks/usePlanProgress';
 import { useAuth } from '@/src/state/AuthContext';
 import { useAppStore } from '@/src/state/useAppStore';
 import {
@@ -18,10 +22,23 @@ import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
 import LoadingSpinner from '@/src/components/LoadingSpinner';
+import StartPlanBottomSheet from '@/src/components/StartPlanBottomSheet';
 import { usePlanGroupMembers } from '@/src/hooks/usePlanGroup';
 import PlanProgressScreen from '@/src/screens/PlanProgressScreen';
 import { DayItemsProgress } from '@/src/types/types';
-import { Platform, Text, useColorScheme, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import BottomSheet from '@gorhom/bottom-sheet';
+import {
+  Alert,
+  Modal,
+  Platform,
+  Pressable,
+  Text,
+  TouchableOpacity,
+  useColorScheme,
+  useWindowDimensions,
+  View,
+} from 'react-native';
 
 dayjs.extend(utc);
 
@@ -33,8 +50,14 @@ export default function PlanProgress() {
   const router = useRouter();
   const qc = useQueryClient();
   const { setMissedDays } = useAppStore();
-  const { session, loading: sessionLoading } = useAuth();
+  const { session, loading: sessionLoading, isGuest } = useAuth();
+  const stopPlanProgressMutation = useStopPlanProgress();
   const { planProgressQuery } = usePlanProgress(progressId as string, session?.user?.id as string);
+  const [showMenu, setShowMenu] = useState(false);
+  const [menuAnchor, setMenuAnchor] = useState({ x: 0, y: 0 });
+  const [menuHeight, setMenuHeight] = useState(0);
+  const startPlanSheetRef = useRef<BottomSheet>(null);
+  const { width: screenWidth, height: screenHeight } = useWindowDimensions();
   const daysQuery = useDevotionalDays(
     planProgressQuery.data?.plan_id as string,
     session?.user?.id as string,
@@ -77,6 +100,86 @@ export default function PlanProgress() {
   const devotional = dayItemsProgress?.items.find((item) => item.item_type === 'devotional');
   const planTitle = plan?.title ?? 'Plan Progress';
   const planTotalDays = plan?.total_days ?? days?.length ?? 0;
+  const contextMenuStyle = useMemo(() => {
+    const menuWidth = 220;
+    const horizontalMargin = 10;
+    const verticalSpacing = 12;
+    const estimatedHeight = menuHeight || 140;
+    const maxLeft = Math.max(horizontalMargin, screenWidth - menuWidth - horizontalMargin);
+    const left = Math.min(Math.max(horizontalMargin, menuAnchor.x - menuWidth / 2), maxLeft);
+    const preferBelow =
+      menuAnchor.y + verticalSpacing + estimatedHeight <= screenHeight - insets.bottom;
+    const top = preferBelow
+      ? menuAnchor.y + verticalSpacing
+      : Math.max(insets.top + 8, menuAnchor.y - estimatedHeight - verticalSpacing);
+
+    return {
+      top,
+      left,
+      width: menuWidth,
+    };
+  }, [
+    insets.bottom,
+    insets.top,
+    menuAnchor.x,
+    menuAnchor.y,
+    menuHeight,
+    screenHeight,
+    screenWidth,
+  ]);
+
+  const handleStartDuplicate = () => {
+    setShowMenu(false);
+    startPlanSheetRef.current?.expand();
+  };
+
+  const handleStartPlan = (mode: 'solo' | 'group') => {
+    if (isGuest) {
+      router.push('/(auth)/signin');
+      return;
+    }
+    const planId = plan?.id ?? planProgress?.plan_id;
+    if (!planId) return;
+
+    startPlanSheetRef.current?.close();
+    router.push({
+      pathname: '/devotional_detail/[id]/start-date',
+      params: { id: planId, mode },
+    });
+  };
+
+  const handleStopPlan = () => {
+    setShowMenu(false);
+    Alert.alert(
+      'Stop plan?',
+      'This will remove your current plan progress.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Stop plan',
+          style: 'destructive',
+          onPress: () => {
+            if (!session?.user?.id) return;
+            stopPlanProgressMutation.mutate(
+              {
+                user_id: session.user.id,
+                progress_id: progressId as string,
+              },
+              {
+                onSuccess: () => {
+                  router.replace('/PlansTab');
+                },
+                onError: () => {
+                  Alert.alert('Error', 'Failed to stop the plan. Please try again.');
+                },
+              },
+            );
+          },
+        },
+      ],
+      { cancelable: true },
+    );
+  };
 
   useEffect(() => {
     if (!planProgress || !plan) return;
@@ -186,6 +289,21 @@ export default function PlanProgress() {
                   ? 'rgba(0, 0, 0, 0.65)'
                   : 'rgba(255, 255, 255, 0.65)',
           },
+          headerRight: () => (
+            <TouchableOpacity
+              onPress={(event) => {
+                const { pageX, pageY } = event.nativeEvent;
+                setMenuAnchor({ x: pageX, y: pageY });
+                setShowMenu(true);
+              }}
+              className="px-2">
+              <Ionicons
+                name="ellipsis-vertical"
+                size={20}
+                color={colorScheme === 'dark' ? '#fff' : '#111'}
+              />
+            </TouchableOpacity>
+          ),
         }}
       />
 
@@ -234,6 +352,47 @@ export default function PlanProgress() {
         }}
         devotionalItem={devotional}
       />
+
+      <StartPlanBottomSheet ref={startPlanSheetRef} plan={plan} onStartPress={handleStartPlan} />
+
+      <Modal
+        visible={showMenu}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowMenu(false)}>
+        <Pressable className="flex-1 bg-black/25" onPress={() => setShowMenu(false)}>
+          <TouchableOpacity
+            activeOpacity={1}
+            onPress={() => {}}
+            style={[{ position: 'absolute' }, contextMenuStyle]}>
+            <View
+              className="rounded-2xl border border-neutral-700/20 dark:border-neutral-700 bg-white dark:bg-neutral-900 overflow-hidden"
+              onLayout={(event) => setMenuHeight(event.nativeEvent.layout.height)}>
+              <TouchableOpacity
+                className="px-4 py-3 flex-row items-center"
+                onPress={handleStartDuplicate}>
+                <Ionicons
+                  name="copy-outline"
+                  size={22}
+                  color={colorScheme === 'dark' ? 'white' : 'black'}
+                />
+                <Text className="ml-3 text-primary dark:text-gray-200 text-base">
+                  Start duplicate
+                </Text>
+              </TouchableOpacity>
+
+              <View className="border-t border-gray-200 dark:border-neutral-700" />
+
+              <TouchableOpacity
+                className="px-4 py-3 flex-row items-center"
+                onPress={handleStopPlan}>
+                <Ionicons name="stop-circle-outline" size={22} color="#ef4444" />
+                <Text className="ml-3 text-red-600 text-base">Stop plan</Text>
+              </TouchableOpacity>
+            </View>
+          </TouchableOpacity>
+        </Pressable>
+      </Modal>
     </>
   );
 }

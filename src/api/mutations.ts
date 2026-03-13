@@ -65,19 +65,38 @@ export const startPlanProgress = async ({
   user_id,
   plan_id,
   group_id,
+  start_date,
 }: {
   user_id: string;
   plan_id: string;
   group_id?: string;
+  start_date?: string;
 }) => {
   const { data, error } = await supabase.rpc('start_plan_progress', {
     p_user_id: user_id,
     p_plan_id: plan_id,
     p_group_id: group_id,
+    p_start_date: start_date,
   });
 
   if (error) throw error;
   return data as string; // progress_id
+};
+
+export const stopPlanProgress = async ({
+  user_id,
+  progress_id,
+}: {
+  user_id: string;
+  progress_id: string;
+}) => {
+  const { error } = await supabase
+    .from('plan_progress')
+    .delete()
+    .eq('id', progress_id)
+    .eq('user_id', user_id);
+
+  if (error) throw error;
 };
 
 export const addPlanDayComment = async ({
