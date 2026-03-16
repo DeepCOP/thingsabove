@@ -56,16 +56,20 @@ export default function ProfileScreen({
   const [detailsForm, setDetailsForm] = useState(() => buildProfileDetailsFormValues(profile));
   const [detailsErrors, setDetailsErrors] = useState<ProfileDetailsFormErrors>({});
   const [showDetailsForm, setShowDetailsForm] = useState(false);
+  const actionColor = colorScheme === 'dark' ? '#60a5fa' : '#2563eb';
 
   const churchName = profile?.church?.name ?? '';
   const churchAddress = profile?.church?.address ?? '';
   const churchWebsite = profile?.church?.website_url ?? '';
+  const displayName = [profile?.first_name, profile?.last_name].filter(Boolean).join(' ').trim();
+  const displayBio = profile?.bio?.trim() ?? '';
   const hasAboutDetails = Boolean(
     profile?.year_believed ||
     profile?.year_baptized ||
     churchName ||
     churchAddress ||
-    churchWebsite,
+    churchWebsite ||
+    displayBio,
   );
 
   useEffect(() => {
@@ -218,7 +222,7 @@ export default function ProfileScreen({
                         onPress={() => setShowDetailsForm(true)}
                         disabled={updating}>
                         <Text className="text-sm font-medium text-blue-600 dark:text-blue-400">
-                          Add your church
+                          Add About Info
                         </Text>
                       </TouchableOpacity>
                     )
@@ -301,19 +305,23 @@ export default function ProfileScreen({
                     </View>
                   </View>
                 ) : (
-                  <View className="mt-4 items-center rounded-xl border border-dashed border-gray-200 px-4 py-6 dark:border-neutral-800">
+                  <View className="mt-4 items-center rounded-2xl border border-gray-200 bg-gray-50 px-4 py-6 dark:border-neutral-800 dark:bg-neutral-900">
+                    <View className="mb-3 h-12 w-12 items-center justify-center rounded-2xl bg-blue-50 dark:bg-blue-950/40">
+                      <Ionicons name="book-outline" size={24} color={actionColor} />
+                    </View>
                     <Text className="text-base font-semibold text-gray-900 dark:text-white">
-                      Add your church
+                      Share a little about your faith journey
                     </Text>
                     <Text className="mt-1 text-center text-sm text-gray-600 dark:text-gray-400">
-                      Share your church details and faith journey.
+                      Add your bio, church, or favorite verse.
                     </Text>
                     <TouchableOpacity
-                      className="mt-4 rounded-full border border-blue-600 px-4 py-2"
+                      className="mt-4 flex-row items-center rounded-full border border-blue-600 px-4 py-2"
                       onPress={() => setShowDetailsForm(true)}
                       disabled={updating}>
-                      <Text className="text-sm font-semibold text-blue-600 dark:text-blue-400">
-                        Add your church
+                      <Ionicons name="add" size={16} color={actionColor} />
+                      <Text className="ml-1 text-sm font-semibold text-blue-600 dark:text-blue-400">
+                        Add About Info
                       </Text>
                     </TouchableOpacity>
                   </View>

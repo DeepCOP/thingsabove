@@ -13,6 +13,7 @@ const CURRENT_YEAR = new Date().getFullYear();
 export type ProfileDetailsFormValues = {
   firstName: string;
   lastName: string;
+  bio: string;
   yearBelieved: string;
   yearBaptized: string;
   churchId: string | null;
@@ -67,6 +68,7 @@ export const buildProfileDetailsFormValues = (
 ): ProfileDetailsFormValues => ({
   firstName: profile?.first_name ?? '',
   lastName: profile?.last_name ?? '',
+  bio: profile?.bio ?? '',
   yearBelieved: profile?.year_believed ? String(profile.year_believed) : '',
   yearBaptized: profile?.year_baptized ? String(profile.year_baptized) : '',
   churchId: profile?.church?.id ?? null,
@@ -155,6 +157,7 @@ export const toUpdateProfileInput = (values: ProfileDetailsFormValues): UpdatePr
   return {
     first_name: values.firstName.trim() || undefined,
     last_name: values.lastName.trim() || undefined,
+    bio: values.bio.trim(),
     year_believed: yearBelieved,
     year_baptized: yearBaptized,
     church_id: hasChurchId ? values.churchId : null,

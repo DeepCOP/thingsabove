@@ -97,6 +97,47 @@ export default function AboutDetailsForm({
 
   return (
     <View>
+      <View className="px-2 pt-2">
+        <Text className="mb-3 text-lg font-semibold text-gray-900 dark:text-white">About You</Text>
+      </View>
+
+      <Input
+        label="First Name"
+        value={values.firstName}
+        onChangeText={(firstName) => onChange({ firstName })}
+        editable={!disabled}
+        autoCapitalize="words"
+        errorMessage={errors?.firstName}
+        style={{ color: textColor }}
+        placeholder="First name"
+        placeholderTextColor={textColor}
+      />
+
+      <Input
+        label="Last Name"
+        value={values.lastName}
+        onChangeText={(lastName) => onChange({ lastName })}
+        editable={!disabled}
+        autoCapitalize="words"
+        errorMessage={errors?.lastName}
+        style={{ color: textColor }}
+        placeholder="Last name"
+        placeholderTextColor={textColor}
+      />
+
+      <Input
+        label="Bio"
+        value={values.bio}
+        onChangeText={(bio) => onChange({ bio })}
+        editable={!disabled}
+        errorMessage={errors?.bio}
+        style={{ color: textColor }}
+        placeholder="Share a short bio"
+        placeholderTextColor={textColor}
+        multiline
+        numberOfLines={4}
+      />
+
       <Input
         label="Year You Believed"
         value={values.yearBelieved}
