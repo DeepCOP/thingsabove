@@ -1,6 +1,11 @@
 import { getCurrentDeviceExpoPushToken } from '../lib/pushToken';
 import { supabase } from '../lib/supabaseClient';
-import { SignUpAboutDetailsInput, SignUpProfileInput, UpdateProfileInput } from '../types/types';
+import {
+  PlanProgress,
+  SignUpAboutDetailsInput,
+  SignUpProfileInput,
+  UpdateProfileInput,
+} from '../types/types';
 export const toggleItemCompletion = async ({
   item_type,
   item_key,
@@ -77,7 +82,7 @@ export const startPlanProgress = async ({
   });
 
   if (error) throw error;
-  return data as string; // progress_id
+  return data as PlanProgress;
 };
 
 export const addPlanDayComment = async ({
@@ -112,7 +117,7 @@ export const createPlanGroup = async ({
   start_date: string;
   invited_user_ids: string[];
 }) => {
-  const { data: groupId, error } = await supabase.rpc('create_plan_group', {
+  const { data, error } = await supabase.rpc('create_plan_group', {
     p_user_id: user_id,
     p_plan_id: plan_id,
     p_start_date: start_date, // YYYY-MM-DD,
@@ -120,7 +125,7 @@ export const createPlanGroup = async ({
   });
 
   if (error) throw error;
-  return groupId;
+  return data as PlanProgress;
 };
 
 export const addFriend = async ({ receiver_id }: { receiver_id: string }) => {

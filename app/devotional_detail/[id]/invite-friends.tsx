@@ -69,10 +69,10 @@ export default function InviteFriends() {
             start_date: startDate as string,
           },
           {
-            onSuccess: (newProgressId) => {
+            onSuccess: (progress) => {
               router.replace({
                 pathname: '/plan_progress/[progressId]',
-                params: { progressId: newProgressId as string },
+                params: { progressId: progress.id },
               });
             },
           },

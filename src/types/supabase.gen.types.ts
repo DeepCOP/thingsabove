@@ -1281,7 +1281,24 @@ export type Database = {
           p_start_date: string;
           p_user_id: string;
         };
-        Returns: string;
+        Returns: {
+          completed_days: number[] | null;
+          completed_once: boolean | null;
+          created_at: string | null;
+          current_day: number;
+          group_id: string | null;
+          id: string;
+          plan_id: string | null;
+          start_date: string | null;
+          updated_at: string | null;
+          user_id: string | null;
+        };
+        SetofOptions: {
+          from: '*';
+          to: 'plan_progress';
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
       };
       decline_friend_request: {
         Args: { p_requester_id: string };
@@ -1531,7 +1548,24 @@ export type Database = {
           p_start_date?: string;
           p_user_id: string;
         };
-        Returns: string;
+        Returns: {
+          completed_days: number[] | null;
+          completed_once: boolean | null;
+          created_at: string | null;
+          current_day: number;
+          group_id: string | null;
+          id: string;
+          plan_id: string | null;
+          start_date: string | null;
+          updated_at: string | null;
+          user_id: string | null;
+        };
+        SetofOptions: {
+          from: '*';
+          to: 'plan_progress';
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
       };
       tags_to_text: { Args: { tags: string[] }; Returns: string };
       toggle_day_completion: {

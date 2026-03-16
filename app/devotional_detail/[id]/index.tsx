@@ -33,10 +33,6 @@ export default function DevotionalDetail() {
   const startPlanProgressMutation = useStartPlanProgress();
   const userPlanProgressQuery = useUserPlanProgressList(session?.user.id);
   const userPlanProgress = userPlanProgressQuery.data || [];
-  const existingSoloProgress = userPlanProgress.find(
-    (progress) => progress.plan_id === planId && !progress.group_id,
-  );
-
   const planQuery = useFetchDevotionalPlanById(planId);
   const plan = planQuery.data;
   const currentReaction = {
@@ -121,15 +117,10 @@ export default function DevotionalDetail() {
             return;
           }
 
-          if (existingSoloProgress) {
-            router.push(`/plan_progress/${existingSoloProgress.id}`);
-            return;
-          }
-
           startPlanProgressMutation.mutate(
             { plan_id: planId, user_id: session?.user.id! },
             {
-              onSuccess: (progressId) => router.push(`/plan_progress/${progressId}`),
+              onSuccess: (progress) => router.push(`/plan_progress/${progress.id}`),
             },
           );
         }}

@@ -5,6 +5,7 @@ import {
   fetchPlanProgress,
   fetchUserPlanProgressList,
 } from '@/src/api/queries';
+import { PlanProgress } from '@/src/types/types';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { startPlanProgress } from '../api/mutations';
 
@@ -26,12 +27,37 @@ export function useStartPlanProgress() {
   return useMutation({
     mutationKey: ['start_plan'],
     mutationFn: startPlanProgress,
-    onSuccess: (progressId, variables) => {
+    onSuccess: (progress, variables) => {
+      const now = new Date().toISOString();
+      const progressId = progress.id;
       queryClient.invalidateQueries({
         queryKey: ['plan_progress', progressId, variables.user_id],
       });
-      queryClient.invalidateQueries({
-        queryKey: ['user_plans_progresses', variables.user_id],
+
+      const newProgress: PlanProgress = {
+        ...progress,
+        created_at: progress.created_at ?? now,
+        updated_at: progress.updated_at ?? now,
+        start_date: progress.start_date ?? now,
+      };
+
+      queryClient.setQueryData(['plan_progress', progressId, variables.user_id], newProgress);
+
+      queryClient.setQueryData(['user_plans_progresses', variables.user_id], (old: unknown) => {
+        if (!Array.isArray(old)) return [newProgress];
+
+        const existingIndex = old.findIndex((progress) => progress?.id === progressId);
+        if (existingIndex >= 0) {
+          const next = [...old];
+          next[existingIndex] = {
+            ...(next[existingIndex] as PlanProgress),
+            ...newProgress,
+            updated_at: now,
+          };
+          return next;
+        }
+
+        return [newProgress, ...old];
       });
       queryClient.invalidateQueries({
         queryKey: ['my_plan_progress_plans', variables.user_id],
