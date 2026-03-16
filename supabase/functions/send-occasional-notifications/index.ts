@@ -10,17 +10,33 @@ const EXPO_ACCESS_TOKEN = Deno.env.get('EXPO_ACCESS_TOKEN');
 function notificationTitle(type: string) {
   switch (type) {
     case 'plan_completion':
-      return '🎉 Well done!';
-    case 'friend_invite_nudge':
-      return '👥 Grow together';
+      return 'Faithful finish';
     case 'welcome_back':
-      return '🙏 Welcome back';
+      return 'Grace for today';
+    case 'inactivity_nudge':
+      return 'Make room for God';
+    case 'friend_invite_nudge':
+      return 'Read with someone';
+    case 'streak_encouragement':
+      return 'Stay close to God';
+    case 'church_connection_nudge':
+      return 'Stay rooted';
+    case 'social_prompt':
+      return 'Walk with others';
+    case 'abandoned_plan':
+      return 'Begin again';
+    case 'service_prompt':
+      return 'Walk in love';
+    case 'prayer_prompt':
+      return 'Lift someone up';
+    case 'gospel_prompt':
+      return 'Be ready to share';
     default:
-      return '📖 Daily encouragement';
+      return 'A moment with God';
   }
 }
 
-const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 Deno.serve(async () => {
   const { data: triggers, error } = await supabase
@@ -30,38 +46,40 @@ Deno.serve(async () => {
       id,
       trigger_type,
       generated_message,
+      priority,
+      created_at,
       profiles ( expo_push_token )
     `,
     )
     .eq('sent', false)
     .not('generated_message', 'is', null)
+    .order('priority', { ascending: true })
+    .order('created_at', { ascending: true })
     .limit(1000);
 
   if (error || !triggers?.length) {
     return new Response('No notifications', { status: 200 });
   }
 
-  const eligible = triggers.filter((t) => t.profiles?.expo_push_token);
-
-  const messages = eligible.map((t) => ({
-    id: t.id,
-    to: t.profiles!.expo_push_token!,
+  const eligible = triggers.filter((trigger) => trigger.profiles?.expo_push_token);
+  const messages = eligible.map((trigger) => ({
+    id: trigger.id,
+    to: trigger.profiles!.expo_push_token!,
     sound: 'default',
-    title: notificationTitle(t.trigger_type),
-    body: t.generated_message,
-    data: { triggerType: t.trigger_type },
+    title: notificationTitle(trigger.trigger_type),
+    body: trigger.generated_message,
+    data: { triggerType: trigger.trigger_type },
   }));
 
-  // 🔹 Expo limit: 100 per request
   const chunk = <T>(arr: T[], size: number) =>
-    Array.from({ length: Math.ceil(arr.length / size) }, (_, i) =>
-      arr.slice(i * size, i * size + size),
+    Array.from({ length: Math.ceil(arr.length / size) }, (_, index) =>
+      arr.slice(index * size, index * size + size),
     );
 
   const successfulIds: string[] = [];
 
   for (const batch of chunk(messages, 100)) {
-    const res = await fetch('https://exp.host/--/api/v2/push/send', {
+    const response = await fetch('https://exp.host/--/api/v2/push/send', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -70,17 +88,16 @@ Deno.serve(async () => {
       body: JSON.stringify(batch),
     });
 
-    const result = await res.json();
+    const result = await response.json();
     console.log('Expo batch:', result);
 
     const data = result?.data ?? [];
-    data.forEach((ticket: any, idx: number) => {
+    data.forEach((ticket: any, index: number) => {
       if (ticket.status === 'ok') {
-        successfulIds.push(batch[idx].id);
+        successfulIds.push(batch[index].id);
       }
     });
 
-    // 🛑 rate-limit safe
     await sleep(200);
   }
 
@@ -91,5 +108,7 @@ Deno.serve(async () => {
       .in('id', successfulIds);
   }
 
-  return new Response(`Push sent ${successfulIds.length}/${messages.length}`, { status: 200 });
+  return new Response(`Push sent ${successfulIds.length}/${messages.length}`, {
+    status: 200,
+  });
 });
