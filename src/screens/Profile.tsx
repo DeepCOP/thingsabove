@@ -68,8 +68,7 @@ export default function ProfileScreen({
     profile?.year_baptized ||
     churchName ||
     churchAddress ||
-    churchWebsite ||
-    displayBio,
+    churchWebsite,
   );
 
   useEffect(() => {
