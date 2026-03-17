@@ -195,6 +195,41 @@ export const fetchUserPlans = async (planId: string[]) => {
   return data;
 };
 
+export const fetchSavedPlanIds = async (userId: string) => {
+  if (!userId) return [];
+  const { data, error } = await supabase
+    .from('saved_plans')
+    .select('plan_id')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false });
+
+  if (error) throw error;
+
+  return (data ?? [])
+    .map((row) => row.plan_id)
+    .filter((planId): planId is string => typeof planId === 'string' && planId.length > 0);
+};
+
+export const savePlanForUser = async (userId: string, planId: string) => {
+  if (!userId || !planId) return;
+  const { error } = await supabase
+    .from('saved_plans')
+    .upsert({ user_id: userId, plan_id: planId }, { onConflict: 'user_id,plan_id' });
+
+  if (error) throw error;
+};
+
+export const removeSavedPlanForUser = async (userId: string, planId: string) => {
+  if (!userId || !planId) return;
+  const { error } = await supabase
+    .from('saved_plans')
+    .delete()
+    .eq('user_id', userId)
+    .eq('plan_id', planId);
+
+  if (error) throw error;
+};
+
 export const getUserByEmail = async (email: string) => {
   const { data, error } = await supabase
     .rpc('get_user_by_email', {

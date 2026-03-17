@@ -2,6 +2,7 @@ import { GridCard, ListCard } from '@/src/components/DevoCard';
 import LoadingSpinner from '@/src/components/LoadingSpinner';
 import { useFetchUserPlans } from '@/src/hooks/useDevotionalPlans';
 import { useUserPlanProgressList } from '@/src/hooks/usePlanProgress';
+import { useSavedPlanIds, useToggleSavedPlan } from '@/src/hooks/useSavedPlans';
 import { useAuth } from '@/src/state/AuthContext';
 import { useAppStore } from '@/src/state/useAppStore';
 import { Ionicons } from '@expo/vector-icons';
@@ -69,6 +70,9 @@ export default function MyPlansList({
   }, [flataData, mode]);
 
   const { sort, isGrid } = useAppStore();
+  const savedPlanIdsQuery = useSavedPlanIds(session?.user?.id);
+  const savedPlanIds = savedPlanIdsQuery.data ?? [];
+  const { toggleSavedPlan } = useToggleSavedPlan(session?.user?.id);
 
   const [refreshing, setRefreshing] = useState(false);
 
@@ -178,9 +182,14 @@ export default function MyPlansList({
         columnWrapperStyle={isGrid ? { gap: 12 } : undefined}
         contentContainerStyle={{ paddingBottom: 40, ...containterStyle }}
         renderItem={({ item }) => {
+          const planId = item.id as string | null;
+          const isSaved = !!planId && savedPlanIds.includes(planId);
+
           return isGrid ? (
             <GridCard
               item={item}
+              isSaved={isSaved}
+              onToggleSave={() => planId && toggleSavedPlan(planId, isSaved)}
               onPress={() =>
                 router.push({
                   pathname: '/plan_progress/[progressId]',
@@ -195,6 +204,8 @@ export default function MyPlansList({
           ) : (
             <ListCard
               item={item}
+              isSaved={isSaved}
+              onToggleSave={() => planId && toggleSavedPlan(planId, isSaved)}
               onPress={() =>
                 router.push({
                   pathname: '/plan_progress/[progressId]',

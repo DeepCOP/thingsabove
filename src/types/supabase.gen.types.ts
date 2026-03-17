@@ -842,6 +842,42 @@ export type Database = {
           },
         ];
       };
+      saved_plans: {
+        Row: {
+          created_at: string | null;
+          id: string;
+          plan_id: string;
+          user_id: string;
+        };
+        Insert: {
+          created_at?: string | null;
+          id?: string;
+          plan_id: string;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string | null;
+          id?: string;
+          plan_id?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'saved_plans_plan_id_fkey';
+            columns: ['plan_id'];
+            isOneToOne: false;
+            referencedRelation: 'devotional_plans';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'saved_plans_plan_id_fkey';
+            columns: ['plan_id'];
+            isOneToOne: false;
+            referencedRelation: 'devotional_plans_view';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       profiles: {
         Row: {
           avatar_url: string | null;

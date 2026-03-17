@@ -1,6 +1,8 @@
 import { GridCard, ListCard } from '@/src/components/DevoCard';
 import LoadingSpinner from '@/src/components/LoadingSpinner';
 import { usePlans } from '@/src/hooks/useDevotionalPlans';
+import { useSavedPlanIds, useToggleSavedPlan } from '@/src/hooks/useSavedPlans';
+import { useAuth } from '@/src/state/AuthContext';
 import { useAppStore } from '@/src/state/useAppStore';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
@@ -10,8 +12,11 @@ import { FlatList, Text, useColorScheme, View } from 'react-native';
 export default function FindPlansList() {
   const { plansQuery } = usePlans();
   const colorScheme = useColorScheme();
-
+  const { session } = useAuth();
   const { sort, isGrid } = useAppStore();
+  const savedPlanIdsQuery = useSavedPlanIds(session?.user?.id);
+  const savedPlanIds = savedPlanIdsQuery.data ?? [];
+  const { toggleSavedPlan } = useToggleSavedPlan(session?.user?.id);
   const flatData = useMemo(() => {
     const items =
       plansQuery.data?.pages.flatMap((page) =>
@@ -88,13 +93,40 @@ export default function FindPlansList() {
       numColumns={isGrid ? 2 : 1}
       columnWrapperStyle={isGrid ? { gap: 12 } : undefined}
       contentContainerStyle={{ paddingBottom: 40 }}
-      renderItem={({ item }) =>
-        isGrid ? (
-          <GridCard item={item} onPress={() => router.push(`/devotional_detail/${item.id}`)} />
+      renderItem={({ item }) => {
+        const planId = item.id as string | null;
+        const isSaved = !!planId && savedPlanIds.includes(planId);
+
+        return isGrid ? (
+          <GridCard
+            item={item}
+            isSaved={isSaved}
+            onToggleSave={() => {
+              if (!planId) return;
+              if (!session?.user?.id) {
+                router.push('/(auth)/signin');
+                return;
+              }
+              toggleSavedPlan(planId, isSaved);
+            }}
+            onPress={() => router.push(`/devotional_detail/${item.id}`)}
+          />
         ) : (
-          <ListCard item={item} onPress={() => router.push(`/devotional_detail/${item.id}`)} />
-        )
-      }
+          <ListCard
+            item={item}
+            isSaved={isSaved}
+            onToggleSave={() => {
+              if (!planId) return;
+              if (!session?.user?.id) {
+                router.push('/(auth)/signin');
+                return;
+              }
+              toggleSavedPlan(planId, isSaved);
+            }}
+            onPress={() => router.push(`/devotional_detail/${item.id}`)}
+          />
+        );
+      }}
       onEndReached={() => {
         if (plansQuery.hasNextPage) {
           plansQuery.fetchNextPage();

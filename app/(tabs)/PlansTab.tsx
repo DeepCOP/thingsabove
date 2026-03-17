@@ -8,9 +8,9 @@ import { Linking } from 'react-native';
 
 export default function PlansTab() {
   const { session } = useAuth();
-  const [activeTab, setActiveTab] = useState<'my-plans' | 'completed-plans' | 'find-plans'>(
-    'my-plans',
-  );
+  const [activeTab, setActiveTab] = useState<
+    'my-plans' | 'saved-plans' | 'completed-plans' | 'find-plans'
+  >('my-plans');
   const { notificationsCountQuery } = useNotifications(session?.user?.id);
 
   const { sort, setSort, isGrid, setIsGrid } = useAppStore();

@@ -1,5 +1,6 @@
 import { useFetchDevotionalPlanById } from '@/src/hooks/useDevotionalPlans';
 import { useStartPlanProgress, useUserPlanProgressList } from '@/src/hooks/usePlanProgress';
+import { useSavedPlanIds, useToggleSavedPlan } from '@/src/hooks/useSavedPlans';
 import DevotionalDetailScreen from '@/src/screens/DevotionalDetailScreen';
 import { useAuth } from '@/src/state/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
@@ -15,6 +16,10 @@ export default function DevotionalDetail() {
   const planId = id as string;
   const reportSheetRef = useRef<BottomSheet>(null);
   const { isGuest, session } = useAuth();
+  const savedPlanIdsQuery = useSavedPlanIds(session?.user?.id);
+  const savedPlanIds = savedPlanIdsQuery.data ?? [];
+  const { toggleSavedPlan } = useToggleSavedPlan(session?.user?.id);
+  const isSaved = savedPlanIds.includes(planId);
   const toggleReaction = useTogglePlanReaction(planId, session?.user?.id || '');
 
   const router = useRouter();
@@ -91,6 +96,14 @@ export default function DevotionalDetail() {
         isLoading={planQuery.isLoading || userPlanProgressQuery.isLoading}
         hasUserPlans={userPlanProgress.length > 0}
         onMyPlansPress={() => router.push('/PlansTab')}
+        isSaved={isSaved}
+        onToggleSave={() => {
+          if (isGuest) {
+            router.push('/(auth)/signin');
+            return;
+          }
+          toggleSavedPlan(planId, isSaved);
+        }}
         onStartPress={(mode: string) => {
           if (isGuest) {
             router.push('/(auth)/signin');
