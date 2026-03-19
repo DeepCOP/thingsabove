@@ -1,0 +1,36 @@
+name: EAS Build iOS (Production)
+
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  build_ios_release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+
+      - name: Setup PNPM
+        uses: pnpm/action-setup@v2
+        with:
+          version: 10
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Setup EAS
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Build iOS (Production) and Auto-Submit
+        run: |
+          eas build --platform ios --profile production --auto-submit --non-interactive --wait
