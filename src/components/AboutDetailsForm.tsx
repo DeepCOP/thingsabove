@@ -1,9 +1,15 @@
+import { searchChurches } from '@/src/api/queries';
 import {
+  MAX_BIO_LENGTH,
+  MAX_CHURCH_ADDRESS_LENGTH,
+  MAX_CHURCH_NAME_LENGTH,
+  MAX_CHURCH_WEBSITE_URL_LENGTH,
+  MAX_NAME_LENGTH,
+  MIN_NAME_LENGTH,
   ProfileDetailsFormErrors,
   ProfileDetailsFormValues,
   getYearsFollowingJesus,
 } from '@/src/profileDetails';
-import { searchChurches } from '@/src/api/queries';
 import { Input } from '@rneui/themed';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Text, TouchableOpacity, View, useColorScheme } from 'react-native';
@@ -32,6 +38,8 @@ export default function AboutDetailsForm({
   const colorScheme = useColorScheme();
   const yearsFollowingJesus = getYearsFollowingJesus(values.yearBelieved);
   const textColor = colorScheme === 'dark' ? '#F5F5F5' : '#424242';
+  const placeholderColor =
+    colorScheme === 'dark' ? 'rgba(156, 163, 175, 0.65)' : 'rgba(107, 114, 128, 0.55)';
   const [churchQuery, setChurchQuery] = useState('');
   const [churchResults, setChurchResults] = useState<ChurchSearchResult[]>([]);
   const [churchSearchError, setChurchSearchError] = useState<string | null>(null);
@@ -97,6 +105,56 @@ export default function AboutDetailsForm({
 
   return (
     <View>
+      <View className="px-2 pt-2">
+        <Text className="mb-3 text-lg font-semibold text-gray-900 dark:text-white">About You</Text>
+      </View>
+
+      <Input
+        label="First Name"
+        value={values.firstName}
+        onChangeText={(firstName) => onChange({ firstName })}
+        editable={!disabled}
+        autoCapitalize="words"
+        errorMessage={errors?.firstName}
+        style={{ color: textColor }}
+        placeholder="First name"
+        placeholderTextColor={placeholderColor}
+        maxLength={MAX_NAME_LENGTH}
+      />
+      <Text className="-mt-4 mb-4 px-3 text-xs text-gray-500 dark:text-gray-400">
+        {MIN_NAME_LENGTH}-{MAX_NAME_LENGTH} characters
+      </Text>
+
+      <Input
+        label="Last Name"
+        value={values.lastName}
+        onChangeText={(lastName) => onChange({ lastName })}
+        editable={!disabled}
+        autoCapitalize="words"
+        errorMessage={errors?.lastName}
+        style={{ color: textColor }}
+        placeholder="Last name"
+        placeholderTextColor={placeholderColor}
+        maxLength={MAX_NAME_LENGTH}
+      />
+      <Text className="-mt-4 mb-4 px-3 text-xs text-gray-500 dark:text-gray-400">
+        {MIN_NAME_LENGTH}-{MAX_NAME_LENGTH} characters
+      </Text>
+
+      <Input
+        label="Bio or Favorite Verse"
+        value={values.bio}
+        onChangeText={(bio) => onChange({ bio })}
+        editable={!disabled}
+        errorMessage={errors?.bio}
+        style={{ color: textColor }}
+        placeholder="Share a short bio or your favorite verse"
+        placeholderTextColor={placeholderColor}
+        maxLength={MAX_BIO_LENGTH}
+        multiline
+        numberOfLines={4}
+      />
+
       <Input
         label="Year You Believed"
         value={values.yearBelieved}
@@ -107,7 +165,7 @@ export default function AboutDetailsForm({
         errorMessage={errors?.yearBelieved}
         style={{ color: textColor }}
         placeholder="2020"
-        placeholderTextColor={textColor}
+        placeholderTextColor={placeholderColor}
       />
 
       {yearsFollowingJesus !== null ? (
@@ -126,7 +184,7 @@ export default function AboutDetailsForm({
         errorMessage={errors?.yearBaptized}
         style={{ color: textColor }}
         placeholder="2021"
-        placeholderTextColor={textColor}
+        placeholderTextColor={placeholderColor}
       />
 
       <View className="px-2 pt-2">
@@ -146,7 +204,7 @@ export default function AboutDetailsForm({
         autoCapitalize="words"
         style={{ color: textColor }}
         placeholder="Type a name or address, then tap a result"
-        placeholderTextColor={textColor}
+        placeholderTextColor={placeholderColor}
       />
 
       {isSearchingChurches ? (
@@ -194,7 +252,8 @@ export default function AboutDetailsForm({
         autoCapitalize="words"
         errorMessage={errors?.churchName}
         style={{ color: textColor }}
-        placeholderTextColor={textColor}
+        placeholderTextColor={placeholderColor}
+        maxLength={MAX_CHURCH_NAME_LENGTH}
       />
       <Input
         label="Church Address"
@@ -204,7 +263,8 @@ export default function AboutDetailsForm({
         autoCapitalize="words"
         errorMessage={errors?.churchAddress}
         style={{ color: textColor }}
-        placeholderTextColor={textColor}
+        placeholderTextColor={placeholderColor}
+        maxLength={MAX_CHURCH_ADDRESS_LENGTH}
       />
       <Input
         label="Church Website URL"
@@ -217,7 +277,8 @@ export default function AboutDetailsForm({
         errorMessage={errors?.churchWebsiteUrl}
         style={{ color: textColor }}
         placeholder="https://example.org"
-        placeholderTextColor={textColor}
+        placeholderTextColor={placeholderColor}
+        maxLength={MAX_CHURCH_WEBSITE_URL_LENGTH}
       />
     </View>
   );

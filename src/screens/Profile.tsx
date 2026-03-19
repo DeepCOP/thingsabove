@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { UseMutateFunction } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
-import { Alert, Text, TextInput, TouchableOpacity, View, useColorScheme } from 'react-native';
+import { Alert, Text, TouchableOpacity, View, useColorScheme } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AboutDetailsForm from '../components/AboutDetailsForm';
 import Avatar from '../components/Avatar';
@@ -51,15 +51,15 @@ export default function ProfileScreen({
 }) {
   const colorScheme = useColorScheme();
   const insets = useSafeAreaInsets();
-  const [isEditingBio, setIsEditingBio] = useState(false);
-  const [bio, setBio] = useState(profile?.bio ?? '');
   const [detailsForm, setDetailsForm] = useState(() => buildProfileDetailsFormValues(profile));
   const [detailsErrors, setDetailsErrors] = useState<ProfileDetailsFormErrors>({});
   const [showDetailsForm, setShowDetailsForm] = useState(false);
+  const actionColor = colorScheme === 'dark' ? '#60a5fa' : '#2563eb';
 
   const churchName = profile?.church?.name ?? '';
   const churchAddress = profile?.church?.address ?? '';
   const churchWebsite = profile?.church?.website_url ?? '';
+  const displayBio = profile?.bio?.trim() ?? '';
   const hasAboutDetails = Boolean(
     profile?.year_believed ||
     profile?.year_baptized ||
@@ -67,12 +67,6 @@ export default function ProfileScreen({
     churchAddress ||
     churchWebsite,
   );
-
-  useEffect(() => {
-    if (!isEditingBio) {
-      setBio(profile?.bio ?? '');
-    }
-  }, [profile, isEditingBio]);
 
   useEffect(() => {
     setDetailsForm(buildProfileDetailsFormValues(profile));
@@ -84,15 +78,6 @@ export default function ProfileScreen({
       setShowDetailsForm(false);
     }
   }, [hasAboutDetails]);
-
-  const onSaveBio = () => {
-    if (bio.trim() === profile?.bio?.trim()) {
-      setIsEditingBio(false);
-      return;
-    }
-
-    handleUpdateProfile({ bio }, { onSuccess: () => setIsEditingBio(false) });
-  };
 
   const onSaveDetails = () => {
     const nextErrors = validateProfileDetailsForm(detailsForm, {
@@ -155,50 +140,11 @@ export default function ProfileScreen({
               </Text>
             </View>
 
-            <View className="mt-4 px-6 w-full">
-              {!isEditingBio ? (
-                <>
-                  <Text className="text-center text-gray-600 dark:text-gray-400">
-                    {profile?.bio || 'No bio yet'}
-                  </Text>
-
-                  <TouchableOpacity
-                    onPress={() => setIsEditingBio(true)}
-                    className="mt-3 self-center">
-                    <Text className="text-sm font-medium text-blue-600 dark:text-blue-400">
-                      Edit bio
-                    </Text>
-                  </TouchableOpacity>
-                </>
-              ) : (
-                <>
-                  <TextInput
-                    value={bio}
-                    onChangeText={setBio}
-                    placeholder="Write something about yourself"
-                    multiline
-                    className="mt-3 rounded-xl border border-gray-300 p-3 text-gray-900 dark:border-neutral-700 dark:text-white"
-                    placeholderTextColor="#9ca3af"
-                  />
-
-                  <View className="mt-3 flex-row justify-end gap-3">
-                    <TouchableOpacity
-                      onPress={() => {
-                        setBio(profile?.bio ?? '');
-                        setIsEditingBio(false);
-                      }}>
-                      <Text className="text-gray-500">Cancel</Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity onPress={onSaveBio} disabled={updating}>
-                      <Text className="font-semibold text-blue-600 dark:text-blue-400">
-                        {updating ? 'Saving...' : 'Save'}
-                      </Text>
-                    </TouchableOpacity>
-                  </View>
-                </>
-              )}
-            </View>
+            {displayBio ? (
+              <View className="mt-4 px-6 w-full">
+                <Text className="text-center text-gray-600 dark:text-gray-400">{displayBio}</Text>
+              </View>
+            ) : null}
 
             <View className="mt-4 px-6">
               <View className="rounded-2xl border border-gray-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-950">
@@ -218,7 +164,7 @@ export default function ProfileScreen({
                         onPress={() => setShowDetailsForm(true)}
                         disabled={updating}>
                         <Text className="text-sm font-medium text-blue-600 dark:text-blue-400">
-                          Add your church
+                          Add About Info
                         </Text>
                       </TouchableOpacity>
                     )
@@ -301,19 +247,23 @@ export default function ProfileScreen({
                     </View>
                   </View>
                 ) : (
-                  <View className="mt-4 items-center rounded-xl border border-dashed border-gray-200 px-4 py-6 dark:border-neutral-800">
+                  <View className="mt-4 items-center rounded-2xl border border-gray-200 bg-gray-50 px-4 py-6 dark:border-neutral-800 dark:bg-neutral-900">
+                    <View className="mb-3 h-12 w-12 items-center justify-center rounded-2xl bg-blue-50 dark:bg-blue-950/40">
+                      <Ionicons name="book-outline" size={24} color={actionColor} />
+                    </View>
                     <Text className="text-base font-semibold text-gray-900 dark:text-white">
-                      Add your church
+                      Share a little about your faith journey
                     </Text>
                     <Text className="mt-1 text-center text-sm text-gray-600 dark:text-gray-400">
-                      Share your church details and faith journey.
+                      Add your bio, church, or favorite verse.
                     </Text>
                     <TouchableOpacity
-                      className="mt-4 rounded-full border border-blue-600 px-4 py-2"
+                      className="mt-4 flex-row items-center rounded-full border border-blue-600 px-4 py-2"
                       onPress={() => setShowDetailsForm(true)}
                       disabled={updating}>
-                      <Text className="text-sm font-semibold text-blue-600 dark:text-blue-400">
-                        Add your church
+                      <Ionicons name="add" size={16} color={actionColor} />
+                      <Text className="ml-1 text-sm font-semibold text-blue-600 dark:text-blue-400">
+                        Add About Info
                       </Text>
                     </TouchableOpacity>
                   </View>

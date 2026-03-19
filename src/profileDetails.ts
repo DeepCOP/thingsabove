@@ -5,14 +5,19 @@ import {
   UpdateProfileInput,
 } from './types/types';
 
-const MIN_NAME_LENGTH = 2;
-const MAX_NAME_LENGTH = 50;
+export const MIN_NAME_LENGTH = 2;
+export const MAX_NAME_LENGTH = 50;
+export const MAX_BIO_LENGTH = 280;
+export const MAX_CHURCH_NAME_LENGTH = 100;
+export const MAX_CHURCH_ADDRESS_LENGTH = 200;
+export const MAX_CHURCH_WEBSITE_URL_LENGTH = 255;
 const MIN_YEAR = 1900;
 const CURRENT_YEAR = new Date().getFullYear();
 
 export type ProfileDetailsFormValues = {
   firstName: string;
   lastName: string;
+  bio: string;
   yearBelieved: string;
   yearBaptized: string;
   churchId: string | null;
@@ -67,6 +72,7 @@ export const buildProfileDetailsFormValues = (
 ): ProfileDetailsFormValues => ({
   firstName: profile?.first_name ?? '',
   lastName: profile?.last_name ?? '',
+  bio: profile?.bio ?? '',
   yearBelieved: profile?.year_believed ? String(profile.year_believed) : '',
   yearBaptized: profile?.year_baptized ? String(profile.year_baptized) : '',
   churchId: profile?.church?.id ?? null,
@@ -90,6 +96,9 @@ export const validateProfileDetailsForm = (
   const errors: ProfileDetailsFormErrors = {};
   const yearBelieved = parseOptionalYear(values.yearBelieved);
   const yearBaptized = parseOptionalYear(values.yearBaptized);
+  const churchName = values.churchName.trim();
+  const churchAddress = values.churchAddress.trim();
+  const churchWebsiteUrl = values.churchWebsiteUrl.trim();
   const hasYearBelievedInput = Boolean(values.yearBelieved.trim());
   const hasYearBaptizedInput = Boolean(values.yearBaptized.trim());
 
@@ -106,6 +115,10 @@ export const validateProfileDetailsForm = (
     }
   }
 
+  if (values.bio.trim().length > MAX_BIO_LENGTH) {
+    errors.bio = `Bio or favorite verse must be ${MAX_BIO_LENGTH} characters or fewer.`;
+  }
+
   if (hasYearBelievedInput && !isValidYear(yearBelieved)) {
     errors.yearBelieved = `Enter a valid year between ${MIN_YEAR} and ${CURRENT_YEAR}.`;
   }
@@ -119,18 +132,25 @@ export const validateProfileDetailsForm = (
   }
 
   const hasChurchId = Boolean(values.churchId);
-  const hasChurchName = Boolean(values.churchName.trim());
+  const hasChurchName = Boolean(churchName);
   const hasChurchDetails =
-    hasChurchId ||
-    hasChurchName ||
-    Boolean(values.churchAddress.trim()) ||
-    Boolean(values.churchWebsiteUrl.trim());
+    hasChurchId || hasChurchName || Boolean(churchAddress) || Boolean(churchWebsiteUrl);
 
   if (hasChurchDetails && !hasChurchName && !hasChurchId) {
     errors.churchName = 'Enter your church name.';
   }
 
-  if (values.churchWebsiteUrl.trim() && !isValidWebsiteUrl(values.churchWebsiteUrl)) {
+  if (churchName.length > MAX_CHURCH_NAME_LENGTH) {
+    errors.churchName = `Church name must be ${MAX_CHURCH_NAME_LENGTH} characters or fewer.`;
+  }
+
+  if (churchAddress.length > MAX_CHURCH_ADDRESS_LENGTH) {
+    errors.churchAddress = `Church address must be ${MAX_CHURCH_ADDRESS_LENGTH} characters or fewer.`;
+  }
+
+  if (churchWebsiteUrl.length > MAX_CHURCH_WEBSITE_URL_LENGTH) {
+    errors.churchWebsiteUrl = `Church website URL must be ${MAX_CHURCH_WEBSITE_URL_LENGTH} characters or fewer.`;
+  } else if (churchWebsiteUrl && !isValidWebsiteUrl(values.churchWebsiteUrl)) {
     errors.churchWebsiteUrl = 'Enter a valid church website URL.';
   }
 
@@ -155,6 +175,7 @@ export const toUpdateProfileInput = (values: ProfileDetailsFormValues): UpdatePr
   return {
     first_name: values.firstName.trim() || undefined,
     last_name: values.lastName.trim() || undefined,
+    bio: values.bio.trim() || undefined,
     year_believed: yearBelieved,
     year_baptized: yearBaptized,
     church_id: hasChurchId ? values.churchId : null,
