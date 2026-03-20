@@ -250,53 +250,55 @@ begin
         and t.created_at > now() - interval '7 days'
     );
 
-  insert into public.ai_triggers (
-    user_id,
-    trigger_type,
-    trigger_reason,
-    priority,
-    context
+insert into public.ai_triggers (
+  user_id,
+  trigger_type,
+  trigger_reason,
+  priority,
+  context
+)
+select
+  u.user_id,
+  'friend_invite_nudge',
+  'User could be encouraged to invite others into the experience',
+  4,
+  jsonb_build_object(
+    'friends_count', u.friends_count,
+    'group_plans_count', u.group_plans_count,
+    'active_plans', u.active_plans,
+    'church_id', u.church_id,
+    'church_name', u.church_name
   )
-  select
-    u.user_id,
-    'friend_invite_nudge',
-    'User is active and could invite more people into reading with them',
-    4,
-    jsonb_build_object(
-      'friends_count', u.friends_count,
-      'group_plans_count', u.group_plans_count,
-      'active_plans', u.active_plans,
-      'church_id', u.church_id,
-      'church_name', u.church_name
-    )
-  from public.user_behavior_snapshot u
-  where
-    public.user_has_active_auth_session(u.user_id)
-    and u.active_plans > 0
-    and u.last_activity_at > now() - interval '3 days'
-    and (u.friends_count < 2 or u.group_plans_count = 0)
-    and not exists (
-      select 1
-      from public.ai_triggers t
-      where t.user_id = u.user_id
-        and t.created_at > now() - interval '48 hours'
-    )
-    and not exists (
-      select 1
-      from public.ai_triggers t
-      where t.user_id = u.user_id
-        and t.priority < 4
-        and t.created_at > now() - interval '1 day'
-    )
-    and not exists (
-      select 1
-      from public.ai_triggers t
-      where t.user_id = u.user_id
-        and t.trigger_type = 'friend_invite_nudge'
-        and t.created_at > now() - interval '14 days'
-    );
+from public.user_behavior_snapshot u
+where
+  public.user_has_active_auth_session(u.user_id)
+  and u.last_seen > now() - interval '5 days'
 
-  insert into public.ai_triggers (
+  and not exists (
+    select 1
+    from public.ai_triggers t
+    where t.user_id = u.user_id
+      and t.created_at > now() - interval '48 hours'
+  )
+
+  and not exists (
+    select 1
+    from public.ai_triggers t
+    where t.user_id = u.user_id
+      and t.priority < 4
+      and t.created_at > now() - interval '1 day'
+  )
+
+  -- cooldown for this trigger
+  and not exists (
+    select 1
+    from public.ai_triggers t
+    where t.user_id = u.user_id
+      and t.trigger_type = 'friend_invite_nudge'
+      and t.created_at > now() - interval '14 days'
+  );
+  
+insert into public.ai_triggers (
     user_id,
     trigger_type,
     trigger_reason,
