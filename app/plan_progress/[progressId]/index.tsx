@@ -74,6 +74,7 @@ export default function PlanProgress() {
   }, [dayItemsProgressQuery?.data]);
 
   const prevCompletedOnce = useRef<boolean | null>(null);
+  const prevPlanComplete = useRef<boolean | null>(null);
   const devotional = dayItemsProgress?.items.find((item) => item.item_type === 'devotional');
   const planTitle = plan?.title ?? 'Plan Progress';
   const planTotalDays = plan?.total_days ?? days?.length ?? 0;
@@ -81,17 +82,19 @@ export default function PlanProgress() {
   useEffect(() => {
     if (!planProgress || !plan) return;
     const completedOnce = !!planProgress.completed_once;
+    const completedDaysCount = planProgress.completed_days?.length ?? 0;
+    const isPlanComplete = planTotalDays > 0 && completedDaysCount >= planTotalDays;
     const planId = plan.id;
     if (!planId) return;
 
-    if (prevCompletedOnce.current === null) {
-      prevCompletedOnce.current = completedOnce;
-      return;
-    }
+    const hasPrevCompletedOnce = prevCompletedOnce.current !== null;
+    const hasPrevPlanComplete = prevPlanComplete.current !== null;
+    const justMarkedCompletedOnce =
+      hasPrevCompletedOnce && prevCompletedOnce.current === false && completedOnce === true;
+    const justCompleted =
+      hasPrevPlanComplete && prevPlanComplete.current === false && isPlanComplete === true;
 
-    const justCompleted = prevCompletedOnce.current === false && completedOnce === true;
-
-    if (justCompleted) {
+    if (justMarkedCompletedOnce) {
       const planId = plan.id;
       if (!planId) return;
 
@@ -108,7 +111,9 @@ export default function PlanProgress() {
         return old.map((item) => incrementPlanCompletions(item, planId));
       });
       void qc.invalidateQueries({ queryKey: planKey });
+    }
 
+    if (justCompleted) {
       router.replace({
         pathname: `/plan_progress/[progressId]/plan-complete`,
         params: { progressId: planProgress.id, planId },
@@ -116,7 +121,14 @@ export default function PlanProgress() {
     }
 
     prevCompletedOnce.current = completedOnce;
-  }, [planProgress?.completed_once, planProgress?.id, plan?.id]);
+    prevPlanComplete.current = isPlanComplete;
+  }, [
+    planProgress?.completed_days?.length,
+    planProgress?.completed_once,
+    planProgress?.id,
+    plan?.id,
+    planTotalDays,
+  ]);
 
   useEffect(() => {
     setSelectedDay(currentDayData?.day_number || 1);

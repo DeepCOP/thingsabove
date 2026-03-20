@@ -13,6 +13,8 @@ export function ListCard({
   item: DevotionalPlanView & {
     completed_days?: number | null;
     helpful_count?: number | null;
+    rating_avg?: number | null;
+    rating_count?: number | null;
     user_reaction?: 'helpful' | null;
   };
   onPress: () => void;
@@ -20,6 +22,12 @@ export function ListCard({
   const percentageCompletion = ((item.completed_days ?? 0) / (item?.total_days ?? 1)) * 100;
   const helpfulCount = item.helpful_count ?? 0;
   const isHelpfulMarkedByMe = item.user_reaction === 'helpful';
+  const ratingAverageRaw = Number(item.rating_avg);
+  const ratingAverage = Number.isFinite(ratingAverageRaw) ? ratingAverageRaw : 0;
+  const ratingCountRaw = Number(item.rating_count);
+  const ratingCount = Number.isFinite(ratingCountRaw) ? ratingCountRaw : 0;
+  const hasRating = ratingCount > 0;
+  const ratingDisplay = hasRating ? ratingAverage.toFixed(1) : '0';
   return (
     <TouchableOpacity
       className="bg-white dark:bg-neutral-900 rounded-xl p-3 mb-3 shadow-sm "
@@ -46,6 +54,11 @@ export function ListCard({
               iconColor={isHelpfulMarkedByMe ? '#EAB308' : '#9CA3AF'}
               count={helpfulCount}
             />
+            <Stat
+              icon={hasRating ? 'star' : 'star-outline'}
+              count={ratingDisplay}
+              iconColor={hasRating ? '#EAB308' : '#9CA3AF'}
+            />
             <Stat icon="people-outline" count={item.completions ?? 0} />
           </View>
         </View>
@@ -71,6 +84,8 @@ export function GridCard({
   item: DevotionalPlanView & {
     completed_days?: number | null;
     helpful_count?: number | null;
+    rating_avg?: number | null;
+    rating_count?: number | null;
     user_reaction?: 'helpful' | null;
   };
   onPress: () => void;
@@ -78,6 +93,12 @@ export function GridCard({
   const percentageCompletion = ((item.completed_days ?? 0) / (item?.total_days ?? 1)) * 100;
   const helpfulCount = item.helpful_count ?? 0;
   const isHelpfulMarkedByMe = item.user_reaction === 'helpful';
+  const ratingAverageRaw = Number(item.rating_avg);
+  const ratingAverage = Number.isFinite(ratingAverageRaw) ? ratingAverageRaw : 0;
+  const ratingCountRaw = Number(item.rating_count);
+  const ratingCount = Number.isFinite(ratingCountRaw) ? ratingCountRaw : 0;
+  const hasRating = ratingCount > 0;
+  const ratingDisplay = hasRating ? ratingAverage.toFixed(1) : '0';
 
   return (
     <TouchableOpacity
@@ -98,6 +119,11 @@ export function GridCard({
           label="Helpful"
           iconColor={isHelpfulMarkedByMe ? '#EAB308' : '#9CA3AF'}
           count={helpfulCount}
+        />
+        <Stat
+          icon={hasRating ? 'star' : 'star-outline'}
+          count={ratingDisplay}
+          iconColor={hasRating ? '#EAB308' : '#9CA3AF'}
         />
         <Stat icon="people-outline" count={item.completions ?? 0} />
       </View>

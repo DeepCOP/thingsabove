@@ -940,6 +940,42 @@ export type Database = {
           },
         ];
       };
+      saved_plans: {
+        Row: {
+          created_at: string | null;
+          id: string;
+          plan_id: string;
+          user_id: string;
+        };
+        Insert: {
+          created_at?: string | null;
+          id?: string;
+          plan_id: string;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string | null;
+          id?: string;
+          plan_id?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'saved_plans_plan_id_fkey';
+            columns: ['plan_id'];
+            isOneToOne: false;
+            referencedRelation: 'devotional_plans';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'saved_plans_plan_id_fkey';
+            columns: ['plan_id'];
+            isOneToOne: false;
+            referencedRelation: 'devotional_plans_view';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       scripture_note_helpful_votes: {
         Row: {
           created_at: string;
@@ -1127,6 +1163,8 @@ export type Database = {
           created_at: string | null;
           description: string | null;
           helpful_count: number | null;
+          rating_avg: number | null;
+          rating_count: number | null;
           id: string | null;
           status: string | null;
           tags: string[] | null;
@@ -1142,6 +1180,8 @@ export type Database = {
           created_at?: string | null;
           description?: string | null;
           helpful_count?: never;
+          rating_avg?: never;
+          rating_count?: never;
           id?: string | null;
           status?: string | null;
           tags?: string[] | null;
@@ -1157,6 +1197,8 @@ export type Database = {
           created_at?: string | null;
           description?: string | null;
           helpful_count?: never;
+          rating_avg?: never;
+          rating_count?: never;
           id?: string | null;
           status?: string | null;
           tags?: string[] | null;
@@ -1431,34 +1473,20 @@ export type Database = {
         Args: { _days: Json; _plan_id: string };
         Returns: undefined;
       };
-      save_signup_about_details:
-        | {
-            Args: {
-              p_church_address?: string;
-              p_church_id?: string;
-              p_church_name?: string;
-              p_church_website_url?: string;
-              p_clear_church?: boolean;
-              p_email: string;
-              p_user_id: string;
-              p_year_baptized?: number;
-              p_year_believed?: number;
-            };
-            Returns: undefined;
-          }
-        | {
-            Args: {
-              p_church_address?: string;
-              p_church_name?: string;
-              p_church_website_url?: string;
-              p_clear_church?: boolean;
-              p_email: string;
-              p_user_id: string;
-              p_year_baptized?: number;
-              p_year_believed?: number;
-            };
-            Returns: undefined;
-          };
+      save_signup_about_details: {
+        Args: {
+          p_church_address?: string;
+          p_church_id?: string;
+          p_church_name?: string;
+          p_church_website_url?: string;
+          p_clear_church?: boolean;
+          p_email: string;
+          p_user_id: string;
+          p_year_baptized?: number;
+          p_year_believed?: number;
+        };
+        Returns: undefined;
+      };
       search_plans: {
         Args: {
           cursor_created_at?: string;
@@ -1473,6 +1501,8 @@ export type Database = {
           created_at: string | null;
           description: string | null;
           helpful_count: number | null;
+          rating_avg: number | null;
+          rating_count: number | null;
           id: string | null;
           status: string | null;
           tags: string[] | null;
@@ -1556,21 +1586,6 @@ export type Database = {
               p_bio?: string;
               p_church_address?: string;
               p_church_id?: string;
-              p_church_name?: string;
-              p_church_website_url?: string;
-              p_clear_church?: boolean;
-              p_first_name?: string;
-              p_last_name?: string;
-              p_year_baptized?: number;
-              p_year_believed?: number;
-            };
-            Returns: undefined;
-          }
-        | {
-            Args: {
-              p_avatar_url?: string;
-              p_bio?: string;
-              p_church_address?: string;
               p_church_name?: string;
               p_church_website_url?: string;
               p_clear_church?: boolean;

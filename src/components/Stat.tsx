@@ -9,7 +9,7 @@ export default function Stat({
   iconColor,
 }: {
   icon: keyof typeof Ionicons.glyphMap;
-  count: number;
+  count: number | string;
   label?: string;
   iconColor?: string;
 }) {
