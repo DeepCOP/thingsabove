@@ -31,10 +31,7 @@ export default function SavedPlansList() {
   }, [savedPlansQuery.data]);
 
   const [refreshing, setRefreshing] = useState(false);
-
   const onRefresh = async () => {
-    if (savedPlanIds.length === 0) return;
-
     setRefreshing(true);
 
     await savedPlanIdsQuery.refetch();
@@ -48,12 +45,15 @@ export default function SavedPlansList() {
 
     if (sort === 'Recent') {
       return [...flatData].sort(
-        (a, b) => new Date(b.created_at!).getTime() - new Date(a.created_at!).getTime(),
+        (planOne, planTwo) =>
+          new Date(planTwo.created_at!).getTime() - new Date(planOne.created_at!).getTime(),
       );
     }
 
     if (sort === 'Trending') {
-      return [...flatData].sort((a, b) => (b.helpful_count || 0) - (a.helpful_count || 0));
+      return [...flatData].sort(
+        (planOne, planTwo) => (planTwo.helpful_count || 0) - (planOne.helpful_count || 0),
+      );
     }
 
     return flatData;
