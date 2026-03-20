@@ -13,7 +13,12 @@ export default function SavedPlansList() {
   const { sort, isGrid } = useAppStore();
   const { session } = useAuth();
   const savedPlansQuery = useSavedPlans(session?.user?.id);
-  const flatData = savedPlansQuery.data ?? [];
+  const flatData = useMemo(() => {
+    if (!savedPlansQuery.data) return [];
+
+    return savedPlansQuery.data;
+  }, [savedPlansQuery.data]);
+
   const savedPlanIds = useMemo(
     () =>
       flatData

@@ -23,7 +23,11 @@ export default function MyPlansList({
   const { session, loading: sessionLoading } = useAuth();
   const myPlansQuery = useMyPlanProgressPlans(session?.user?.id);
   const colorScheme = useColorScheme();
-  const flataData = myPlansQuery.data ?? [];
+  const flataData = useMemo(() => {
+    if (!myPlansQuery.data) return [];
+
+    return myPlansQuery.data;
+  }, [myPlansQuery.data]);
 
   const visibleData = useMemo(() => {
     if (mode !== 'completed')

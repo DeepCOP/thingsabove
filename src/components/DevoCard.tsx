@@ -15,10 +15,8 @@ export function ListCard({
 }: {
   item: DevotionalPlanView & {
     completed_days?: number | null;
-    helpful_count?: number | null;
     rating_avg?: number | null;
     rating_count?: number | null;
-    user_reaction?: 'helpful' | null;
   };
   onPress: () => void;
   isSaved?: boolean;
@@ -108,10 +106,8 @@ export function GridCard({
 }: {
   item: DevotionalPlanView & {
     completed_days?: number | null;
-    helpful_count?: number | null;
     rating_avg?: number | null;
     rating_count?: number | null;
-    user_reaction?: 'helpful' | null;
   };
   onPress: () => void;
   isSaved?: boolean;
