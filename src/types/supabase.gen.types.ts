@@ -842,42 +842,6 @@ export type Database = {
           },
         ];
       };
-      saved_plans: {
-        Row: {
-          created_at: string | null;
-          id: string;
-          plan_id: string;
-          user_id: string;
-        };
-        Insert: {
-          created_at?: string | null;
-          id?: string;
-          plan_id: string;
-          user_id: string;
-        };
-        Update: {
-          created_at?: string | null;
-          id?: string;
-          plan_id?: string;
-          user_id?: string;
-        };
-        Relationships: [
-          {
-            foreignKeyName: 'saved_plans_plan_id_fkey';
-            columns: ['plan_id'];
-            isOneToOne: false;
-            referencedRelation: 'devotional_plans';
-            referencedColumns: ['id'];
-          },
-          {
-            foreignKeyName: 'saved_plans_plan_id_fkey';
-            columns: ['plan_id'];
-            isOneToOne: false;
-            referencedRelation: 'devotional_plans_view';
-            referencedColumns: ['id'];
-          },
-        ];
-      };
       profiles: {
         Row: {
           avatar_url: string | null;
@@ -1199,9 +1163,9 @@ export type Database = {
           created_at: string | null;
           description: string | null;
           helpful_count: number | null;
+          id: string | null;
           rating_avg: number | null;
           rating_count: number | null;
-          id: string | null;
           status: string | null;
           tags: string[] | null;
           title: string | null;
@@ -1216,9 +1180,9 @@ export type Database = {
           created_at?: string | null;
           description?: string | null;
           helpful_count?: never;
+          id?: string | null;
           rating_avg?: never;
           rating_count?: never;
-          id?: string | null;
           status?: string | null;
           tags?: string[] | null;
           title?: string | null;
@@ -1233,9 +1197,9 @@ export type Database = {
           created_at?: string | null;
           description?: string | null;
           helpful_count?: never;
+          id?: string | null;
           rating_avg?: never;
           rating_count?: never;
-          id?: string | null;
           status?: string | null;
           tags?: string[] | null;
           title?: string | null;
@@ -1537,9 +1501,9 @@ export type Database = {
           created_at: string | null;
           description: string | null;
           helpful_count: number | null;
+          id: string | null;
           rating_avg: number | null;
           rating_count: number | null;
-          id: string | null;
           status: string | null;
           tags: string[] | null;
           title: string | null;
