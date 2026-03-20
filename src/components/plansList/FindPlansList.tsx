@@ -1,6 +1,8 @@
 import { GridCard, ListCard } from '@/src/components/DevoCard';
 import LoadingSpinner from '@/src/components/LoadingSpinner';
 import { usePlans } from '@/src/hooks/useDevotionalPlans';
+import { useSavedPlans, useToggleSavedPlan } from '@/src/hooks/useSavedPlans';
+import { useAuth } from '@/src/state/AuthContext';
 import { useAppStore } from '@/src/state/useAppStore';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
@@ -10,8 +12,17 @@ import { FlatList, Text, useColorScheme, View } from 'react-native';
 export default function FindPlansList() {
   const { plansQuery } = usePlans();
   const colorScheme = useColorScheme();
-
+  const { session } = useAuth();
   const { sort, isGrid } = useAppStore();
+  const savedPlansQuery = useSavedPlans(session?.user?.id);
+  const savedPlanIds = useMemo(
+    () =>
+      (savedPlansQuery.data ?? [])
+        .map((savedPlan) => savedPlan.id)
+        .filter((planId): planId is string => typeof planId === 'string' && planId.length > 0),
+    [savedPlansQuery.data],
+  );
+  const { toggleSavedPlan } = useToggleSavedPlan(session?.user?.id);
   const flatData = useMemo(() => {
     const items =
       plansQuery.data?.pages.flatMap((page) =>
@@ -42,12 +53,15 @@ export default function FindPlansList() {
 
     if (sort === 'Recent') {
       return [...flatData].sort(
-        (a, b) => new Date(b.created_at!).getTime() - new Date(a.created_at!).getTime(),
+        (planOne, planTwo) =>
+          new Date(planTwo.created_at!).getTime() - new Date(planOne.created_at!).getTime(),
       );
     }
 
     if (sort === 'Trending') {
-      return [...flatData].sort((a, b) => (b.helpful_count || 0) - (a.helpful_count || 0));
+      return [...flatData].sort(
+        (planOne, planTwo) => (planTwo.helpful_count || 0) - (planOne.helpful_count || 0),
+      );
     }
 
     return flatData;
@@ -88,13 +102,40 @@ export default function FindPlansList() {
       numColumns={isGrid ? 2 : 1}
       columnWrapperStyle={isGrid ? { gap: 12 } : undefined}
       contentContainerStyle={{ paddingBottom: 40 }}
-      renderItem={({ item }) =>
-        isGrid ? (
-          <GridCard item={item} onPress={() => router.push(`/devotional_detail/${item.id}`)} />
+      renderItem={({ item }) => {
+        const planId = item.id as string | null;
+        const isSaved = !!planId && savedPlanIds.includes(planId);
+
+        return isGrid ? (
+          <GridCard
+            item={item}
+            isSaved={isSaved}
+            onToggleSave={() => {
+              if (!planId) return;
+              if (!session?.user?.id) {
+                router.push('/(auth)/signin');
+                return;
+              }
+              toggleSavedPlan(planId, isSaved, item);
+            }}
+            onPress={() => router.push(`/devotional_detail/${item.id}`)}
+          />
         ) : (
-          <ListCard item={item} onPress={() => router.push(`/devotional_detail/${item.id}`)} />
-        )
-      }
+          <ListCard
+            item={item}
+            isSaved={isSaved}
+            onToggleSave={() => {
+              if (!planId) return;
+              if (!session?.user?.id) {
+                router.push('/(auth)/signin');
+                return;
+              }
+              toggleSavedPlan(planId, isSaved, item);
+            }}
+            onPress={() => router.push(`/devotional_detail/${item.id}`)}
+          />
+        );
+      }}
       onEndReached={() => {
         if (plansQuery.hasNextPage) {
           plansQuery.fetchNextPage();

@@ -4,15 +4,16 @@ import { Ionicons } from '@expo/vector-icons';
 import { Text, TouchableOpacity, useColorScheme, View } from 'react-native';
 import FindPlansList from '../components/plansList/FindPlansList';
 import MyPlansList from '../components/plansList/MyPlansList';
+import SavedPlansList from '../components/plansList/SavedPlansList';
 
 type Props = {
   isGrid: boolean;
   sort: 'Recent' | 'Trending';
-  activeTab: 'my-plans' | 'completed-plans' | 'find-plans';
+  activeTab: 'my-plans' | 'saved-plans' | 'completed-plans' | 'find-plans';
   isAuthenticated: boolean;
   notificationCount?: number;
   onToggleGrid: () => void;
-  onChangeTab: (tab: 'my-plans' | 'completed-plans' | 'find-plans') => void;
+  onChangeTab: (tab: 'my-plans' | 'saved-plans' | 'completed-plans' | 'find-plans') => void;
   onChangeSort: (sort: 'Recent' | 'Trending') => void;
   onSearch: () => void;
   onNotifications: () => void;
@@ -98,6 +99,8 @@ export default function PlansScreen({
 
       {activeTab === 'find-plans' ? (
         <FindPlansList />
+      ) : activeTab === 'saved-plans' ? (
+        <SavedPlansList />
       ) : (
         <MyPlansList mode={activeTab === 'completed-plans' ? 'completed' : 'all'} />
       )}

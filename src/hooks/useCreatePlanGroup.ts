@@ -19,6 +19,7 @@ export function useCreatePlanGroup() {
       queryClient.invalidateQueries({ queryKey: ['plan_progress'] });
       queryClient.invalidateQueries({ queryKey: ['plan_group'] });
       queryClient.invalidateQueries({ queryKey: ['user_plans_progresses', variables.user_id] });
+      queryClient.invalidateQueries({ queryKey: ['my_plan_progress_plans', variables.user_id] });
     },
     onError: (error) => {
       console.error('Error creating plan group:', error);

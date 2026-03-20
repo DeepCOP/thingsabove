@@ -1163,9 +1163,9 @@ export type Database = {
           created_at: string | null;
           description: string | null;
           helpful_count: number | null;
+          id: string | null;
           rating_avg: number | null;
           rating_count: number | null;
-          id: string | null;
           status: string | null;
           tags: string[] | null;
           title: string | null;
@@ -1180,9 +1180,9 @@ export type Database = {
           created_at?: string | null;
           description?: string | null;
           helpful_count?: never;
+          id?: string | null;
           rating_avg?: never;
           rating_count?: never;
-          id?: string | null;
           status?: string | null;
           tags?: string[] | null;
           title?: string | null;
@@ -1197,9 +1197,9 @@ export type Database = {
           created_at?: string | null;
           description?: string | null;
           helpful_count?: never;
+          id?: string | null;
           rating_avg?: never;
           rating_count?: never;
-          id?: string | null;
           status?: string | null;
           tags?: string[] | null;
           title?: string | null;
@@ -1501,9 +1501,9 @@ export type Database = {
           created_at: string | null;
           description: string | null;
           helpful_count: number | null;
+          id: string | null;
           rating_avg: number | null;
           rating_count: number | null;
-          id: string | null;
           status: string | null;
           tags: string[] | null;
           title: string | null;

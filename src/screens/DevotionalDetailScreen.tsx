@@ -4,7 +4,7 @@ import { RelatedPlansSection } from '@/src/components/RelatedPlans';
 import { Ionicons } from '@expo/vector-icons';
 import BottomSheet from '@gorhom/bottom-sheet';
 import { useRef } from 'react';
-import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { ScrollView, Text, TouchableOpacity, View, useColorScheme } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import ReportPlanSheet from '../components/ReportPlanModal';
 import StartPlanBottomSheet from '../components/StartPlanBottomSheet';
@@ -25,6 +25,8 @@ type Props = {
   hasUserPlans: boolean;
   onStartPress: (mode: 'solo' | 'group') => void;
   onMyPlansPress: () => void;
+  isSaved: boolean;
+  onToggleSave: () => void;
 };
 
 export default function DevotionalDetailScreen({
@@ -37,9 +39,12 @@ export default function DevotionalDetailScreen({
   hasUserPlans,
   onStartPress,
   onMyPlansPress,
+  isSaved,
+  onToggleSave,
 }: Props) {
   const bottomSheetRef = useRef<BottomSheet>(null);
   const insets = useSafeAreaInsets();
+  const colorScheme = useColorScheme();
 
   const { isGuest } = useAuth();
   const resolvedTopInset = insets.top;
@@ -101,6 +106,21 @@ export default function DevotionalDetailScreen({
                 currentReaction?.user_reaction === 'helpful' ? 'text-yellow-500' : 'text-gray-500'
               }`}>
               {currentReaction?.helpful_count ?? 0}
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            className="flex-row items-center gap-1 justify-center"
+            onPress={onToggleSave}>
+            <Ionicons
+              name={isSaved ? 'bookmark' : 'bookmark-outline'}
+              size={20}
+              color={isSaved ? (colorScheme === 'dark' ? '#F9FAFB' : '#111827') : '#9CA3AF'}
+            />
+            <Text
+              className={
+                isSaved ? 'text-gray-900 dark:text-gray-100' : 'text-gray-500 dark:text-gray-400'
+              }>
+              {isSaved ? 'Saved' : 'Save'}
             </Text>
           </TouchableOpacity>
           <TouchableOpacity

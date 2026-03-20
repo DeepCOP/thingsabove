@@ -7,13 +7,14 @@ type Tab = {
 
 type Props = {
   activeTab: string;
-  onChange: (key: 'my-plans' | 'completed-plans' | 'find-plans') => void;
+  onChange: (key: 'my-plans' | 'saved-plans' | 'completed-plans' | 'find-plans') => void;
 };
 
 const tabs: Tab[] = [
   { key: 'my-plans', label: 'My Plans' },
   { key: 'find-plans', label: 'Find Plans' },
-  { key: 'completed-plans', label: 'Completed Plans' },
+  { key: 'saved-plans', label: 'Saved' },
+  { key: 'completed-plans', label: 'Completed' },
 ];
 
 export function MyPlansToggle({ activeTab, onChange }: Props) {
@@ -25,13 +26,13 @@ export function MyPlansToggle({ activeTab, onChange }: Props) {
         return (
           <TouchableOpacity
             key={tab.key}
-            onPress={() => onChange(tab.key as 'my-plans' | 'completed-plans' | 'find-plans')}
+            onPress={() =>
+              onChange(tab.key as 'my-plans' | 'saved-plans' | 'completed-plans' | 'find-plans')
+            }
             className={`flex-1 rounded-full items-center justify-center px-1 py-2 ${
               isActive ? 'bg-white' : ''
             }`}>
             <Text
-              numberOfLines={1}
-              ellipsizeMode="tail"
               className={`font-semibold text-sm text-center ${
                 isActive ? 'text-black' : 'text-gray-400'
               }`}>

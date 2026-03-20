@@ -3,25 +3,29 @@
 import PlanCoverImage from '@/src/components/PlanCoverImage';
 import Stat from '@/src/components/Stat';
 import { DevotionalPlanView } from '@/src/types/types';
-import { Text, TouchableOpacity, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { Pressable, Text, TouchableOpacity, View, useColorScheme } from 'react-native';
 import { ProgressBar } from './ProgressBar';
 
 export function ListCard({
   item,
   onPress,
+  isSaved,
+  onToggleSave,
 }: {
   item: DevotionalPlanView & {
     completed_days?: number | null;
-    helpful_count?: number | null;
     rating_avg?: number | null;
     rating_count?: number | null;
-    user_reaction?: 'helpful' | null;
   };
   onPress: () => void;
+  isSaved?: boolean;
+  onToggleSave?: () => void;
 }) {
   const percentageCompletion = ((item.completed_days ?? 0) / (item?.total_days ?? 1)) * 100;
   const helpfulCount = item.helpful_count ?? 0;
   const isHelpfulMarkedByMe = item.user_reaction === 'helpful';
+  const colorScheme = useColorScheme();
   const ratingAverageRaw = Number(item.rating_avg);
   const ratingAverage = Number.isFinite(ratingAverageRaw) ? ratingAverageRaw : 0;
   const ratingCountRaw = Number(item.rating_count);
@@ -38,9 +42,26 @@ export function ListCard({
         <PlanCoverImage uri={item.cover_image} className="w-20 h-20 rounded-lg" />
 
         <View className="flex-1">
-          <Text className="font-semibold text-[16px] text-gray-900 dark:text-white">
-            {item.title}
-          </Text>
+          <View className="flex-row items-start justify-between gap-2">
+            <Text className="flex-1 font-semibold text-[16px] text-gray-900 dark:text-white">
+              {item.title}
+            </Text>
+            {onToggleSave && (
+              <Pressable
+                onPress={(event) => {
+                  event.stopPropagation?.();
+                  onToggleSave();
+                }}
+                hitSlop={8}
+                className="pt-0.5">
+                <Ionicons
+                  name={isSaved ? 'bookmark' : 'bookmark-outline'}
+                  size={18}
+                  color={isSaved ? (colorScheme === 'dark' ? '#F9FAFB' : '#111827') : '#9CA3AF'}
+                />
+              </Pressable>
+            )}
+          </View>
 
           <Text className="text-gray-600 dark:text-gray-200 text-sm mt-1">
             {item.total_days} Days
@@ -80,19 +101,22 @@ export function ListCard({
 export function GridCard({
   item,
   onPress,
+  isSaved,
+  onToggleSave,
 }: {
   item: DevotionalPlanView & {
     completed_days?: number | null;
-    helpful_count?: number | null;
     rating_avg?: number | null;
     rating_count?: number | null;
-    user_reaction?: 'helpful' | null;
   };
   onPress: () => void;
+  isSaved?: boolean;
+  onToggleSave?: () => void;
 }) {
   const percentageCompletion = ((item.completed_days ?? 0) / (item?.total_days ?? 1)) * 100;
   const helpfulCount = item.helpful_count ?? 0;
   const isHelpfulMarkedByMe = item.user_reaction === 'helpful';
+  const colorScheme = useColorScheme();
   const ratingAverageRaw = Number(item.rating_avg);
   const ratingAverage = Number.isFinite(ratingAverageRaw) ? ratingAverageRaw : 0;
   const ratingCountRaw = Number(item.rating_count);
@@ -107,9 +131,28 @@ export function GridCard({
       <View className="rounded-lg mb-2 overflow-hidden bg-white dark:bg-white elevation-2xl">
         <PlanCoverImage uri={item.cover_image} className="w-full h-32" />
       </View>
-      <Text numberOfLines={2} className="font-semibold text-gray-900 dark:text-white text-[14px]">
-        {item.title}
-      </Text>
+      <View className="flex-row items-start justify-between gap-2">
+        <Text
+          numberOfLines={2}
+          className="flex-1 font-semibold text-gray-900 dark:text-white text-[14px]">
+          {item.title}
+        </Text>
+        {onToggleSave && (
+          <Pressable
+            onPress={(event) => {
+              event.stopPropagation?.();
+              onToggleSave();
+            }}
+            hitSlop={8}
+            className="pt-0.5">
+            <Ionicons
+              name={isSaved ? 'bookmark' : 'bookmark-outline'}
+              size={18}
+              color={isSaved ? (colorScheme === 'dark' ? '#F9FAFB' : '#111827') : '#9CA3AF'}
+            />
+          </Pressable>
+        )}
+      </View>
 
       <Text className="text-gray-600 dark:text-gray-200 text-sm mt-1">{item.total_days} Days</Text>
       {/* Icons Row */}

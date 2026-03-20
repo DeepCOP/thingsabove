@@ -1,5 +1,9 @@
 import { ListCard } from '@/src/components/DevoCard';
+import { useSavedPlans, useToggleSavedPlan } from '@/src/hooks/useSavedPlans';
+import { useAuth } from '@/src/state/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
+import { useMemo } from 'react';
 import { ActivityIndicator, FlatList, Text, TextInput, useColorScheme, View } from 'react-native';
 
 type Props = {
@@ -24,6 +28,17 @@ export default function SearchDevosScreen({
   isFetchingNextPage,
 }: Props) {
   const colorScheme = useColorScheme();
+  const { session } = useAuth();
+  const router = useRouter();
+  const savedPlansQuery = useSavedPlans(session?.user?.id);
+  const savedPlanIds = useMemo(
+    () =>
+      (savedPlansQuery.data ?? [])
+        .map((savedPlan) => savedPlan.id)
+        .filter((planId): planId is string => typeof planId === 'string' && planId.length > 0),
+    [savedPlansQuery.data],
+  );
+  const { toggleSavedPlan } = useToggleSavedPlan(session?.user?.id);
   return (
     <View className="flex-1 px-4 pt-3">
       {/* Search Input */}
@@ -70,7 +85,26 @@ export default function SearchDevosScreen({
         keyExtractor={(item) => item.id!}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 40 }}
-        renderItem={({ item }) => <ListCard item={item} onPress={() => onPressItem(item.id)} />}
+        renderItem={({ item }) => {
+          const planId = item.id as string | null;
+          const isSaved = !!planId && savedPlanIds.includes(planId);
+
+          return (
+            <ListCard
+              item={item}
+              isSaved={isSaved}
+              onToggleSave={() => {
+                if (!planId) return;
+                if (!session?.user?.id) {
+                  router.push('/(auth)/signin');
+                  return;
+                }
+                toggleSavedPlan(planId, isSaved, item);
+              }}
+              onPress={() => onPressItem(item.id)}
+            />
+          );
+        }}
         onEndReached={onLoadMore}
         onEndReachedThreshold={2}
         ListFooterComponent={
