@@ -1,3 +1,5 @@
+import ReaderBottomBar from '@/src/components/ReaderBottomBar';
+import ScriptureSelectionMenu from '@/src/components/ScriptureSelectionMenu';
 import { useAppStore } from '@/src/state/useAppStore';
 import { Ionicons } from '@expo/vector-icons';
 import * as Clipboard from 'expo-clipboard';
@@ -5,8 +7,6 @@ import { useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
 import {
   Animated,
-  Modal,
-  Pressable,
   Share,
   Text,
   TouchableOpacity,
@@ -144,6 +144,7 @@ export default function BibleReaderView({
   const verses = bible.books.find((book) => book.name === selectedBook.name)?.chapters[
     chapterNumber - 1
   ]?.verses;
+  const selectedVerseRange = getSelectedVerseRange();
 
   return (
     <>
@@ -201,20 +202,13 @@ export default function BibleReaderView({
           ))}
         </Animated.ScrollView>
 
-        {/* BOTTOM CHAPTER NAVIGATION */}
-        <Animated.View
-          className="items-center pb-4 bg-transparent"
-          style={{
-            transform: [{ translateY: headerTranslateY }],
-            position: 'absolute',
-            bottom: 56 + insets.bottom,
-            left: 0,
-            right: 0,
-            zIndex: 10,
-          }}>
-          <View className="flex-row bg-black px-6 py-3 rounded-full items-center">
-            {/* PREVIOUS CHAPTER */}
+        <ReaderBottomBar
+          translateY={headerTranslateY}
+          bottom={56 + insets.bottom}
+          barPaddingHorizontal={24}
+          left={
             <TouchableOpacity
+              className="py-1 mr-8"
               onPress={() => {
                 if (chapterNumber === 1) {
                   bookNames.forEach((bookName) => {
@@ -239,16 +233,19 @@ export default function BibleReaderView({
               }}>
               <Ionicons name="chevron-back" size={20} color="white" />
             </TouchableOpacity>
-
-            {/* LABEL */}
-            <TouchableOpacity onPress={() => router.push(`/bible/${selectedBook.name}`)}>
+          }
+          center={
+            <TouchableOpacity
+              className="px-2 py-1"
+              onPress={() => router.push(`/bible/${selectedBook.name}`)}>
               <Text className="text-white font-semibold mx-4">
                 {selectedBook.name} {selectedBook.chapter}
               </Text>
             </TouchableOpacity>
-
-            {/* NEXT CHAPTER */}
+          }
+          right={
             <TouchableOpacity
+              className="py-1 ml-8"
               onPress={() => {
                 if (chapterNumber === chapterCount) {
                   bookNames.forEach((bookName) => {
@@ -268,107 +265,53 @@ export default function BibleReaderView({
               }}>
               <Ionicons name="chevron-forward" size={20} color="white" />
             </TouchableOpacity>
-          </View>
-        </Animated.View>
-        <Modal
+          }
+        />
+        <ScriptureSelectionMenu
           visible={showMenu}
-          transparent
-          animationType="fade"
+          title={selectedVerse.length > 0 ? formatSelectedVerseTitle().header : ''}
+          menuStyle={contextMenuStyle}
+          notesDisabled={!selectedVerseRange}
+          onClose={() => setShowMenu(false)}
           onRequestClose={() => {
             setSelectedVerse([]);
             setShowMenu(false);
-          }}>
-          <Pressable className="flex-1 bg-black/25" onPress={() => setShowMenu(false)}>
-            <TouchableOpacity
-              activeOpacity={1}
-              onPress={() => {}}
-              style={[{ position: 'absolute' }, contextMenuStyle]}>
-              <View
-                className="rounded-2xl border border-neutral-700/20 dark:border-neutral-700 bg-white dark:bg-neutral-900 overflow-hidden"
-                onLayout={(event) => setMenuHeight(event.nativeEvent.layout.height)}>
-                <Text className="px-4 pt-3 pb-2 text-sm font-semibold text-primary dark:text-gray-100">
-                  {selectedVerse.length > 0 ? formatSelectedVerseTitle().header : ''}
-                </Text>
+          }}
+          onMenuLayout={(event) => setMenuHeight(event.nativeEvent.layout.height)}
+          onOpenNotes={() => {
+            if (!selectedVerseRange) return;
 
-                <TouchableOpacity
-                  className="px-4 py-3 flex-row items-center"
-                  disabled={selectedVerse.length === 0}
-                  onPress={() => {
-                    const selectedRange = getSelectedVerseRange();
-                    if (!selectedRange) return;
-                    setShowMenu(false);
-                    router.push({
-                      pathname: '/scripture_notes',
-                      params: {
-                        book: selectedBook.name,
-                        chapter: String(chapterNumber),
-                        verseNumber: String(selectedRange.start.number),
-                        verseText: selectedRange.start.text,
-                        selectionStart: String(selectedRange.start.number),
-                        selectionEnd: String(selectedRange.end.number),
-                        selectionVerses: [...selectedVerse]
-                          .sort((a, b) => a.number - b.number)
-                          .map((entry) => entry.number)
-                          .join(','),
-                        verseCount: String(verses?.length ?? 0),
-                        version,
-                      },
-                    } as never);
-                  }}>
-                  <Ionicons
-                    name="chatbubble-ellipses-outline"
-                    size={22}
-                    color={colorScheme === 'dark' ? 'white' : 'black'}
-                  />
-                  <Text className="ml-3 text-primary dark:text-gray-200 text-base">
-                    Scripture Notes
-                  </Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  className="px-4 py-3 flex-row items-center"
-                  onPress={async () => {
-                    await Clipboard.setStringAsync(
-                      selectedVerse.length > 0 ? formatVerseText(selectedVerse) : '',
-                    );
-                    setShowMenu(false);
-                  }}>
-                  <Ionicons
-                    name="copy"
-                    size={22}
-                    color={colorScheme === 'dark' ? 'white' : 'black'}
-                  />
-                  <Text className="ml-3 text-primary dark:text-gray-200 text-base">Copy</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  className="px-4 py-3 flex-row items-center"
-                  onPress={async () => {
-                    const content = formatVerseText(selectedVerse);
-                    await Share.share({ message: content });
-
-                    setShowMenu(false);
-                  }}>
-                  <Ionicons
-                    name="share-outline"
-                    size={22}
-                    color={colorScheme === 'dark' ? 'white' : 'black'}
-                  />
-                  <Text className="ml-3 text-primary dark:text-gray-200 text-base">Share</Text>
-                </TouchableOpacity>
-
-                <View className="border-t border-gray-200 dark:border-neutral-700" />
-
-                <TouchableOpacity
-                  className="px-4 py-3 flex-row items-center"
-                  onPress={() => setShowMenu(false)}>
-                  <Ionicons name="close-outline" size={22} color="#ef4444" />
-                  <Text className="ml-3 text-red-600 text-base">Cancel</Text>
-                </TouchableOpacity>
-              </View>
-            </TouchableOpacity>
-          </Pressable>
-        </Modal>
+            setShowMenu(false);
+            router.push({
+              pathname: '/scripture_notes',
+              params: {
+                book: selectedBook.name,
+                chapter: String(chapterNumber),
+                verseNumber: String(selectedVerseRange.start.number),
+                verseText: selectedVerseRange.start.text,
+                selectionStart: String(selectedVerseRange.start.number),
+                selectionEnd: String(selectedVerseRange.end.number),
+                selectionVerses: [...selectedVerse]
+                  .sort((a, b) => a.number - b.number)
+                  .map((entry) => entry.number)
+                  .join(','),
+                verseCount: String(verses?.length ?? 0),
+                version,
+              },
+            } as never);
+          }}
+          onCopy={async () => {
+            await Clipboard.setStringAsync(
+              selectedVerse.length > 0 ? formatVerseText(selectedVerse) : '',
+            );
+            setShowMenu(false);
+          }}
+          onShare={async () => {
+            const content = formatVerseText(selectedVerse);
+            await Share.share({ message: content });
+            setShowMenu(false);
+          }}
+        />
       </View>
     </>
   );
