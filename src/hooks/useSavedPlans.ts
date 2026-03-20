@@ -1,26 +1,33 @@
-import { fetchSavedPlanIds, removeSavedPlanForUser, savePlanForUser } from '@/src/api/queries';
+import { fetchMySavedPlans, removeSavedPlanForUser, savePlanForUser } from '@/src/api/queries';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { DevotionalPlanView, SavedPlanListItem } from '../types/types';
 
-export function useSavedPlanIds(userId?: string) {
+export function useSavedPlans(userId?: string) {
   return useQuery({
-    queryKey: ['saved_plan_ids', userId],
+    queryKey: ['my_saved_plans', userId],
     enabled: !!userId,
-    queryFn: async () => fetchSavedPlanIds(userId as string),
+    queryFn: async () => fetchMySavedPlans(),
   });
 }
 
 type TogglePayload = {
   planId: string;
   isSaved: boolean;
+  item?: DevotionalPlanView | null;
 };
 
 type ToggleContext = {
-  previous: string[];
+  previousSavedPlans: SavedPlanListItem[];
 };
+
+const toSavedPlanListItem = (item: DevotionalPlanView): SavedPlanListItem => ({
+  ...item,
+  saved_at: new Date().toISOString(),
+});
 
 export function useToggleSavedPlan(userId?: string) {
   const qc = useQueryClient();
-  const queryKey = ['saved_plan_ids', userId] as const;
+  const savedPlansQueryKey = ['my_saved_plans', userId] as const;
 
   const mutation = useMutation({
     mutationFn: async ({ planId, isSaved }: TogglePayload) => {
@@ -31,27 +38,37 @@ export function useToggleSavedPlan(userId?: string) {
       }
       await savePlanForUser(userId, planId);
     },
-    onMutate: async ({ planId, isSaved }) => {
+    onMutate: async ({ planId, isSaved, item }) => {
       if (!userId) return;
-      await qc.cancelQueries({ queryKey });
+      await qc.cancelQueries({ queryKey: savedPlansQueryKey });
 
-      const previous = qc.getQueryData<string[]>(queryKey) ?? [];
-      const next = isSaved
-        ? previous.filter((id) => id !== planId)
-        : Array.from(new Set([...previous, planId]));
+      const previousSavedPlans = qc.getQueryData<SavedPlanListItem[]>(savedPlansQueryKey) ?? [];
 
-      qc.setQueryData(queryKey, next);
-      return { previous } as ToggleContext;
+      const nextSavedPlans = isSaved
+        ? previousSavedPlans.filter((savedPlan) => savedPlan.id !== planId)
+        : item
+          ? [
+              toSavedPlanListItem(item),
+              ...previousSavedPlans.filter((savedPlan) => savedPlan.id !== planId),
+            ]
+          : previousSavedPlans;
+
+      qc.setQueryData(savedPlansQueryKey, nextSavedPlans);
+
+      return { previousSavedPlans } as ToggleContext;
     },
     onError: (_error, _variables, context) => {
       if (!context) return;
-      qc.setQueryData(queryKey, context.previous);
+      qc.setQueryData(savedPlansQueryKey, context.previousSavedPlans);
+    },
+    onSettled: async () => {
+      await qc.invalidateQueries({ queryKey: savedPlansQueryKey });
     },
   });
 
-  const toggleSavedPlan = (planId: string, isSaved: boolean) => {
+  const toggleSavedPlan = (planId: string, isSaved: boolean, item?: DevotionalPlanView | null) => {
     if (!userId || !planId) return;
-    mutation.mutate({ planId, isSaved });
+    mutation.mutate({ planId, isSaved, item });
   };
 
   return {

@@ -147,3 +147,17 @@ export type ScriptureNote = {
   helpful_count: number;
   is_helpful: boolean;
 };
+
+export type SavedPlanListItem = DevotionalPlanView & {
+  saved_at: string | null;
+};
+
+export type MyPlanProgressListItem = DevotionalPlanView & {
+  progress_id: string;
+  started_at: string | null;
+  group_id: string | null;
+  completed_days: number;
+  completed_once: boolean;
+  helpful_count: number;
+  user_reaction: 'helpful' | null;
+};

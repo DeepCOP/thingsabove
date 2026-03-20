@@ -1,11 +1,11 @@
 import { useFetchDevotionalPlanById } from '@/src/hooks/useDevotionalPlans';
 import { useStartPlanProgress, useUserPlanProgressList } from '@/src/hooks/usePlanProgress';
-import { useSavedPlanIds, useToggleSavedPlan } from '@/src/hooks/useSavedPlans';
+import { useSavedPlans, useToggleSavedPlan } from '@/src/hooks/useSavedPlans';
 import DevotionalDetailScreen from '@/src/screens/DevotionalDetailScreen';
 import { useAuth } from '@/src/state/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
 import BottomSheet from '@gorhom/bottom-sheet';
-import { useRef } from 'react';
+import { useMemo, useRef } from 'react';
 
 import { useTogglePlanReaction } from '@/src/hooks/usePlanReactions';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
@@ -16,8 +16,14 @@ export default function DevotionalDetail() {
   const planId = id as string;
   const reportSheetRef = useRef<BottomSheet>(null);
   const { isGuest, session } = useAuth();
-  const savedPlanIdsQuery = useSavedPlanIds(session?.user?.id);
-  const savedPlanIds = savedPlanIdsQuery.data ?? [];
+  const savedPlansQuery = useSavedPlans(session?.user?.id);
+  const savedPlanIds = useMemo(
+    () =>
+      (savedPlansQuery.data ?? [])
+        .map((savedPlan) => savedPlan.id)
+        .filter((savedPlanId): savedPlanId is string => typeof savedPlanId === 'string'),
+    [savedPlansQuery.data],
+  );
   const { toggleSavedPlan } = useToggleSavedPlan(session?.user?.id);
   const isSaved = savedPlanIds.includes(planId);
   const toggleReaction = useTogglePlanReaction(planId, session?.user?.id || '');
@@ -102,7 +108,7 @@ export default function DevotionalDetail() {
             router.push('/(auth)/signin');
             return;
           }
-          toggleSavedPlan(planId, isSaved);
+          toggleSavedPlan(planId, isSaved, plan ?? undefined);
         }}
         onStartPress={(mode: string) => {
           if (isGuest) {

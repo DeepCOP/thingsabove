@@ -1,7 +1,6 @@
 import { GridCard, ListCard } from '@/src/components/DevoCard';
 import LoadingSpinner from '@/src/components/LoadingSpinner';
-import { useFetchPlansByIds } from '@/src/hooks/useDevotionalPlans';
-import { useSavedPlanIds, useToggleSavedPlan } from '@/src/hooks/useSavedPlans';
+import { useSavedPlans, useToggleSavedPlan } from '@/src/hooks/useSavedPlans';
 import { useAuth } from '@/src/state/AuthContext';
 import { useAppStore } from '@/src/state/useAppStore';
 import { Ionicons } from '@expo/vector-icons';
@@ -13,28 +12,21 @@ export default function SavedPlansList() {
   const colorScheme = useColorScheme();
   const { sort, isGrid } = useAppStore();
   const { session } = useAuth();
-  const savedPlanIdsQuery = useSavedPlanIds(session?.user?.id);
-  const savedPlanIds = savedPlanIdsQuery.data ?? [];
+  const savedPlansQuery = useSavedPlans(session?.user?.id);
+  const flatData = savedPlansQuery.data ?? [];
+  const savedPlanIds = useMemo(
+    () =>
+      flatData
+        .map((savedPlan) => savedPlan.id)
+        .filter((planId): planId is string => typeof planId === 'string' && planId.length > 0),
+    [flatData],
+  );
   const { toggleSavedPlan } = useToggleSavedPlan(session?.user?.id);
-  const savedPlansQuery = useFetchPlansByIds(savedPlanIds);
-
-  const flatData = useMemo(() => {
-    const items = savedPlansQuery.data ?? [];
-    return items.map((item) => ({
-      ...item,
-      helpful_count: (item as { helpful_count?: number | null }).helpful_count ?? 0,
-      user_reaction:
-        (item as { user_reaction?: string | null }).user_reaction === 'helpful'
-          ? ('helpful' as const)
-          : null,
-    }));
-  }, [savedPlansQuery.data]);
 
   const [refreshing, setRefreshing] = useState(false);
   const onRefresh = async () => {
     setRefreshing(true);
 
-    await savedPlanIdsQuery.refetch();
     await savedPlansQuery.refetch();
 
     setRefreshing(false);
@@ -44,12 +36,20 @@ export default function SavedPlansList() {
     if (!flatData) return [];
 
     if (sort === 'Recent') {
-      return [...flatData].sort(
-        (planOne, planTwo) =>
-          new Date(planTwo.created_at!).getTime() - new Date(planOne.created_at!).getTime(),
-      );
-    }
+      return [...flatData].sort((a, b) => {
+        const timeA = a.saved_at ? new Date(a.saved_at).getTime() : undefined;
+        const timeB = b.saved_at ? new Date(b.saved_at).getTime() : undefined;
 
+        if (timeA !== undefined && timeB !== undefined) {
+          return timeB - timeA;
+        }
+
+        if (timeA !== undefined) return -1;
+        if (timeB !== undefined) return 1;
+
+        return 0;
+      });
+    }
     if (sort === 'Trending') {
       return [...flatData].sort(
         (planOne, planTwo) => (planTwo.helpful_count || 0) - (planOne.helpful_count || 0),
@@ -85,16 +85,12 @@ export default function SavedPlansList() {
     return <EmptySavedPlans />;
   }
 
-  if (savedPlanIdsQuery.isLoading) {
+  if (savedPlansQuery.isLoading) {
     return <LoadingSpinner />;
   }
 
   if (savedPlanIds.length === 0) {
     return <EmptySavedPlans />;
-  }
-
-  if (savedPlansQuery.isLoading) {
-    return <LoadingSpinner />;
   }
 
   return (
@@ -116,14 +112,14 @@ export default function SavedPlansList() {
           <GridCard
             item={item}
             isSaved={isSaved}
-            onToggleSave={() => planId && toggleSavedPlan(planId, isSaved)}
+            onToggleSave={() => planId && toggleSavedPlan(planId, isSaved, item)}
             onPress={() => router.push(`/devotional_detail/${item.id}`)}
           />
         ) : (
           <ListCard
             item={item}
             isSaved={isSaved}
-            onToggleSave={() => planId && toggleSavedPlan(planId, isSaved)}
+            onToggleSave={() => planId && toggleSavedPlan(planId, isSaved, item)}
             onPress={() => router.push(`/devotional_detail/${item.id}`)}
           />
         );

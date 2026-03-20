@@ -1,8 +1,9 @@
 import { ListCard } from '@/src/components/DevoCard';
-import { useSavedPlanIds, useToggleSavedPlan } from '@/src/hooks/useSavedPlans';
+import { useSavedPlans, useToggleSavedPlan } from '@/src/hooks/useSavedPlans';
 import { useAuth } from '@/src/state/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { useMemo } from 'react';
 import { ActivityIndicator, FlatList, Text, TextInput, useColorScheme, View } from 'react-native';
 
 type Props = {
@@ -29,8 +30,14 @@ export default function SearchDevosScreen({
   const colorScheme = useColorScheme();
   const { session } = useAuth();
   const router = useRouter();
-  const savedPlanIdsQuery = useSavedPlanIds(session?.user?.id);
-  const savedPlanIds = savedPlanIdsQuery.data ?? [];
+  const savedPlansQuery = useSavedPlans(session?.user?.id);
+  const savedPlanIds = useMemo(
+    () =>
+      (savedPlansQuery.data ?? [])
+        .map((savedPlan) => savedPlan.id)
+        .filter((planId): planId is string => typeof planId === 'string' && planId.length > 0),
+    [savedPlansQuery.data],
+  );
   const { toggleSavedPlan } = useToggleSavedPlan(session?.user?.id);
   return (
     <View className="flex-1 px-4 pt-3">
@@ -92,7 +99,7 @@ export default function SearchDevosScreen({
                   router.push('/(auth)/signin');
                   return;
                 }
-                toggleSavedPlan(planId, isSaved);
+                toggleSavedPlan(planId, isSaved, item);
               }}
               onPress={() => onPressItem(item.id)}
             />

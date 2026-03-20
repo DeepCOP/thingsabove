@@ -1,4 +1,5 @@
 import {
+  fetchMyPlanProgressPlans,
   fetchGroupPlanProgressList,
   fetchPlanDays,
   fetchPlanProgress,
@@ -32,9 +33,21 @@ export function useStartPlanProgress() {
       queryClient.invalidateQueries({
         queryKey: ['user_plans_progresses', variables.user_id],
       });
+      queryClient.invalidateQueries({
+        queryKey: ['my_plan_progress_plans', variables.user_id],
+      });
     },
   });
 }
+
+export const useMyPlanProgressPlans = (user_id: string | undefined) => {
+  const myPlanProgressPlansQuery = useQuery({
+    queryKey: ['my_plan_progress_plans', user_id],
+    enabled: !!user_id,
+    queryFn: async () => fetchMyPlanProgressPlans(),
+  });
+  return myPlanProgressPlansQuery;
+};
 
 export const useUserPlanProgressList = (user_id: string | undefined) => {
   const userPlanProgressQuery = useQuery({

@@ -1,7 +1,7 @@
 import { GridCard, ListCard } from '@/src/components/DevoCard';
 import LoadingSpinner from '@/src/components/LoadingSpinner';
 import { usePlans } from '@/src/hooks/useDevotionalPlans';
-import { useSavedPlanIds, useToggleSavedPlan } from '@/src/hooks/useSavedPlans';
+import { useSavedPlans, useToggleSavedPlan } from '@/src/hooks/useSavedPlans';
 import { useAuth } from '@/src/state/AuthContext';
 import { useAppStore } from '@/src/state/useAppStore';
 import { Ionicons } from '@expo/vector-icons';
@@ -14,8 +14,14 @@ export default function FindPlansList() {
   const colorScheme = useColorScheme();
   const { session } = useAuth();
   const { sort, isGrid } = useAppStore();
-  const savedPlanIdsQuery = useSavedPlanIds(session?.user?.id);
-  const savedPlanIds = savedPlanIdsQuery.data ?? [];
+  const savedPlansQuery = useSavedPlans(session?.user?.id);
+  const savedPlanIds = useMemo(
+    () =>
+      (savedPlansQuery.data ?? [])
+        .map((savedPlan) => savedPlan.id)
+        .filter((planId): planId is string => typeof planId === 'string' && planId.length > 0),
+    [savedPlansQuery.data],
+  );
   const { toggleSavedPlan } = useToggleSavedPlan(session?.user?.id);
   const flatData = useMemo(() => {
     const items =
@@ -110,7 +116,7 @@ export default function FindPlansList() {
                 router.push('/(auth)/signin');
                 return;
               }
-              toggleSavedPlan(planId, isSaved);
+              toggleSavedPlan(planId, isSaved, item);
             }}
             onPress={() => router.push(`/devotional_detail/${item.id}`)}
           />
@@ -124,7 +130,7 @@ export default function FindPlansList() {
                 router.push('/(auth)/signin');
                 return;
               }
-              toggleSavedPlan(planId, isSaved);
+              toggleSavedPlan(planId, isSaved, item);
             }}
             onPress={() => router.push(`/devotional_detail/${item.id}`)}
           />

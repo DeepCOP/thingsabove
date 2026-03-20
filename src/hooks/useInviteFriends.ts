@@ -39,6 +39,7 @@ export function useAcceptPlanInvite(
         queryKey: ['plan_group', group_id],
       });
       qc.invalidateQueries({ queryKey: ['user_plans_progresses', user_id] });
+      qc.invalidateQueries({ queryKey: ['my_plan_progress_plans', user_id] });
     },
     onError: (e) => {},
   });

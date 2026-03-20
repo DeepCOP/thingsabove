@@ -1,8 +1,7 @@
 import { GridCard, ListCard } from '@/src/components/DevoCard';
 import LoadingSpinner from '@/src/components/LoadingSpinner';
-import { useFetchUserPlans } from '@/src/hooks/useDevotionalPlans';
-import { useUserPlanProgressList } from '@/src/hooks/usePlanProgress';
-import { useSavedPlanIds, useToggleSavedPlan } from '@/src/hooks/useSavedPlans';
+import { useMyPlanProgressPlans } from '@/src/hooks/usePlanProgress';
+import { useSavedPlans, useToggleSavedPlan } from '@/src/hooks/useSavedPlans';
 import { useAuth } from '@/src/state/AuthContext';
 import { useAppStore } from '@/src/state/useAppStore';
 import { Ionicons } from '@expo/vector-icons';
@@ -22,39 +21,9 @@ export default function MyPlansList({
   mode?: 'all' | 'completed';
 }) {
   const { session, loading: sessionLoading } = useAuth();
-  const userPlanProgressQuery = useUserPlanProgressList(session?.user?.id);
+  const myPlansQuery = useMyPlanProgressPlans(session?.user?.id);
   const colorScheme = useColorScheme();
-  const userPlanProgress = useMemo(
-    () => userPlanProgressQuery.data ?? [],
-    [userPlanProgressQuery.data],
-  );
-  const plansQuery = useFetchUserPlans(
-    userPlanProgress?.map((progress) => progress?.plan_id ?? '') || [],
-    session?.user.id!,
-  );
-
-  const flataData = useMemo(() => {
-    return userPlanProgress
-      .map((progress) => {
-        const plan = plansQuery.data?.find((plan) => plan.id === progress.plan_id);
-
-        return plan
-          ? {
-              ...plan,
-              progress_id: progress.id,
-              group_id: progress.group_id,
-              completed_days: progress.completed_days?.length || 0,
-              completed_once: !!progress.completed_once,
-              helpful_count: (plan as { helpful_count?: number | null }).helpful_count ?? 0,
-              user_reaction:
-                (plan as { user_reaction?: string | null }).user_reaction === 'helpful'
-                  ? ('helpful' as const)
-                  : null,
-            }
-          : null;
-      })
-      .filter((plan) => plan !== null);
-  }, [userPlanProgress, plansQuery.data]);
+  const flataData = myPlansQuery.data ?? [];
 
   const visibleData = useMemo(() => {
     if (mode !== 'completed')
@@ -70,8 +39,14 @@ export default function MyPlansList({
   }, [flataData, mode]);
 
   const { sort, isGrid } = useAppStore();
-  const savedPlanIdsQuery = useSavedPlanIds(session?.user?.id);
-  const savedPlanIds = savedPlanIdsQuery.data ?? [];
+  const savedPlansQuery = useSavedPlans(session?.user?.id);
+  const savedPlanIds = useMemo(
+    () =>
+      (savedPlansQuery.data ?? [])
+        .map((savedPlan) => savedPlan.id)
+        .filter((planId): planId is string => typeof planId === 'string' && planId.length > 0),
+    [savedPlansQuery.data],
+  );
   const { toggleSavedPlan } = useToggleSavedPlan(session?.user?.id);
 
   const [refreshing, setRefreshing] = useState(false);
@@ -79,7 +54,7 @@ export default function MyPlansList({
   const onRefresh = async () => {
     setRefreshing(true);
 
-    await userPlanProgressQuery.refetch();
+    await myPlansQuery.refetch();
 
     setRefreshing(false);
   };
@@ -120,13 +95,25 @@ export default function MyPlansList({
     if (!visibleData) return [];
 
     if (sort === 'Recent') {
-      return [...visibleData].sort(
-        (a, b) => new Date(b.created_at!).getTime() - new Date(a.created_at!).getTime(),
-      );
+      return [...visibleData].sort((a, b) => {
+        const timeA = a.started_at ? new Date(a.started_at).getTime() : undefined;
+        const timeB = b.started_at ? new Date(b.started_at).getTime() : undefined;
+
+        if (timeA !== undefined && timeB !== undefined) {
+          return timeB - timeA;
+        }
+
+        if (timeA !== undefined) return -1;
+        if (timeB !== undefined) return 1;
+
+        return 0;
+      });
     }
 
     if (sort === 'Trending') {
-      return [...visibleData].sort((a, b) => (b.helpful_count || 0) - (a.helpful_count || 0));
+      return [...visibleData].sort(
+        (planOne, planTwo) => (planTwo.helpful_count || 0) - (planOne.helpful_count || 0),
+      );
     }
 
     return visibleData;
@@ -162,7 +149,7 @@ export default function MyPlansList({
       </View>
     );
   }
-  if (plansQuery.isLoading || userPlanProgressQuery.isLoading || sessionLoading) {
+  if (myPlansQuery.isLoading || sessionLoading) {
     return <LoadingSpinner />;
   }
 
@@ -189,7 +176,7 @@ export default function MyPlansList({
             <GridCard
               item={item}
               isSaved={isSaved}
-              onToggleSave={() => planId && toggleSavedPlan(planId, isSaved)}
+              onToggleSave={() => planId && toggleSavedPlan(planId, isSaved, item)}
               onPress={() =>
                 router.push({
                   pathname: '/plan_progress/[progressId]',
@@ -205,7 +192,7 @@ export default function MyPlansList({
             <ListCard
               item={item}
               isSaved={isSaved}
-              onToggleSave={() => planId && toggleSavedPlan(planId, isSaved)}
+              onToggleSave={() => planId && toggleSavedPlan(planId, isSaved, item)}
               onPress={() =>
                 router.push({
                   pathname: '/plan_progress/[progressId]',
