@@ -176,14 +176,14 @@ export const acceptPlanGroupInvite = async ({
   startDate: string;
 }) => {
   if (!group_id || !plan_id) return;
-  const { data: progressId, error } = await supabase.rpc('accept_plan_group_invite', {
+  const { data, error } = await supabase.rpc('accept_plan_group_invite', {
     p_group_id: group_id,
     p_plan_id: plan_id,
     p_start_date: startDate,
   });
 
   if (error) throw error;
-  return progressId;
+  return data as PlanProgress;
 };
 
 export const markNotificationRead = async (p_notification_id: string) => {

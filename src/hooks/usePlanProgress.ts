@@ -1,11 +1,10 @@
 import {
-  fetchMyPlanProgressPlans,
+  checkUserHasPlanProgress,
   fetchGroupPlanProgressList,
+  fetchMyPlanProgressPlans,
   fetchPlanDays,
   fetchPlanProgress,
-  fetchUserPlanProgressList,
 } from '@/src/api/queries';
-import { PlanProgress } from '@/src/types/types';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { startPlanProgress } from '../api/mutations';
 
@@ -27,38 +26,8 @@ export function useStartPlanProgress() {
   return useMutation({
     mutationKey: ['start_plan'],
     mutationFn: startPlanProgress,
-    onSuccess: (progress, variables) => {
-      const now = new Date().toISOString();
-      const progressId = progress.id;
-      queryClient.invalidateQueries({
-        queryKey: ['plan_progress', progressId, variables.user_id],
-      });
-
-      const newProgress: PlanProgress = {
-        ...progress,
-        created_at: progress.created_at ?? now,
-        updated_at: progress.updated_at ?? now,
-        start_date: progress.start_date ?? now,
-      };
-
-      queryClient.setQueryData(['plan_progress', progressId, variables.user_id], newProgress);
-
-      queryClient.setQueryData(['user_plans_progresses', variables.user_id], (old: unknown) => {
-        if (!Array.isArray(old)) return [newProgress];
-
-        const existingIndex = old.findIndex((progress) => progress?.id === progressId);
-        if (existingIndex >= 0) {
-          const next = [...old];
-          next[existingIndex] = {
-            ...(next[existingIndex] as PlanProgress),
-            ...newProgress,
-            updated_at: now,
-          };
-          return next;
-        }
-
-        return [newProgress, ...old];
-      });
+    onSuccess: (_progress, variables) => {
+      queryClient.setQueryData(['has_user_plan_progress', variables.user_id], true);
       queryClient.invalidateQueries({
         queryKey: ['my_plan_progress_plans', variables.user_id],
       });
@@ -75,13 +44,13 @@ export const useMyPlanProgressPlans = (user_id: string | undefined) => {
   return myPlanProgressPlansQuery;
 };
 
-export const useUserPlanProgressList = (user_id: string | undefined) => {
-  const userPlanProgressQuery = useQuery({
-    queryKey: ['user_plans_progresses', user_id],
+export const useHasUserPlanProgress = (user_id: string | undefined) => {
+  const hasUserPlanProgressQuery = useQuery({
+    queryKey: ['has_user_plan_progress', user_id],
     enabled: !!user_id,
-    queryFn: async () => fetchUserPlanProgressList({ user_id: user_id! }),
+    queryFn: async () => checkUserHasPlanProgress({ user_id: user_id! }),
   });
-  return userPlanProgressQuery;
+  return hasUserPlanProgressQuery;
 };
 
 export const useGroupPlanProgressList = (userIds: string[], groupId: string) => {

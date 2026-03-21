@@ -57,15 +57,6 @@ export const usePlans = () => {
   };
 };
 
-export const useFetchUserPlans = (planId: string[], userId: string) => {
-  return useQuery({
-    queryKey: ['user_plans', planId, userId],
-    enabled: !!planId && planId.length > 0 && !!userId,
-
-    queryFn: async () => await fetchUserPlans(planId),
-  });
-};
-
 export const useFetchPlansByIds = (planIds: string[]) => {
   return useQuery({
     queryKey: ['plans_by_ids', planIds],

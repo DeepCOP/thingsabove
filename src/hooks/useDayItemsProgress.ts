@@ -19,7 +19,6 @@ export function useDayItemsProgress({ user_id, plan_id, progress_id, day_id, gro
   const getDayItemsKey = (targetDayId: string) =>
     ['day_items_progress', user_id, progress_id, targetDayId, normalizedGroupId] as const;
   const planProgressKey = ['plan_progress', progress_id, user_id] as const;
-  const userPlansKey = ['user_plans_progresses', user_id] as const;
   const myPlanProgressPlansKey = ['my_plan_progress_plans', user_id] as const;
 
   const updateDayItemsForItem = (
@@ -61,19 +60,6 @@ export function useDayItemsProgress({ user_id, plan_id, progress_id, day_id, gro
         : [...prevDays, dayNumber]
       : prevDays.filter((day) => day !== dayNumber);
     return { ...progress, completed_days: nextDays };
-  };
-
-  const updateUserPlansProgresses = (
-    list: PlanProgress[] | undefined,
-    dayNumber: number,
-    completed: boolean,
-  ) => {
-    if (!Array.isArray(list)) return list;
-    return list.map((progress) =>
-      progress.id === progress_id
-        ? (updatePlanProgressCompletedDays(progress, dayNumber, completed) as PlanProgress)
-        : progress,
-    );
   };
 
   // Load completed items
@@ -123,12 +109,10 @@ export function useDayItemsProgress({ user_id, plan_id, progress_id, day_id, gro
       await Promise.all([
         queryClient.cancelQueries({ queryKey: dayItemsKey }),
         queryClient.cancelQueries({ queryKey: planProgressKey }),
-        queryClient.cancelQueries({ queryKey: userPlansKey }),
       ]);
 
       const previousDayItems = queryClient.getQueryData<DayItemsProgress[]>(dayItemsKey);
       const previousPlanProgress = queryClient.getQueryData<PlanProgress>(planProgressKey);
-      const previousUserPlans = queryClient.getQueryData<PlanProgress[]>(userPlansKey);
 
       const nextDayItems = updateDayItemsForItem(
         previousDayItems,
@@ -144,17 +128,12 @@ export function useDayItemsProgress({ user_id, plan_id, progress_id, day_id, gro
           planProgressKey,
           updatePlanProgressCompletedDays(previousPlanProgress, dayNumber, completed),
         );
-        queryClient.setQueryData(
-          userPlansKey,
-          updateUserPlansProgresses(previousUserPlans, dayNumber, completed),
-        );
       }
 
       return {
         dayItemsKey,
         previousDayItems,
         previousPlanProgress,
-        previousUserPlans,
       };
     },
     onError: (error, _variables, context) => {
@@ -171,12 +150,6 @@ export function useDayItemsProgress({ user_id, plan_id, progress_id, day_id, gro
         queryClient.removeQueries({ queryKey: planProgressKey, exact: true });
       } else {
         queryClient.setQueryData(planProgressKey, context.previousPlanProgress);
-      }
-
-      if (context.previousUserPlans === undefined) {
-        queryClient.removeQueries({ queryKey: userPlansKey, exact: true });
-      } else {
-        queryClient.setQueryData(userPlansKey, context.previousUserPlans);
       }
     },
     onSettled: () => {
@@ -204,12 +177,10 @@ export function useDayItemsProgress({ user_id, plan_id, progress_id, day_id, gro
       await Promise.all([
         queryClient.cancelQueries({ queryKey: dayItemsKey }),
         queryClient.cancelQueries({ queryKey: planProgressKey }),
-        queryClient.cancelQueries({ queryKey: userPlansKey }),
       ]);
 
       const previousDayItems = queryClient.getQueryData<DayItemsProgress[]>(dayItemsKey);
       const previousPlanProgress = queryClient.getQueryData<PlanProgress>(planProgressKey);
-      const previousUserPlans = queryClient.getQueryData<PlanProgress[]>(userPlansKey);
 
       const nextDayItems = updateDayItemsForDay(previousDayItems, variables.completed);
       queryClient.setQueryData(dayItemsKey, nextDayItems);
@@ -220,17 +191,12 @@ export function useDayItemsProgress({ user_id, plan_id, progress_id, day_id, gro
           planProgressKey,
           updatePlanProgressCompletedDays(previousPlanProgress, dayNumber, variables.completed),
         );
-        queryClient.setQueryData(
-          userPlansKey,
-          updateUserPlansProgresses(previousUserPlans, dayNumber, variables.completed),
-        );
       }
 
       return {
         dayItemsKey,
         previousDayItems,
         previousPlanProgress,
-        previousUserPlans,
       };
     },
     onError: (error, _variables, context) => {
@@ -247,12 +213,6 @@ export function useDayItemsProgress({ user_id, plan_id, progress_id, day_id, gro
         queryClient.removeQueries({ queryKey: planProgressKey, exact: true });
       } else {
         queryClient.setQueryData(planProgressKey, context.previousPlanProgress);
-      }
-
-      if (context.previousUserPlans === undefined) {
-        queryClient.removeQueries({ queryKey: userPlansKey, exact: true });
-      } else {
-        queryClient.setQueryData(userPlansKey, context.previousUserPlans);
       }
     },
     onSettled: (_data, _error, variables) => {

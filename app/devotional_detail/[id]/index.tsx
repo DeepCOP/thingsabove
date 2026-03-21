@@ -1,9 +1,9 @@
 import { useFetchDevotionalPlanById } from '@/src/hooks/useDevotionalPlans';
-import { useStartPlanProgress, useUserPlanProgressList } from '@/src/hooks/usePlanProgress';
+import { useHasUserPlanProgress, useStartPlanProgress } from '@/src/hooks/usePlanProgress';
 import { useSavedPlans, useToggleSavedPlan } from '@/src/hooks/useSavedPlans';
 import DevotionalDetailScreen from '@/src/screens/DevotionalDetailScreen';
 import { useAuth } from '@/src/state/AuthContext';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import BottomSheet from '@gorhom/bottom-sheet';
 import { useMemo, useRef } from 'react';
 
@@ -31,8 +31,7 @@ export default function DevotionalDetail() {
   const router = useRouter();
   const colorScheme = useColorScheme();
   const startPlanProgressMutation = useStartPlanProgress();
-  const userPlanProgressQuery = useUserPlanProgressList(session?.user.id);
-  const userPlanProgress = userPlanProgressQuery.data || [];
+  const hasUserPlanProgressQuery = useHasUserPlanProgress(session?.user.id);
   const planQuery = useFetchDevotionalPlanById(planId);
   const plan = planQuery.data;
   const currentReaction = {
@@ -95,8 +94,8 @@ export default function DevotionalDetail() {
         currentReaction={currentReaction}
         plan={planQuery.data}
         reportSheetRef={reportSheetRef}
-        isLoading={planQuery.isLoading || userPlanProgressQuery.isLoading}
-        hasUserPlans={userPlanProgress.length > 0}
+        isLoading={planQuery.isLoading || hasUserPlanProgressQuery.isLoading}
+        hasUserPlans={hasUserPlanProgressQuery.data ?? false}
         onMyPlansPress={() => router.push('/PlansTab')}
         isSaved={isSaved}
         onToggleSave={() => {

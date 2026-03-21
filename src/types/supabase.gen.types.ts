@@ -1236,7 +1236,18 @@ export type Database = {
       };
       accept_plan_group_invite: {
         Args: { p_group_id: string; p_plan_id: string; p_start_date: string };
-        Returns: string;
+        Returns: {
+          completed_days: number[] | null;
+          completed_once: boolean | null;
+          created_at: string | null;
+          current_day: number;
+          group_id: string | null;
+          id: string;
+          plan_id: string | null;
+          start_date: string | null;
+          updated_at: string | null;
+          user_id: string | null;
+        };
       };
       add_plan_day_comment: {
         Args: {
