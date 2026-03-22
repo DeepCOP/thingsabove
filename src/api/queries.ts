@@ -1,10 +1,5 @@
 import { supabase } from '../lib/supabaseClient';
-import {
-  DevotionalPlanView,
-  MyPlanProgressListItem,
-  ProfileWithChurch,
-  SavedPlanListItem,
-} from '../types/types';
+import { ProfileWithChurch } from '../types/types';
 
 export const searchRelatedPlans = async (currentPlanId: string, tags: string[]) => {
   if (!tags.length) return [];
@@ -205,44 +200,24 @@ export const fetchUserPlans = async (planId: string[]) => {
   return data;
 };
 
-export const fetchMySavedPlans = async (): Promise<SavedPlanListItem[]> => {
-  const { data, error } = await (supabase as any).rpc('get_my_saved_plans');
+export const fetchMySavedPlans = async () => {
+  const { data, error } = await supabase.rpc('get_my_saved_plans');
 
   if (error) throw error;
 
-  const items = (data ?? []) as (DevotionalPlanView & { saved_at: string | null })[];
+  const items = data ?? [];
 
-  return items.map((item) => ({
-    ...item,
-    saved_at: item.saved_at ?? null,
-    helpful_count: item.helpful_count ?? 0,
-    user_reaction: item.user_reaction === 'helpful' ? 'helpful' : null,
-  }));
+  return items;
 };
 
-export const fetchMyPlanProgressPlans = async (): Promise<MyPlanProgressListItem[]> => {
-  const { data, error } = await (supabase as any).rpc('get_my_plan_progress_plans');
+export const fetchMyPlanProgressPlans = async () => {
+  const { data, error } = await supabase.rpc('get_my_plan_progress_plans');
 
   if (error) throw error;
 
-  const items = (data ?? []) as (DevotionalPlanView & {
-    progress_id: string;
-    started_at: string | null;
-    group_id: string | null;
-    completed_days: number | null;
-    completed_once: boolean | null;
-  })[];
+  const items = data ?? [];
 
-  return items.map((item) => ({
-    ...item,
-    progress_id: item.progress_id,
-    started_at: item.started_at ?? null,
-    group_id: item.group_id ?? null,
-    completed_days: item.completed_days ?? 0,
-    completed_once: item.completed_once ?? false,
-    helpful_count: item.helpful_count ?? 0,
-    user_reaction: item.user_reaction === 'helpful' ? 'helpful' : null,
-  }));
+  return items;
 };
 
 export const savePlanForUser = async (userId: string, planId: string) => {

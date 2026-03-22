@@ -1248,6 +1248,12 @@ export type Database = {
           updated_at: string | null;
           user_id: string | null;
         };
+        SetofOptions: {
+          from: '*';
+          to: 'plan_progress';
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
       };
       add_plan_day_comment: {
         Args: {
@@ -1406,7 +1412,53 @@ export type Database = {
           type: string;
         }[];
       };
+      get_my_plan_progress_plans: {
+        Args: never;
+        Returns: {
+          author_id: string;
+          completed_days: number;
+          completed_once: boolean;
+          completions: number;
+          cover_image: string;
+          created_at: string;
+          description: string;
+          group_id: string;
+          helpful_count: number;
+          id: string;
+          progress_id: string;
+          rating_avg: number;
+          rating_count: number;
+          started_at: string;
+          status: string;
+          tags: string[];
+          title: string;
+          total_days: number;
+          updated_at: string;
+          user_reaction: string;
+        }[];
+      };
       get_my_plan_rating: { Args: { p_plan_id: string }; Returns: number };
+      get_my_saved_plans: {
+        Args: never;
+        Returns: {
+          author_id: string;
+          completions: number;
+          cover_image: string;
+          created_at: string;
+          description: string;
+          helpful_count: number;
+          id: string;
+          rating_avg: number;
+          rating_count: number;
+          saved_at: string;
+          status: string;
+          tags: string[];
+          title: string;
+          total_days: number;
+          updated_at: string;
+          user_reaction: string;
+        }[];
+      };
       get_pending_friend_requests: {
         Args: never;
         Returns: {
