@@ -57,15 +57,30 @@ export default function ScriptureSelectionMenu({
             </Text>
 
             <TouchableOpacity
-              className="px-4 py-3 flex-row items-center"
+              className={`px-4 py-3 flex-row items-center ${
+                notesDisabled ? 'opacity-50' : 'opacity-100'
+              }`}
               disabled={notesDisabled}
               onPress={onOpenNotes}>
               <Ionicons
                 name="chatbubble-ellipses-outline"
                 size={22}
-                color={colorScheme === 'dark' ? 'white' : 'black'}
+                color={
+                  notesDisabled
+                    ? colorScheme === 'dark'
+                      ? '#737373'
+                      : '#9ca3af'
+                    : colorScheme === 'dark'
+                      ? 'white'
+                      : 'black'
+                }
               />
-              <Text className="ml-3 text-primary dark:text-gray-200 text-base">
+              <Text
+                className={`ml-3 text-base ${
+                  notesDisabled
+                    ? 'text-gray-400 dark:text-neutral-500'
+                    : 'text-primary dark:text-gray-200'
+                }`}>
                 Scripture Notes
               </Text>
             </TouchableOpacity>
