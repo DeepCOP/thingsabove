@@ -5,15 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Clipboard from 'expo-clipboard';
 import { useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
-import {
-  Animated,
-  Share,
-  Text,
-  TouchableOpacity,
-  useColorScheme,
-  useWindowDimensions,
-  View,
-} from 'react-native';
+import { Animated, Share, Text, TouchableOpacity, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useBible } from '../state/BibleContext';
 
@@ -24,7 +16,6 @@ export default function BibleReaderView({
   onScroll: (...args: any[]) => void;
   headerTranslateY: Animated.AnimatedInterpolation<string | number>;
 }) {
-  const colorScheme = useColorScheme();
   const insets = useSafeAreaInsets();
   const [selectedVerse, setSelectedVerse] = useState<
     {

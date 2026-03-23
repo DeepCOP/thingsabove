@@ -76,6 +76,9 @@ export default function ScriptureNotes() {
         verse={verse}
         book={book}
         chapter={chapter}
+        selectionStart={selectionStart}
+        selectionEnd={selectionEnd}
+        selectionVerses={selectionVerses}
         verseCount={verseCount}
         version={version}
       />

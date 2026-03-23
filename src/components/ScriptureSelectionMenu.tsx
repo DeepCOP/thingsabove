@@ -45,7 +45,10 @@ export default function ScriptureSelectionMenu({
       animationType="fade"
       onRequestClose={onRequestClose ?? onClose}>
       <Pressable className="flex-1 bg-black/25" onPress={onClose}>
-        <TouchableOpacity activeOpacity={1} onPress={() => {}} style={[{ position: 'absolute' }, menuStyle]}>
+        <TouchableOpacity
+          activeOpacity={1}
+          onPress={() => {}}
+          style={[{ position: 'absolute' }, menuStyle]}>
           <View
             className="rounded-2xl border border-neutral-700/20 dark:border-neutral-700 bg-white dark:bg-neutral-900 overflow-hidden"
             onLayout={onMenuLayout}>
@@ -68,11 +71,7 @@ export default function ScriptureSelectionMenu({
             </TouchableOpacity>
 
             <TouchableOpacity className="px-4 py-3 flex-row items-center" onPress={onCopy}>
-              <Ionicons
-                name="copy"
-                size={22}
-                color={colorScheme === 'dark' ? 'white' : 'black'}
-              />
+              <Ionicons name="copy" size={22} color={colorScheme === 'dark' ? 'white' : 'black'} />
               <Text className="ml-3 text-primary dark:text-gray-200 text-base">Copy</Text>
             </TouchableOpacity>
 
