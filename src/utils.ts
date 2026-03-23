@@ -28,6 +28,42 @@ export function parseVerseRef(ref: string): ParsedVerse | null {
   }
 }
 
+export function getVerseNumbersFromRange(start?: number | null, end?: number | null) {
+  if (!Number.isFinite(start) || (start ?? 0) <= 0) return [];
+
+  const safeStart = Math.max(1, Math.floor(start as number));
+  const safeEnd = Number.isFinite(end) ? Math.max(safeStart, Math.floor(end as number)) : safeStart;
+
+  return Array.from({ length: safeEnd - safeStart + 1 }, (_, index) => safeStart + index);
+}
+
+export function getVerseRangeLabels(verseNumbers: number[]) {
+  const normalized = [...new Set(verseNumbers)]
+    .filter((value) => Number.isFinite(value) && value > 0)
+    .sort((a, b) => a - b);
+
+  if (normalized.length === 0) return [];
+
+  const ranges: string[] = [];
+  let start = normalized[0];
+  let end = normalized[0];
+
+  for (let index = 1; index < normalized.length; index += 1) {
+    const current = normalized[index];
+    if (current === end + 1) {
+      end = current;
+      continue;
+    }
+
+    ranges.push(start === end ? `${start}` : `${start}-${end}`);
+    start = current;
+    end = current;
+  }
+
+  ranges.push(start === end ? `${start}` : `${start}-${end}`);
+  return ranges;
+}
+
 export const getNumericPrefix = (key?: string | null) => {
   if (!key) return 0;
   const match = key.match(/^(\d+)/);
