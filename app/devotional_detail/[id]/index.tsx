@@ -1,5 +1,5 @@
 import { useFetchDevotionalPlanById } from '@/src/hooks/useDevotionalPlans';
-import { useHasUserPlanProgress, useStartPlanProgress } from '@/src/hooks/usePlanProgress';
+import { useMyPlanProgressPlans, useStartPlanProgress } from '@/src/hooks/usePlanProgress';
 import { useSavedPlans, useToggleSavedPlan } from '@/src/hooks/useSavedPlans';
 import DevotionalDetailScreen from '@/src/screens/DevotionalDetailScreen';
 import { useAuth } from '@/src/state/AuthContext';
@@ -31,9 +31,19 @@ export default function DevotionalDetail() {
   const router = useRouter();
   const colorScheme = useColorScheme();
   const startPlanProgressMutation = useStartPlanProgress();
-  const hasUserPlanProgressQuery = useHasUserPlanProgress(session?.user.id);
+  const myPlanProgressPlansQuery = useMyPlanProgressPlans(session?.user.id);
   const planQuery = useFetchDevotionalPlanById(planId);
   const plan = planQuery.data;
+  const currentPlanProgress = useMemo(
+    () =>
+      (myPlanProgressPlansQuery.data ?? []).find((userPlan) => {
+        const totalDays = typeof userPlan.total_days === 'number' ? userPlan.total_days : 0;
+        const completedDays = userPlan.completed_days ?? 0;
+
+        return userPlan.id === planId && completedDays < totalDays;
+      }),
+    [myPlanProgressPlansQuery.data, planId],
+  );
   const currentReaction = {
     helpful_count: plan?.helpful_count ?? 0,
     user_reaction: plan?.user_reaction === 'helpful' ? ('helpful' as const) : null,
@@ -94,9 +104,13 @@ export default function DevotionalDetail() {
         currentReaction={currentReaction}
         plan={planQuery.data}
         reportSheetRef={reportSheetRef}
-        isLoading={planQuery.isLoading || hasUserPlanProgressQuery.isLoading}
-        hasUserPlans={hasUserPlanProgressQuery.data ?? false}
-        onMyPlansPress={() => router.push('/PlansTab')}
+        isLoading={planQuery.isLoading || myPlanProgressPlansQuery.isLoading}
+        hasActivePlanProgress={!!currentPlanProgress?.progress_id}
+        onContinuePress={() => {
+          if (!currentPlanProgress?.progress_id) return;
+
+          router.push(`/plan_progress/${currentPlanProgress.progress_id}`);
+        }}
         isSaved={isSaved}
         onToggleSave={() => {
           if (isGuest) {

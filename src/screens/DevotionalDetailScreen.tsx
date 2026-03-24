@@ -22,9 +22,9 @@ type Props = {
   reportSheetRef: React.RefObject<BottomSheet | null>;
   plan: any;
   isLoading: boolean;
-  hasUserPlans: boolean;
+  hasActivePlanProgress: boolean;
   onStartPress: (mode: 'solo' | 'group') => void;
-  onMyPlansPress: () => void;
+  onContinuePress: () => void;
   isSaved: boolean;
   onToggleSave: () => void;
 };
@@ -36,9 +36,9 @@ export default function DevotionalDetailScreen({
   reportSheetRef,
   plan,
   isLoading,
-  hasUserPlans,
+  hasActivePlanProgress,
   onStartPress,
-  onMyPlansPress,
+  onContinuePress,
   isSaved,
   onToggleSave,
 }: Props) {
@@ -142,15 +142,6 @@ export default function DevotionalDetailScreen({
             Start Plan
           </Text>
         </TouchableOpacity>
-        {hasUserPlans && (
-          <TouchableOpacity
-            className="mt-6 mx-4 bg-black dark:bg-white py-4 rounded-full"
-            onPress={onMyPlansPress}>
-            <Text className="text-center text-white dark:text-black font-semibold text-lg">
-              My Plans
-            </Text>
-          </TouchableOpacity>
-        )}
 
         <View className="px-4 mt-6">
           <Text className="text-[16px] leading-7 text-gray-800 dark:text-gray-200">
@@ -161,7 +152,13 @@ export default function DevotionalDetailScreen({
         <RelatedPlansSection plan={plan} />
       </ScrollView>
 
-      <StartPlanBottomSheet ref={bottomSheetRef} plan={plan} onStartPress={onStartPress} />
+      <StartPlanBottomSheet
+        ref={bottomSheetRef}
+        plan={plan}
+        hasActivePlanProgress={hasActivePlanProgress}
+        onContinuePress={onContinuePress}
+        onStartPress={onStartPress}
+      />
       <ReportPlanSheet ref={reportSheetRef} planId={plan.id} />
     </>
   );

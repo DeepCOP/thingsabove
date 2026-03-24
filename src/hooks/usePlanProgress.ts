@@ -1,5 +1,4 @@
 import {
-  checkUserHasPlanProgress,
   fetchGroupPlanProgressList,
   fetchMyPlanProgressPlans,
   fetchPlanDays,
@@ -42,15 +41,6 @@ export const useMyPlanProgressPlans = (user_id: string | undefined) => {
     queryFn: async () => fetchMyPlanProgressPlans(),
   });
   return myPlanProgressPlansQuery;
-};
-
-export const useHasUserPlanProgress = (user_id: string | undefined) => {
-  const hasUserPlanProgressQuery = useQuery({
-    queryKey: ['has_user_plan_progress', user_id],
-    enabled: !!user_id,
-    queryFn: async () => checkUserHasPlanProgress({ user_id: user_id! }),
-  });
-  return hasUserPlanProgressQuery;
 };
 
 export const useGroupPlanProgressList = (userIds: string[], groupId: string) => {

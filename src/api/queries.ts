@@ -129,18 +129,6 @@ export const fetchPlanProgress = async ({
   return data;
 };
 
-export const checkUserHasPlanProgress = async ({ user_id }: { user_id: string }) => {
-  const { data, error } = await supabase
-    .from('plan_progress')
-    .select('id')
-    .eq('user_id', user_id)
-    .limit(1)
-    .maybeSingle();
-
-  if (error && error.code !== 'PGRST116') throw error;
-  return !!data;
-};
-
 export const fetchGroupPlanProgressList = async ({
   userIds,
   groupId,
