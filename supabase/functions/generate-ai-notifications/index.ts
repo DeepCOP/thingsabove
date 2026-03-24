@@ -194,9 +194,7 @@ function normalizePlannerDecision(value: unknown): PlannerDecision | null {
       : null;
 
   const message =
-    typeof record.message === 'string'
-      ? record.message.replace(/\s+/g, ' ').trim()
-      : '';
+    typeof record.message === 'string' ? record.message.replace(/\s+/g, ' ').trim() : '';
 
   const schedule =
     record.schedule && typeof record.schedule === 'object'
@@ -204,13 +202,9 @@ function normalizePlannerDecision(value: unknown): PlannerDecision | null {
       : null;
 
   const dayOffset =
-    schedule && Number.isInteger(schedule.day_offset)
-      ? Number(schedule.day_offset)
-      : Number.NaN;
+    schedule && Number.isInteger(schedule.day_offset) ? Number(schedule.day_offset) : Number.NaN;
   const localHour =
-    schedule && Number.isInteger(schedule.local_hour)
-      ? Number(schedule.local_hour)
-      : Number.NaN;
+    schedule && Number.isInteger(schedule.local_hour) ? Number(schedule.local_hour) : Number.NaN;
 
   if (!notificationType) return null;
   if (!message || message.length < 12 || message.length > 240) return null;
@@ -310,7 +304,12 @@ ${prompt}
           continue;
         }
 
-        if (!decision.should_send || !decision.notification_type || !decision.message || !decision.schedule) {
+        if (
+          !decision.should_send ||
+          !decision.notification_type ||
+          !decision.message ||
+          !decision.schedule
+        ) {
           continue;
         }
 
@@ -353,7 +352,11 @@ ${prompt}
 
         plannedCount += 1;
       } catch (candidateError) {
-        console.error('Failed to plan notification for candidate', candidate.user_id, candidateError);
+        console.error(
+          'Failed to plan notification for candidate',
+          candidate.user_id,
+          candidateError,
+        );
       }
     }
 
