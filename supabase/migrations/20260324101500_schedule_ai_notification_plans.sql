@@ -176,6 +176,14 @@ as $$
           to_jsonb(u)
           - 'notification_score'
           - 'notification_score_breakdown'
+          - 'score_plans_completed_recently'
+          - 'score_active_plans'
+          - 'score_max_days_completed'
+          - 'score_activity_recency'
+          - 'score_abandoned_plans'
+          - 'score_social_isolation'
+          - 'score_church_connection'
+          - 'score_seen_recency'
         ),
         'notification_score', u.notification_score,
         'notification_score_breakdown', coalesce(u.notification_score_breakdown, '{}'::jsonb),
