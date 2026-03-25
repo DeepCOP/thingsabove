@@ -1,4 +1,5 @@
 import { useSignUpUser } from '@/src/hooks/useProfile';
+import FormRestrictionText from '@/src/components/FormRestrictionText';
 import { Ionicons } from '@expo/vector-icons';
 import { Input } from '@rneui/themed';
 import { useRouter } from 'expo-router';
@@ -27,6 +28,7 @@ export default function SignUp() {
   const colorScheme = useColorScheme();
   const MIN_NAME_LENGTH = 2;
   const MAX_NAME_LENGTH = 50;
+  const MIN_PASSWORD_LENGTH = 6;
 
   const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   const signUpWithEmail = useSignUpUser();
@@ -40,11 +42,15 @@ export default function SignUp() {
     trimmedFirstName.length >= MIN_NAME_LENGTH && trimmedFirstName.length <= MAX_NAME_LENGTH;
   const isLastNameValid =
     trimmedLastName.length >= MIN_NAME_LENGTH && trimmedLastName.length <= MAX_NAME_LENGTH;
+  const isPasswordValid = password.length >= MIN_PASSWORD_LENGTH;
+  const nameRestrictionText = `Required. ${MIN_NAME_LENGTH}-${MAX_NAME_LENGTH} characters.`;
+  const passwordRestrictionText = `Required. At least ${MIN_PASSWORD_LENGTH} characters.`;
 
   const isDisabled =
     !trimmedEmail ||
     !password ||
     !confirmPassword ||
+    !isPasswordValid ||
     password !== confirmPassword ||
     !isEmailValid ||
     !isFirstNameValid ||
@@ -65,6 +71,14 @@ export default function SignUp() {
       Alert.alert(
         'Invalid name',
         `First and last name must be between ${MIN_NAME_LENGTH} and ${MAX_NAME_LENGTH} characters.`,
+      );
+      return;
+    }
+
+    if (!isPasswordValid) {
+      Alert.alert(
+        'Invalid password',
+        `Password must be at least ${MIN_PASSWORD_LENGTH} characters.`,
       );
       return;
     }
@@ -110,17 +124,29 @@ export default function SignUp() {
             value={firstName}
             onChangeText={setFirstName}
             maxLength={MAX_NAME_LENGTH}
+            errorMessage={
+              firstName && !isFirstNameValid
+                ? `First name must be ${MIN_NAME_LENGTH}-${MAX_NAME_LENGTH} characters.`
+                : ''
+            }
             style={{ color: colorScheme === 'dark' ? '#F5F5F5' : '#424242' }}
             placeholderTextColor={colorScheme === 'dark' ? '#F5F5F5' : '#424242'}
           />
+          <FormRestrictionText className="-mt-4 mb-4">{nameRestrictionText}</FormRestrictionText>
           <Input
             label="Last Name"
             value={lastName}
             onChangeText={setLastName}
             maxLength={MAX_NAME_LENGTH}
+            errorMessage={
+              lastName && !isLastNameValid
+                ? `Last name must be ${MIN_NAME_LENGTH}-${MAX_NAME_LENGTH} characters.`
+                : ''
+            }
             style={{ color: colorScheme === 'dark' ? '#F5F5F5' : '#424242' }}
             placeholderTextColor={colorScheme === 'dark' ? '#F5F5F5' : '#424242'}
           />
+          <FormRestrictionText className="-mt-4 mb-4">{nameRestrictionText}</FormRestrictionText>
 
           <Input
             label="Email"
@@ -133,6 +159,9 @@ export default function SignUp() {
             style={{ color: colorScheme === 'dark' ? '#F5F5F5' : '#424242' }}
             placeholderTextColor={colorScheme === 'dark' ? '#F5F5F5' : '#424242'}
           />
+          <FormRestrictionText className="-mt-4 mb-4">
+            Required. Use a valid email address.
+          </FormRestrictionText>
           <Input
             label="Password"
             secureTextEntry={!showPassword}
@@ -140,6 +169,11 @@ export default function SignUp() {
             onChangeText={setPassword}
             autoCapitalize="none"
             autoCorrect={false}
+            errorMessage={
+              password && !isPasswordValid
+                ? `Password must be at least ${MIN_PASSWORD_LENGTH} characters.`
+                : ''
+            }
             style={{ color: colorScheme === 'dark' ? '#F5F5F5' : '#424242' }}
             placeholderTextColor={colorScheme === 'dark' ? '#F5F5F5' : '#424242'}
             rightIcon={
@@ -152,6 +186,9 @@ export default function SignUp() {
               </TouchableOpacity>
             }
           />
+          <FormRestrictionText className="-mt-4 mb-4">
+            {passwordRestrictionText}
+          </FormRestrictionText>
           <Input
             label="Confirm Password"
             secureTextEntry={!showConfirmPassword}
@@ -174,6 +211,9 @@ export default function SignUp() {
               </TouchableOpacity>
             }
           />
+          <FormRestrictionText className="-mt-4 mb-4">
+            Required. Must match the password above.
+          </FormRestrictionText>
 
           <TouchableOpacity
             className={`mt-4 rounded-lg p-3 ${
