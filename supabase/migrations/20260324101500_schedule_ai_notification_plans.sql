@@ -160,7 +160,7 @@ as $$
       from public.ai_triggers t
       where t.created_at > now() - interval '30 days'
     ) ranked
-    where ranked.rn <= 5
+    where ranked.rn <= 15
     group by ranked.user_id
   )
   select
