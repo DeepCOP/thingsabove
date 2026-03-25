@@ -34,13 +34,13 @@ export default function DevotionalDetail() {
   const myPlanProgressPlansQuery = useMyPlanProgressPlans(session?.user.id);
   const planQuery = useFetchDevotionalPlanById(planId);
   const plan = planQuery.data;
-  const currentPlanProgress = useMemo(
+  const currentSoloPlanProgress = useMemo(
     () =>
       (myPlanProgressPlansQuery.data ?? []).find((userPlan) => {
         const totalDays = typeof userPlan.total_days === 'number' ? userPlan.total_days : 0;
         const completedDays = userPlan.completed_days ?? 0;
 
-        return userPlan.id === planId && completedDays < totalDays;
+        return userPlan.id === planId && !userPlan.group_id && completedDays < totalDays;
       }),
     [myPlanProgressPlansQuery.data, planId],
   );
@@ -105,11 +105,11 @@ export default function DevotionalDetail() {
         plan={planQuery.data}
         reportSheetRef={reportSheetRef}
         isLoading={planQuery.isLoading || myPlanProgressPlansQuery.isLoading}
-        hasActivePlanProgress={!!currentPlanProgress?.progress_id}
+        hasActiveSoloPlanProgress={!!currentSoloPlanProgress?.progress_id}
         onContinuePress={() => {
-          if (!currentPlanProgress?.progress_id) return;
+          if (!currentSoloPlanProgress?.progress_id) return;
 
-          router.push(`/plan_progress/${currentPlanProgress.progress_id}`);
+          router.push(`/plan_progress/${currentSoloPlanProgress.progress_id}`);
         }}
         isSaved={isSaved}
         onToggleSave={() => {

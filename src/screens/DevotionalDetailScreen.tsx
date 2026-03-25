@@ -22,7 +22,7 @@ type Props = {
   reportSheetRef: React.RefObject<BottomSheet | null>;
   plan: any;
   isLoading: boolean;
-  hasActivePlanProgress: boolean;
+  hasActiveSoloPlanProgress: boolean;
   onStartPress: (mode: 'solo' | 'group') => void;
   onContinuePress: () => void;
   isSaved: boolean;
@@ -36,7 +36,7 @@ export default function DevotionalDetailScreen({
   reportSheetRef,
   plan,
   isLoading,
-  hasActivePlanProgress,
+  hasActiveSoloPlanProgress,
   onStartPress,
   onContinuePress,
   isSaved,
@@ -155,7 +155,7 @@ export default function DevotionalDetailScreen({
       <StartPlanBottomSheet
         ref={bottomSheetRef}
         plan={plan}
-        hasActivePlanProgress={hasActivePlanProgress}
+        hasActiveSoloPlanProgress={hasActiveSoloPlanProgress}
         onContinuePress={onContinuePress}
         onStartPress={onStartPress}
       />

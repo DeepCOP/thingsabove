@@ -6,17 +6,17 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 type Props = {
   plan: any;
-  hasActivePlanProgress?: boolean;
+  hasActiveSoloPlanProgress?: boolean;
   onStartPress: (mode: 'solo' | 'group') => void;
   onContinuePress?: () => void;
 };
 
 const StartPlanBottomSheet = forwardRef<BottomSheet, Props>(
-  ({ plan, hasActivePlanProgress = false, onStartPress, onContinuePress }, ref) => {
+  ({ plan, hasActiveSoloPlanProgress = false, onStartPress, onContinuePress }, ref) => {
     const colorScheme = useColorScheme();
     const insets = useSafeAreaInsets();
     const [showSoloOptions, setShowSoloOptions] = useState(false);
-    const isShowingSoloOptions = hasActivePlanProgress && showSoloOptions;
+    const isShowingSoloOptions = hasActiveSoloPlanProgress && showSoloOptions;
 
     return (
       <BottomSheet
@@ -47,9 +47,7 @@ const StartPlanBottomSheet = forwardRef<BottomSheet, Props>(
           <PlanCoverImage uri={plan.cover_image} className="w-28 h-28 rounded-2xl mb-3" />
 
           <Text className="text-2xl text-center font-bold dark:text-white mb-4">
-            {isShowingSoloOptions
-              ? 'You already have a plan in progress'
-              : 'How do you want to read?'}
+            {isShowingSoloOptions ? 'You already have a solo plan' : 'How do you want to read?'}
           </Text>
 
           <View className="gap-3 w-full px-4">
@@ -83,7 +81,7 @@ const StartPlanBottomSheet = forwardRef<BottomSheet, Props>(
               <>
                 <TouchableOpacity
                   onPress={() => {
-                    if (hasActivePlanProgress) {
+                    if (hasActiveSoloPlanProgress) {
                       setShowSoloOptions(true);
                       return;
                     }
