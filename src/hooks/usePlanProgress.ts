@@ -1,9 +1,8 @@
 import {
-  fetchMyPlanProgressPlans,
   fetchGroupPlanProgressList,
+  fetchMyPlanProgressPlans,
   fetchPlanDays,
   fetchPlanProgress,
-  fetchUserPlanProgressList,
 } from '@/src/api/queries';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { startPlanProgress } from '../api/mutations';
@@ -26,13 +25,8 @@ export function useStartPlanProgress() {
   return useMutation({
     mutationKey: ['start_plan'],
     mutationFn: startPlanProgress,
-    onSuccess: (progressId, variables) => {
-      queryClient.invalidateQueries({
-        queryKey: ['plan_progress', progressId, variables.user_id],
-      });
-      queryClient.invalidateQueries({
-        queryKey: ['user_plans_progresses', variables.user_id],
-      });
+    onSuccess: (_progress, variables) => {
+      queryClient.setQueryData(['has_user_plan_progress', variables.user_id], true);
       queryClient.invalidateQueries({
         queryKey: ['my_plan_progress_plans', variables.user_id],
       });
@@ -47,15 +41,6 @@ export const useMyPlanProgressPlans = (user_id: string | undefined) => {
     queryFn: async () => fetchMyPlanProgressPlans(),
   });
   return myPlanProgressPlansQuery;
-};
-
-export const useUserPlanProgressList = (user_id: string | undefined) => {
-  const userPlanProgressQuery = useQuery({
-    queryKey: ['user_plans_progresses', user_id],
-    enabled: !!user_id,
-    queryFn: async () => fetchUserPlanProgressList({ user_id: user_id! }),
-  });
-  return userPlanProgressQuery;
 };
 
 export const useGroupPlanProgressList = (userIds: string[], groupId: string) => {

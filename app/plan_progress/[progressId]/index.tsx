@@ -103,13 +103,7 @@ export default function PlanProgress() {
       qc.setQueriesData({ queryKey: ['discover_plans'] }, (old: unknown) =>
         incrementPlanCompletionsInInfiniteData(old, planId),
       );
-      qc.setQueriesData({ queryKey: ['search_plans'] }, (old: unknown) =>
-        incrementPlanCompletionsInInfiniteData(old, planId),
-      );
-      qc.setQueriesData({ queryKey: ['user_plans'] }, (old: unknown) => {
-        if (!Array.isArray(old)) return old;
-        return old.map((item) => incrementPlanCompletions(item, planId));
-      });
+      void qc.invalidateQueries({ queryKey: ['search_plans'] });
       void qc.invalidateQueries({ queryKey: planKey });
     }
 

@@ -26,19 +26,8 @@ export function useAcceptPlanInvite(
     mutationKey: ['accept_plan_invitation'],
     mutationFn: async ({ startDate }: { startDate: string }) =>
       await acceptPlanGroupInvite({ group_id, plan_id, startDate }),
-    onSuccess: (progressId) => {
-      if (progressId) {
-        qc.invalidateQueries({
-          queryKey: ['plan_progress', progressId, user_id],
-        });
-      }
-      qc.invalidateQueries({
-        queryKey: ['plan_group_members', group_id],
-      });
-      qc.invalidateQueries({
-        queryKey: ['plan_group', group_id],
-      });
-      qc.invalidateQueries({ queryKey: ['user_plans_progresses', user_id] });
+    onSuccess: () => {
+      qc.setQueryData(['has_user_plan_progress', user_id], true);
       qc.invalidateQueries({ queryKey: ['my_plan_progress_plans', user_id] });
     },
     onError: (e) => {},

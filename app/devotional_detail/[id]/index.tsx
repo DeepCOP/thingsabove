@@ -1,9 +1,9 @@
 import { useFetchDevotionalPlanById } from '@/src/hooks/useDevotionalPlans';
-import { useStartPlanProgress, useUserPlanProgressList } from '@/src/hooks/usePlanProgress';
+import { useMyPlanProgressPlans, useStartPlanProgress } from '@/src/hooks/usePlanProgress';
 import { useSavedPlans, useToggleSavedPlan } from '@/src/hooks/useSavedPlans';
 import DevotionalDetailScreen from '@/src/screens/DevotionalDetailScreen';
 import { useAuth } from '@/src/state/AuthContext';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import BottomSheet from '@gorhom/bottom-sheet';
 import { useMemo, useRef } from 'react';
 
@@ -31,14 +31,19 @@ export default function DevotionalDetail() {
   const router = useRouter();
   const colorScheme = useColorScheme();
   const startPlanProgressMutation = useStartPlanProgress();
-  const userPlanProgressQuery = useUserPlanProgressList(session?.user.id);
-  const userPlanProgress = userPlanProgressQuery.data || [];
-  const existingSoloProgress = userPlanProgress.find(
-    (progress) => progress.plan_id === planId && !progress.group_id,
-  );
-
+  const myPlanProgressPlansQuery = useMyPlanProgressPlans(session?.user.id);
   const planQuery = useFetchDevotionalPlanById(planId);
   const plan = planQuery.data;
+  const currentSoloPlanProgress = useMemo(
+    () =>
+      (myPlanProgressPlansQuery.data ?? []).find((userPlan) => {
+        const totalDays = typeof userPlan.total_days === 'number' ? userPlan.total_days : 0;
+        const completedDays = userPlan.completed_days ?? 0;
+
+        return userPlan.id === planId && !userPlan.group_id && completedDays < totalDays;
+      }),
+    [myPlanProgressPlansQuery.data, planId],
+  );
   const currentReaction = {
     helpful_count: plan?.helpful_count ?? 0,
     user_reaction: plan?.user_reaction === 'helpful' ? ('helpful' as const) : null,
@@ -99,9 +104,13 @@ export default function DevotionalDetail() {
         currentReaction={currentReaction}
         plan={planQuery.data}
         reportSheetRef={reportSheetRef}
-        isLoading={planQuery.isLoading || userPlanProgressQuery.isLoading}
-        hasUserPlans={userPlanProgress.length > 0}
-        onMyPlansPress={() => router.push('/PlansTab')}
+        isLoading={planQuery.isLoading || myPlanProgressPlansQuery.isLoading}
+        hasActiveSoloPlanProgress={!!currentSoloPlanProgress?.progress_id}
+        onContinuePress={() => {
+          if (!currentSoloPlanProgress?.progress_id) return;
+
+          router.push(`/plan_progress/${currentSoloPlanProgress.progress_id}`);
+        }}
         isSaved={isSaved}
         onToggleSave={() => {
           if (isGuest) {
@@ -121,15 +130,10 @@ export default function DevotionalDetail() {
             return;
           }
 
-          if (existingSoloProgress) {
-            router.push(`/plan_progress/${existingSoloProgress.id}`);
-            return;
-          }
-
           startPlanProgressMutation.mutate(
             { plan_id: planId, user_id: session?.user.id! },
             {
-              onSuccess: (progressId) => router.push(`/plan_progress/${progressId}`),
+              onSuccess: (progress) => router.push(`/plan_progress/${progress.id}`),
             },
           );
         }}

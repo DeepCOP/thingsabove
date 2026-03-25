@@ -70,10 +70,11 @@ export default function PlanInvitation() {
             startDate: group?.start_date ?? dayjs().utc().toISOString(),
           },
           {
-            onSuccess: (progressId) => {
+            onSuccess: (progress) => {
+              if (!progress) return;
               router.replace({
                 pathname: '/plan_progress/[progressId]',
-                params: { progressId: progressId as string },
+                params: { progressId: progress.id },
               });
             },
           },

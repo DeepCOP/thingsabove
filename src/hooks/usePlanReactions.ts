@@ -68,15 +68,11 @@ function resolveBaselineReaction({
   previousReaction,
   previousPlan,
   previousPlans,
-  previousUserPlans,
-  previousSearchPlans,
   planId,
 }: {
   previousReaction: PlanReactionCache | undefined;
   previousPlan: unknown;
   previousPlans: [readonly unknown[], unknown][];
-  previousUserPlans: [readonly unknown[], unknown][];
-  previousSearchPlans: [readonly unknown[], unknown][];
   planId: string;
 }): PlanReactionCache {
   if (previousReaction) return previousReaction;
@@ -87,19 +83,6 @@ function resolveBaselineReaction({
   for (const [, data] of previousPlans) {
     const fromPlans = findReactionInInfiniteData(data, planId);
     if (fromPlans) return fromPlans;
-  }
-
-  for (const [, data] of previousSearchPlans) {
-    const fromSearch = findReactionInInfiniteData(data, planId);
-    if (fromSearch) return fromSearch;
-  }
-
-  for (const [, data] of previousUserPlans) {
-    if (!Array.isArray(data)) continue;
-    for (const item of data) {
-      const fromUserPlans = readPlanReaction(item, planId);
-      if (fromUserPlans) return fromUserPlans;
-    }
   }
 
   return { helpful_count: 0, user_reaction: null };
@@ -147,14 +130,10 @@ function findRatingInInfiniteData(data: unknown, planId: string): PlanRatingCach
 function resolveBaselineRating({
   previousPlan,
   previousPlans,
-  previousUserPlans,
-  previousSearchPlans,
   planId,
 }: {
   previousPlan: unknown;
   previousPlans: [readonly unknown[], unknown][];
-  previousUserPlans: [readonly unknown[], unknown][];
-  previousSearchPlans: [readonly unknown[], unknown][];
   planId: string;
 }): PlanRatingCache {
   const fromPlan = readPlanRating(previousPlan, planId);
@@ -163,19 +142,6 @@ function resolveBaselineRating({
   for (const [, data] of previousPlans) {
     const fromPlans = findRatingInInfiniteData(data, planId);
     if (fromPlans) return fromPlans;
-  }
-
-  for (const [, data] of previousSearchPlans) {
-    const fromSearch = findRatingInInfiniteData(data, planId);
-    if (fromSearch) return fromSearch;
-  }
-
-  for (const [, data] of previousUserPlans) {
-    if (!Array.isArray(data)) continue;
-    for (const item of data) {
-      const fromUserPlans = readPlanRating(item, planId);
-      if (fromUserPlans) return fromUserPlans;
-    }
   }
 
   return { rating_avg: 0, rating_count: 0 };
@@ -317,22 +283,16 @@ export function useTogglePlanReaction(planId: string, userId: string) {
         qc.cancelQueries({ queryKey: reactionKey }),
         qc.cancelQueries({ queryKey: planKey }),
         qc.cancelQueries({ queryKey: ['discover_plans'] }),
-        qc.cancelQueries({ queryKey: ['user_plans'] }),
-        qc.cancelQueries({ queryKey: ['search_plans'] }),
       ]);
 
       const previousReaction = qc.getQueryData<PlanReactionCache>(reactionKey);
       const previousPlan = qc.getQueryData(planKey);
       const previousPlans = qc.getQueriesData({ queryKey: ['discover_plans'] });
-      const previousUserPlans = qc.getQueriesData({ queryKey: ['user_plans'] });
-      const previousSearchPlans = qc.getQueriesData({ queryKey: ['search_plans'] });
 
       const baseline = resolveBaselineReaction({
         previousReaction,
         previousPlan,
         previousPlans,
-        previousUserPlans,
-        previousSearchPlans,
         planId,
       });
       const wasHelpful = baseline.user_reaction === 'helpful';
@@ -344,25 +304,18 @@ export function useTogglePlanReaction(planId: string, userId: string) {
         helpful_count: nextCount,
         user_reaction: nextReaction,
       });
-      qc.setQueryData(planKey, (old) => updatePlanItemReaction(old, planId, delta, nextReaction));
+      qc.setQueryData(planKey, (old: unknown) =>
+        updatePlanItemReaction(old, planId, delta, nextReaction),
+      );
 
-      qc.setQueriesData({ queryKey: ['discover_plans'] }, (old) =>
+      qc.setQueriesData({ queryKey: ['discover_plans'] }, (old: unknown) =>
         updateInfinitePlanPages(old, planId, delta, nextReaction),
       );
-      qc.setQueriesData({ queryKey: ['search_plans'] }, (old) =>
-        updateInfinitePlanPages(old, planId, delta, nextReaction),
-      );
-      qc.setQueriesData({ queryKey: ['user_plans'] }, (old) => {
-        if (!Array.isArray(old)) return old;
-        return old.map((item) => updatePlanItemReaction(item, planId, delta, nextReaction));
-      });
 
       return {
         previousReaction,
         previousPlan,
         previousPlans,
-        previousUserPlans,
-        previousSearchPlans,
       };
     },
 
@@ -383,17 +336,13 @@ export function useTogglePlanReaction(planId: string, userId: string) {
       context.previousPlans.forEach(([key, data]) => {
         qc.setQueryData(key, data);
       });
-      context.previousUserPlans.forEach(([key, data]) => {
-        qc.setQueryData(key, data);
-      });
-      context.previousSearchPlans.forEach(([key, data]) => {
-        qc.setQueryData(key, data);
-      });
     },
 
     onSettled: () => {
       qc.invalidateQueries({ queryKey: reactionKey });
       qc.invalidateQueries({ queryKey: planKey });
+      qc.invalidateQueries({ queryKey: ['search_plans'] });
+      qc.invalidateQueries({ queryKey: ['my_plan_progress_plans', userId] });
     },
   });
 }
@@ -430,21 +379,15 @@ export function usePlanRating(planId: string | undefined, userId: string | undef
         qc.cancelQueries({ queryKey: ratingKey }),
         qc.cancelQueries({ queryKey: planKey }),
         qc.cancelQueries({ queryKey: ['discover_plans'] }),
-        qc.cancelQueries({ queryKey: ['user_plans'] }),
-        qc.cancelQueries({ queryKey: ['search_plans'] }),
       ]);
 
       const previousRating = qc.getQueryData<number | null>(ratingKey);
       const previousPlan = qc.getQueryData(planKey);
       const previousPlans = qc.getQueriesData({ queryKey: ['discover_plans'] });
-      const previousUserPlans = qc.getQueriesData({ queryKey: ['user_plans'] });
-      const previousSearchPlans = qc.getQueriesData({ queryKey: ['search_plans'] });
 
       const baseline = resolveBaselineRating({
         previousPlan,
         previousPlans,
-        previousUserPlans,
-        previousSearchPlans,
         planId: resolvedPlanId,
       });
       const nextPlanRating = getNextPlanRating({
@@ -455,25 +398,18 @@ export function usePlanRating(planId: string | undefined, userId: string | undef
       });
 
       qc.setQueryData<number | null>(ratingKey, nextRating);
-      qc.setQueryData(planKey, (old) => updatePlanItemRating(old, resolvedPlanId, nextPlanRating));
+      qc.setQueryData(planKey, (old: unknown) =>
+        updatePlanItemRating(old, resolvedPlanId, nextPlanRating),
+      );
 
-      qc.setQueriesData({ queryKey: ['discover_plans'] }, (old) =>
+      qc.setQueriesData({ queryKey: ['discover_plans'] }, (old: unknown) =>
         updateInfinitePlanPagesRating(old, resolvedPlanId, nextPlanRating),
       );
-      qc.setQueriesData({ queryKey: ['search_plans'] }, (old) =>
-        updateInfinitePlanPagesRating(old, resolvedPlanId, nextPlanRating),
-      );
-      qc.setQueriesData({ queryKey: ['user_plans'] }, (old) => {
-        if (!Array.isArray(old)) return old;
-        return old.map((item) => updatePlanItemRating(item, resolvedPlanId, nextPlanRating));
-      });
 
       return {
         previousRating,
         previousPlan,
         previousPlans,
-        previousUserPlans,
-        previousSearchPlans,
       };
     },
 
@@ -494,17 +430,13 @@ export function usePlanRating(planId: string | undefined, userId: string | undef
       context.previousPlans.forEach(([key, data]) => {
         qc.setQueryData(key, data);
       });
-      context.previousUserPlans.forEach(([key, data]) => {
-        qc.setQueryData(key, data);
-      });
-      context.previousSearchPlans.forEach(([key, data]) => {
-        qc.setQueryData(key, data);
-      });
     },
 
     onSettled: () => {
       qc.invalidateQueries({ queryKey: ratingKey });
       qc.invalidateQueries({ queryKey: planKey });
+      qc.invalidateQueries({ queryKey: ['search_plans'] });
+      qc.invalidateQueries({ queryKey: ['my_plan_progress_plans', userId] });
     },
   });
 

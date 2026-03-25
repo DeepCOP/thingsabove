@@ -13,6 +13,8 @@ returns table (
   updated_at timestamptz,
   helpful_count bigint,
   user_reaction text,
+  rating_avg numeric,
+  rating_count int,
   saved_at timestamptz
 )
 language sql
@@ -33,6 +35,8 @@ as $$
     dpv.updated_at,
     dpv.helpful_count,
     dpv.user_reaction,
+    dpv.rating_avg,
+    dpv.rating_count,
     sp.created_at as saved_at
   from public.saved_plans sp
   join public.devotional_plans_view dpv
