@@ -298,7 +298,7 @@ export default function AboutDetailsForm({
         maxLength={MAX_CHURCH_WEBSITE_URL_LENGTH}
       />
       <FormRestrictionText className="-mt-4 mb-4">
-        Up to {MAX_CHURCH_WEBSITE_URL_LENGTH} characters. We'll add https:// if needed.
+        Up to {MAX_CHURCH_WEBSITE_URL_LENGTH} characters. We&apos;ll add https:// if needed.
       </FormRestrictionText>
     </View>
   );
