@@ -5,50 +5,31 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 const MODEL_NAME = 'gemini-2.5-flash';
 const PLANNER_LIMIT = 12;
 const PLANNER_REQUEST_DELAY_MS = 1200;
-const ALLOWED_NOTIFICATION_TYPES = [
-  'plan_completion',
-  'welcome_back',
-  'inactivity_nudge',
-  'friend_invite_nudge',
-  'streak_encouragement',
-  'church_connection_nudge',
-  'social_prompt',
-  'abandoned_plan',
-  'service_prompt',
-  'prayer_prompt',
-  'gospel_prompt',
-] as const;
-
-const NOTIFICATION_PRIORITY: Record<(typeof ALLOWED_NOTIFICATION_TYPES)[number], number> = {
-  plan_completion: 1,
-  welcome_back: 2,
-  inactivity_nudge: 3,
-  friend_invite_nudge: 4,
-  streak_encouragement: 5,
-  church_connection_nudge: 6,
-  social_prompt: 7,
-  abandoned_plan: 8,
-  service_prompt: 9,
-  prayer_prompt: 10,
-  gospel_prompt: 11,
-};
 
 const SYSTEM_PROMPT = `
 You are planning one occasional push notification for a Christian devotional app user.
 
+Mission:
+- The whole goal of using AI here is to help users pursue God's kingdom in daily life and to keep them meaningfully engaged with the app over time.
+- Favor notifications that are spiritually faithful, genuinely helpful, and likely to draw the user back into prayer, Scripture, fellowship, service, or devotional practice.
+- Never optimize engagement in a manipulative, fear-based, or merely attention-seeking way.
+
 Your job is to decide:
 - whether a notification should be sent in the next 48 hours
-- which notification type best fits the user
+- what the notification title should say
 - when to schedule it in the user's local time
 - what the notification message should say
-
-Allowed notification types:
-${ALLOWED_NOTIFICATION_TYPES.map((type) => `- ${type}`).join('\n')}
 
 Scheduling rules:
 - Return day_offset as 0, 1, or 2 only
 - Return local_hour as an integer from 8 through 20 only
 - Prefer natural waking hours and avoid late-night scheduling
+
+Title rules:
+- 2-5 words only
+- short, natural, and warm
+- avoid clickbait, urgency, or shame
+- keep it concise enough for a push title
 
 Message rules:
 - 1-2 sentences only
@@ -61,12 +42,12 @@ Message rules:
 Decision rules:
 - If no occasional notification should be planned right now, return should_send: false
 - Use the user's recent notification history to avoid repetition
-- Choose the single best fitting notification type if you do send one
+- When there is a tradeoff, prefer the option that best serves spiritual good while also encouraging a meaningful return to the app
 
 Return JSON only with this shape:
 {
   "should_send": true,
-  "notification_type": "plan_completion",
+  "title": "Short title here",
   "message": "Short message here.",
   "schedule": {
     "day_offset": 1,
@@ -82,12 +63,10 @@ If should_send is false, return:
 }
 `;
 
-type NotificationType = (typeof ALLOWED_NOTIFICATION_TYPES)[number];
-
 type PlannerDecision = {
   should_send: boolean;
   reason: string;
-  notification_type?: NotificationType;
+  title?: string;
   message?: string;
   schedule?: {
     day_offset: number;
@@ -187,12 +166,7 @@ function normalizePlannerDecision(value: unknown): PlannerDecision | null {
     };
   }
 
-  const notificationType =
-    typeof record.notification_type === 'string' &&
-    ALLOWED_NOTIFICATION_TYPES.includes(record.notification_type as NotificationType)
-      ? (record.notification_type as NotificationType)
-      : null;
-
+  const title = typeof record.title === 'string' ? record.title.replace(/\s+/g, ' ').trim() : '';
   const message =
     typeof record.message === 'string' ? record.message.replace(/\s+/g, ' ').trim() : '';
 
@@ -206,7 +180,7 @@ function normalizePlannerDecision(value: unknown): PlannerDecision | null {
   const localHour =
     schedule && Number.isInteger(schedule.local_hour) ? Number(schedule.local_hour) : Number.NaN;
 
-  if (!notificationType) return null;
+  if (!title || title.length < 4 || title.length > 60) return null;
   if (!message || message.length < 12 || message.length > 240) return null;
   if (!Number.isInteger(dayOffset) || dayOffset < 0 || dayOffset > 2) return null;
   if (!Number.isInteger(localHour) || localHour < 8 || localHour > 20) return null;
@@ -214,7 +188,7 @@ function normalizePlannerDecision(value: unknown): PlannerDecision | null {
   return {
     should_send: true,
     reason,
-    notification_type: notificationType,
+    title,
     message,
     schedule: {
       day_offset: dayOffset,
@@ -304,12 +278,7 @@ ${prompt}
           continue;
         }
 
-        if (
-          !decision.should_send ||
-          !decision.notification_type ||
-          !decision.message ||
-          !decision.schedule
-        ) {
+        if (!decision.should_send || !decision.title || !decision.message || !decision.schedule) {
           continue;
         }
 
@@ -330,11 +299,10 @@ ${prompt}
         const nowIso = new Date().toISOString();
         const { error: insertError } = await supabase.from('ai_triggers').insert({
           user_id: candidate.user_id,
-          trigger_type: decision.notification_type,
           trigger_reason: decision.reason,
           planner_reason: decision.reason,
-          priority: NOTIFICATION_PRIORITY[decision.notification_type],
           context: plannerContext,
+          generated_title: decision.title,
           generated_message: decision.message,
           scheduled_for: scheduledFor,
           planner_payload: {

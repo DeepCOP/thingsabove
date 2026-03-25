@@ -1,8 +1,20 @@
 alter table public.ai_triggers
+  add column if not exists generated_title text,
   add column if not exists scheduled_for timestamptz,
   add column if not exists planner_reason text,
   add column if not exists planner_payload jsonb not null default '{}'::jsonb,
   add column if not exists planning_model text;
+
+drop function if exists public.generate_ai_triggers();
+
+alter table public.ai_triggers
+  drop constraint if exists ai_triggers_trigger_type_check;
+
+alter table public.ai_triggers
+  drop constraint if exists ai_triggers_user_id_trigger_type_created_at_key;
+
+alter table public.ai_triggers
+  drop column if exists trigger_type;
 
 update public.ai_triggers
 set scheduled_for = created_at
@@ -139,7 +151,6 @@ as $$
       jsonb_agg(
         jsonb_strip_nulls(
           jsonb_build_object(
-            'trigger_type', ranked.trigger_type,
             'trigger_reason', ranked.trigger_reason,
             'planner_reason', ranked.planner_reason,
             'scheduled_for', ranked.scheduled_for,
