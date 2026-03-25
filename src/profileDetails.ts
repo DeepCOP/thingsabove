@@ -11,8 +11,8 @@ export const MAX_BIO_LENGTH = 280;
 export const MAX_CHURCH_NAME_LENGTH = 100;
 export const MAX_CHURCH_ADDRESS_LENGTH = 200;
 export const MAX_CHURCH_WEBSITE_URL_LENGTH = 255;
-const MIN_YEAR = 1900;
-const CURRENT_YEAR = new Date().getFullYear();
+export const MIN_YEAR = 1900;
+export const CURRENT_YEAR = new Date().getFullYear();
 
 export type ProfileDetailsFormValues = {
   firstName: string;
