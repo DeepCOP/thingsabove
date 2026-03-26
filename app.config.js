@@ -66,9 +66,13 @@ export default ({ config }) => ({
         },
       ],
       'expo-font',
-      'expo-sqlite',
       'expo-secure-store',
-      'expo-notifications',
+      [
+        'expo-notifications',
+        {
+          icon: './assets/images/notification-icon.png',
+        },
+      ],
     ],
 
     experiments: {
