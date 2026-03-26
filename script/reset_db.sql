@@ -2,9 +2,6 @@ do $$
 declare
   keep_tables constant text[] := array[
     'profiles',
-    'devotional_plans',
-    'devotional_days',
-    'scripture_references',
     'churches'
   ];
   tables_to_truncate text;
