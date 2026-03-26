@@ -1,3 +1,5 @@
+DROP VIEW IF EXISTS public.user_behavior_snapshot;
+
 create or replace view public.user_behavior_snapshot as
 with friend_stats as (
   select
