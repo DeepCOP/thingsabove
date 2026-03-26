@@ -2,98 +2,210 @@ import { serve } from 'https://deno.land/std/http/server.ts';
 import { GoogleGenerativeAI } from 'https://esm.sh/@google/generative-ai';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
+const MODEL_NAME = 'gemini-2.5-flash';
+const PLANNER_LIMIT = 12;
+const PLANNER_REQUEST_DELAY_MS = 1200;
+
 const SYSTEM_PROMPT = `
-You write very short occasional spiritual messages (1–2 sentences).
+You are planning one occasional push notification for a Christian devotional app user.
 
-These messages are not reminders, commands, or engagement pings.
-They are words of spiritual companionship — like an older brother or sister
-who knows when to speak and when to remain quiet.
+Mission:
+- The whole goal of using AI here is to help users pursue God's kingdom in daily life and to keep them meaningfully engaged with the app over time.
+- Favor notifications that are spiritually faithful, genuinely helpful, and likely to draw the user back into prayer, Scripture, fellowship, service, or devotional practice.
+- Never optimize engagement in a manipulative, fear-based, or merely attention-seeking way.
 
-Your purpose is to help the person gently pursue God’s reign and righteousness.
+Your job is to decide:
+- whether a notification should be sent in the next 48 hours
+- what the notification title should say
+- when to schedule it in the user's local time
+- what the notification message should say
 
-Tone rules:
-- Always invitational, never commanding
-- Never guilt-based or corrective
-- Never explain why you know something
-- Never reference app usage, activity, or behavior explicitly
-- Warm, human, calm, and personal
+Scheduling rules:
+- Return day_offset as 0, 1, or 2 only
+- Return local_hour as an integer from 8 through 20 only
+- Prefer natural waking hours and avoid late-night scheduling
 
-Content rules:
-- Oriented toward Scripture, prayer, devotion, fellowship, generosity,
-  discipleship, or faithful daily obedience
-- Speak as encouragement, not instruction
-- No pressure, no obligation language
-- Assume goodwill and desire for God
+Title rules:
+- 2-5 words only
+- short, natural, and warm
+- avoid clickbait, urgency, or shame
+- keep it concise enough for a push title
 
-Style rules:
-- 1–2 sentences only
-- Simple language
-- No emojis
-- No exclamation overload
-- No theological lectures
+Message rules:
+- 1-2 sentences only
+- warm, calm, personal, and invitational
+- never guilt-based, shaming, or corrective
+- never mention analytics, tracking, app usage, or data collection
+- keep it concise enough for a push notification
+- stay rooted in Scripture, prayer, fellowship, church life, generosity, witness, or faithful daily obedience
 
-The message should feel like it arrived at the right moment — and would be
-equally okay if the person chose not to act on it.
+Decision rules:
+- If no occasional notification should be planned right now, return should_send: false
+- Use the user's recent notification history to avoid repetition
+- When there is a tradeoff, prefer the option that best serves spiritual good while also encouraging a meaningful return to the app
+
+Return JSON only with this shape:
+{
+  "should_send": true,
+  "title": "Short title here",
+  "message": "Short message here.",
+  "schedule": {
+    "day_offset": 1,
+    "local_hour": 19
+  },
+  "reason": "Short internal explanation."
+}
+
+If should_send is false, return:
+{
+  "should_send": false,
+  "reason": "Short internal explanation."
+}
 `;
 
-function buildPrompt(triggerType: string, context: any, firstName: string) {
-  const contextBlock = `Context (JSON): ${JSON.stringify(context ?? {})}`;
+type PlannerDecision = {
+  should_send: boolean;
+  reason: string;
+  title?: string;
+  message?: string;
+  schedule?: {
+    day_offset: number;
+    local_hour: number;
+  };
+};
 
-  switch (triggerType) {
-    case 'plan_completion':
-      return `
-${firstName} has just completed a season of guided devotion.
-Offer a gentle word that honors faithfulness and invites continued attentiveness to God.
-${contextBlock}
-      `;
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-    case 'friend_invite_nudge':
-      return `
-${firstName} is walking faithfully but mostly alone.
-Offer a gentle invitation toward shared faith, framed as overflow, not obligation.
-${contextBlock}
-      `;
+function buildPlannerPrompt(firstName: string, timezone: string, context: unknown) {
+  const name = firstName.trim() || 'Friend';
 
-    case 'welcome_back':
-      return `
-${firstName} is returning after a long quiet season.
-Welcome them without reference to absence, guilt, or productivity.
-${contextBlock}
-      `;
+  return `
+Plan one occasional notification for ${name}.
+User timezone: ${timezone || 'UTC'}
 
-    case 'inactivity_nudge':
-      return `
-${firstName} is in a quieter spiritual season while still holding active commitments.
-Offer a gentle word that invites presence with God today.
-${contextBlock}
-      `;
+Planning context (JSON):
+${JSON.stringify(context ?? {}, null, 2)}
+`;
+}
 
-    case 'streak_encouragement':
-      return `
-${firstName} has been showing steady faithfulness recently.
-Offer a gentle word that affirms consistency and invites continued attentiveness to God.
-${contextBlock}
-      `;
+function buildPlannerContext(candidate: {
+  planning_context?: unknown;
+  bio?: string | null;
+  year_believed?: number | null;
+  year_baptized?: number | null;
+}) {
+  const planningContext =
+    candidate.planning_context && typeof candidate.planning_context === 'object'
+      ? (candidate.planning_context as Record<string, unknown>)
+      : {};
 
-    case 'abandoned_plan':
-      return `
-${firstName} has had a plan that went quiet for a while.
-Offer a gentle word that welcomes them forward without pressure or guilt.
-${contextBlock}
-      `;
+  return {
+    ...planningContext,
+    user_profile: {
+      bio: candidate.bio ?? null,
+      year_believed: candidate.year_believed ?? null,
+      year_baptized: candidate.year_baptized ?? null,
+    },
+  };
+}
 
-    case 'social_prompt':
-      return `
-${firstName} has shared faith connections available.
-Offer a gentle word that invites connection as a gift, not an obligation.
-${contextBlock}
-      `;
+function extractJsonObject(text: string) {
+  const start = text.indexOf('{');
+  if (start === -1) return null;
 
-    default:
-      return `
-Offer ${firstName} a short, gentle word that invites attentiveness to God’s kingdom today.
-${contextBlock}
-      `;
+  let depth = 0;
+  let inString = false;
+  let escaped = false;
+
+  for (let index = start; index < text.length; index += 1) {
+    const char = text[index];
+
+    if (inString) {
+      if (escaped) {
+        escaped = false;
+      } else if (char === '\\') {
+        escaped = true;
+      } else if (char === '"') {
+        inString = false;
+      }
+      continue;
+    }
+
+    if (char === '"') {
+      inString = true;
+      continue;
+    }
+
+    if (char === '{') depth += 1;
+    if (char === '}') depth -= 1;
+
+    if (depth === 0) {
+      return text.slice(start, index + 1);
+    }
+  }
+
+  return null;
+}
+
+function normalizePlannerDecision(value: unknown): PlannerDecision | null {
+  if (!value || typeof value !== 'object') return null;
+
+  const record = value as Record<string, unknown>;
+  const shouldSend = record.should_send === true;
+  const reason =
+    typeof record.reason === 'string' && record.reason.trim()
+      ? record.reason.trim().slice(0, 240)
+      : shouldSend
+        ? 'Planner chose a notification for this user.'
+        : 'Planner skipped this user for now.';
+
+  if (!shouldSend) {
+    return {
+      should_send: false,
+      reason,
+    };
+  }
+
+  const title = typeof record.title === 'string' ? record.title.replace(/\s+/g, ' ').trim() : '';
+  const message =
+    typeof record.message === 'string' ? record.message.replace(/\s+/g, ' ').trim() : '';
+
+  const schedule =
+    record.schedule && typeof record.schedule === 'object'
+      ? (record.schedule as Record<string, unknown>)
+      : null;
+
+  const dayOffset =
+    schedule && Number.isInteger(schedule.day_offset) ? Number(schedule.day_offset) : Number.NaN;
+  const localHour =
+    schedule && Number.isInteger(schedule.local_hour) ? Number(schedule.local_hour) : Number.NaN;
+
+  if (!title || title.length < 4 || title.length > 60) return null;
+  if (!message || message.length < 12 || message.length > 240) return null;
+  if (!Number.isInteger(dayOffset) || dayOffset < 0 || dayOffset > 2) return null;
+  if (!Number.isInteger(localHour) || localHour < 8 || localHour > 20) return null;
+
+  return {
+    should_send: true,
+    reason,
+    title,
+    message,
+    schedule: {
+      day_offset: dayOffset,
+      local_hour: localHour,
+    },
+  };
+}
+
+function parsePlannerDecision(rawText: string) {
+  const jsonText = extractJsonObject(rawText);
+  if (!jsonText) return null;
+
+  try {
+    const parsed = JSON.parse(jsonText);
+    return normalizePlannerDecision(parsed);
+  } catch {
+    return null;
   }
 }
 
@@ -110,38 +222,44 @@ serve(async () => {
     }
 
     const genAI = new GoogleGenerativeAI(googleApiKey);
+    const model = genAI.getGenerativeModel({ model: MODEL_NAME });
 
-    const model = genAI.getGenerativeModel({
-      model: 'gemini-2.5-flash',
-    });
-    const { data: triggers, error } = await supabase
-      .from('ai_triggers')
-      .select(
-        `
-        id,
-        trigger_type,
-        generated_message,
-        context,
-        profiles (
-          first_name
-        )
-      `,
-      )
-      .is('generated_message', null)
-      .eq('sent', false)
-      .limit(10);
-    if (error || !triggers?.length) {
-      return new Response('No triggers', { status: 200 });
+    const { data: candidates, error: candidatesError } = await supabase.rpc(
+      'list_ai_notification_planning_candidates',
+      {
+        p_limit: PLANNER_LIMIT,
+      },
+    );
+
+    if (candidatesError) {
+      console.error('Failed to load planning candidates', candidatesError);
+      return new Response('Failed to load planning candidates', { status: 500 });
     }
 
-    for (const trigger of triggers) {
-      const prompt = buildPrompt(
-        trigger.trigger_type,
-        trigger.context,
-        trigger.profiles.first_name,
-      );
+    if (!candidates?.length) {
+      return new Response('No planning candidates', { status: 200 });
+    }
 
-      const result = await model.generateContent(`
+    let plannedCount = 0;
+
+    for (const [index, candidate] of candidates.entries()) {
+      try {
+        if (index > 0) {
+          await sleep(PLANNER_REQUEST_DELAY_MS);
+        }
+
+        const firstName =
+          typeof candidate.first_name === 'string' && candidate.first_name.trim()
+            ? candidate.first_name
+            : 'Friend';
+        const timezone =
+          typeof candidate.timezone === 'string' && candidate.timezone.trim()
+            ? candidate.timezone
+            : 'UTC';
+        const plannerContext = buildPlannerContext(candidate);
+
+        const prompt = buildPlannerPrompt(firstName, timezone, plannerContext);
+        const result = await model.generateContent(`
 SYSTEM:
 ${SYSTEM_PROMPT}
 
@@ -149,22 +267,72 @@ USER:
 ${prompt}
 `);
 
-      const message = result.response.text()?.trim();
-      console.log(message);
+        const rawResponse = result.response.text()?.trim();
+        if (!rawResponse) {
+          continue;
+        }
 
-      if (!message) continue;
+        const decision = parsePlannerDecision(rawResponse);
+        if (!decision) {
+          console.error('Planner returned invalid JSON', candidate.user_id, rawResponse);
+          continue;
+        }
 
-      await supabase
-        .from('ai_triggers')
-        .update({
-          generated_message: message,
-        })
-        .eq('id', trigger.id);
+        if (!decision.should_send || !decision.title || !decision.message || !decision.schedule) {
+          continue;
+        }
+
+        const { data: scheduledFor, error: scheduleError } = await supabase.rpc(
+          'resolve_ai_trigger_schedule',
+          {
+            p_timezone: timezone,
+            p_day_offset: decision.schedule.day_offset,
+            p_local_hour: decision.schedule.local_hour,
+          },
+        );
+
+        if (scheduleError || !scheduledFor) {
+          console.error('Failed to resolve AI trigger schedule', candidate.user_id, scheduleError);
+          continue;
+        }
+
+        const nowIso = new Date().toISOString();
+        const { error: insertError } = await supabase.from('ai_triggers').insert({
+          user_id: candidate.user_id,
+          trigger_reason: decision.reason,
+          planner_reason: decision.reason,
+          context: plannerContext,
+          generated_title: decision.title,
+          generated_message: decision.message,
+          scheduled_for: scheduledFor,
+          planner_payload: {
+            decision,
+            planned_at: nowIso,
+            raw_response: rawResponse,
+          },
+          planning_model: MODEL_NAME,
+        });
+
+        if (insertError) {
+          console.error('Failed to insert AI notification plan', candidate.user_id, insertError);
+          continue;
+        }
+
+        plannedCount += 1;
+      } catch (candidateError) {
+        console.error(
+          'Failed to plan notification for candidate',
+          candidate.user_id,
+          candidateError,
+        );
+      }
     }
 
-    return new Response('AI messages generated', { status: 200 });
+    return new Response(`Planned ${plannedCount}/${candidates.length} notifications`, {
+      status: 200,
+    });
   } catch (err) {
     console.error(err);
-    return new Response('Error generating AI', { status: 500 });
+    return new Response('Error planning notifications', { status: 500 });
   }
 });

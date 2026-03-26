@@ -92,36 +92,48 @@ export type Database = {
           context: Json;
           created_at: string | null;
           generated_message: string | null;
+          generated_title: string | null;
           id: string;
+          planner_payload: Json;
+          planner_reason: string | null;
+          planning_model: string | null;
           priority: number | null;
+          scheduled_for: string | null;
           sent: boolean | null;
           sent_at: string | null;
           trigger_reason: string;
-          trigger_type: string;
           user_id: string;
         };
         Insert: {
           context?: Json;
           created_at?: string | null;
           generated_message?: string | null;
+          generated_title?: string | null;
           id?: string;
+          planner_payload?: Json;
+          planner_reason?: string | null;
+          planning_model?: string | null;
           priority?: number | null;
+          scheduled_for?: string | null;
           sent?: boolean | null;
           sent_at?: string | null;
           trigger_reason: string;
-          trigger_type: string;
           user_id: string;
         };
         Update: {
           context?: Json;
           created_at?: string | null;
           generated_message?: string | null;
+          generated_title?: string | null;
           id?: string;
+          planner_payload?: Json;
+          planner_reason?: string | null;
+          planning_model?: string | null;
           priority?: number | null;
+          scheduled_for?: string | null;
           sent?: boolean | null;
           sent_at?: string | null;
           trigger_reason?: string;
-          trigger_type?: string;
           user_id?: string;
         };
         Relationships: [
@@ -1335,7 +1347,6 @@ export type Database = {
         Args: { p_address?: string; p_name?: string; p_website_url?: string };
         Returns: string;
       };
-      generate_ai_triggers: { Args: never; Returns: undefined };
       get_day_items_progress: {
         Args: {
           p_day_id: string;
