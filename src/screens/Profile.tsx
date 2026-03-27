@@ -1,5 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { UseMutateFunction } from '@tanstack/react-query';
+import { Href, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Alert, Text, TouchableOpacity, View, useColorScheme } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -51,6 +52,7 @@ export default function ProfileScreen({
 }) {
   const colorScheme = useColorScheme();
   const insets = useSafeAreaInsets();
+  const router = useRouter();
   const [detailsForm, setDetailsForm] = useState(() => buildProfileDetailsFormValues(profile));
   const [detailsErrors, setDetailsErrors] = useState<ProfileDetailsFormErrors>({});
   const [showDetailsForm, setShowDetailsForm] = useState(false);
@@ -59,6 +61,7 @@ export default function ProfileScreen({
   const churchName = profile?.church?.name ?? '';
   const churchAddress = profile?.church?.address ?? '';
   const churchWebsite = profile?.church?.website_url ?? '';
+  const linkedChurchId = profile?.church?.id ?? null;
   const displayBio = profile?.bio?.trim() ?? '';
   const hasAboutDetails = Boolean(
     profile?.year_believed ||
@@ -229,19 +232,46 @@ export default function ProfileScreen({
                       <Text className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">
                         Church
                       </Text>
-                      <Text className="mt-1 text-base text-gray-900 dark:text-white">
-                        {churchName || 'Not provided'}
-                      </Text>
-                      {churchAddress ? (
-                        <Text className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                          {churchAddress}
-                        </Text>
-                      ) : null}
-                      {churchWebsite ? (
-                        <Text className="mt-1 text-sm text-blue-600 dark:text-blue-400">
-                          {churchWebsite}
-                        </Text>
-                      ) : null}
+                      {linkedChurchId ? (
+                        <TouchableOpacity
+                          className="mt-1 rounded-2xl bg-gray-50 p-3 dark:bg-neutral-900"
+                          onPress={() => router.push(`/church/${linkedChurchId}` as Href)}>
+                          <View className="flex-row items-center justify-between gap-3">
+                            <View className="flex-1">
+                              <Text className="text-base text-gray-900 dark:text-white">
+                                {churchName}
+                              </Text>
+                              {churchAddress ? (
+                                <Text className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                                  {churchAddress}
+                                </Text>
+                              ) : null}
+                              {churchWebsite ? (
+                                <Text className="mt-1 text-sm text-blue-600 dark:text-blue-400">
+                                  {churchWebsite}
+                                </Text>
+                              ) : null}
+                            </View>
+                            <Ionicons name="chevron-forward" size={18} color="#9ca3af" />
+                          </View>
+                        </TouchableOpacity>
+                      ) : (
+                        <>
+                          <Text className="mt-1 text-base text-gray-900 dark:text-white">
+                            {churchName || 'Not provided'}
+                          </Text>
+                          {churchAddress ? (
+                            <Text className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                              {churchAddress}
+                            </Text>
+                          ) : null}
+                          {churchWebsite ? (
+                            <Text className="mt-1 text-sm text-blue-600 dark:text-blue-400">
+                              {churchWebsite}
+                            </Text>
+                          ) : null}
+                        </>
+                      )}
                     </View>
                   </View>
                 ) : (

@@ -1,6 +1,7 @@
 import { useSignUpUser } from '@/src/hooks/useProfile';
 import { Ionicons } from '@expo/vector-icons';
 import { Input } from '@rneui/themed';
+import * as Linking from 'expo-linking';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import {
@@ -26,6 +27,7 @@ export default function SignUp() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
+  const [acceptedPolicies, setAcceptedPolicies] = useState(false);
   const colorScheme = useColorScheme();
   const MIN_NAME_LENGTH = 2;
   const MAX_NAME_LENGTH = 50;
@@ -84,6 +86,14 @@ export default function SignUp() {
 
     if (password !== confirmPassword) {
       Alert.alert('Password mismatch', 'Passwords do not match.');
+      return;
+    }
+
+    if (!acceptedPolicies) {
+      Alert.alert(
+        'Agreement required',
+        'You must accept the Terms of Service and Statement of Faith before creating an account.',
+      );
       return;
     }
 
@@ -213,6 +223,44 @@ export default function SignUp() {
                 }
               />
             </View>
+
+          <View className="mb-2 rounded-lg border border-gray-300 p-4 dark:border-gray-700">
+            <View className="flex-row items-start gap-3">
+              <TouchableOpacity
+                accessibilityRole="checkbox"
+                accessibilityState={{ checked: acceptedPolicies }}
+                onPress={() => setAcceptedPolicies((prev) => !prev)}
+                className="mt-0.5">
+                <Ionicons
+                  name={acceptedPolicies ? 'checkbox-outline' : 'square-outline'}
+                  size={22}
+                  color={colorScheme === 'dark' ? '#F5F5F5' : '#424242'}
+                />
+              </TouchableOpacity>
+
+              <Text className="flex-1 text-sm leading-6 text-gray-700 dark:text-gray-300">
+                I agree to the{' '}
+                <Text
+                  className="underline"
+                  onPress={() =>
+                    Linking.openURL(`${process.env.EXPO_PUBLIC_WEB_INTERFACE_URL}/terms`)
+                  }>
+                  Terms of Service
+                </Text>{' '}
+                and{' '}
+                <Text
+                  className="underline"
+                  onPress={() =>
+                    Linking.openURL(
+                      `${process.env.EXPO_PUBLIC_WEB_INTERFACE_URL}/statement-of-faith`,
+                    )
+                  }>
+                  Statement of Faith
+                </Text>
+                .
+              </Text>
+            </View>
+          </View>
 
             <View
               className="border-t border-gray-200 bg-white px-6 pt-4 dark:border-neutral-800 dark:bg-black"

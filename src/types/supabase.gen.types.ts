@@ -82,6 +82,13 @@ export type Database = {
             foreignKeyName: 'ai_notifications_user_id_fkey';
             columns: ['user_id'];
             isOneToOne: false;
+            referencedRelation: 'user_behavior_scored';
+            referencedColumns: ['user_id'];
+          },
+          {
+            foreignKeyName: 'ai_notifications_user_id_fkey';
+            columns: ['user_id'];
+            isOneToOne: false;
             referencedRelation: 'user_behavior_snapshot';
             referencedColumns: ['user_id'];
           },
@@ -143,6 +150,13 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: 'profiles';
             referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'ai_triggers_user_id_fkey';
+            columns: ['user_id'];
+            isOneToOne: false;
+            referencedRelation: 'user_behavior_scored';
+            referencedColumns: ['user_id'];
           },
           {
             foreignKeyName: 'ai_triggers_user_id_fkey';
@@ -504,6 +518,13 @@ export type Database = {
             foreignKeyName: 'friends_receiver_id_fkey';
             columns: ['receiver_id'];
             isOneToOne: false;
+            referencedRelation: 'user_behavior_scored';
+            referencedColumns: ['user_id'];
+          },
+          {
+            foreignKeyName: 'friends_receiver_id_fkey';
+            columns: ['receiver_id'];
+            isOneToOne: false;
             referencedRelation: 'user_behavior_snapshot';
             referencedColumns: ['user_id'];
           },
@@ -513,6 +534,13 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: 'profiles';
             referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'friends_requester_id_fkey';
+            columns: ['requester_id'];
+            isOneToOne: false;
+            referencedRelation: 'user_behavior_scored';
+            referencedColumns: ['user_id'];
           },
           {
             foreignKeyName: 'friends_requester_id_fkey';
@@ -549,6 +577,13 @@ export type Database = {
             isOneToOne: true;
             referencedRelation: 'profiles';
             referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'notification_preferences_user_id_fkey';
+            columns: ['user_id'];
+            isOneToOne: true;
+            referencedRelation: 'user_behavior_scored';
+            referencedColumns: ['user_id'];
           },
           {
             foreignKeyName: 'notification_preferences_user_id_fkey';
@@ -602,6 +637,13 @@ export type Database = {
             foreignKeyName: 'notifications_user_id_fkey';
             columns: ['user_id'];
             isOneToOne: false;
+            referencedRelation: 'user_behavior_scored';
+            referencedColumns: ['user_id'];
+          },
+          {
+            foreignKeyName: 'notifications_user_id_fkey';
+            columns: ['user_id'];
+            isOneToOne: false;
             referencedRelation: 'user_behavior_snapshot';
             referencedColumns: ['user_id'];
           },
@@ -648,6 +690,13 @@ export type Database = {
             foreignKeyName: 'plan_group_members_user_id_fkey';
             columns: ['user_id'];
             isOneToOne: false;
+            referencedRelation: 'user_behavior_scored';
+            referencedColumns: ['user_id'];
+          },
+          {
+            foreignKeyName: 'plan_group_members_user_id_fkey';
+            columns: ['user_id'];
+            isOneToOne: false;
             referencedRelation: 'user_behavior_snapshot';
             referencedColumns: ['user_id'];
           },
@@ -688,6 +737,13 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: 'profiles';
             referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'plan_groups_created_by_fkey';
+            columns: ['created_by'];
+            isOneToOne: false;
+            referencedRelation: 'user_behavior_scored';
+            referencedColumns: ['user_id'];
           },
           {
             foreignKeyName: 'plan_groups_created_by_fkey';
@@ -1023,6 +1079,13 @@ export type Database = {
             foreignKeyName: 'scripture_note_helpful_votes_user_id_fkey';
             columns: ['user_id'];
             isOneToOne: false;
+            referencedRelation: 'user_behavior_scored';
+            referencedColumns: ['user_id'];
+          },
+          {
+            foreignKeyName: 'scripture_note_helpful_votes_user_id_fkey';
+            columns: ['user_id'];
+            isOneToOne: false;
             referencedRelation: 'user_behavior_snapshot';
             referencedColumns: ['user_id'];
           },
@@ -1085,6 +1148,13 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: 'profiles';
             referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'scripture_notes_user_id_fkey';
+            columns: ['user_id'];
+            isOneToOne: false;
+            referencedRelation: 'user_behavior_scored';
+            referencedColumns: ['user_id'];
           },
           {
             foreignKeyName: 'scripture_notes_user_id_fkey';
@@ -1221,24 +1291,93 @@ export type Database = {
         };
         Relationships: [];
       };
-      user_behavior_snapshot: {
+      user_behavior_scored: {
         Row: {
           abandoned_plans: number | null;
           active_plans: number | null;
+          church_address: string | null;
+          church_id: string | null;
+          church_name: string | null;
+          church_website_url: string | null;
           commented_recently: boolean | null;
+          friends_count: number | null;
+          group_plans_count: number | null;
+          has_church: boolean | null;
           has_friends: boolean | null;
           has_group_plan: boolean | null;
           last_activity_at: string | null;
+          last_comment_at: string | null;
+          last_day_item_at: string | null;
+          last_plan_progress_at: string | null;
           last_seen: string | null;
           max_days_completed: number | null;
+          notification_score: number | null;
+          notification_score_breakdown: Json | null;
           plans_completed: number | null;
+          plans_completed_recently: number | null;
           plans_started: number | null;
+          profile_updated_at: string | null;
+          score_abandoned_plans: number | null;
+          score_active_plans: number | null;
+          score_activity_recency: number | null;
+          score_church_connection: number | null;
+          score_max_days_completed: number | null;
+          score_plans_completed_recently: number | null;
+          score_seen_recency: number | null;
+          score_social_isolation: number | null;
           time_since_last_activity: string | null;
           time_since_last_seen: string | null;
           timezone: string | null;
           user_id: string | null;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: 'profiles_church_id_fkey';
+            columns: ['church_id'];
+            isOneToOne: false;
+            referencedRelation: 'churches';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      user_behavior_snapshot: {
+        Row: {
+          abandoned_plans: number | null;
+          active_plans: number | null;
+          church_address: string | null;
+          church_id: string | null;
+          church_name: string | null;
+          church_website_url: string | null;
+          commented_recently: boolean | null;
+          friends_count: number | null;
+          group_plans_count: number | null;
+          has_church: boolean | null;
+          has_friends: boolean | null;
+          has_group_plan: boolean | null;
+          last_activity_at: string | null;
+          last_comment_at: string | null;
+          last_day_item_at: string | null;
+          last_plan_progress_at: string | null;
+          last_seen: string | null;
+          max_days_completed: number | null;
+          plans_completed: number | null;
+          plans_completed_recently: number | null;
+          plans_started: number | null;
+          profile_updated_at: string | null;
+          time_since_last_activity: string | null;
+          time_since_last_seen: string | null;
+          timezone: string | null;
+          user_id: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'profiles_church_id_fkey';
+            columns: ['church_id'];
+            isOneToOne: false;
+            referencedRelation: 'churches';
+            referencedColumns: ['id'];
+          },
+        ];
       };
     };
     Functions: {
@@ -1347,6 +1486,7 @@ export type Database = {
         Args: { p_address?: string; p_name?: string; p_website_url?: string };
         Returns: string;
       };
+      get_church_analytics: { Args: { p_church_id: string }; Returns: Json };
       get_day_items_progress: {
         Args: {
           p_day_id: string;
@@ -1542,6 +1682,18 @@ export type Database = {
         }[];
       };
       is_group_member: { Args: { p_group_id: string }; Returns: boolean };
+      list_ai_notification_planning_candidates: {
+        Args: { p_limit?: number };
+        Returns: {
+          bio: string;
+          first_name: string;
+          planning_context: Json;
+          timezone: string;
+          user_id: string;
+          year_baptized: number;
+          year_believed: number;
+        }[];
+      };
       mark_notification_read: {
         Args: { p_notification_id: string };
         Returns: undefined;
@@ -1559,6 +1711,10 @@ export type Database = {
       report_plan: {
         Args: { p_plan_id: string; p_reason: string };
         Returns: undefined;
+      };
+      resolve_ai_trigger_schedule: {
+        Args: { p_day_offset: number; p_local_hour: number; p_timezone: string };
+        Returns: string;
       };
       save_devotional_draft: {
         Args: { _days: Json; _plan_id: string };
