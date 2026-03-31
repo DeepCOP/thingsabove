@@ -24,6 +24,7 @@ export default function App() {
       profile={profileQuery.data}
       onSignOut={onSignOut}
       onSetting={() => router.push('/settings')}
+      onPrayerBoard={() => router.push('/prayer')}
       handleUpdateProfile={updateProfile.mutate}
       handleUploadAvatar={uploadAvatar.mutate}
       uploading={uploadAvatar.isPending}

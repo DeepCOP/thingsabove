@@ -17,6 +17,7 @@ type Props = {
   onChangeSort: (sort: 'Recent' | 'Trending') => void;
   onSearch: () => void;
   onNotifications: () => void;
+  onPrayerBoard: () => void;
   onLogin: () => void;
   onContribute: () => void;
 };
@@ -32,6 +33,7 @@ export default function PlansScreen({
   onChangeSort,
   onSearch,
   onNotifications,
+  onPrayerBoard,
   onLogin,
   onContribute,
 }: Props) {
@@ -50,6 +52,15 @@ export default function PlansScreen({
         </TouchableOpacity>
 
         <View className="flex-row items-center gap-4">
+          {isAuthenticated && (
+            <TouchableOpacity onPress={onPrayerBoard}>
+              <Ionicons
+                name="heart-outline"
+                size={22}
+                color={colorScheme === 'dark' ? '#fff' : '#222'}
+              />
+            </TouchableOpacity>
+          )}
           {isAuthenticated && (
             <TouchableOpacity onPress={onNotifications} className="relative">
               {notificationCount > 0 && (

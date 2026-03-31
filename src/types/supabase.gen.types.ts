@@ -644,6 +644,169 @@ export type Database = {
             foreignKeyName: 'notifications_user_id_fkey';
             columns: ['user_id'];
             isOneToOne: false;
+            referencedRelation: 'user_behavior_scored';
+            referencedColumns: ['user_id'];
+          },
+          {
+            foreignKeyName: 'notifications_user_id_fkey';
+            columns: ['user_id'];
+            isOneToOne: false;
+            referencedRelation: 'user_behavior_snapshot';
+            referencedColumns: ['user_id'];
+          },
+        ];
+      };
+      prayer_request_encouragements: {
+        Row: {
+          content: string;
+          created_at: string;
+          id: string;
+          request_id: string;
+          user_id: string;
+        };
+        Insert: {
+          content: string;
+          created_at?: string;
+          id?: string;
+          request_id: string;
+          user_id?: string;
+        };
+        Update: {
+          content?: string;
+          created_at?: string;
+          id?: string;
+          request_id?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'prayer_request_encouragements_request_id_fkey';
+            columns: ['request_id'];
+            isOneToOne: false;
+            referencedRelation: 'prayer_requests';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'prayer_request_encouragements_user_id_fkey';
+            columns: ['user_id'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'prayer_request_encouragements_user_id_fkey';
+            columns: ['user_id'];
+            isOneToOne: false;
+            referencedRelation: 'user_behavior_snapshot';
+            referencedColumns: ['user_id'];
+          },
+        ];
+      };
+      prayer_request_prayers: {
+        Row: {
+          created_at: string;
+          request_id: string;
+          user_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          request_id: string;
+          user_id?: string;
+        };
+        Update: {
+          created_at?: string;
+          request_id?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'prayer_request_prayers_request_id_fkey';
+            columns: ['request_id'];
+            isOneToOne: false;
+            referencedRelation: 'prayer_requests';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'prayer_request_prayers_user_id_fkey';
+            columns: ['user_id'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'prayer_request_prayers_user_id_fkey';
+            columns: ['user_id'];
+            isOneToOne: false;
+            referencedRelation: 'user_behavior_snapshot';
+            referencedColumns: ['user_id'];
+          },
+        ];
+      };
+      prayer_requests: {
+        Row: {
+          allow_comments: boolean;
+          answered_at: string | null;
+          category: string;
+          church_id: string | null;
+          content: string;
+          created_at: string;
+          id: string;
+          is_anonymous: boolean;
+          is_answered: boolean;
+          is_urgent: boolean;
+          scope: string;
+          updated_at: string;
+          user_id: string;
+        };
+        Insert: {
+          allow_comments?: boolean;
+          answered_at?: string | null;
+          category: string;
+          church_id?: string | null;
+          content: string;
+          created_at?: string;
+          id?: string;
+          is_anonymous?: boolean;
+          is_answered?: boolean;
+          is_urgent?: boolean;
+          scope: string;
+          updated_at?: string;
+          user_id: string;
+        };
+        Update: {
+          allow_comments?: boolean;
+          answered_at?: string | null;
+          category?: string;
+          church_id?: string | null;
+          content?: string;
+          created_at?: string;
+          id?: string;
+          is_anonymous?: boolean;
+          is_answered?: boolean;
+          is_urgent?: boolean;
+          scope?: string;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'prayer_requests_church_id_fkey';
+            columns: ['church_id'];
+            isOneToOne: false;
+            referencedRelation: 'churches';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'prayer_requests_user_id_fkey';
+            columns: ['user_id'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'prayer_requests_user_id_fkey';
+            columns: ['user_id'];
+            isOneToOne: false;
             referencedRelation: 'user_behavior_snapshot';
             referencedColumns: ['user_id'];
           },
@@ -1418,6 +1581,10 @@ export type Database = {
         };
         Returns: undefined;
       };
+      add_prayer_request_encouragement: {
+        Args: { p_content: string; p_request_id: string };
+        Returns: string;
+      };
       add_scripture_note: {
         Args: {
           p_book: string;
@@ -1471,6 +1638,18 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      create_prayer_request: {
+        Args: {
+          p_allow_comments?: boolean;
+          p_category: string;
+          p_content: string;
+          p_is_anonymous?: boolean;
+          p_is_urgent?: boolean;
+          p_scope: string;
+        };
+        Returns: string;
+      };
+      current_user_church_id: { Args: never; Returns: string };
       decline_friend_request: {
         Args: { p_requester_id: string };
         Returns: undefined;
@@ -1659,6 +1838,58 @@ export type Database = {
           user_reaction: string;
         }[];
       };
+      get_prayer_request_detail: {
+        Args: { p_request_id: string };
+        Returns: {
+          allow_comments: boolean;
+          answered_at: string | null;
+          author_avatar_url: string | null;
+          author_first_name: string | null;
+          author_last_name: string | null;
+          category: string;
+          church_id: string | null;
+          church_name: string | null;
+          content: string;
+          created_at: string;
+          encouragement_count: number;
+          id: string;
+          is_anonymous: boolean;
+          is_answered: boolean;
+          is_urgent: boolean;
+          prayer_count: number;
+          scope: string;
+          updated_at: string;
+          user_id: string;
+          viewer_has_prayed: boolean;
+          viewer_is_owner: boolean;
+        }[];
+      };
+      get_prayer_requests: {
+        Args: { p_filter?: string; p_scope?: string };
+        Returns: {
+          allow_comments: boolean;
+          answered_at: string | null;
+          author_avatar_url: string | null;
+          author_first_name: string | null;
+          author_last_name: string | null;
+          category: string;
+          church_id: string | null;
+          church_name: string | null;
+          content: string;
+          created_at: string;
+          encouragement_count: number;
+          id: string;
+          is_anonymous: boolean;
+          is_answered: boolean;
+          is_urgent: boolean;
+          prayer_count: number;
+          scope: string;
+          updated_at: string;
+          user_id: string;
+          viewer_has_prayed: boolean;
+          viewer_is_owner: boolean;
+        }[];
+      };
       get_scripture_notes: {
         Args: {
           p_limit?: number;
@@ -1844,12 +2075,28 @@ export type Database = {
         Args: { p_plan_id: string; p_reaction_type: string };
         Returns: string;
       };
+      toggle_prayer_request_support: {
+        Args: { p_request_id: string };
+        Returns: boolean;
+      };
       toggle_scripture_note_helpful: {
         Args: { p_note_id: string };
         Returns: {
           helpful_count: number;
           is_helpful: boolean;
         }[];
+      };
+      update_prayer_request: {
+        Args: {
+          p_allow_comments?: boolean;
+          p_category: string;
+          p_content: string;
+          p_is_anonymous?: boolean;
+          p_is_urgent?: boolean;
+          p_request_id: string;
+          p_scope: string;
+        };
+        Returns: string;
       };
       unread_notifications_count: { Args: never; Returns: number };
       update_profile:

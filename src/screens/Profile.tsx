@@ -26,10 +26,12 @@ export default function ProfileScreen({
   deleting,
   handleDeleteAvatar,
   onSetting,
+  onPrayerBoard,
 }: {
   profile: ProfileWithChurch | undefined;
   onSignOut: () => void;
   onSetting: () => void;
+  onPrayerBoard: () => void;
   handleUpdateProfile: UseMutateFunction<void, Error, UpdateProfileInput, unknown>;
   handleUploadAvatar: UseMutateFunction<
     {
@@ -139,6 +141,12 @@ export default function ProfileScreen({
               <Text className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                 {profile?.email}
               </Text>
+
+              <TouchableOpacity
+                className="mt-4 rounded-full bg-black px-5 py-3 dark:bg-white"
+                onPress={onPrayerBoard}>
+                <Text className="font-semibold text-white dark:text-black">Prayer Board</Text>
+              </TouchableOpacity>
             </View>
 
             {displayBio ? (
