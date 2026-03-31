@@ -8,7 +8,7 @@ import { useProfile } from '@/src/hooks/useProfile';
 import { buildPlanInvitationMessage } from '@/src/lib/planShare';
 import InviteFriendsScreen from '@/src/screens/InviteFriendsScreen';
 import { useAuth } from '@/src/state/AuthContext';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { Href, useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Alert, Share } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -188,7 +188,7 @@ export default function InviteFriends() {
       onSelectAll={() => setSelected(friends.map((f) => f.id))}
       onClearSelection={() => setSelected([])}
       onShareInviteLink={handleShareInviteLink}
-      onAddFriend={() => router.push('/add_friend')}
+      onAddFriend={() => router.push('/friends' as Href)}
       onSubmit={handleSubmit}
     />
   );

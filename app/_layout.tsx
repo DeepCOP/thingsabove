@@ -181,6 +181,7 @@ function RootLayoutContent() {
             name="plan_progress/[progressId]/missedDays/index"
             options={{ title: 'Missed Days' }}
           />
+          <Stack.Screen name="friends/index" options={{ title: 'Friends' }} />
           <Stack.Screen name="profile/[userId]" options={{ title: 'Profile' }} />
           <Stack.Screen name="add_friend/index" options={{ title: 'Add Friend' }} />
           <Stack.Screen name="accept_friend/index" options={{ title: 'Friend Requests' }} />

@@ -147,6 +147,15 @@ export default function ProfileScreen({
                 onPress={onPrayerBoard}>
                 <Text className="font-semibold text-white dark:text-black">Prayer Board</Text>
               </TouchableOpacity>
+
+              <TouchableOpacity
+                className="mt-4 flex-row items-center rounded-full border border-blue-600 px-4 py-2 dark:border-blue-400"
+                onPress={() => router.push('/friends' as Href)}>
+                <Ionicons name="people-outline" size={16} color={actionColor} />
+                <Text className="ml-2 text-sm font-semibold text-blue-600 dark:text-blue-400">
+                  Friends
+                </Text>
+              </TouchableOpacity>
             </View>
 
             {displayBio ? (
