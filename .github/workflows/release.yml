@@ -75,18 +75,11 @@ jobs:
           tag_name: ${{ github.ref_name }}
           name: Release ${{ env.APP_VERSION }}
           body: |
-            Version: ${{ env.APP_VERSION }}
-            Tag: ${{ github.ref_name }}
-            Profile: ${{ env.EAS_PROFILE }}
-
-            Built via EAS Cloud.
-
             iOS Beta Build (TestFlight)
-            - Install via TestFlight:
-            - https://testflight.apple.com/join/j6Qs882p
+            - [Install via TestFlight](https://testflight.apple.com/join/j6Qs882p)
 
             Android Beta Build
-            - `thingsabove-${{ env.APP_VERSION }}.apk`
+            - [thingsabove-${{ env.APP_VERSION }}.apk](https://github.com/DeepCOP/thingsabove/releases/download/${{ env.APP_VERSION }}/thingsabove-${{ env.APP_VERSION }}.apk)
 
           generate_release_notes: true
           draft: false
