@@ -3,11 +3,8 @@ import UserAvatar from '@/src/components/UserAvatar';
 import { useChurch } from '@/src/hooks/useChurch';
 import { useChurchMembers } from '@/src/hooks/useChurchMembers';
 import { useChurchStats } from '@/src/hooks/useChurchStats';
-import { useProfile } from '@/src/hooks/useProfile';
-import { useAuth } from '@/src/state/AuthContext';
 import { useDebounce } from '@/src/utils';
 import { Ionicons } from '@expo/vector-icons';
-import { Href, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { FlatList, Share, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -30,27 +27,19 @@ const formatJoinedLabel = (value: string | null) => {
 
 export default function ChurchMembersScreen({ churchId }: Props) {
   const insets = useSafeAreaInsets();
-  const router = useRouter();
-  const { session } = useAuth();
   const [query, setQuery] = useState('');
   const [isRefreshing, setIsRefreshing] = useState(false);
   const debouncedQuery = useDebounce(query.trim(), 300);
 
-  const viewerProfileQuery = useProfile(session?.user?.id);
   const churchQuery = useChurch(churchId);
   const { membersQuery, members } = useChurchMembers(churchId, debouncedQuery);
   const statsQuery = useChurchStats(churchId);
 
   const isLoading =
-    viewerProfileQuery.isLoading ||
-    churchQuery.isLoading ||
-    statsQuery.isLoading ||
-    (membersQuery.isLoading && !membersQuery.data);
+    churchQuery.isLoading || statsQuery.isLoading || (membersQuery.isLoading && !membersQuery.data);
 
-  const error =
-    viewerProfileQuery.error || churchQuery.error || membersQuery.error || statsQuery.error;
+  const error = churchQuery.error || membersQuery.error || statsQuery.error;
 
-  const viewerChurchId = viewerProfileQuery.data?.church?.id ?? null;
   const church = churchQuery.data;
   const stats = statsQuery.data;
   const hasSearch = Boolean(debouncedQuery);
@@ -93,24 +82,6 @@ export default function ChurchMembersScreen({ churchId }: Props) {
             statsQuery.refetch();
           }}>
           <Text className="font-semibold text-white dark:text-black">Try again</Text>
-        </TouchableOpacity>
-      </View>
-    );
-  }
-
-  if (!viewerChurchId || viewerChurchId !== churchId) {
-    return (
-      <View className="flex-1 items-center justify-center bg-white px-6 dark:bg-black">
-        <Text className="text-lg font-semibold text-gray-900 dark:text-white">
-          Members are only available for your church
-        </Text>
-        <Text className="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
-          Go back to your profile and open the church linked to your account.
-        </Text>
-        <TouchableOpacity
-          className="mt-5 rounded-full bg-black px-5 py-3 dark:bg-white"
-          onPress={() => router.back()}>
-          <Text className="font-semibold text-white dark:text-black">Go back</Text>
         </TouchableOpacity>
       </View>
     );
