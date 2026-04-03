@@ -65,22 +65,12 @@ set search_path = pg_catalog, public
 stable
 as $$
 declare
-  v_viewer_church_id uuid;
   v_limit integer := greatest(coalesce(p_limit, 20), 1);
   v_offset integer := greatest(coalesce(p_offset, 0), 0);
   v_search text := nullif(trim(coalesce(p_search, '')), '');
 begin
   if auth.uid() is null then
     raise exception 'Authentication required';
-  end if;
-
-  select church_id
-    into v_viewer_church_id
-  from public.profiles
-  where profiles.id = auth.uid();
-
-  if v_viewer_church_id is distinct from p_church_id then
-    raise exception 'You do not have access to this church members list';
   end if;
 
   return query

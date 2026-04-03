@@ -44,7 +44,6 @@ export const fetchChurchMembers = async ({
   });
 
   if (error) {
-    console.error('Error fetching church members:', error);
     throw error;
   }
   const rows = (data ?? []) as ChurchMember[];
