@@ -8,7 +8,6 @@ import {
   MAX_CHURCH_WEBSITE_URL_LENGTH,
   MAX_NAME_LENGTH,
   MIN_YEAR,
-  MIN_NAME_LENGTH,
   ProfileDetailsFormErrors,
   ProfileDetailsFormValues,
   getYearsFollowingJesus,
@@ -32,14 +31,15 @@ export default function AboutDetailsForm({
   errors,
   onChange,
   disabled = false,
+  showNameFields = true,
 }: {
   values: ProfileDetailsFormValues;
   errors?: ProfileDetailsFormErrors;
   onChange: (patch: Partial<ProfileDetailsFormValues>) => void;
   disabled?: boolean;
+  showNameFields?: boolean;
 }) {
   const colorScheme = useColorScheme();
-  const yearsFollowingJesus = getYearsFollowingJesus(values.yearBelieved);
   const textColor = colorScheme === 'dark' ? '#F5F5F5' : '#424242';
   const placeholderColor =
     colorScheme === 'dark' ? 'rgba(156, 163, 175, 0.65)' : 'rgba(107, 114, 128, 0.55)';
@@ -48,8 +48,6 @@ export default function AboutDetailsForm({
   const [churchSearchError, setChurchSearchError] = useState<string | null>(null);
   const [isSearchingChurches, setIsSearchingChurches] = useState(false);
   const canEditChurch = !disabled;
-  const nameRestrictionText = `${MIN_NAME_LENGTH}-${MAX_NAME_LENGTH} characters if provided.`;
-  const yearRestrictionText = `Enter a 4-digit year between ${MIN_YEAR} and ${CURRENT_YEAR}.`;
 
   useEffect(() => {
     if (!canEditChurch) {
@@ -114,33 +112,35 @@ export default function AboutDetailsForm({
         <Text className="mb-3 text-lg font-semibold text-gray-900 dark:text-white">About You</Text>
       </View>
 
-      <Input
-        label="First Name"
-        value={values.firstName}
-        onChangeText={(firstName) => onChange({ firstName })}
-        editable={!disabled}
-        autoCapitalize="words"
-        errorMessage={errors?.firstName}
-        style={{ color: textColor }}
-        placeholder="First name"
-        placeholderTextColor={placeholderColor}
-        maxLength={MAX_NAME_LENGTH}
-      />
-      <FormRestrictionText className="-mt-4 mb-4">{nameRestrictionText}</FormRestrictionText>
+      {showNameFields ? (
+        <>
+          <Input
+            label="First Name"
+            value={values.firstName}
+            onChangeText={(firstName) => onChange({ firstName })}
+            editable={!disabled}
+            autoCapitalize="words"
+            errorMessage={errors?.firstName}
+            style={{ color: textColor }}
+            placeholder="First name"
+            placeholderTextColor={placeholderColor}
+            maxLength={MAX_NAME_LENGTH}
+          />
 
-      <Input
-        label="Last Name"
-        value={values.lastName}
-        onChangeText={(lastName) => onChange({ lastName })}
-        editable={!disabled}
-        autoCapitalize="words"
-        errorMessage={errors?.lastName}
-        style={{ color: textColor }}
-        placeholder="Last name"
-        placeholderTextColor={placeholderColor}
-        maxLength={MAX_NAME_LENGTH}
-      />
-      <FormRestrictionText className="-mt-4 mb-4">{nameRestrictionText}</FormRestrictionText>
+          <Input
+            label="Last Name"
+            value={values.lastName}
+            onChangeText={(lastName) => onChange({ lastName })}
+            editable={!disabled}
+            autoCapitalize="words"
+            errorMessage={errors?.lastName}
+            style={{ color: textColor }}
+            placeholder="Last name"
+            placeholderTextColor={placeholderColor}
+            maxLength={MAX_NAME_LENGTH}
+          />
+        </>
+      ) : null}
 
       <Input
         label="Bio or Favorite Verse"
@@ -155,9 +155,6 @@ export default function AboutDetailsForm({
         multiline
         numberOfLines={4}
       />
-      <FormRestrictionText className="-mt-4 mb-4">
-        Up to {MAX_BIO_LENGTH} characters.
-      </FormRestrictionText>
 
       <Input
         label="Year You Believed"
@@ -171,13 +168,6 @@ export default function AboutDetailsForm({
         placeholder="2020"
         placeholderTextColor={placeholderColor}
       />
-      <FormRestrictionText className="-mt-4 mb-2">{yearRestrictionText}</FormRestrictionText>
-
-      {yearsFollowingJesus !== null ? (
-        <Text className="mb-4 px-3 text-sm text-gray-600 dark:text-gray-400">
-          {yearsFollowingJesus} year{yearsFollowingJesus === 1 ? '' : 's'} following Jesus
-        </Text>
-      ) : null}
 
       <Input
         label="Year You Were Baptized"
@@ -191,9 +181,6 @@ export default function AboutDetailsForm({
         placeholder="2021"
         placeholderTextColor={placeholderColor}
       />
-      <FormRestrictionText className="-mt-4 mb-4">
-        {yearRestrictionText} Must be the same year or later than your year believed.
-      </FormRestrictionText>
 
       <View className="px-2 pt-2">
         <Text className="mb-3 text-lg font-semibold text-gray-900 dark:text-white">Church</Text>
@@ -280,9 +267,6 @@ export default function AboutDetailsForm({
         placeholderTextColor={placeholderColor}
         maxLength={MAX_CHURCH_ADDRESS_LENGTH}
       />
-      <FormRestrictionText className="-mt-4 mb-4">
-        Up to {MAX_CHURCH_ADDRESS_LENGTH} characters.
-      </FormRestrictionText>
       <Input
         label="Church Website URL"
         value={values.churchWebsiteUrl}
@@ -297,9 +281,6 @@ export default function AboutDetailsForm({
         placeholderTextColor={placeholderColor}
         maxLength={MAX_CHURCH_WEBSITE_URL_LENGTH}
       />
-      <FormRestrictionText className="-mt-4 mb-4">
-        Up to {MAX_CHURCH_WEBSITE_URL_LENGTH} characters. We&apos;ll add https:// if needed.
-      </FormRestrictionText>
     </View>
   );
 }
