@@ -41,27 +41,27 @@ export default ({ config }) => ({
             {
               scheme: 'https',
               host: 'thingsabove.life',
-              pathPrefix: '/auth/*',
+              pathPrefix: '/auth',
             },
             {
               scheme: 'https',
               host: 'thingsabove.life',
-              pathPrefix: '/church/*',
+              pathPrefix: '/church',
             },
             {
               scheme: 'https',
               host: 'thingsabove.life',
-              pathPrefix: '/devotional_detail/*',
+              pathPrefix: '/devotional_detail',
             },
             {
               scheme: 'https',
               host: 'thingsabove.life',
-              pathPrefix: '/plan_progress/*',
+              pathPrefix: '/plan_progress',
             },
             {
               scheme: 'https',
               host: 'thingsabove.life',
-              pathPrefix: '/bible/*',
+              pathPrefix: '/bible',
             },
           ],
           category: ['BROWSABLE', 'DEFAULT'],
