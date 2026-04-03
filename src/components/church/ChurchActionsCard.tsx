@@ -15,13 +15,15 @@ export default function ChurchActionsCard({
 }: Props) {
   return (
     <View className="gap-3">
-      <TouchableOpacity
-        className="rounded-full bg-black py-4 dark:bg-white"
-        onPress={onInvitePress}>
-        <Text className="text-center text-lg font-semibold text-white dark:text-black">
-          Invite Members
-        </Text>
-      </TouchableOpacity>
+      {onInvitePress ? (
+        <TouchableOpacity
+          className="rounded-full bg-black py-4 dark:bg-white"
+          onPress={onInvitePress}>
+          <Text className="text-center text-lg font-semibold text-white dark:text-black">
+            Invite Members
+          </Text>
+        </TouchableOpacity>
+      ) : null}
 
       <TouchableOpacity
         className="rounded-full border border-gray-300 py-4 dark:border-neutral-700"

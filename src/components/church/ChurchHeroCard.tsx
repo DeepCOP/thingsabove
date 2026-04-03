@@ -3,7 +3,7 @@ import { Text, TouchableOpacity, View } from 'react-native';
 
 type Props = {
   church: Church;
-  memberCount: number;
+  memberCount?: number;
   onOpenWebsite?: () => void;
 };
 
@@ -23,11 +23,13 @@ export default function ChurchHeroCard({ church, memberCount, onOpenWebsite }: P
           ) : null}
         </View>
 
-        <View className="rounded-full bg-blue-50 px-3 py-1 dark:bg-blue-950/40">
-          <Text className="text-xs font-semibold text-blue-700 dark:text-blue-300">
-            {memberCount} members
-          </Text>
-        </View>
+        {typeof memberCount === 'number' ? (
+          <View className="rounded-full bg-blue-50 px-3 py-1 dark:bg-blue-950/40">
+            <Text className="text-xs font-semibold text-blue-700 dark:text-blue-300">
+              {memberCount} members
+            </Text>
+          </View>
+        ) : null}
       </View>
     </View>
   );

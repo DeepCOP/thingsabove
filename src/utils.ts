@@ -2,6 +2,7 @@ import { ParsedVerse } from '@/src/types/types';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import { useEffect, useState } from 'react';
+import { Linking } from 'react-native';
 
 export const utcdayjs = dayjs.extend(utc);
 
@@ -139,4 +140,14 @@ export function incrementPlanCompletionsInInfiniteData(data: unknown, planId: st
       };
     }),
   };
+}
+
+export async function openExternalUrl(url?: string | null) {
+  if (!url) return false;
+
+  const canOpen = await Linking.canOpenURL(url);
+  if (!canOpen) return false;
+
+  await Linking.openURL(url);
+  return true;
 }

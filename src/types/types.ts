@@ -38,11 +38,7 @@ export type ChurchMemberPreview = {
   avatar_url: string | null;
 };
 
-export type ChurchMember = ChurchMemberPreview & {
-  created_at: string | null;
-  last_seen: string | null;
-  activePlansCount: number;
-};
+export type ChurchMember = Database['public']['Functions']['get_church_members']['Returns'][number];
 
 export type ChurchTopPlan = {
   id: string;

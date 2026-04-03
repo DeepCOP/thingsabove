@@ -1,10 +1,11 @@
 import { supabase } from '../lib/supabaseClient';
 import { Church, ChurchAnalytics, ChurchMember } from '../types/types';
 
-type PlanProgressRow = {
-  user_id: string | null;
-  plan_id: string | null;
-  completed_once: boolean | null;
+export const CHURCH_MEMBERS_PAGE_SIZE = 20;
+
+type ChurchMembersPage = {
+  items: ChurchMember[];
+  nextOffset: number | null;
 };
 
 const emptyAnalytics: ChurchAnalytics = {
@@ -19,31 +20,6 @@ const emptyAnalytics: ChurchAnalytics = {
   topPlans: [],
 };
 
-const fetchChurchMemberRows = async (churchId: string) => {
-  const { data, error } = await supabase
-    .from('profiles')
-    .select('id, first_name, last_name, avatar_url, created_at, last_seen')
-    .eq('church_id', churchId)
-    .order('first_name')
-    .order('last_name');
-
-  if (error) throw error;
-  return data ?? [];
-};
-
-const fetchChurchProgressRows = async (memberIds: string[]) => {
-  if (!memberIds.length) return [] as PlanProgressRow[];
-
-  const { data, error } = await supabase
-    .from('plan_progress')
-    .select('user_id, plan_id, completed_once, updated_at, created_at')
-    .in('user_id', memberIds)
-    .not('plan_id', 'is', null);
-
-  if (error) throw error;
-  return (data ?? []) as PlanProgressRow[];
-};
-
 export const fetchChurch = async (churchId: string) => {
   const { data, error } = await supabase.from('churches').select('*').eq('id', churchId).single();
 
@@ -51,24 +27,34 @@ export const fetchChurch = async (churchId: string) => {
   return data as Church;
 };
 
-export const fetchChurchMembers = async (churchId: string) => {
-  const members = await fetchChurchMemberRows(churchId);
-  if (!members.length) return [] as ChurchMember[];
+export const fetchChurchMembers = async ({
+  churchId,
+  offset,
+  search,
+}: {
+  churchId: string;
+  offset: number;
+  search?: string;
+}): Promise<ChurchMembersPage> => {
+  const { data, error } = await supabase.rpc('get_church_members', {
+    p_church_id: churchId,
+    p_limit: CHURCH_MEMBERS_PAGE_SIZE + 1,
+    p_offset: offset,
+    p_search: search?.trim() || undefined,
+  });
 
-  const progressRows = await fetchChurchProgressRows(members.map((member) => member.id));
-  const activePlansByUserId = new Map<string, Set<string>>();
-
-  for (const row of progressRows) {
-    if (!row.user_id || !row.plan_id || row.completed_once) continue;
-    const current = activePlansByUserId.get(row.user_id) ?? new Set<string>();
-    current.add(row.plan_id);
-    activePlansByUserId.set(row.user_id, current);
+  if (error) {
+    console.error('Error fetching church members:', error);
+    throw error;
   }
+  const rows = (data ?? []) as ChurchMember[];
+  const hasNextPage = rows.length > CHURCH_MEMBERS_PAGE_SIZE;
+  const pageRows = hasNextPage ? rows.slice(0, CHURCH_MEMBERS_PAGE_SIZE) : rows;
 
-  return members.map((member) => ({
-    ...member,
-    activePlansCount: activePlansByUserId.get(member.id)?.size ?? 0,
-  }));
+  return {
+    items: pageRows,
+    nextOffset: hasNextPage ? offset + CHURCH_MEMBERS_PAGE_SIZE : null,
+  };
 };
 
 export const fetchChurchAnalytics = async (churchId: string): Promise<ChurchAnalytics> => {

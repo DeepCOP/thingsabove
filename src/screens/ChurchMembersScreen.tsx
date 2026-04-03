@@ -5,29 +5,24 @@ import { useChurchMembers } from '@/src/hooks/useChurchMembers';
 import { useChurchStats } from '@/src/hooks/useChurchStats';
 import { useProfile } from '@/src/hooks/useProfile';
 import { useAuth } from '@/src/state/AuthContext';
+import { useDebounce } from '@/src/utils';
 import { Ionicons } from '@expo/vector-icons';
+import { Href, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { FlatList, Share, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 type Props = {
   churchId: string;
 };
 
-const weekAgo = () => {
-  const date = new Date();
-  date.setDate(date.getDate() - 7);
-  return date.toISOString();
-};
-
 const formatJoinedLabel = (value: string | null) => {
-  if (!value) return 'Joined recently';
+  if (!value) return null;
 
   const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return 'Joined recently';
+  if (Number.isNaN(date.getTime())) return null;
 
-  return `Joined ${date.toLocaleDateString(undefined, {
+  return `Joined church ${date.toLocaleDateString(undefined, {
     month: 'short',
     year: 'numeric',
   })}`;
@@ -38,17 +33,19 @@ export default function ChurchMembersScreen({ churchId }: Props) {
   const router = useRouter();
   const { session } = useAuth();
   const [query, setQuery] = useState('');
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const debouncedQuery = useDebounce(query.trim(), 300);
 
   const viewerProfileQuery = useProfile(session?.user?.id);
   const churchQuery = useChurch(churchId);
-  const membersQuery = useChurchMembers(churchId);
+  const { membersQuery, members } = useChurchMembers(churchId, debouncedQuery);
   const statsQuery = useChurchStats(churchId);
 
   const isLoading =
     viewerProfileQuery.isLoading ||
     churchQuery.isLoading ||
-    membersQuery.isLoading ||
-    statsQuery.isLoading;
+    statsQuery.isLoading ||
+    (membersQuery.isLoading && !membersQuery.data);
 
   const error =
     viewerProfileQuery.error || churchQuery.error || membersQuery.error || statsQuery.error;
@@ -56,22 +53,23 @@ export default function ChurchMembersScreen({ churchId }: Props) {
   const viewerChurchId = viewerProfileQuery.data?.church?.id ?? null;
   const church = churchQuery.data;
   const stats = statsQuery.data;
-  const normalizedQuery = query.trim().toLowerCase();
-  const filteredMembers = (membersQuery.data ?? []).filter((member) => {
-    if (!normalizedQuery) return true;
-    const fullName = `${member.first_name ?? ''} ${member.last_name ?? ''}`.toLowerCase();
-    return fullName.includes(normalizedQuery);
-  });
-
-  const activeThisWeekCount = (membersQuery.data ?? []).filter(
-    (member) => member.last_seen && member.last_seen >= weekAgo(),
-  ).length;
+  const hasSearch = Boolean(debouncedQuery);
 
   const handleShareChurch = async () => {
     if (!church) return;
     await Share.share({
       message: `Join ${church.name} on ThingsAbove.`,
     });
+  };
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+
+    try {
+      await membersQuery.refetch();
+    } finally {
+      setIsRefreshing(false);
+    }
   };
 
   if (isLoading) {
@@ -121,10 +119,16 @@ export default function ChurchMembersScreen({ churchId }: Props) {
   return (
     <View className="flex-1 bg-white dark:bg-black" style={{ paddingBottom: insets.bottom }}>
       <FlatList
-        data={filteredMembers}
+        data={members}
         keyExtractor={(item) => item.id}
         contentContainerStyle={{ paddingBottom: 24 }}
         showsVerticalScrollIndicator={false}
+        onEndReachedThreshold={0.5}
+        onEndReached={() => {
+          if (membersQuery.hasNextPage && !membersQuery.isFetchingNextPage) {
+            membersQuery.fetchNextPage();
+          }
+        }}
         ListHeaderComponent={
           <View className="px-4 pt-4">
             <View className="rounded-2xl border border-gray-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-950">
@@ -147,7 +151,7 @@ export default function ChurchMembersScreen({ churchId }: Props) {
               <View className="mt-4 flex-row gap-2">
                 <View className="rounded-full bg-gray-100 px-3 py-2 dark:bg-neutral-900">
                   <Text className="text-sm text-gray-700 dark:text-gray-300">
-                    {activeThisWeekCount} active this week
+                    {stats?.activeMembersThisWeek ?? 0} active this week
                   </Text>
                 </View>
                 <View className="rounded-full bg-gray-100 px-3 py-2 dark:bg-neutral-900">
@@ -168,6 +172,12 @@ export default function ChurchMembersScreen({ churchId }: Props) {
                 className="ml-2 flex-1 text-base text-gray-900 dark:text-white"
               />
             </View>
+
+            {hasSearch && membersQuery.isFetching && !membersQuery.isFetchingNextPage ? (
+              <View className="mt-2 px-1">
+                <LoadingSpinner size={'small'} />
+              </View>
+            ) : null}
           </View>
         }
         ListEmptyComponent={
@@ -177,7 +187,9 @@ export default function ChurchMembersScreen({ churchId }: Props) {
               No members found
             </Text>
             <Text className="mt-1 text-center text-sm text-gray-600 dark:text-gray-400">
-              Try a different name or clear the search.
+              {hasSearch
+                ? 'Try a different name or clear the search.'
+                : 'Invite members to grow this church community.'}
             </Text>
           </View>
         }
@@ -196,15 +208,28 @@ export default function ChurchMembersScreen({ churchId }: Props) {
                   {[item.first_name, item.last_name].filter(Boolean).join(' ') || 'Church Member'}
                 </Text>
 
-                <Text className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                  {formatJoinedLabel(item.created_at)}
-                </Text>
+                {(() => {
+                  const joinedLabel = formatJoinedLabel(item.church_joined_at);
+                  if (!joinedLabel) return null;
+
+                  return (
+                    <Text className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                      {joinedLabel}
+                    </Text>
+                  );
+                })()}
               </View>
             </View>
           </View>
         )}
         ListFooterComponent={
           <View className="px-4 pt-6">
+            {membersQuery.isFetchingNextPage ? (
+              <View className="pb-4">
+                <LoadingSpinner />
+              </View>
+            ) : null}
+
             <TouchableOpacity
               className="rounded-full bg-black py-4 dark:bg-white"
               onPress={handleShareChurch}>
@@ -222,6 +247,8 @@ export default function ChurchMembersScreen({ churchId }: Props) {
             </TouchableOpacity>
           </View>
         }
+        refreshing={isRefreshing}
+        onRefresh={handleRefresh}
       />
     </View>
   );

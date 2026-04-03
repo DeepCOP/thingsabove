@@ -12,9 +12,11 @@ export default function ChurchMembersPreview({ members, onSeeAll }: Props) {
     <View className="rounded-2xl border border-gray-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-950">
       <View className="flex-row items-center justify-between">
         <Text className="text-lg font-semibold text-gray-900 dark:text-white">Members</Text>
-        <TouchableOpacity onPress={onSeeAll}>
-          <Text className="text-sm font-medium text-blue-600 dark:text-blue-400">See all</Text>
-        </TouchableOpacity>
+        {onSeeAll ? (
+          <TouchableOpacity onPress={onSeeAll}>
+            <Text className="text-sm font-medium text-blue-600 dark:text-blue-400">See all</Text>
+          </TouchableOpacity>
+        ) : null}
       </View>
 
       {members.length === 0 ? (

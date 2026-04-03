@@ -1,11 +1,11 @@
 import { useSignInUserWithPassword } from '@/src/hooks/useProfile';
+import { openExternalUrl } from '@/src/utils';
 import { Ionicons } from '@expo/vector-icons';
 import { Input } from '@rneui/themed';
 import { useState } from 'react';
 import {
   Keyboard,
   KeyboardAvoidingView,
-  Linking,
   Platform,
   ScrollView,
   Text,
@@ -65,7 +65,7 @@ export default function SignIn() {
           <TouchableOpacity
             className="self-end mt-1"
             onPress={() =>
-              Linking.openURL(`${process.env.EXPO_PUBLIC_WEB_INTERFACE_URL}/auth/forgot-password`)
+              openExternalUrl(`${process.env.EXPO_PUBLIC_WEB_INTERFACE_URL}/auth/forgot-password`)
             }>
             <Text className="text-blue-600 dark:text-blue-400 font-semibold">
               Forget your password?

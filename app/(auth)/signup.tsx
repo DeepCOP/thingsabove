@@ -1,7 +1,7 @@
 import { useSignUpUser } from '@/src/hooks/useProfile';
+import { openExternalUrl } from '@/src/utils';
 import { Ionicons } from '@expo/vector-icons';
 import { Input } from '@rneui/themed';
-import * as Linking from 'expo-linking';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import {
@@ -56,7 +56,8 @@ export default function SignUp() {
     !isEmailValid ||
     !isFirstNameValid ||
     !isLastNameValid ||
-    signUpWithEmail.isPending;
+    signUpWithEmail.isPending ||
+    !acceptedPolicies;
 
   function handleSignUp() {
     if (!trimmedEmail || !password || !confirmPassword || !trimmedFirstName || !trimmedLastName) {
@@ -243,18 +244,17 @@ export default function SignUp() {
                 <Text
                   className="underline"
                   onPress={() =>
-                    Linking.openURL(`${process.env.EXPO_PUBLIC_WEB_INTERFACE_URL}/terms`)
+                    openExternalUrl(`${process.env.EXPO_PUBLIC_WEB_INTERFACE_URL}/terms`)
                   }>
                   Terms of Service
                 </Text>{' '}
                 and{' '}
                 <Text
                   className="underline"
-                  onPress={() =>
-                    Linking.openURL(
-                      `${process.env.EXPO_PUBLIC_WEB_INTERFACE_URL}/statement-of-faith`,
-                    )
-                  }>
+                  onPress={async () => {
+                    const url = `${process.env.EXPO_PUBLIC_WEB_INTERFACE_URL}/statement-of-faith`;
+                    await openExternalUrl(url);
+                  }}>
                   Statement of Faith
                 </Text>
                 .

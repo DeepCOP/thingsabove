@@ -915,6 +915,7 @@ export type Database = {
           avatar_url: string | null;
           bio: string | null;
           church_id: string | null;
+          church_joined_at: string | null;
           created_at: string | null;
           email: string;
           expo_push_token: string | null;
@@ -931,6 +932,7 @@ export type Database = {
           avatar_url?: string | null;
           bio?: string | null;
           church_id?: string | null;
+          church_joined_at?: string | null;
           created_at?: string | null;
           email: string;
           expo_push_token?: string | null;
@@ -947,6 +949,7 @@ export type Database = {
           avatar_url?: string | null;
           bio?: string | null;
           church_id?: string | null;
+          church_joined_at?: string | null;
           created_at?: string | null;
           email?: string;
           expo_push_token?: string | null;
@@ -1487,6 +1490,21 @@ export type Database = {
         Returns: string;
       };
       get_church_analytics: { Args: { p_church_id: string }; Returns: Json };
+      get_church_members: {
+        Args: {
+          p_church_id: string;
+          p_limit?: number;
+          p_offset?: number;
+          p_search?: string;
+        };
+        Returns: {
+          avatar_url: string | null;
+          church_joined_at: string | null;
+          first_name: string | null;
+          id: string;
+          last_name: string | null;
+        }[];
+      };
       get_day_items_progress: {
         Args: {
           p_day_id: string;
