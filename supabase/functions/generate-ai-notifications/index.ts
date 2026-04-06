@@ -6,6 +6,18 @@ const MODEL_NAME = 'gemini-2.5-flash';
 const PLANNER_LIMIT = 12;
 const PLANNER_REQUEST_DELAY_MS = 1200;
 
+const ALLOWED_CATEGORIES = [
+  'invite_friends',
+  'church_attendance',
+  'daily_devotion',
+  'spiritual_support',
+  'good_deed',
+  'prayer_for_someone',
+  'share_gospel',
+] as const;
+
+type PlannerCategory = (typeof ALLOWED_CATEGORIES)[number];
+
 const SYSTEM_PROMPT = `
 You are planning one occasional push notification for a Christian devotional app user.
 
@@ -16,9 +28,26 @@ Mission:
 
 Your job is to decide:
 - whether a notification should be sent in the next 48 hours
+- which ministry category it belongs to
 - what the notification title should say
 - when to schedule it in the user's local time
 - what the notification message should say
+
+Allowed categories:
+- invite_friends: invite the user to invite more friends to join them in devotions or Bible reading by using the app
+- church_attendance: encourage regular church attendance or reconnecting with a faithful local church
+- daily_devotion: encourage daily devotions or Bible reading to spend time with God
+- spiritual_support: encourage the user to build or lean on a healthy spiritual support group
+- good_deed: encourage the user to do some good deed this week
+- prayer_for_someone: encourage the user to pray for someone this week
+- share_gospel: encourage the user to share the gospel with someone this week
+
+Category rules:
+- Every planned notification must fit exactly one allowed category
+- Choose the category that best matches the user's context and recent history
+- Use the user's history to judge whether daily_devotion is especially needed
+- Do not repeatedly use the same category for the same user unless the context strongly justifies it
+- For church_attendance or spiritual_support, do not falsely imply the app knows what happened offline; use invitational wording unless the context clearly supports a stronger inference
 
 Scheduling rules:
 - Return day_offset as 0, 1, or 2 only
@@ -47,6 +76,7 @@ Decision rules:
 Return JSON only with this shape:
 {
   "should_send": true,
+  "category": "daily_devotion",
   "title": "Short title here",
   "message": "Short message here.",
   "schedule": {
@@ -66,6 +96,7 @@ If should_send is false, return:
 type PlannerDecision = {
   should_send: boolean;
   reason: string;
+  category?: PlannerCategory;
   title?: string;
   message?: string;
   schedule?: {
@@ -169,6 +200,11 @@ function normalizePlannerDecision(value: unknown): PlannerDecision | null {
   const title = typeof record.title === 'string' ? record.title.replace(/\s+/g, ' ').trim() : '';
   const message =
     typeof record.message === 'string' ? record.message.replace(/\s+/g, ' ').trim() : '';
+  const category =
+    typeof record.category === 'string' &&
+    ALLOWED_CATEGORIES.includes(record.category as PlannerCategory)
+      ? (record.category as PlannerCategory)
+      : null;
 
   const schedule =
     record.schedule && typeof record.schedule === 'object'
@@ -180,6 +216,7 @@ function normalizePlannerDecision(value: unknown): PlannerDecision | null {
   const localHour =
     schedule && Number.isInteger(schedule.local_hour) ? Number(schedule.local_hour) : Number.NaN;
 
+  if (!category) return null;
   if (!title || title.length < 4 || title.length > 60) return null;
   if (!message || message.length < 12 || message.length > 240) return null;
   if (!Number.isInteger(dayOffset) || dayOffset < 0 || dayOffset > 2) return null;
@@ -188,6 +225,7 @@ function normalizePlannerDecision(value: unknown): PlannerDecision | null {
   return {
     should_send: true,
     reason,
+    category,
     title,
     message,
     schedule: {
@@ -278,7 +316,13 @@ ${prompt}
           continue;
         }
 
-        if (!decision.should_send || !decision.title || !decision.message || !decision.schedule) {
+        if (
+          !decision.should_send ||
+          !decision.category ||
+          !decision.title ||
+          !decision.message ||
+          !decision.schedule
+        ) {
           continue;
         }
 
@@ -296,21 +340,13 @@ ${prompt}
           continue;
         }
 
-        const nowIso = new Date().toISOString();
         const { error: insertError } = await supabase.from('ai_triggers').insert({
           user_id: candidate.user_id,
           trigger_reason: decision.reason,
-          planner_reason: decision.reason,
-          context: plannerContext,
+          planner_category: decision.category,
           generated_title: decision.title,
           generated_message: decision.message,
           scheduled_for: scheduledFor,
-          planner_payload: {
-            decision,
-            planned_at: nowIso,
-            raw_response: rawResponse,
-          },
-          planning_model: MODEL_NAME,
         });
 
         if (insertError) {
