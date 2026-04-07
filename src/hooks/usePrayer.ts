@@ -9,12 +9,12 @@ import {
   fetchPrayerRequestDetail,
   fetchPrayerRequestEncouragements,
   fetchPrayerRequests,
+  PRAYER_REQUESTS_PAGE_SIZE,
 } from '@/src/api/prayerQueries';
 import {
   PrayerFilter,
   PrayerRequestCursor,
   PrayerRequestDetail,
-  PrayerRequestFeedItem,
   PrayerRequestPage,
   PrayerScope,
 } from '@/src/types/types';
@@ -25,7 +25,6 @@ import {
   useQuery,
   useQueryClient,
 } from '@tanstack/react-query';
-import { PRAYER_REQUESTS_PAGE_SIZE } from '@/src/api/prayerQueries';
 
 const togglePrayerSupportFields = <
   T extends {
