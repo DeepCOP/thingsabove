@@ -89,15 +89,6 @@ export default function SignUp() {
       Alert.alert('Password mismatch', 'Passwords do not match.');
       return;
     }
-
-    if (!acceptedPolicies) {
-      Alert.alert(
-        'Agreement required',
-        'You must accept the Terms of Service and Statement of Faith before creating an account.',
-      );
-      return;
-    }
-
     signUpWithEmail.mutate(
       { email: trimmedEmail, password, firstName: trimmedFirstName, lastName: trimmedLastName },
       {

@@ -1,8 +1,8 @@
 import LoadingSpinner from '@/src/components/LoadingSpinner';
+import { useChurchAnalytics } from '@/src/hooks/useChurchAnalytics';
 import UserAvatar from '@/src/components/UserAvatar';
 import { useChurch } from '@/src/hooks/useChurch';
 import { useChurchMembers } from '@/src/hooks/useChurchMembers';
-import { useChurchStats } from '@/src/hooks/useChurchStats';
 import { useDebounce } from '@/src/utils';
 import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
@@ -33,15 +33,17 @@ export default function ChurchMembersScreen({ churchId }: Props) {
 
   const churchQuery = useChurch(churchId);
   const { membersQuery, members } = useChurchMembers(churchId, debouncedQuery);
-  const statsQuery = useChurchStats(churchId);
+  const analyticsQuery = useChurchAnalytics(churchId);
 
   const isLoading =
-    churchQuery.isLoading || statsQuery.isLoading || (membersQuery.isLoading && !membersQuery.data);
+    churchQuery.isLoading ||
+    analyticsQuery.isLoading ||
+    (membersQuery.isLoading && !membersQuery.data);
 
-  const error = churchQuery.error || membersQuery.error || statsQuery.error;
+  const error = churchQuery.error || membersQuery.error || analyticsQuery.error;
 
   const church = churchQuery.data;
-  const stats = statsQuery.data;
+  const stats = analyticsQuery.data?.stats;
   const hasSearch = Boolean(debouncedQuery);
 
   const handleShareChurch = async () => {
@@ -79,7 +81,7 @@ export default function ChurchMembersScreen({ churchId }: Props) {
           onPress={() => {
             churchQuery.refetch();
             membersQuery.refetch();
-            statsQuery.refetch();
+            analyticsQuery.refetch();
           }}>
           <Text className="font-semibold text-white dark:text-black">Try again</Text>
         </TouchableOpacity>

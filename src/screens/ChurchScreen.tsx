@@ -12,10 +12,9 @@ import {
 import ChurchSnapshotCard from '@/src/components/church/ChurchSnapshotCard';
 import ChurchStatGrid from '@/src/components/church/ChurchStatGrid';
 import ChurchTopPlansList from '@/src/components/church/ChurchTopPlansList';
+import { useChurchAnalytics } from '@/src/hooks/useChurchAnalytics';
 import { useChurch } from '@/src/hooks/useChurch';
 import { useChurchMembers } from '@/src/hooks/useChurchMembers';
-import { useChurchStats } from '@/src/hooks/useChurchStats';
-import { useChurchTopPlans } from '@/src/hooks/useChurchTopPlans';
 import { useProfile } from '@/src/hooks/useProfile';
 import { useAuth } from '@/src/state/AuthContext';
 import { Href, useRouter } from 'expo-router';
@@ -35,15 +34,14 @@ export default function ChurchScreen({ churchId }: Props) {
 
   const viewerProfileQuery = useProfile(session?.user?.id);
   const viewerChurchId = viewerProfileQuery.data?.church?.id ?? null;
-  const isViewerChurch = viewerChurchId === churchId;
+  const canInviteMembers = viewerChurchId === churchId;
   const churchQuery = useChurch(churchId);
-  const statsQuery = useChurchStats(isViewerChurch ? churchId : undefined);
-  const topPlansQuery = useChurchTopPlans(isViewerChurch ? churchId : undefined);
-  const { membersQuery, members } = useChurchMembers(isViewerChurch ? churchId : undefined);
+  const analyticsQuery = useChurchAnalytics(churchId);
+  const { membersQuery, members } = useChurchMembers(churchId);
 
   const church = churchQuery.data;
-  const stats = statsQuery.data;
-  const topPlans = topPlansQuery.data ?? [];
+  const stats = analyticsQuery.data?.stats;
+  const topPlans = analyticsQuery.data?.topPlans ?? [];
   const membersPreview = members.slice(0, 4);
 
   const handleShareChurch = async () => {
@@ -91,7 +89,7 @@ export default function ChurchScreen({ churchId }: Props) {
         ) : church ? (
           <ChurchHeroCard
             church={church}
-            memberCount={isViewerChurch ? stats?.memberCount : undefined}
+            memberCount={stats?.memberCount}
             onOpenWebsite={handleOpenWebsite}
           />
         ) : (
@@ -102,79 +100,75 @@ export default function ChurchScreen({ churchId }: Props) {
         )}
       </View>
 
-      {isViewerChurch ? (
-        <>
-          <View className="mt-4 px-4">
-            {statsQuery.isLoading ? (
-              <ChurchStatGridSkeleton />
-            ) : statsQuery.error ? (
-              <ChurchSectionErrorCard
-                title="Unable to load church stats"
-                description="We could not load the church stats right now."
-                onRetry={() => statsQuery.refetch()}
-              />
-            ) : stats ? (
-              <ChurchStatGrid stats={stats} />
-            ) : null}
-          </View>
+      <View className="mt-4 px-4">
+        {analyticsQuery.isLoading ? (
+          <ChurchStatGridSkeleton />
+        ) : analyticsQuery.error ? (
+          <ChurchSectionErrorCard
+            title="Unable to load church stats"
+            description="We could not load the church stats right now."
+            onRetry={() => analyticsQuery.refetch()}
+          />
+        ) : stats ? (
+          <ChurchStatGrid stats={stats} />
+        ) : null}
+      </View>
 
-          <View className="mt-6 px-4">
-            {statsQuery.isLoading ? (
-              <ChurchCardSkeleton rows={2} />
-            ) : statsQuery.error ? (
-              <ChurchSectionErrorCard
-                title="Unable to load the snapshot"
-                description="The church snapshot is unavailable right now."
-                onRetry={() => statsQuery.refetch()}
-              />
-            ) : stats ? (
-              <ChurchSnapshotCard stats={stats} />
-            ) : null}
-          </View>
+      <View className="mt-6 px-4">
+        {analyticsQuery.isLoading ? (
+          <ChurchCardSkeleton rows={2} />
+        ) : analyticsQuery.error ? (
+          <ChurchSectionErrorCard
+            title="Unable to load the snapshot"
+            description="The church snapshot is unavailable right now."
+            onRetry={() => analyticsQuery.refetch()}
+          />
+        ) : stats ? (
+          <ChurchSnapshotCard stats={stats} />
+        ) : null}
+      </View>
 
-          <View className="mt-6 px-4">
-            {topPlansQuery.isLoading ? (
-              <ChurchTopPlansListSkeleton />
-            ) : topPlansQuery.error ? (
-              <ChurchSectionErrorCard
-                title="Unable to load top devotionals"
-                description="We could not load the top devotional activity right now."
-                onRetry={() => topPlansQuery.refetch()}
-              />
-            ) : (
-              <ChurchTopPlansList plans={topPlans} onPlanPress={handleOpenPlan} />
-            )}
-          </View>
+      <View className="mt-6 px-4">
+        {analyticsQuery.isLoading ? (
+          <ChurchTopPlansListSkeleton />
+        ) : analyticsQuery.error ? (
+          <ChurchSectionErrorCard
+            title="Unable to load top devotionals"
+            description="We could not load the top devotional activity right now."
+            onRetry={() => analyticsQuery.refetch()}
+          />
+        ) : (
+          <ChurchTopPlansList plans={topPlans} onPlanPress={handleOpenPlan} />
+        )}
+      </View>
 
-          <View className="mt-6 px-4">
-            {membersQuery.isLoading ? (
-              <ChurchMembersPreviewSkeleton />
-            ) : membersQuery.error ? (
-              <ChurchSectionErrorCard
-                title="Unable to load members"
-                description="We could not load the member preview right now."
-                onRetry={() => membersQuery.refetch()}
-              />
-            ) : (
-              <ChurchMembersPreview members={membersPreview} onSeeAll={handleOpenMembers} />
-            )}
-          </View>
+      <View className="mt-6 px-4">
+        {membersQuery.isLoading ? (
+          <ChurchMembersPreviewSkeleton />
+        ) : membersQuery.error ? (
+          <ChurchSectionErrorCard
+            title="Unable to load members"
+            description="We could not load the member preview right now."
+            onRetry={() => membersQuery.refetch()}
+          />
+        ) : (
+          <ChurchMembersPreview members={membersPreview} onSeeAll={handleOpenMembers} />
+        )}
+      </View>
 
-          <View className="mt-6 px-4">
-            {statsQuery.isLoading ? (
-              <ChurchCardSkeleton rows={2} />
-            ) : statsQuery.error ? (
-              <ChurchSectionErrorCard
-                title="Unable to load recent activity"
-                description="Recent church activity is unavailable right now."
-                onRetry={() => statsQuery.refetch()}
-              />
-            ) : stats ? (
-              <ChurchRecentActivityCard stats={stats} />
-            ) : null}
-          </View>
-        </>
-      ) : null}
+      <View className="mt-6 px-4">
+        {analyticsQuery.isLoading ? (
+          <ChurchCardSkeleton rows={2} />
+        ) : analyticsQuery.error ? (
+          <ChurchSectionErrorCard
+            title="Unable to load recent activity"
+            description="Recent church activity is unavailable right now."
+            onRetry={() => analyticsQuery.refetch()}
+          />
+        ) : stats ? (
+          <ChurchRecentActivityCard stats={stats} />
+        ) : null}
+      </View>
 
       <View className="mt-6 px-4">
         {churchQuery.isLoading ? (
@@ -188,7 +182,7 @@ export default function ChurchScreen({ churchId }: Props) {
         ) : church ? (
           <ChurchActionsCard
             canOpenWebsite={Boolean(church.website_url)}
-            onInvitePress={handleShareChurch}
+            onInvitePress={canInviteMembers ? handleShareChurch : undefined}
             onSharePress={handleShareChurch}
             onOpenWebsitePress={handleOpenWebsite}
           />
