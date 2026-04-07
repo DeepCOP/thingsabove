@@ -16,6 +16,7 @@ type Props = {
   selected: string[];
   isSubmitting: boolean;
   isSharing: boolean;
+  submitLabel: string;
 
   onToggle: (id: string) => void;
   onSelectAll: () => void;
@@ -30,6 +31,7 @@ export default function InviteFriendsScreen({
   selected,
   isSubmitting,
   isSharing,
+  submitLabel,
   onToggle,
   onSelectAll,
   onClearSelection,
@@ -93,14 +95,14 @@ export default function InviteFriendsScreen({
           />
 
           <TouchableOpacity
-            disabled={selected.length === 0 || isSubmitting}
+            disabled={isSubmitting}
             onPress={onSubmit}
             className="bg-black dark:bg-white py-4 rounded-full mt-4">
             {isSubmitting ? (
               <LoadingSpinner size="small" />
             ) : (
               <Text className="text-white dark:text-black text-center font-semibold">
-                Invite {selected.length} Friend{selected.length === 1 ? '' : 's'}
+                {submitLabel}
               </Text>
             )}
           </TouchableOpacity>
@@ -121,14 +123,25 @@ export default function InviteFriendsScreen({
             No friends ready to invite
           </Text>
           <Text className="mt-2 text-center text-sm leading-6 text-gray-600 dark:text-gray-400">
-            Add friends, or share a group plan invitation link.
+            Add friends, start the plan now, or share a group plan invitation link.
           </Text>
+
+          <TouchableOpacity
+            disabled={isSubmitting}
+            onPress={onSubmit}
+            className="mt-6 rounded-full bg-black px-6 py-4 dark:bg-white">
+            {isSubmitting ? (
+              <LoadingSpinner size="small" />
+            ) : (
+              <Text className="font-semibold text-white dark:text-black">{submitLabel}</Text>
+            )}
+          </TouchableOpacity>
 
           <TouchableOpacity
             disabled={isSharing}
             onPress={onShareInviteLink}
-            className="mt-6 rounded-full bg-black px-6 py-4 dark:bg-white">
-            <Text className="font-semibold text-white dark:text-black">Share Invite Link</Text>
+            className="mt-3 rounded-full border border-gray-300 px-6 py-4 dark:border-neutral-700">
+            <Text className="font-semibold text-gray-900 dark:text-white">Share Invite Link</Text>
           </TouchableOpacity>
 
           <TouchableOpacity

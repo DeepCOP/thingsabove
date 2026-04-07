@@ -57,7 +57,7 @@ export const buildPlanInvitationMessage = ({
 
   return [
     inviterName
-      ? `${inviterName} invited you to read ${formattedPlanTitle} with them on ThingsAbove.`
+      ? `Join me on this devotional 🙏\n${formattedPlanTitle}\n\n• ${inviterName}`
       : `You are invited to read ${formattedPlanTitle} on ThingsAbove.`,
     invitationUrl,
   ].join('\n\n');

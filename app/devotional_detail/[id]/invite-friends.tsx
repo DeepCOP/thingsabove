@@ -1,6 +1,6 @@
 import LoadingSpinner from '@/src/components/LoadingSpinner';
-import { useFetchDevotionalPlanById } from '@/src/hooks/useDevotionalPlans';
 import { useCreatePlanGroup } from '@/src/hooks/useCreatePlanGroup';
+import { useFetchDevotionalPlanById } from '@/src/hooks/useDevotionalPlans';
 import { useFriends } from '@/src/hooks/useFriends';
 import { useInviteFriends } from '@/src/hooks/useInviteFriends';
 import { usePlanGroupMembers } from '@/src/hooks/usePlanGroup';
@@ -55,7 +55,24 @@ export default function InviteFriends() {
     setSelected((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
   };
 
-  const isSubmitting = inviteFriendsToExistingGroup.isPending || createPlanGroupMutation.isPending;
+  const isSubmitting =
+    inviteFriendsToExistingGroup.isPending || (createPlanGroupMutation.isPending && !isSharing);
+  const submitLabel =
+    selected.length > 0
+      ? `Invite ${selected.length} Friend${selected.length === 1 ? '' : 's'}`
+      : currentGroupId
+        ? 'Continue to Plan'
+        : 'Invite Friend Later';
+
+  const openGroupPlan = (progressIdToOpen: string, nextGroupId?: string) => {
+    router.replace({
+      pathname: '/plan_progress/[progressId]',
+      params: {
+        progressId: progressIdToOpen,
+        ...(nextGroupId ? { groupId: nextGroupId, planId: id as string } : {}),
+      },
+    });
+  };
 
   const ensureGroupForShare = async () => {
     if (currentGroupId) {
@@ -109,58 +126,70 @@ export default function InviteFriends() {
     }
   };
 
+  const handleSubmit = () => {
+    if (currentGroupId) {
+      if (selected.length === 0) {
+        if (!currentProgressId) {
+          Alert.alert('Unable to open group plan', 'Please try again.');
+          return;
+        }
+
+        openGroupPlan(currentProgressId, currentGroupId);
+        return;
+      }
+
+      inviteFriendsToExistingGroup.mutate(selected, {
+        onSuccess: () => {
+          if (!currentProgressId) {
+            Alert.alert('Unable to open group plan', 'Please try again.');
+            return;
+          }
+
+          openGroupPlan(currentProgressId, currentGroupId);
+        },
+      });
+      return;
+    }
+
+    if (!startDate || !session?.user?.id || !id) {
+      Alert.alert('Unable to create group plan', 'Please try again.');
+      return;
+    }
+
+    createPlanGroupMutation.mutate(
+      {
+        plan_id: id as string,
+        invited_user_ids: selected,
+        user_id: session.user.id,
+        start_date: startDate,
+      },
+      {
+        onSuccess: (progress) => {
+          const nextGroupId = progress.group_id ?? undefined;
+
+          setCurrentGroupId(nextGroupId);
+          setCurrentProgressId(progress.id);
+          openGroupPlan(progress.id, nextGroupId);
+        },
+      },
+    );
+  };
+
   return (
     <InviteFriendsScreen
       friends={friends}
       selected={selected}
       isSubmitting={isSubmitting}
-      isSharing={isSharing || isSubmitting}
+      isSharing={
+        isSharing || inviteFriendsToExistingGroup.isPending || createPlanGroupMutation.isPending
+      }
+      submitLabel={submitLabel}
       onToggle={toggle}
       onSelectAll={() => setSelected(friends.map((f) => f.id))}
       onClearSelection={() => setSelected([])}
       onShareInviteLink={handleShareInviteLink}
       onAddFriend={() => router.push('/add_friend')}
-      onSubmit={() => {
-        if (currentGroupId) {
-          inviteFriendsToExistingGroup.mutate(selected, {
-            onSuccess: () => {
-              if (!currentProgressId) {
-                Alert.alert('Unable to open group plan', 'Please try again.');
-                return;
-              }
-
-              router.replace({
-                pathname: '/plan_progress/[progressId]',
-                params: {
-                  groupId: currentGroupId,
-                  planId: id as string,
-                  progressId: currentProgressId,
-                },
-              });
-            },
-          });
-          return;
-        }
-
-        createPlanGroupMutation.mutate(
-          {
-            plan_id: id as string,
-            invited_user_ids: selected,
-            user_id: session?.user?.id as string,
-            start_date: startDate as string,
-          },
-          {
-            onSuccess: (progress) => {
-              setCurrentGroupId(progress.group_id ?? undefined);
-              setCurrentProgressId(progress.id);
-              router.replace({
-                pathname: '/plan_progress/[progressId]',
-                params: { progressId: progress.id },
-              });
-            },
-          },
-        );
-      }}
+      onSubmit={handleSubmit}
     />
   );
 }
