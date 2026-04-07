@@ -8,12 +8,13 @@ import {
   useTogglePrayerRequestSupport,
 } from '@/src/hooks/usePrayer';
 import { useProfile } from '@/src/hooks/useProfile';
-import { PrayerFilter, PrayerScope } from '@/src/types/types';
 import { useAuth } from '@/src/state/AuthContext';
+import { PrayerFilter, PrayerScope } from '@/src/types/types';
 import { useRouter } from 'expo-router';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { RefreshControl, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import LoadingSpinner from '@/src/components/LoadingSpinner';
 
 function PrayerBoardSkeleton() {
   return (
@@ -39,16 +40,28 @@ export default function PrayerBoardScreen() {
   const { session } = useAuth();
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const [scope, setScope] = useState<PrayerScope>('public');
   const [filter, setFilter] = useState<PrayerFilter>('all');
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   const profileQuery = useProfile(session?.user?.id);
-  const boardQuery = usePrayerBoard(scope, filter);
   const togglePrayerMutation = useTogglePrayerRequestSupport();
   const markAnsweredMutation = useSetPrayerRequestAnswered();
 
   const hasChurch = Boolean(profileQuery.data?.church?.id);
+  const [scope, setScope] = useState<PrayerScope>('public');
+  const hasInitializedScopeRef = useRef(false);
+  const boardQuery = usePrayerBoard(scope, filter);
+
   const isChurchLocked = scope === 'church' && !hasChurch;
+
+  useEffect(() => {
+    if (hasInitializedScopeRef.current || profileQuery.isLoading) {
+      return;
+    }
+
+    setScope(hasChurch ? 'church' : 'public');
+    hasInitializedScopeRef.current = true;
+  }, [hasChurch, profileQuery.isLoading]);
 
   const emptyCopy = useMemo(() => {
     if (scope === 'church') {
@@ -90,6 +103,20 @@ export default function PrayerBoardScreen() {
     };
   }, [filter, scope]);
 
+  const boardItems = useMemo(
+    () => boardQuery.data?.pages.flatMap((page) => page.items) ?? [],
+    [boardQuery.data],
+  );
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      await boardQuery.refetch();
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
   return (
     <ScrollView
       className="flex-1 bg-white dark:bg-black"
@@ -99,11 +126,7 @@ export default function PrayerBoardScreen() {
         paddingBottom: insets.bottom + 24,
       }}
       refreshControl={
-        <RefreshControl
-          refreshing={boardQuery.isRefetching}
-          onRefresh={() => boardQuery.refetch()}
-          tintColor="#2563eb"
-        />
+        <RefreshControl refreshing={isRefreshing} onRefresh={handleRefresh} tintColor="#2563eb" />
       }>
       <PrayerScopeSwitch hasChurch={hasChurch} scope={scope} onChange={setScope} />
 
@@ -126,7 +149,7 @@ export default function PrayerBoardScreen() {
           <View className="mt-6 gap-4">
             {boardQuery.isLoading ? (
               <PrayerBoardSkeleton />
-            ) : boardQuery.isError ? (
+            ) : boardQuery.isError && boardItems.length === 0 ? (
               <PrayerEmptyState
                 icon="alert-circle-outline"
                 title="Unable to load the prayer board"
@@ -134,8 +157,8 @@ export default function PrayerBoardScreen() {
                 ctaLabel="Try Again"
                 onCta={() => boardQuery.refetch()}
               />
-            ) : boardQuery.data && boardQuery.data.length > 0 ? (
-              boardQuery.data.map((item) => (
+            ) : boardItems.length > 0 ? (
+              boardItems.map((item) => (
                 <PrayerRequestCard
                   key={item.id}
                   item={item}
@@ -145,7 +168,7 @@ export default function PrayerBoardScreen() {
                       params: { requestId: item.id },
                     })
                   }
-                  onTogglePrayer={() => togglePrayerMutation.mutate(item.id)}
+                  onTogglePraying={() => togglePrayerMutation.mutate(item.id)}
                   onEncourage={() =>
                     router.push({
                       pathname: '/prayer/[requestId]',
@@ -161,9 +184,6 @@ export default function PrayerBoardScreen() {
                           })
                       : undefined
                   }
-                  praying={
-                    togglePrayerMutation.isPending && togglePrayerMutation.variables === item.id
-                  }
                   answering={
                     markAnsweredMutation.isPending &&
                     markAnsweredMutation.variables?.requestId === item.id
@@ -178,6 +198,22 @@ export default function PrayerBoardScreen() {
                 onCta={() => router.push('/prayer/new')}
               />
             )}
+
+            {boardItems.length > 0 && boardQuery.hasNextPage ? (
+              <View className="items-center pt-2">
+                {boardQuery.isFetchingNextPage ? (
+                  <LoadingSpinner size="small" />
+                ) : (
+                  <TouchableOpacity
+                    className="rounded-full border border-gray-300 px-5 py-3 dark:border-neutral-700"
+                    onPress={() => boardQuery.fetchNextPage()}>
+                    <Text className="font-medium text-gray-900 dark:text-white">
+                      Load More Requests
+                    </Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+            ) : null}
           </View>
         </>
       )}

@@ -5,7 +5,7 @@ import { useAuth } from '@/src/state/AuthContext';
 import { PrayerCategory, PrayerScope } from '@/src/types/types';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Alert,
   KeyboardAvoidingView,
@@ -41,8 +41,10 @@ export default function PrayerRequestComposerScreen({ requestId }: Props) {
   const [isAnonymous, setIsAnonymous] = useState(false);
   const [isUrgent, setIsUrgent] = useState(false);
   const [allowComments, setAllowComments] = useState(true);
+  const hasInitializedScopeRef = useRef(false);
 
   const hasChurch = Boolean(profileQuery.data?.church?.id);
+  const isEditing = Boolean(requestId);
   const switchTrackColor =
     colorScheme === 'dark'
       ? { false: '#3f3f46', true: '#2563eb' }
@@ -61,7 +63,15 @@ export default function PrayerRequestComposerScreen({ requestId }: Props) {
     setAllowComments(requestQuery.data.allow_comments);
   }, [requestQuery.data]);
 
-  const isEditing = Boolean(requestId);
+  useEffect(() => {
+    if (isEditing || hasInitializedScopeRef.current || profileQuery.isLoading) {
+      return;
+    }
+
+    setScope(hasChurch ? 'church' : 'public');
+    hasInitializedScopeRef.current = true;
+  }, [hasChurch, isEditing, profileQuery.isLoading]);
+
   const hasLoadedEditableRequest = !isEditing || Boolean(requestQuery.data?.viewer_is_owner);
   const isSubmitDisabled =
     saveMutation.isPending ||
@@ -168,7 +178,7 @@ export default function PrayerRequestComposerScreen({ requestId }: Props) {
             multiline
             value={requestText}
             onChangeText={setRequestText}
-            placeholder="Share how others can pray for you..."
+            placeholder="What do you need prayer for? (e.g. job decision, family situation, health concern)"
             placeholderTextColor="#9ca3af"
             maxLength={500}
             className="mt-3 min-h-36 rounded-3xl border border-gray-200 p-4 text-base text-gray-900 dark:border-neutral-700 dark:text-white"
@@ -244,7 +254,7 @@ export default function PrayerRequestComposerScreen({ requestId }: Props) {
           <View className="mt-4 flex-row items-center justify-between">
             <View className="flex-1 pr-4">
               <Text className="text-base font-medium text-gray-900 dark:text-white">
-                Allow encouragement replies
+                Allow encouragements
               </Text>
               <Text className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                 Let others post a short prayer or encouragement beneath your request.

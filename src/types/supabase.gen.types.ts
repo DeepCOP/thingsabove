@@ -1865,7 +1865,14 @@ export type Database = {
         }[];
       };
       get_prayer_requests: {
-        Args: { p_filter?: string; p_scope?: string };
+        Args: {
+          p_before_created_at?: string;
+          p_before_id?: string;
+          p_before_is_urgent?: boolean;
+          p_filter?: string;
+          p_limit?: number;
+          p_scope?: string;
+        };
         Returns: {
           allow_comments: boolean;
           answered_at: string | null;

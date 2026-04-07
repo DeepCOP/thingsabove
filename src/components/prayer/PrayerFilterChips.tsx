@@ -3,9 +3,9 @@ import { Text, TouchableOpacity, View } from 'react-native';
 
 const FILTERS: { label: string; value: PrayerFilter }[] = [
   { label: 'All', value: 'all' },
+  { label: 'Mine', value: 'mine' },
   { label: 'Urgent', value: 'urgent' },
   { label: 'Answered', value: 'answered' },
-  { label: 'Mine', value: 'mine' },
 ];
 
 type Props = {

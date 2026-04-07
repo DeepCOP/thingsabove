@@ -9,10 +9,9 @@ type PrayerItem = PrayerRequestFeedItem | PrayerRequestDetail;
 type Props = {
   item: PrayerItem;
   onPress: () => void;
-  onTogglePrayer: () => void;
+  onTogglePraying: () => void;
   onEncourage: () => void;
   onMarkAnswered?: () => void;
-  praying?: boolean;
   answering?: boolean;
 };
 
@@ -36,10 +35,9 @@ function getScopeLabel(item: PrayerItem) {
 export default function PrayerRequestCard({
   item,
   onPress,
-  onTogglePrayer,
+  onTogglePraying,
   onEncourage,
   onMarkAnswered,
-  praying,
   answering,
 }: Props) {
   const displayName = getDisplayName(item);
@@ -98,14 +96,12 @@ export default function PrayerRequestCard({
       </TouchableOpacity>
 
       <View className="mt-5 flex-row items-center justify-between gap-3">
-        <TouchableOpacity className="flex-row items-center gap-2" onPress={onTogglePrayer}>
-          <Ionicons
-            name={item.viewer_has_prayed ? 'heart' : 'heart-outline'}
-            size={18}
-            color={item.viewer_has_prayed ? '#dc2626' : '#6b7280'}
-          />
+        <TouchableOpacity className="flex-row items-center gap-2" onPress={onTogglePraying}>
+          <Text className="text-base" style={{ opacity: item.viewer_has_prayed ? 1 : 0.55 }}>
+            🙏
+          </Text>
           <Text className="text-sm text-gray-600 dark:text-gray-400">
-            {praying ? 'Saving...' : `Praying ${item.prayer_count}`}
+            {item.viewer_has_prayed ? `Praying ${item.prayer_count}` : `Pray ${item.prayer_count}`}
           </Text>
         </TouchableOpacity>
 

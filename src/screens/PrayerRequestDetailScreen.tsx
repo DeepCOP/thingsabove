@@ -1,7 +1,6 @@
 import LoadingSpinner from '@/src/components/LoadingSpinner';
 import PrayerEmptyState from '@/src/components/prayer/PrayerEmptyState';
 import UserAvatar from '@/src/components/UserAvatar';
-import { formatRelativeTime } from '@/src/lib/relativeTime';
 import {
   useAddPrayerRequestEncouragement,
   usePrayerRequest,
@@ -9,6 +8,7 @@ import {
   useSetPrayerRequestAnswered,
   useTogglePrayerRequestSupport,
 } from '@/src/hooks/usePrayer';
+import { formatRelativeTime } from '@/src/lib/relativeTime';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
@@ -164,13 +164,13 @@ export default function PrayerRequestDetailScreen({ requestId }: Props) {
             <TouchableOpacity
               className="flex-row items-center gap-2"
               onPress={() => togglePrayerMutation.mutate(request.id)}>
-              <Ionicons
-                name={request.viewer_has_prayed ? 'heart' : 'heart-outline'}
-                size={18}
-                color={request.viewer_has_prayed ? '#dc2626' : '#6b7280'}
-              />
+              <Text className="text-base" style={{ opacity: request.viewer_has_prayed ? 1 : 0.55 }}>
+                🙏
+              </Text>
               <Text className="text-sm text-gray-600 dark:text-gray-400">
-                {togglePrayerMutation.isPending ? 'Saving...' : `Praying ${request.prayer_count}`}
+                {request.viewer_has_prayed
+                  ? `Praying ${request.prayer_count}`
+                  : `Pray ${request.prayer_count}`}
               </Text>
             </TouchableOpacity>
 

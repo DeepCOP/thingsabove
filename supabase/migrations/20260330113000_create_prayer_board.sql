@@ -466,9 +466,15 @@ begin
 end;
 $$;
 
+drop function if exists public.get_prayer_requests(text, text);
+
 create or replace function public.get_prayer_requests(
   p_scope text default 'public',
-  p_filter text default 'all'
+  p_filter text default 'all',
+  p_limit integer default 20,
+  p_before_is_urgent boolean default null,
+  p_before_created_at timestamptz default null,
+  p_before_id uuid default null
 )
 returns table (
   id uuid,
@@ -502,12 +508,28 @@ as $$
     from public.prayer_requests pr
     where pr.scope = p_scope
       and public.can_access_prayer_scope(pr.scope, pr.church_id)
+      and pr.created_at >= (now() - interval '1 year')
       and (
         p_filter = 'all'
         or (p_filter = 'urgent' and pr.is_urgent)
         or (p_filter = 'answered' and pr.is_answered)
         or (p_filter = 'mine' and pr.user_id = auth.uid())
       )
+      and (
+        p_before_created_at is null
+        or pr.is_urgent < p_before_is_urgent
+        or (
+          pr.is_urgent = p_before_is_urgent
+          and pr.created_at < p_before_created_at
+        )
+        or (
+          pr.is_urgent = p_before_is_urgent
+          and pr.created_at = p_before_created_at
+          and pr.id < p_before_id
+        )
+      )
+    order by pr.is_urgent desc, pr.created_at desc, pr.id desc
+    limit greatest(coalesce(p_limit, 20), 1)
   ),
   prayer_counts as (
     select request_id, count(*)::int as prayer_count
@@ -551,7 +573,7 @@ as $$
   left join public.churches ch on ch.id = fr.church_id
   left join prayer_counts pc on pc.request_id = fr.id
   left join encouragement_counts ec on ec.request_id = fr.id
-  order by fr.is_urgent desc, fr.created_at desc
+  order by fr.is_urgent desc, fr.created_at desc, fr.id desc
 $$;
 
 create or replace function public.get_prayer_request_detail(
@@ -586,8 +608,9 @@ security invoker
 as $$
   select *
   from public.get_prayer_requests(
-    coalesce((select scope from public.prayer_requests where id = p_request_id), 'public'),
-    'all'
+    p_scope => coalesce((select scope from public.prayer_requests where id = p_request_id), 'public'),
+    p_filter => 'all',
+    p_limit => 1
   )
   where id = p_request_id
   limit 1

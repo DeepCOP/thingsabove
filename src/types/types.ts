@@ -206,6 +206,17 @@ export type PrayerRequestFeedItem =
 export type PrayerRequestDetail =
   Database['public']['Functions']['get_prayer_request_detail']['Returns'][number];
 
+export type PrayerRequestCursor = {
+  beforeCreatedAt: string;
+  beforeId: string;
+  beforeIsUrgent: boolean;
+};
+
+export type PrayerRequestPage = {
+  items: PrayerRequestFeedItem[];
+  nextCursor?: PrayerRequestCursor;
+};
+
 export type PrayerEncouragementListItem = PrayerRequestEncouragement & {
   author: Pick<Profiles, 'id' | 'first_name' | 'last_name' | 'avatar_url'> | null;
 };

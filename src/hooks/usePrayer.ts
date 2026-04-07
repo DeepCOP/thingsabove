@@ -10,13 +10,53 @@ import {
   fetchPrayerRequestEncouragements,
   fetchPrayerRequests,
 } from '@/src/api/prayerQueries';
-import { PrayerFilter, PrayerScope } from '@/src/types/types';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  PrayerFilter,
+  PrayerRequestCursor,
+  PrayerRequestDetail,
+  PrayerRequestFeedItem,
+  PrayerRequestPage,
+  PrayerScope,
+} from '@/src/types/types';
+import {
+  InfiniteData,
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query';
+import { PRAYER_REQUESTS_PAGE_SIZE } from '@/src/api/prayerQueries';
+
+const togglePrayerSupportFields = <
+  T extends {
+    id: string;
+    prayer_count: number;
+    viewer_has_prayed: boolean;
+  },
+>(
+  item: T,
+) => {
+  const nextHasPrayed = !item.viewer_has_prayed;
+
+  return {
+    ...item,
+    viewer_has_prayed: nextHasPrayed,
+    prayer_count: Math.max(0, item.prayer_count + (nextHasPrayed ? 1 : -1)),
+  };
+};
 
 export function usePrayerBoard(scope: PrayerScope, filter: PrayerFilter) {
-  return useQuery({
+  return useInfiniteQuery({
     queryKey: ['prayer_requests', scope, filter],
-    queryFn: async () => await fetchPrayerRequests({ scope, filter }),
+    initialPageParam: null as PrayerRequestCursor | null,
+    queryFn: async ({ pageParam }) =>
+      await fetchPrayerRequests({
+        scope,
+        filter,
+        limit: PRAYER_REQUESTS_PAGE_SIZE,
+        cursor: pageParam,
+      }),
+    getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
   });
 }
 
@@ -55,7 +95,53 @@ export function useTogglePrayerRequestSupport() {
 
   return useMutation({
     mutationFn: async (requestId: string) => await togglePrayerRequestSupport(requestId),
-    onSuccess: (_didPray, requestId) => {
+    onMutate: async (requestId) => {
+      await queryClient.cancelQueries({ queryKey: ['prayer_requests'] });
+      await queryClient.cancelQueries({ queryKey: ['prayer_request', requestId] });
+
+      const previousPrayerRequestLists = queryClient.getQueriesData<
+        InfiniteData<PrayerRequestPage>
+      >({
+        queryKey: ['prayer_requests'],
+      });
+      const previousPrayerRequestDetail = queryClient.getQueryData<PrayerRequestDetail | null>([
+        'prayer_request',
+        requestId,
+      ]);
+
+      queryClient.setQueriesData<InfiniteData<PrayerRequestPage>>(
+        { queryKey: ['prayer_requests'] },
+        (current) =>
+          current
+            ? {
+                ...current,
+                pages: current.pages.map((page) => ({
+                  ...page,
+                  items: page.items.map((item) =>
+                    item.id === requestId ? togglePrayerSupportFields(item) : item,
+                  ),
+                })),
+              }
+            : current,
+      );
+
+      queryClient.setQueryData<PrayerRequestDetail | null>(
+        ['prayer_request', requestId],
+        (current) => (current ? togglePrayerSupportFields(current) : current),
+      );
+
+      return {
+        previousPrayerRequestLists,
+        previousPrayerRequestDetail,
+      };
+    },
+    onError: (_error, requestId, context) => {
+      context?.previousPrayerRequestLists.forEach(([queryKey, data]) => {
+        queryClient.setQueryData(queryKey, data);
+      });
+      queryClient.setQueryData(['prayer_request', requestId], context?.previousPrayerRequestDetail);
+    },
+    onSettled: (_didPray, _error, requestId) => {
       queryClient.invalidateQueries({ queryKey: ['prayer_requests'] });
       queryClient.invalidateQueries({ queryKey: ['prayer_request', requestId] });
     },
