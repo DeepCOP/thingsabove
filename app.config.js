@@ -2,7 +2,7 @@ const { version } = require('./package.json');
 
 export default ({ config }) => ({
   expo: {
-    name: 'thingsabove',
+    name: 'Things Above',
     slug: 'thingsabove',
     version,
     orientation: 'portrait',
