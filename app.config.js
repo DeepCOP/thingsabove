@@ -14,6 +14,7 @@ export default ({ config }) => ({
     ios: {
       supportsTablet: true,
       bundleIdentifier: 'life.thingsabove',
+      associatedDomains: ['applinks:thingsabove.life'],
       infoPlist: {
         ITSAppUsesNonExemptEncryption: false,
       },
@@ -32,6 +33,40 @@ export default ({ config }) => ({
       edgeToEdgeEnabled: true,
       predictiveBackGestureEnabled: false,
       package: 'life.thingsabove',
+      intentFilters: [
+        {
+          action: 'VIEW',
+          autoVerify: true,
+          data: [
+            {
+              scheme: 'https',
+              host: 'thingsabove.life',
+              pathPrefix: '/auth',
+            },
+            {
+              scheme: 'https',
+              host: 'thingsabove.life',
+              pathPrefix: '/church',
+            },
+            {
+              scheme: 'https',
+              host: 'thingsabove.life',
+              pathPrefix: '/devotional_detail',
+            },
+            {
+              scheme: 'https',
+              host: 'thingsabove.life',
+              pathPrefix: '/plan_progress',
+            },
+            {
+              scheme: 'https',
+              host: 'thingsabove.life',
+              pathPrefix: '/bible',
+            },
+          ],
+          category: ['BROWSABLE', 'DEFAULT'],
+        },
+      ],
     },
 
     web: {
