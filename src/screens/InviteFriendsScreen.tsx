@@ -63,7 +63,12 @@ export default function InviteFriendsScreen({
                 <TouchableOpacity
                   onPress={() => onToggle(item.id)}
                   className="flex-row items-center gap-2 mb-3 p-3 rounded-xl bg-gray-100 dark:bg-neutral-900">
-                  <UserAvatar initial={item.first_name[0]} uri={item.avatar_url} size={34} />
+                  <UserAvatar
+                    uri={item.avatar_url}
+                    first_name={item.first_name}
+                    last_name={item.last_name}
+                    size={34}
+                  />
 
                   <Text className="flex-1 dark:text-white font-semibold">
                     {item.first_name} {item.last_name}

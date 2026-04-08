@@ -142,6 +142,25 @@ export function incrementPlanCompletionsInInfiniteData(data: unknown, planId: st
   };
 }
 
+export function getAvatarInitials(first_name?: string | null, last_name?: string | null) {
+  const firstInitial = first_name?.trim()?.[0] ?? '';
+  const lastInitial = last_name?.trim()?.[0] ?? '';
+
+  if (firstInitial && lastInitial) {
+    return `${firstInitial}${lastInitial}`.toUpperCase();
+  }
+
+  if (firstInitial) {
+    return firstInitial.toUpperCase();
+  }
+
+  if (lastInitial) {
+    return lastInitial.toUpperCase();
+  }
+
+  return 'U';
+}
+
 export async function openExternalUrl(url?: string | null) {
   if (!url) return false;
 

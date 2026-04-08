@@ -20,7 +20,8 @@ export function GroupAvatarsRow({ members, onPress }: Props) {
           style={{ marginLeft: i === 0 ? 0 : -overlap, zIndex: 100 - i }}>
           <UserAvatar
             uri={m.profiles.avatar_url}
-            initial={m.profiles.first_name?.[0] ?? 'U'}
+            first_name={m.profiles?.first_name}
+            last_name={m.profiles?.last_name}
             size={size}
           />
         </TouchableOpacity>

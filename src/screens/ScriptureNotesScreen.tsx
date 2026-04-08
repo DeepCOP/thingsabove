@@ -312,7 +312,8 @@ export default function ScriptureNotesScreen({
                       <View className="flex-row items-start">
                         <UserAvatar
                           uri={note.avatar_url}
-                          initial={note.first_name?.[0] ?? 'U'}
+                          first_name={note.first_name}
+                          last_name={note.last_name}
                           size={34}
                         />
 
@@ -381,7 +382,8 @@ export default function ScriptureNotesScreen({
                           <View className="flex-row items-start">
                             <UserAvatar
                               uri={reply.avatar_url}
-                              initial={reply.first_name?.[0] ?? 'U'}
+                              first_name={reply.first_name}
+                              last_name={reply.last_name}
                               size={30}
                             />
 

@@ -51,7 +51,8 @@ export default function ParticipantsScreen({
               <View className="flex-row items-center mb-2">
                 <UserAvatar
                   uri={item.profiles.avatar_url}
-                  initial={item.profiles.first_name?.[0] ?? 'U'}
+                  first_name={item.profiles.first_name}
+                  last_name={item.profiles.last_name}
                   size={40}
                 />
 

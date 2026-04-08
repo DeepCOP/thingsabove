@@ -129,7 +129,8 @@ export default function Avatar({
       <View style={{ position: 'relative' }}>
         <UserAvatar
           uri={profile?.avatar_url}
-          initial={profile?.first_name?.[0] ?? 'U'}
+          first_name={profile?.first_name}
+          last_name={profile?.last_name}
           size={avatarSize.width}
         />
 

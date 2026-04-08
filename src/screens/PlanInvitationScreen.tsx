@@ -4,7 +4,6 @@ import UserAvatar from '../components/UserAvatar';
 
 type Props = {
   inviterName: string;
-  inviterInitial: string;
   inviterAvatar?: string | null;
 
   planTitle?: string;
@@ -25,7 +24,6 @@ type Props = {
 
 export default function PlanInvitationScreen({
   inviterName,
-  inviterInitial,
   inviterAvatar,
   planTitle,
   planCover,
@@ -40,12 +38,20 @@ export default function PlanInvitationScreen({
   onDecline,
 }: Props) {
   const insets = useSafeAreaInsets();
+  const inviterNameParts = inviterName.trim().split(/\s+/).filter(Boolean);
+  const inviterFirstName = inviterNameParts[0] ?? '';
+  const inviterLastName = inviterNameParts.slice(1).join(' ');
 
   return (
     <View className="flex-1 bg-white dark:bg-black px-6 pt-12">
       {/* Avatar */}
       <View className="items-center mb-6">
-        <UserAvatar uri={inviterAvatar} initial={inviterInitial} size={96} />
+        <UserAvatar
+          uri={inviterAvatar}
+          first_name={inviterFirstName}
+          last_name={inviterLastName}
+          size={96}
+        />
       </View>
 
       {/* Invitation text */}
@@ -73,7 +79,8 @@ export default function PlanInvitationScreen({
               className="w-8 h-8 rounded-full border dark:border-white mr-2 items-center justify-center">
               <UserAvatar
                 uri={m.profiles?.avatar_url}
-                initial={m.profiles?.first_name?.[0] ?? 'U'}
+                first_name={m.profiles?.first_name}
+                last_name={m.profiles?.last_name}
                 size={32}
               />
             </View>
