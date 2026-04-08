@@ -2,19 +2,18 @@ import { useSignUpUser } from '@/src/hooks/useProfile';
 import { Ionicons } from '@expo/vector-icons';
 import { Input } from '@rneui/themed';
 import { useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import {
   Alert,
   Keyboard,
-  KeyboardAvoidingView,
   Platform,
-  ScrollView,
   Text,
   TouchableOpacity,
   TouchableWithoutFeedback,
   View,
   useColorScheme,
 } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function SignUp() {
@@ -27,7 +26,6 @@ export default function SignUp() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
-  const [keyboardHeight, setKeyboardHeight] = useState(0);
   const colorScheme = useColorScheme();
   const MIN_NAME_LENGTH = 2;
   const MAX_NAME_LENGTH = 50;
@@ -57,24 +55,6 @@ export default function SignUp() {
     !isFirstNameValid ||
     !isLastNameValid ||
     signUpWithEmail.isPending;
-
-  useEffect(() => {
-    const showEvent = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
-    const hideEvent = Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
-
-    const show = Keyboard.addListener(showEvent, (event) => {
-      setKeyboardHeight(event.endCoordinates.height);
-    });
-
-    const hide = Keyboard.addListener(hideEvent, () => {
-      setKeyboardHeight(0);
-    });
-
-    return () => {
-      show.remove();
-      hide.remove();
-    };
-  }, []);
 
   function handleSignUp() {
     if (!trimmedEmail || !password || !confirmPassword || !trimmedFirstName || !trimmedLastName) {
@@ -126,132 +106,135 @@ export default function SignUp() {
   }
 
   return (
-    <KeyboardAvoidingView
-      className="flex-1"
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-        <View className="flex-1">
-          <ScrollView
-            className="flex-1"
-            contentContainerStyle={{
-              paddingHorizontal: 24,
-              paddingTop: 24,
-              paddingBottom: 32,
-            }}
-            keyboardShouldPersistTaps="handled"
-            showsVerticalScrollIndicator={false}
-            automaticallyAdjustKeyboardInsets>
-            <Text className="mb-6 text-2xl font-semibold text-gray-900 dark:text-white">
-              Create Your Account
-            </Text>
-
-            <Input
-              label="First Name"
-              value={firstName}
-              onChangeText={setFirstName}
-              maxLength={MAX_NAME_LENGTH}
-              errorMessage={
-                firstName && !isFirstNameValid
-                  ? `First name must be ${MIN_NAME_LENGTH}-${MAX_NAME_LENGTH} characters.`
-                  : ''
-              }
-              style={{ color: colorScheme === 'dark' ? '#F5F5F5' : '#424242' }}
-              placeholderTextColor={colorScheme === 'dark' ? '#F5F5F5' : '#424242'}
-            />
-            <Input
-              label="Last Name"
-              value={lastName}
-              onChangeText={setLastName}
-              maxLength={MAX_NAME_LENGTH}
-              errorMessage={
-                lastName && !isLastNameValid
-                  ? `Last name must be ${MIN_NAME_LENGTH}-${MAX_NAME_LENGTH} characters.`
-                  : ''
-              }
-              style={{ color: colorScheme === 'dark' ? '#F5F5F5' : '#424242' }}
-              placeholderTextColor={colorScheme === 'dark' ? '#F5F5F5' : '#424242'}
-            />
-
-            <Input
-              label="Email"
-              value={email}
-              onChangeText={setEmail}
-              autoCapitalize="none"
-              autoCorrect={false}
-              keyboardType="email-address"
-              errorMessage={trimmedEmail && !isEmailValid ? 'Enter a valid email address.' : ''}
-              style={{ color: colorScheme === 'dark' ? '#F5F5F5' : '#424242' }}
-              placeholderTextColor={colorScheme === 'dark' ? '#F5F5F5' : '#424242'}
-            />
-            <Input
-              label="Password"
-              secureTextEntry={!showPassword}
-              value={password}
-              onChangeText={setPassword}
-              autoCapitalize="none"
-              autoCorrect={false}
-              errorMessage={
-                password && !isPasswordValid
-                  ? `Password must be at least ${MIN_PASSWORD_LENGTH} characters.`
-                  : ''
-              }
-              style={{ color: colorScheme === 'dark' ? '#F5F5F5' : '#424242' }}
-              placeholderTextColor={colorScheme === 'dark' ? '#F5F5F5' : '#424242'}
-              rightIcon={
-                <TouchableOpacity onPress={() => setShowPassword((prev) => !prev)}>
-                  <Ionicons
-                    name={showPassword ? 'eye-off-outline' : 'eye-outline'}
-                    size={20}
-                    color={colorScheme === 'dark' ? '#F5F5F5' : '#424242'}
-                  />
-                </TouchableOpacity>
-              }
-            />
-            <Input
-              label="Confirm Password"
-              secureTextEntry={!showConfirmPassword}
-              value={confirmPassword}
-              onChangeText={setConfirmPassword}
-              autoCapitalize="none"
-              autoCorrect={false}
-              errorMessage={
-                confirmPassword && password !== confirmPassword ? 'Passwords do not match.' : ''
-              }
-              style={{ color: colorScheme === 'dark' ? '#F5F5F5' : '#424242' }}
-              placeholderTextColor={colorScheme === 'dark' ? '#F5F5F5' : '#424242'}
-              rightIcon={
-                <TouchableOpacity onPress={() => setShowConfirmPassword((prev) => !prev)}>
-                  <Ionicons
-                    name={showConfirmPassword ? 'eye-off-outline' : 'eye-outline'}
-                    size={20}
-                    color={colorScheme === 'dark' ? '#F5F5F5' : '#424242'}
-                  />
-                </TouchableOpacity>
-              }
-            />
-          </ScrollView>
-
-          <View
-            className="border-t border-gray-200 bg-white px-6 pt-4 dark:border-neutral-800 dark:bg-black"
-            style={{
-              paddingBottom: Math.max(insets.bottom, 16),
-              marginBottom: Platform.OS === 'android' ? keyboardHeight : 0,
-            }}>
-            <TouchableOpacity
-              className={`rounded-lg p-3 ${
-                isDisabled ? 'bg-gray-300 dark:bg-gray-700' : 'bg-black dark:bg-white'
-              }`}
-              onPress={handleSignUp}
-              disabled={isDisabled}>
-              <Text
-                className="text-center font-bold text-white dark:text-black"
-                style={{ opacity: isDisabled ? 0.6 : 1 }}>
-                Sign Up
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+      <View className="flex-1 bg-white dark:bg-black">
+        <KeyboardAwareScrollView
+          style={{ flex: 1 }}
+          contentContainerStyle={{ flexGrow: 1 }}
+          enableOnAndroid
+          enableAutomaticScroll
+          extraScrollHeight={Platform.OS === 'ios' ? 96 : 72}
+          keyboardOpeningTime={0}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}>
+          <View className="flex-1 justify-between">
+            <View
+              style={{
+                paddingHorizontal: 24,
+                paddingTop: 24,
+                paddingBottom: 32,
+              }}>
+              <Text className="mb-6 text-2xl font-semibold text-gray-900 dark:text-white">
+                Create Your Account
               </Text>
-            </TouchableOpacity>
+
+              <Input
+                label="First Name"
+                value={firstName}
+                onChangeText={setFirstName}
+                maxLength={MAX_NAME_LENGTH}
+                errorMessage={
+                  firstName && !isFirstNameValid
+                    ? `First name must be ${MIN_NAME_LENGTH}-${MAX_NAME_LENGTH} characters.`
+                    : ''
+                }
+                style={{ color: colorScheme === 'dark' ? '#F5F5F5' : '#424242' }}
+                placeholderTextColor={colorScheme === 'dark' ? '#F5F5F5' : '#424242'}
+              />
+              <Input
+                label="Last Name"
+                value={lastName}
+                onChangeText={setLastName}
+                maxLength={MAX_NAME_LENGTH}
+                errorMessage={
+                  lastName && !isLastNameValid
+                    ? `Last name must be ${MIN_NAME_LENGTH}-${MAX_NAME_LENGTH} characters.`
+                    : ''
+                }
+                style={{ color: colorScheme === 'dark' ? '#F5F5F5' : '#424242' }}
+                placeholderTextColor={colorScheme === 'dark' ? '#F5F5F5' : '#424242'}
+              />
+
+              <Input
+                label="Email"
+                value={email}
+                onChangeText={setEmail}
+                autoCapitalize="none"
+                autoCorrect={false}
+                keyboardType="email-address"
+                errorMessage={trimmedEmail && !isEmailValid ? 'Enter a valid email address.' : ''}
+                style={{ color: colorScheme === 'dark' ? '#F5F5F5' : '#424242' }}
+                placeholderTextColor={colorScheme === 'dark' ? '#F5F5F5' : '#424242'}
+              />
+              <Input
+                label="Password"
+                secureTextEntry={!showPassword}
+                value={password}
+                onChangeText={setPassword}
+                autoCapitalize="none"
+                autoCorrect={false}
+                errorMessage={
+                  password && !isPasswordValid
+                    ? `Password must be at least ${MIN_PASSWORD_LENGTH} characters.`
+                    : ''
+                }
+                style={{ color: colorScheme === 'dark' ? '#F5F5F5' : '#424242' }}
+                placeholderTextColor={colorScheme === 'dark' ? '#F5F5F5' : '#424242'}
+                rightIcon={
+                  <TouchableOpacity onPress={() => setShowPassword((prev) => !prev)}>
+                    <Ionicons
+                      name={showPassword ? 'eye-off-outline' : 'eye-outline'}
+                      size={20}
+                      color={colorScheme === 'dark' ? '#F5F5F5' : '#424242'}
+                    />
+                  </TouchableOpacity>
+                }
+              />
+              <Input
+                label="Confirm Password"
+                secureTextEntry={!showConfirmPassword}
+                value={confirmPassword}
+                onChangeText={setConfirmPassword}
+                autoCapitalize="none"
+                autoCorrect={false}
+                errorMessage={
+                  confirmPassword && password !== confirmPassword ? 'Passwords do not match.' : ''
+                }
+                style={{ color: colorScheme === 'dark' ? '#F5F5F5' : '#424242' }}
+                placeholderTextColor={colorScheme === 'dark' ? '#F5F5F5' : '#424242'}
+                rightIcon={
+                  <TouchableOpacity onPress={() => setShowConfirmPassword((prev) => !prev)}>
+                    <Ionicons
+                      name={showConfirmPassword ? 'eye-off-outline' : 'eye-outline'}
+                      size={20}
+                      color={colorScheme === 'dark' ? '#F5F5F5' : '#424242'}
+                    />
+                  </TouchableOpacity>
+                }
+              />
+            </View>
+
+            <View
+              className="border-t border-gray-200 bg-white px-6 pt-4 dark:border-neutral-800 dark:bg-black"
+              style={{
+                paddingBottom: Math.max(insets.bottom, 16),
+              }}>
+              <TouchableOpacity
+                className={`rounded-lg p-3 ${
+                  isDisabled ? 'bg-gray-300 dark:bg-gray-700' : 'bg-black dark:bg-white'
+                }`}
+                onPress={handleSignUp}
+                disabled={isDisabled}>
+                <Text
+                  className="text-center font-bold text-white dark:text-black"
+                  style={{ opacity: isDisabled ? 0.6 : 1 }}>
+                  Sign Up
+                </Text>
+              </TouchableOpacity>
+            </View>
           </View>
-        </View>
-      </TouchableWithoutFeedback>
-    </KeyboardAvoidingView>
+        </KeyboardAwareScrollView>
+      </View>
+    </TouchableWithoutFeedback>
   );
 }

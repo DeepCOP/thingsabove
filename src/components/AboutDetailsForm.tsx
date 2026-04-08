@@ -1,16 +1,13 @@
 import { searchChurches } from '@/src/api/queries';
 import FormRestrictionText from '@/src/components/FormRestrictionText';
 import {
-  CURRENT_YEAR,
   MAX_BIO_LENGTH,
   MAX_CHURCH_ADDRESS_LENGTH,
   MAX_CHURCH_NAME_LENGTH,
   MAX_CHURCH_WEBSITE_URL_LENGTH,
   MAX_NAME_LENGTH,
-  MIN_YEAR,
   ProfileDetailsFormErrors,
   ProfileDetailsFormValues,
-  getYearsFollowingJesus,
 } from '@/src/profileDetails';
 import { Input } from '@rneui/themed';
 import { useEffect, useState } from 'react';
