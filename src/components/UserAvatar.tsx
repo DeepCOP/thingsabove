@@ -9,7 +9,6 @@ type Props = {
   border?: boolean;
 };
 
-
 export default function UserAvatar({
   uri,
   first_name,
