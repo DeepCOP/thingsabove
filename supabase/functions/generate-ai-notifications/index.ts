@@ -14,6 +14,9 @@ const ALLOWED_CATEGORIES = [
   'good_deed',
   'prayer_for_someone',
   'share_gospel',
+  'encouragement',
+  'serve_god_in_the_church',
+  'cheering_up_with_humor',
 ] as const;
 
 type PlannerCategory = (typeof ALLOWED_CATEGORIES)[number];
@@ -36,11 +39,14 @@ Your job is to decide:
 Allowed categories:
 - invite_friends: invite the user to invite more friends to join them in devotions or Bible reading by using the app
 - church_attendance: encourage regular church attendance or reconnecting with a faithful local church
+- serve_god_in_the_church: encourage the user to serve in their local church with humility, faithfulness, and love
 - daily_devotion: encourage daily devotions or Bible reading to spend time with God
 - spiritual_support: encourage the user to build or lean on a healthy spiritual support group
+- encouragement: encourage the user with hopeful, Scripture-rooted reassurance when they may need strength, peace, or perseverance
 - good_deed: encourage the user to do some good deed this week
 - prayer_for_someone: encourage the user to pray for someone this week
 - share_gospel: encourage the user to share the gospel with someone this week
+- cheering_up_with_humor: offer light, clean, warm humor that cheers the user up without being flippant, irreverent, or insensitive
 
 Category rules:
 - Every planned notification must fit exactly one allowed category
@@ -48,6 +54,8 @@ Category rules:
 - Use the user's history to judge whether daily_devotion is especially needed
 - Do not repeatedly use the same category for the same user unless the context strongly justifies it
 - For church_attendance or spiritual_support, do not falsely imply the app knows what happened offline; use invitational wording unless the context clearly supports a stronger inference
+- For serve_god_in_the_church, do not falsely imply the app knows the user's current level of church involvement; use invitational wording
+- For cheering_up_with_humor, keep the humor gentle and wholesome; never mock, trivialize suffering, or undermine spiritual seriousness
 
 Scheduling rules:
 - Return day_offset as 0, 1, or 2 only
