@@ -80,9 +80,7 @@ export default function ProfileScreen({
   }, [hasAboutDetails]);
 
   const onSaveDetails = () => {
-    const nextErrors = validateProfileDetailsForm(detailsForm, {
-      requireName: false,
-    });
+    const nextErrors = validateProfileDetailsForm(detailsForm);
     setDetailsErrors(nextErrors);
 
     if (hasProfileDetailsErrors(nextErrors)) {

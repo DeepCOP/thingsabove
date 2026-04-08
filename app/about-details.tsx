@@ -1,12 +1,12 @@
 import AboutDetailsForm from '@/src/components/AboutDetailsForm';
+import { useSaveSignupAboutDetails, useUpdateProfile } from '@/src/hooks/useProfile';
 import {
-  ProfileDetailsFormErrors,
   hasProfileDetailsErrors,
+  ProfileDetailsFormErrors,
   toSignUpAboutDetailsInput,
   toUpdateProfileInput,
   validateProfileDetailsForm,
 } from '@/src/profileDetails';
-import { useSaveSignupAboutDetails, useUpdateProfile } from '@/src/hooks/useProfile';
 import { useAuth } from '@/src/state/AuthContext';
 import { useSignUpDetailsStore } from '@/src/state/useSignUpDetailsStore';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -25,13 +25,24 @@ import {
 
 export default function AboutDetails() {
   const router = useRouter();
-  const { email, userId } = useLocalSearchParams<{ email?: string; userId?: string }>();
+  const { email, userId, firstName, lastName } = useLocalSearchParams<{
+    email?: string;
+    userId?: string;
+    firstName?: string;
+    lastName?: string;
+  }>();
   const colorScheme = useColorScheme();
   const { details, setDetails, resetDetails } = useSignUpDetailsStore();
   const { session } = useAuth();
   const updateProfile = useUpdateProfile(session?.user?.id);
   const saveSignupAboutDetails = useSaveSignupAboutDetails();
-  const [form, setForm] = useState(details);
+  const signupFirstName = typeof firstName === 'string' ? firstName.trim() : '';
+  const signupLastName = typeof lastName === 'string' ? lastName.trim() : '';
+  const [form, setForm] = useState(() => ({
+    ...details,
+    firstName: details.firstName || signupFirstName,
+    lastName: details.lastName || signupLastName,
+  }));
   const [errors, setErrors] = useState<ProfileDetailsFormErrors>({});
   const hasSession = Boolean(session?.user?.id);
   const isSaving = updateProfile.isPending || saveSignupAboutDetails.isPending;
@@ -55,7 +66,7 @@ export default function AboutDetails() {
   };
 
   const onSave = () => {
-    const nextErrors = validateProfileDetailsForm(form, { requireName: false });
+    const nextErrors = validateProfileDetailsForm(form);
     setErrors(nextErrors);
     if (hasProfileDetailsErrors(nextErrors)) {
       return;
@@ -112,6 +123,7 @@ export default function AboutDetails() {
           <AboutDetailsForm
             values={form}
             errors={errors}
+            showNameFields={false}
             onChange={(patch) => {
               setForm((current) => ({ ...current, ...patch }));
               setErrors((current) => {

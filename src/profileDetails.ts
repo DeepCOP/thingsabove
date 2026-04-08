@@ -91,7 +91,6 @@ export const getYearsFollowingJesus = (value: string | number | null | undefined
 
 export const validateProfileDetailsForm = (
   values: ProfileDetailsFormValues,
-  { requireName = true }: { requireName?: boolean } = {},
 ): ProfileDetailsFormErrors => {
   const errors: ProfileDetailsFormErrors = {};
   const yearBelieved = parseOptionalYear(values.yearBelieved);
@@ -102,17 +101,15 @@ export const validateProfileDetailsForm = (
   const hasYearBelievedInput = Boolean(values.yearBelieved.trim());
   const hasYearBaptizedInput = Boolean(values.yearBaptized.trim());
 
-  if (requireName) {
-    const firstName = values.firstName.trim();
-    const lastName = values.lastName.trim();
+  const firstName = values.firstName.trim();
+  const lastName = values.lastName.trim();
 
-    if (firstName.length < MIN_NAME_LENGTH || firstName.length > MAX_NAME_LENGTH) {
-      errors.firstName = `First name must be ${MIN_NAME_LENGTH}-${MAX_NAME_LENGTH} characters.`;
-    }
+  if (firstName.length < MIN_NAME_LENGTH || firstName.length > MAX_NAME_LENGTH) {
+    errors.firstName = `First name must be ${MIN_NAME_LENGTH}-${MAX_NAME_LENGTH} characters.`;
+  }
 
-    if (lastName.length < MIN_NAME_LENGTH || lastName.length > MAX_NAME_LENGTH) {
-      errors.lastName = `Last name must be ${MIN_NAME_LENGTH}-${MAX_NAME_LENGTH} characters.`;
-    }
+  if (lastName.length < MIN_NAME_LENGTH || lastName.length > MAX_NAME_LENGTH) {
+    errors.lastName = `Last name must be ${MIN_NAME_LENGTH}-${MAX_NAME_LENGTH} characters.`;
   }
 
   if (values.bio.trim().length > MAX_BIO_LENGTH) {
