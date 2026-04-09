@@ -132,17 +132,6 @@ export default function BibleTab() {
         }}
         className={'dark:bg-black bg-white'}>
         <View className="flex-row items-center mr-2 flex-1 justify-end ">
-          {/* Search */}
-          <TouchableOpacity
-            onPress={() => router.push({ pathname: '/search/bible' })}
-            className="mr-4 ">
-            <Ionicons
-              name="search-outline"
-              size={22}
-              color={colorScheme === 'dark' ? 'white' : 'black'}
-            />
-          </TouchableOpacity>
-
           {/* Version Switch */}
           <View ref={versionButtonRef} collapsable={false}>
             <TouchableOpacity
