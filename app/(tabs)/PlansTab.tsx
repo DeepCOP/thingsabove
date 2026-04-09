@@ -2,9 +2,9 @@ import { useNotifications } from '@/src/hooks/useNotifications';
 import PlansScreen from '@/src/screens/PlansScreen';
 import { useAuth } from '@/src/state/AuthContext';
 import { useAppStore } from '@/src/state/useAppStore';
+import { openExternalUrl } from '@/src/utils';
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { Linking } from 'react-native';
 
 export default function PlansTab() {
   const { session } = useAuth();
@@ -28,7 +28,7 @@ export default function PlansTab() {
       onNotifications={() => router.push('/notifications')}
       notificationCount={notificationsCountQuery.data ?? 0}
       onLogin={() => router.push('/(auth)/signin')}
-      onContribute={() => Linking.openURL(`${process.env.EXPO_PUBLIC_WEB_INTERFACE_URL}/plans/new`)}
+      onContribute={() => openExternalUrl(`${process.env.EXPO_PUBLIC_WEB_INTERFACE_URL}/plans/new`)}
     />
   );
 }

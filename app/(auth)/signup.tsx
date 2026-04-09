@@ -1,4 +1,5 @@
 import { useSignUpUser } from '@/src/hooks/useProfile';
+import { openExternalUrl } from '@/src/utils';
 import { Ionicons } from '@expo/vector-icons';
 import { Input } from '@rneui/themed';
 import { useRouter } from 'expo-router';
@@ -26,6 +27,7 @@ export default function SignUp() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
+  const [acceptedPolicies, setAcceptedPolicies] = useState(false);
   const colorScheme = useColorScheme();
   const MIN_NAME_LENGTH = 2;
   const MAX_NAME_LENGTH = 50;
@@ -54,7 +56,8 @@ export default function SignUp() {
     !isEmailValid ||
     !isFirstNameValid ||
     !isLastNameValid ||
-    signUpWithEmail.isPending;
+    signUpWithEmail.isPending ||
+    !acceptedPolicies;
 
   function handleSignUp() {
     if (!trimmedEmail || !password || !confirmPassword || !trimmedFirstName || !trimmedLastName) {
@@ -86,7 +89,6 @@ export default function SignUp() {
       Alert.alert('Password mismatch', 'Passwords do not match.');
       return;
     }
-
     signUpWithEmail.mutate(
       { email: trimmedEmail, password, firstName: trimmedFirstName, lastName: trimmedLastName },
       {
@@ -212,6 +214,43 @@ export default function SignUp() {
                   </TouchableOpacity>
                 }
               />
+            </View>
+
+            <View className="mb-2 rounded-lg border border-gray-300 p-4 dark:border-gray-700">
+              <View className="flex-row items-start gap-3">
+                <TouchableOpacity
+                  accessibilityRole="checkbox"
+                  accessibilityState={{ checked: acceptedPolicies }}
+                  onPress={() => setAcceptedPolicies((prev) => !prev)}
+                  className="mt-0.5">
+                  <Ionicons
+                    name={acceptedPolicies ? 'checkbox-outline' : 'square-outline'}
+                    size={22}
+                    color={colorScheme === 'dark' ? '#F5F5F5' : '#424242'}
+                  />
+                </TouchableOpacity>
+
+                <Text className="flex-1 text-sm leading-6 text-gray-700 dark:text-gray-300">
+                  I agree to the{' '}
+                  <Text
+                    className="underline"
+                    onPress={() =>
+                      openExternalUrl(`${process.env.EXPO_PUBLIC_WEB_INTERFACE_URL}/terms`)
+                    }>
+                    Terms of Service
+                  </Text>{' '}
+                  and{' '}
+                  <Text
+                    className="underline"
+                    onPress={async () => {
+                      const url = `${process.env.EXPO_PUBLIC_WEB_INTERFACE_URL}/statement-of-faith`;
+                      await openExternalUrl(url);
+                    }}>
+                    Statement of Faith
+                  </Text>
+                  .
+                </Text>
+              </View>
             </View>
 
             <View

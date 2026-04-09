@@ -169,6 +169,8 @@ function RootLayoutContent() {
             name="devotional_detail/[id]/participants"
             options={{ title: 'Participants' }}
           />
+          <Stack.Screen name="church/[churchId]/index" options={{ title: 'My Church' }} />
+          <Stack.Screen name="church/[churchId]/members" options={{ title: 'Members' }} />
           <Stack.Screen
             name="devotional_detail/[id]/invitation"
             options={{ title: 'Invitation' }}

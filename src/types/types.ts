@@ -22,6 +22,37 @@ export type ProfileWithChurch = Profiles & {
   church: Church | null;
 };
 
+export type ChurchStats = {
+  memberCount: number;
+  activePlansCount: number;
+  completedPlansCount: number;
+  topPlan: { id: string; title: string; starters: number } | null;
+  activeMembersThisWeek: number;
+  joinedThisMonth: number;
+};
+
+export type ChurchMemberPreview = {
+  id: string;
+  first_name: string | null;
+  last_name: string | null;
+  avatar_url: string | null;
+};
+
+export type ChurchMember = Database['public']['Functions']['get_church_members']['Returns'][number];
+
+export type ChurchTopPlan = {
+  id: string;
+  title: string;
+  cover_image: string | null;
+  starters: number;
+  completions: number;
+};
+
+export type ChurchAnalytics = {
+  stats: ChurchStats;
+  topPlans: ChurchTopPlan[];
+};
+
 export type UpdateProfileInput = {
   first_name?: string;
   last_name?: string;
