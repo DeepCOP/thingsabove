@@ -7,7 +7,7 @@ alter table public.ai_triggers
     or planner_category in (
       'invite_friends',
       'church_attendance',
-      'serve_god_in_the_church',
+      'serve_at_church',
       'daily_devotion',
       'spiritual_support',
       'encouragement',

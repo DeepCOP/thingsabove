@@ -30,7 +30,6 @@ drop index if exists public.idx_ai_triggers_pending_schedule;
 
 alter table public.ai_triggers
   drop column if exists priority,
-  drop column if exists context,
   drop column if exists planner_reason,
   drop column if exists planner_payload,
   drop column if exists planning_model;

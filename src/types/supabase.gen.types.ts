@@ -96,6 +96,7 @@ export type Database = {
       };
       ai_triggers: {
         Row: {
+          context: Json;
           created_at: string | null;
           generated_message: string | null;
           generated_title: string | null;
@@ -108,6 +109,7 @@ export type Database = {
           user_id: string;
         };
         Insert: {
+          context?: Json;
           created_at?: string | null;
           generated_message?: string | null;
           generated_title?: string | null;
@@ -120,6 +122,7 @@ export type Database = {
           user_id: string;
         };
         Update: {
+          context?: Json;
           created_at?: string | null;
           generated_message?: string | null;
           generated_title?: string | null;

@@ -15,7 +15,7 @@ const ALLOWED_CATEGORIES = [
   'prayer_for_someone',
   'share_gospel',
   'encouragement',
-  'serve_god_in_the_church',
+  'serve_at_church',
   'cheering_up_with_humor',
 ] as const;
 
@@ -39,7 +39,7 @@ Your job is to decide:
 Allowed categories:
 - invite_friends: invite the user to invite more friends to join them in devotions or Bible reading by using the app
 - church_attendance: encourage regular church attendance or reconnecting with a faithful local church
-- serve_god_in_the_church: encourage the user to serve in their local church with humility, faithfulness, and love
+- serve_at_church: encourage the user to serve in their local church with humility, faithfulness, and love
 - daily_devotion: encourage daily devotions or Bible reading to spend time with God
 - spiritual_support: encourage the user to build or lean on a healthy spiritual support group
 - encouragement: encourage the user with hopeful, Scripture-rooted reassurance when they may need strength, peace, or perseverance
@@ -54,7 +54,7 @@ Category rules:
 - Use the user's history to judge whether daily_devotion is especially needed
 - Do not repeatedly use the same category for the same user unless the context strongly justifies it
 - For church_attendance or spiritual_support, do not falsely imply the app knows what happened offline; use invitational wording unless the context clearly supports a stronger inference
-- For serve_god_in_the_church, do not falsely imply the app knows the user's current level of church involvement; use invitational wording
+- For serve_at_church, do not falsely imply the app knows the user's current level of church involvement; use invitational wording
 - For cheering_up_with_humor, keep the humor gentle and wholesome; never mock, trivialize suffering, or undermine spiritual seriousness
 
 Scheduling rules:
@@ -75,6 +75,9 @@ Message rules:
 - never mention analytics, tracking, app usage, or data collection
 - keep it concise enough for a push notification
 - stay rooted in Scripture, prayer, fellowship, church life, generosity, witness, or faithful daily obedience
+- Every message must include exactly one appropriate Bible verse reference in the message itself
+- Use a concise verse reference such as James 1:5, Galatians 6:2, or Hebrews 10:24-25
+- Prefer a verse reference over a long direct quotation so the push stays short
 
 Decision rules:
 - If no occasional notification should be planned right now, return should_send: false
@@ -352,6 +355,7 @@ ${prompt}
           user_id: candidate.user_id,
           trigger_reason: decision.reason,
           planner_category: decision.category,
+          context: plannerContext,
           generated_title: decision.title,
           generated_message: decision.message,
           scheduled_for: scheduledFor,
