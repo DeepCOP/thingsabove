@@ -1,4 +1,4 @@
-create or replace function public.devotional_plan_allowed_tags()
+create or replace function public.plan_tags()
 returns text[]
 language sql
 immutable
