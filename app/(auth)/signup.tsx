@@ -216,42 +216,42 @@ export default function SignUp() {
               />
             </View>
 
-          <View className="mb-2 rounded-lg border border-gray-300 p-4 dark:border-gray-700">
-            <View className="flex-row items-start gap-3">
-              <TouchableOpacity
-                accessibilityRole="checkbox"
-                accessibilityState={{ checked: acceptedPolicies }}
-                onPress={() => setAcceptedPolicies((prev) => !prev)}
-                className="mt-0.5">
-                <Ionicons
-                  name={acceptedPolicies ? 'checkbox-outline' : 'square-outline'}
-                  size={22}
-                  color={colorScheme === 'dark' ? '#F5F5F5' : '#424242'}
-                />
-              </TouchableOpacity>
+            <View className="mb-2 rounded-lg border border-gray-300 p-4 dark:border-gray-700">
+              <View className="flex-row items-start gap-3">
+                <TouchableOpacity
+                  accessibilityRole="checkbox"
+                  accessibilityState={{ checked: acceptedPolicies }}
+                  onPress={() => setAcceptedPolicies((prev) => !prev)}
+                  className="mt-0.5">
+                  <Ionicons
+                    name={acceptedPolicies ? 'checkbox-outline' : 'square-outline'}
+                    size={22}
+                    color={colorScheme === 'dark' ? '#F5F5F5' : '#424242'}
+                  />
+                </TouchableOpacity>
 
-              <Text className="flex-1 text-sm leading-6 text-gray-700 dark:text-gray-300">
-                I agree to the{' '}
-                <Text
-                  className="underline"
-                  onPress={() =>
-                    openExternalUrl(`${process.env.EXPO_PUBLIC_WEB_INTERFACE_URL}/terms`)
-                  }>
-                  Terms of Service
-                </Text>{' '}
-                and{' '}
-                <Text
-                  className="underline"
-                  onPress={async () => {
-                    const url = `${process.env.EXPO_PUBLIC_WEB_INTERFACE_URL}/statement-of-faith`;
-                    await openExternalUrl(url);
-                  }}>
-                  Statement of Faith
+                <Text className="flex-1 text-sm leading-6 text-gray-700 dark:text-gray-300">
+                  I agree to the{' '}
+                  <Text
+                    className="underline"
+                    onPress={() =>
+                      openExternalUrl(`${process.env.EXPO_PUBLIC_WEB_INTERFACE_URL}/terms`)
+                    }>
+                    Terms of Service
+                  </Text>{' '}
+                  and{' '}
+                  <Text
+                    className="underline"
+                    onPress={async () => {
+                      const url = `${process.env.EXPO_PUBLIC_WEB_INTERFACE_URL}/statement-of-faith`;
+                      await openExternalUrl(url);
+                    }}>
+                    Statement of Faith
+                  </Text>
+                  .
                 </Text>
-                .
-              </Text>
+              </View>
             </View>
-          </View>
 
             <View
               className="border-t border-gray-200 bg-white px-6 pt-4 dark:border-neutral-800 dark:bg-black"
