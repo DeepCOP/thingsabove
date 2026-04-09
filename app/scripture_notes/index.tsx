@@ -1,3 +1,4 @@
+import { findBookInBible, getCanonicalBookIdByName, getBookNameForId } from '@/src/bible/books';
 import ScriptureNotesScreen from '@/src/screens/ScriptureNotesScreen';
 import { useBible } from '@/src/state/BibleContext';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
@@ -9,6 +10,7 @@ const getParam = (value: string | string[] | undefined) =>
 export default function ScriptureNotes() {
   const router = useRouter();
   const params = useLocalSearchParams<{
+    bookId?: string | string[];
     book?: string | string[];
     chapter?: string | string[];
     verseNumber?: string | string[];
@@ -22,6 +24,7 @@ export default function ScriptureNotes() {
   const bible = useBible();
 
   const book = getParam(params.book) ?? '';
+  const bookIdParam = getParam(params.bookId) ?? '';
   const chapter = Number(getParam(params.chapter) ?? 0);
   const verseNumberParam = Number(getParam(params.verseNumber) ?? 0);
   const selectionStartParam = Number(getParam(params.selectionStart) ?? verseNumberParam);
@@ -41,11 +44,17 @@ export default function ScriptureNotes() {
   const verseCount = Number(getParam(params.verseCount) ?? 0);
   const version = getParam(params.version) ?? 'KJV';
   const verseNumber = selectionVerses[0] || selectionStart || verseNumberParam;
+  const resolvedBook = useMemo(
+    () => findBookInBible(bible.bible, bookIdParam || book),
+    [bible.bible, book, bookIdParam],
+  );
+  const bookId = resolvedBook?.id ?? getCanonicalBookIdByName(bookIdParam || book) ?? '';
+  const bookName = (resolvedBook?.name ?? getBookNameForId(bible.bible, bookId)) || book;
 
   const selectedText = useMemo(() => {
-    if (!bible || !book || !chapter || selectionStart <= 0) return verseText;
+    if (!bible || !chapter || selectionStart <= 0 || !bookId) return verseText;
     const verses =
-      bible.bible.books.find((entry) => entry.name === book)?.chapters[chapter - 1]?.verses ?? [];
+      bible.bible.books.find((entry) => entry.id === bookId)?.chapters[chapter - 1]?.verses ?? [];
 
     if (verses.length === 0) return verseText;
 
@@ -58,7 +67,7 @@ export default function ScriptureNotes() {
       .map((entry) => `[${entry.verse}] ${entry.text}`);
 
     return inRange.length > 0 ? inRange.join(' ') : verseText;
-  }, [bible, book, chapter, selectionEnd, selectionStart, selectionVerses, verseText]);
+  }, [bible, bookId, chapter, selectionEnd, selectionStart, selectionVerses, verseText]);
 
   const verse =
     verseNumber > 0 && selectedText
@@ -74,7 +83,8 @@ export default function ScriptureNotes() {
       <ScriptureNotesScreen
         onClose={() => router.back()}
         verse={verse}
-        book={book}
+        bookId={bookId}
+        book={bookName}
         chapter={chapter}
         selectionStart={selectionStart}
         selectionEnd={selectionEnd}

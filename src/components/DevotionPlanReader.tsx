@@ -1,12 +1,19 @@
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import * as Clipboard from 'expo-clipboard';
 import { useRouter } from 'expo-router';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
+import {
+  DEFAULT_BOOK_ID,
+  findBookInBible,
+  getBibleDotComBookCode,
+  getBookNameForId,
+} from '@/src/bible/books';
 import PlanCoverImage from '@/src/components/PlanCoverImage';
 import ReaderBottomBar from '@/src/components/ReaderBottomBar';
 import ScriptureSelectionMenu from '@/src/components/ScriptureSelectionMenu';
 import { useFetchDevotionalPlanById } from '@/src/hooks/useDevotionalPlans';
+import type { SelectedBibleBook } from '@/src/state/useAppStore';
 import { UseMutationResult } from '@tanstack/react-query';
 import {
   Animated,
@@ -23,13 +30,6 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useBible } from '../state/BibleContext';
 import { DayItemsProgress } from '../types/types';
 import { parseVerseRef } from '../utils';
-
-type BibleBook = {
-  name: string;
-  chapter: number;
-  verseStart?: number;
-  verseEnd?: number;
-};
 
 export default function DevotionalPlanReader({
   onScroll,
@@ -67,7 +67,8 @@ export default function DevotionalPlanReader({
   const [menuHeight, setMenuHeight] = useState(0);
 
   const router = useRouter();
-  const { bible, version, setVersion } = useBible();
+  const { bible, installedVersionIds, loadingVersionId, selectNextInstalledVersion, version } =
+    useBible();
   const versePositions = useRef<Record<number, number>>({});
   const scrollRef = useRef<ScrollView | null>(null);
   const didScrollRef = useRef(false);
@@ -77,7 +78,7 @@ export default function DevotionalPlanReader({
   const devotionalHtml = item?.devotional_content ?? '';
   const isDevotionalItem = item?.item_type === 'devotional' && item?.item_key === 'main';
 
-  const itemSelectedBook = useMemo<BibleBook | null>(() => {
+  const itemSelectedBook = useMemo<SelectedBibleBook | null>(() => {
     if (item?.item_type !== 'scripture' || !item?.item_key) {
       return null;
     }
@@ -87,18 +88,30 @@ export default function DevotionalPlanReader({
       return null;
     }
 
+    const matchingBook = findBookInBible(bible, parsed.book);
+    if (!matchingBook) {
+      return null;
+    }
+
     return {
-      name: parsed.book,
+      bookId: matchingBook.id,
       chapter: parsed.chapter,
       verseStart: parsed.verseStart,
       verseEnd: parsed.verseEnd,
     };
-  }, [item?.item_key, item?.item_type]);
+  }, [bible, item?.item_key, item?.item_type]);
 
-  const [selectedBook, setSelectedBook] = useState<BibleBook>(
-    itemSelectedBook ?? { name: 'John', chapter: 1 },
+  const [selectedBook, setSelectedBook] = useState<SelectedBibleBook>(
+    itemSelectedBook ?? { bookId: DEFAULT_BOOK_ID, chapter: 1 },
   );
   const hasUnavailableScriptureReference = item?.item_type === 'scripture' && !itemSelectedBook;
+
+  const currentBook = useMemo(
+    () => findBookInBible(bible, selectedBook.bookId) ?? bible.books[0],
+    [bible, selectedBook.bookId],
+  );
+  const currentBookId = currentBook?.id ?? selectedBook.bookId;
+  const currentBookName = currentBook?.name ?? getBookNameForId(bible, currentBookId);
 
   useEffect(() => {
     if (item?.item_type !== 'scripture') return;
@@ -142,7 +155,7 @@ export default function DevotionalPlanReader({
     return () => {
       cancelled = true;
     };
-  }, [selectedBook.name, selectedBook.chapter, selectedBook.verseStart]);
+  }, [selectedBook.bookId, selectedBook.chapter, selectedBook.verseStart]);
 
   const getSelectedRange = () => {
     if (!selectedBook?.verseStart) return '';
@@ -178,13 +191,13 @@ export default function DevotionalPlanReader({
     if (selected.length === 0) return '';
 
     const range = getSelectedRange();
-    const header = `${selectedBook.name} ${selectedBook.chapter}:${range} ${version}`;
+    const header = `${currentBookName} ${selectedBook.chapter}:${range} ${version}`;
     const body = selected.map((v) => `[${v.number}] ${v.text}`).join('\n');
 
     // Official Bible.com link
-    const link = `${process.env.EXPO_PUBLIC_BASE_URL} ${selectedBook.name
-      .toLowerCase()
-      .slice(0, 3)}.${selectedBook.chapter}.${range}.${version}`;
+    const link = `${process.env.EXPO_PUBLIC_BASE_URL}/bible/12/${getBibleDotComBookCode(
+      currentBookId,
+    )}.${selectedBook.chapter}.${range}.${version}`;
 
     return `${header}\n${body}\n${link}`;
   };
@@ -192,7 +205,7 @@ export default function DevotionalPlanReader({
   const formatSelectedVerseTitle = () => {
     const range = getSelectedRange();
     if (!range) return { header: '', range: '' };
-    const header = `${selectedBook.name} ${selectedBook.chapter}:${range} ${version}`;
+    const header = `${currentBookName} ${selectedBook.chapter}:${range} ${version}`;
     return { header, range };
   };
   const isVerseInRange = (verseNum: number) => {
@@ -208,9 +221,7 @@ export default function DevotionalPlanReader({
   };
 
   const chapterNumber = Number(selectedBook.chapter);
-  const verses = bible.books
-    .find((book) => book.name === selectedBook.name)
-    ?.chapters.find((chapter) => chapter.chapter === chapterNumber)?.verses;
+  const verses = currentBook?.chapters.find((chapter) => chapter.chapter === chapterNumber)?.verses;
   const scriptureVerses = verses ?? [];
   const selectedVerseRange = getSelectedVerseRange();
   const showScriptureUnavailableFallback =
@@ -269,10 +280,19 @@ export default function DevotionalPlanReader({
             </TouchableOpacity>
           ) : (
             <TouchableOpacity
-              onPress={() => setVersion(version === 'KJV' ? 'ASV' : 'KJV')}
+              onPress={() => {
+                if (installedVersionIds.length <= 1) {
+                  router.push('/settings');
+                  return;
+                }
+
+                void selectNextInstalledVersion();
+              }}
               className="flex-row items-center bg-blue-100 px-3 py-1.5 rounded-full mr-1">
               <Ionicons name="globe-outline" size={16} />
-              <Text className="ml-2 font-semibold">{version}</Text>
+              <Text className="ml-2 font-semibold">
+                {loadingVersionId ? `${version}...` : version}
+              </Text>
             </TouchableOpacity>
           )}
         </View>
@@ -416,7 +436,7 @@ export default function DevotionalPlanReader({
             className="px-5 mb-20">
             <View className="justify-center items-center pb-16 gap-4">
               <Text className="text-center text-primary dark:text-gray-100 text-lg pt-28 font-MerriWeather300Light">
-                {selectedBook.name}
+                {currentBookName}
               </Text>
 
               <Text className="text-center text-7xl  font-MerriWeather900Black text-gray-900 dark:text-gray-100">
@@ -438,7 +458,7 @@ export default function DevotionalPlanReader({
                   <TouchableOpacity
                     onPress={() => {
                       setSelectedBook({
-                        name: selectedBook.name,
+                        bookId: currentBookId,
                         chapter: selectedBook.chapter,
                         verseStart: verseNumber,
                         verseEnd: verseNumber,
@@ -455,7 +475,7 @@ export default function DevotionalPlanReader({
 
                       if (!hasRange || !inRange) {
                         setSelectedBook({
-                          name: selectedBook.name,
+                          bookId: currentBookId,
                           chapter: selectedBook.chapter,
                           verseStart: verseNumber,
                           verseEnd: verseNumber,
@@ -507,9 +527,9 @@ export default function DevotionalPlanReader({
             ) : (
               <TouchableOpacity
                 className="px-2 py-1"
-                onPress={() => router.push(`/bible/${selectedBook.name}`)}>
+                onPress={() => router.push(`/bible/${currentBookId}`)}>
                 <Text className="text-white font-semibold mx-4">
-                  {`${selectedBook.name} ${selectedBook.chapter}`}
+                  {`${currentBookName} ${selectedBook.chapter}`}
                 </Text>
               </TouchableOpacity>
             )
@@ -574,7 +594,8 @@ export default function DevotionalPlanReader({
             router.push({
               pathname: '/scripture_notes',
               params: {
-                book: selectedBook.name,
+                bookId: currentBookId,
+                book: currentBookName,
                 chapter: String(chapterNumber),
                 verseNumber: String(selectedVerseRange.start.number),
                 verseText: selectedVerseRange.start.text,

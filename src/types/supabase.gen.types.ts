@@ -328,6 +328,60 @@ export type Database = {
         };
         Relationships: [];
       };
+      bible_versions: {
+        Row: {
+          checksum: string | null;
+          created_at: string;
+          description: string;
+          id: string;
+          is_bundled: boolean;
+          is_enabled: boolean;
+          label: string;
+          language: string | null;
+          local_filename: string;
+          public_url: string | null;
+          short_label: string;
+          size_bytes: number;
+          sort_order: number;
+          storage_path: string | null;
+          updated_at: string;
+        };
+        Insert: {
+          checksum?: string | null;
+          created_at?: string;
+          description?: string;
+          id: string;
+          is_bundled?: boolean;
+          is_enabled?: boolean;
+          label: string;
+          language?: string | null;
+          local_filename: string;
+          public_url?: string | null;
+          short_label: string;
+          size_bytes: number;
+          sort_order?: number;
+          storage_path?: string | null;
+          updated_at?: string;
+        };
+        Update: {
+          checksum?: string | null;
+          created_at?: string;
+          description?: string;
+          id?: string;
+          is_bundled?: boolean;
+          is_enabled?: boolean;
+          label?: string;
+          language?: string | null;
+          local_filename?: string;
+          public_url?: string | null;
+          short_label?: string;
+          size_bytes?: number;
+          sort_order?: number;
+          storage_path?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       comments: {
         Row: {
           content: string;
