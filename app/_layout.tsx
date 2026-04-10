@@ -182,6 +182,9 @@ function RootLayoutContent() {
           />
           <Stack.Screen name="add_friend/index" options={{ title: 'Add Friend' }} />
           <Stack.Screen name="accept_friend/index" options={{ title: 'Friend Requests' }} />
+          <Stack.Screen name="prayer/index" options={{ title: 'Prayer Board' }} />
+          <Stack.Screen name="prayer/new" options={{ title: 'New Prayer Request' }} />
+          <Stack.Screen name="prayer/[requestId]" options={{ title: 'Prayer Request' }} />
           <Stack.Screen name="settings/index" options={{ title: 'Settings' }} />
           <Stack.Screen name="notifications/index" options={{ title: 'Notifications' }} />
         </Stack.Protected>

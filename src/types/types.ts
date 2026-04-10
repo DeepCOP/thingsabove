@@ -182,3 +182,41 @@ export type ScriptureNote = {
 export type SavedPlanListItem = DevotionalPlanView & {
   saved_at: string | null;
 };
+
+export type PrayerRequest = Database['public']['Tables']['prayer_requests']['Row'];
+
+export type PrayerRequestInsert = Database['public']['Tables']['prayer_requests']['Insert'];
+
+export type PrayerRequestUpdate = Database['public']['Tables']['prayer_requests']['Update'];
+
+export type PrayerRequestEncouragement =
+  Database['public']['Tables']['prayer_request_encouragements']['Row'];
+
+export type PrayerRequestPrayer = Database['public']['Tables']['prayer_request_prayers']['Row'];
+
+export type PrayerScope = 'public' | 'church';
+
+export type PrayerFilter = 'all' | 'urgent' | 'answered' | 'mine';
+
+export type PrayerCategory = 'Health' | 'Family' | 'Work' | 'Spiritual' | 'Other';
+
+export type PrayerRequestFeedItem =
+  Database['public']['Functions']['get_prayer_requests']['Returns'][number];
+
+export type PrayerRequestDetail =
+  Database['public']['Functions']['get_prayer_request_detail']['Returns'][number];
+
+export type PrayerRequestCursor = {
+  beforeCreatedAt: string;
+  beforeId: string;
+  beforeIsUrgent: boolean;
+};
+
+export type PrayerRequestPage = {
+  items: PrayerRequestFeedItem[];
+  nextCursor?: PrayerRequestCursor;
+};
+
+export type PrayerEncouragementListItem = PrayerRequestEncouragement & {
+  author: Pick<Profiles, 'id' | 'first_name' | 'last_name' | 'avatar_url'> | null;
+};

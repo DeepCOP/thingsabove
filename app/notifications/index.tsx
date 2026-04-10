@@ -15,6 +15,11 @@ type friendRequestNotificationData = {
   requester_id: string;
 };
 
+type prayerEncouragementNotificationData = {
+  request_id: string;
+  encouraged_by: string;
+};
+
 export default function NotificationsTab() {
   const router = useRouter();
   const { session } = useAuth();
@@ -35,7 +40,9 @@ export default function NotificationsTab() {
   }) {
     markRead.mutate(item.id);
 
-    const data = item.data as planInviteNotificationData & friendRequestNotificationData;
+    const data = item.data as planInviteNotificationData &
+      friendRequestNotificationData &
+      prayerEncouragementNotificationData;
 
     switch (item.type) {
       case 'plan_invite':
@@ -50,6 +57,14 @@ export default function NotificationsTab() {
         break;
       case 'friend_request':
         router.push('/accept_friend');
+        break;
+      case 'prayer_encouragement':
+        router.push({
+          pathname: '/prayer/[requestId]',
+          params: {
+            requestId: data.request_id,
+          },
+        });
         break;
       default:
         break;
