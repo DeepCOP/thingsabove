@@ -47,7 +47,8 @@ export default function PlanInvitation() {
 
   return (
     <PlanInvitationScreen
-      inviterName={`${group?.profiles?.first_name ?? ''} ${group?.profiles?.last_name ?? ''}`.trim()}
+      firstName={group?.profiles?.first_name ?? ''}
+      lastName={group?.profiles?.last_name ?? ''}
       inviterAvatar={group?.profiles?.avatar_url}
       planTitle={plan?.title ?? undefined}
       planCover={plan?.cover_image}
