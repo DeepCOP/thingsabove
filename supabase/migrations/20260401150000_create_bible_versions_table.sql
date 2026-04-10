@@ -123,7 +123,37 @@ values
     true,
     30,
     null
-  )
+  ),
+  (
+  'CUVS',
+  'CUVs',
+  'Chinese Union Version (Simplified)',
+  'Chinese (Simplified)',
+  'Public domain Chinese Union Version in simplified script, converted from eBible.org VPL source.',
+  3932640,
+  'cuvs.json',
+  'CUVS.json',
+  'https://ujdyhgasuwikfvldhxnb.supabase.co/storage/v1/object/public/bible_versions/CUVS.json',
+  false,
+  true,
+  40,
+  null
+),
+(
+  'CUVT',
+  'CUVt',
+  'Chinese Union Version (Traditional)',
+  'Chinese (Traditional)',
+  'Public domain Chinese Union Version in traditional script, converted from eBible.org VPL source.',
+  3934593,
+  'cuvt.json',
+  'CUVT.json',
+  'https://ujdyhgasuwikfvldhxnb.supabase.co/storage/v1/object/public/bible_versions/CUVT.json',
+  false,
+  true,
+  41,
+  null
+)
 on conflict (id) do update
 set
   short_label = excluded.short_label,
