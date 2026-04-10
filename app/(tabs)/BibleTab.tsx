@@ -1,14 +1,13 @@
 import BibleVersionsMenu from '@/src/components/BibleVersionsMenu';
 import BibleReaderView from '@/src/screens/BibleReaderViewScreen';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { Tabs, useRouter } from 'expo-router';
+import { Tabs } from 'expo-router';
 import { useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Animated,
   Text,
   TouchableOpacity,
-  useColorScheme,
   useWindowDimensions,
   View,
 } from 'react-native';
@@ -30,8 +29,6 @@ export default function BibleTab() {
     width: 0,
     height: 0,
   });
-
-  const router = useRouter();
 
   const { loadingVersionId, version } = useBible();
 
@@ -115,8 +112,6 @@ export default function BibleTab() {
   }: {
     headerTranslateY: Animated.AnimatedInterpolation<string | number>;
   }) => {
-    const colorScheme = useColorScheme();
-
     return (
       <Animated.View
         style={{
