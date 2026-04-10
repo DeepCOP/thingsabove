@@ -16,6 +16,7 @@ import { useFetchDevotionalPlanById } from '@/src/hooks/useDevotionalPlans';
 import type { SelectedBibleBook } from '@/src/state/useAppStore';
 import { UseMutationResult } from '@tanstack/react-query';
 import {
+  ActivityIndicator,
   Animated,
   ScrollView,
   Share,
@@ -288,11 +289,15 @@ export default function DevotionalPlanReader({
 
                 void selectNextInstalledVersion();
               }}
+              disabled={Boolean(loadingVersionId)}
+              style={{ opacity: loadingVersionId ? 0.7 : 1 }}
               className="flex-row items-center bg-blue-100 px-3 py-1.5 rounded-full mr-1">
               <Ionicons name="globe-outline" size={16} />
-              <Text className="ml-2 font-semibold">
-                {loadingVersionId ? `${version}...` : version}
-              </Text>
+              {loadingVersionId ? (
+                <ActivityIndicator size="small" className="ml-2" />
+              ) : (
+                <Text className="ml-2 font-semibold">{version}</Text>
+              )}
             </TouchableOpacity>
           )}
         </View>

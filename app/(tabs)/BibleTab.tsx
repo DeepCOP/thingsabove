@@ -4,6 +4,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { Tabs, useRouter } from 'expo-router';
 import { useMemo, useRef, useState } from 'react';
 import {
+  ActivityIndicator,
   Animated,
   Text,
   TouchableOpacity,
@@ -136,11 +137,15 @@ export default function BibleTab() {
           <View ref={versionButtonRef} collapsable={false}>
             <TouchableOpacity
               onPress={openVersionsMenu}
+              disabled={Boolean(loadingVersionId)}
+              style={{ opacity: loadingVersionId ? 0.7 : 1 }}
               className="flex-row items-center bg-blue-100 px-3 py-1.5 rounded-full mr-1">
               <Ionicons name="globe-outline" size={16} />
-              <Text className="ml-2 font-semibold">
-                {loadingVersionId ? `${version}...` : version}
-              </Text>
+              {loadingVersionId ? (
+                <ActivityIndicator size="small" className="ml-2" />
+              ) : (
+                <Text className="ml-2 font-semibold">{version}</Text>
+              )}
             </TouchableOpacity>
           </View>
         </View>
