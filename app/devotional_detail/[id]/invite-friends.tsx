@@ -62,7 +62,7 @@ export default function InviteFriends() {
       ? `Invite ${selected.length} Friend${selected.length === 1 ? '' : 's'}`
       : currentGroupId
         ? 'Continue to Plan'
-        : 'Invite Friend Later';
+        : 'Invite Friends Later';
 
   const openGroupPlan = (progressIdToOpen: string, nextGroupId?: string) => {
     router.replace({
