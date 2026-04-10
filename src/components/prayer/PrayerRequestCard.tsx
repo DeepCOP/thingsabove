@@ -1,6 +1,7 @@
 import UserAvatar from '@/src/components/UserAvatar';
 import { formatRelativeTime } from '@/src/lib/relativeTime';
 import { PrayerRequestDetail, PrayerRequestFeedItem } from '@/src/types/types';
+import { getAvatarNameParts, getDisplayName } from '@/src/utils';
 import { Ionicons } from '@expo/vector-icons';
 import { Text, TouchableOpacity, View } from 'react-native';
 
@@ -14,15 +15,6 @@ type Props = {
   onMarkAnswered?: () => void;
   answering?: boolean;
 };
-
-function getDisplayName(item: PrayerItem) {
-  if (item.is_anonymous) {
-    return 'Anonymous';
-  }
-
-  const name = [item.author_first_name, item.author_last_name].filter(Boolean).join(' ').trim();
-  return name || 'Member';
-}
 
 function getScopeLabel(item: PrayerItem) {
   if (item.scope === 'church') {
@@ -40,8 +32,16 @@ export default function PrayerRequestCard({
   onMarkAnswered,
   answering,
 }: Props) {
-  const displayName = getDisplayName(item);
-  const initial = displayName.slice(0, 1).toUpperCase() || 'P';
+  const displayName = getDisplayName({
+    isAnonymous: item.is_anonymous,
+    firstName: item.author_first_name,
+    lastName: item.author_last_name,
+  });
+  const avatarName = getAvatarNameParts({
+    isAnonymous: item.is_anonymous,
+    firstName: item.author_first_name,
+    lastName: item.author_last_name,
+  });
   const scopeLabel = getScopeLabel(item);
 
   return (
@@ -50,7 +50,8 @@ export default function PrayerRequestCard({
         <View className="flex-row items-start gap-3">
           <UserAvatar
             uri={item.is_anonymous ? null : item.author_avatar_url}
-            initial={initial}
+            first_name={avatarName.firstName}
+            last_name={avatarName.lastName}
             size={42}
             border={false}
           />
