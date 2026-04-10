@@ -29,7 +29,8 @@ export default function ChurchMembersPreview({ members, onSeeAll }: Props) {
             <View key={member.id} className="items-center">
               <UserAvatar
                 uri={member.avatar_url}
-                initial={member.first_name?.[0] ?? 'U'}
+                first_name={member.first_name}
+                last_name={member.last_name}
                 size={56}
                 border={false}
               />
