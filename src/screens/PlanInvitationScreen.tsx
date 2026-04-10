@@ -3,8 +3,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import UserAvatar from '../components/UserAvatar';
 
 type Props = {
-  inviterName: string;
-  inviterInitial: string;
+  firstName: string;
+  lastName: string;
   inviterAvatar?: string | null;
 
   planTitle?: string;
@@ -24,8 +24,8 @@ type Props = {
 };
 
 export default function PlanInvitationScreen({
-  inviterName,
-  inviterInitial,
+  firstName,
+  lastName,
   inviterAvatar,
   planTitle,
   planCover,
@@ -40,12 +40,13 @@ export default function PlanInvitationScreen({
   onDecline,
 }: Props) {
   const insets = useSafeAreaInsets();
+  const inviterName = [firstName, lastName].filter(Boolean).join(' ').trim();
 
   return (
     <View className="flex-1 bg-white dark:bg-black px-6 pt-12">
       {/* Avatar */}
       <View className="items-center mb-6">
-        <UserAvatar uri={inviterAvatar} initial={inviterInitial} size={96} />
+        <UserAvatar uri={inviterAvatar} first_name={firstName} last_name={lastName} size={96} />
       </View>
 
       {/* Invitation text */}
@@ -73,7 +74,8 @@ export default function PlanInvitationScreen({
               className="w-8 h-8 rounded-full border dark:border-white mr-2 items-center justify-center">
               <UserAvatar
                 uri={m.profiles?.avatar_url}
-                initial={m.profiles?.first_name?.[0] ?? 'U'}
+                first_name={m.profiles?.first_name}
+                last_name={m.profiles?.last_name}
                 size={32}
               />
             </View>

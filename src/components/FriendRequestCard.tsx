@@ -39,7 +39,7 @@ export default function FriendRequestCard({
 }: Props) {
   return (
     <View className="flex-row items-center p-3 mb-3 rounded-xl bg-gray-100 dark:bg-neutral-900">
-      <UserAvatar initial={first_name[0]} uri={avatar_url} size={34} />
+      <UserAvatar uri={avatar_url} first_name={first_name} last_name={last_name} size={34} />
 
       <View className="flex-1 ml-3">
         <Text className="font-semibold dark:text-white">

@@ -95,7 +95,8 @@ const DayCommentsBottomSheet = forwardRef<BottomSheet, Props>(
                     {/* Avatar */}
                     <UserAvatar
                       uri={item.avatar_url}
-                      initial={item.first_name?.[0] ?? 'U'}
+                      first_name={item.first_name}
+                      last_name={item.last_name}
                       size={40}
                     />
 

@@ -1,7 +1,7 @@
 import LoadingSpinner from '@/src/components/LoadingSpinner';
-import { useChurchAnalytics } from '@/src/hooks/useChurchAnalytics';
 import UserAvatar from '@/src/components/UserAvatar';
 import { useChurch } from '@/src/hooks/useChurch';
+import { useChurchAnalytics } from '@/src/hooks/useChurchAnalytics';
 import { useChurchMembers } from '@/src/hooks/useChurchMembers';
 import { useDebounce } from '@/src/utils';
 import { Ionicons } from '@expo/vector-icons';
@@ -171,7 +171,8 @@ export default function ChurchMembersScreen({ churchId }: Props) {
             <View className="flex-row items-center gap-3">
               <UserAvatar
                 uri={item.avatar_url}
-                initial={item.first_name?.[0] ?? 'U'}
+                first_name={item.first_name}
+                last_name={item.last_name}
                 size={52}
                 border={false}
               />
