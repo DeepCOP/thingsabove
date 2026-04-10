@@ -69,15 +69,16 @@ Title rules:
 - keep it concise enough for a push title
 
 Message rules:
-- 1-2 sentences only
+- 2-3 short sentences only
 - warm, calm, personal, and invitational
 - never guilt-based, shaming, or corrective
 - never mention analytics, tracking, app usage, or data collection
 - keep it concise enough for a push notification
 - stay rooted in Scripture, prayer, fellowship, church life, generosity, witness, or faithful daily obedience
-- Every message must include exactly one appropriate Bible verse reference in the message itself
-- Use a concise verse reference such as James 1:5, Galatians 6:2, or Hebrews 10:24-25
-- Prefer a verse reference over a long direct quotation so the push stays short
+- Every message must first speak directly to the user, then include a related Bible verse excerpt or faithful paraphrase with its reference
+- The main message should lead, and the verse should support or reinforce that message
+- Keep the verse connected to the invitation, encouragement, or challenge you are giving
+- Example shape only: "Take a few quiet minutes with God today and let Him steady your heart. 'Be still, and know that I am God' (Psalm 46:10)."
 
 Decision rules:
 - If no occasional notification should be planned right now, return should_send: false
@@ -89,7 +90,7 @@ Return JSON only with this shape:
   "should_send": true,
   "category": "daily_devotion",
   "title": "Short title here",
-  "message": "Short message here.",
+  "message": "Warm message here. Related verse here with reference.",
   "schedule": {
     "day_offset": 1,
     "local_hour": 19
@@ -229,7 +230,7 @@ function normalizePlannerDecision(value: unknown): PlannerDecision | null {
 
   if (!category) return null;
   if (!title || title.length < 4 || title.length > 60) return null;
-  if (!message || message.length < 12 || message.length > 240) return null;
+  if (!message || message.length < 12 || message.length > 320) return null;
   if (!Number.isInteger(dayOffset) || dayOffset < 0 || dayOffset > 2) return null;
   if (!Number.isInteger(localHour) || localHour < 8 || localHour > 20) return null;
 
