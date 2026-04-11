@@ -72,7 +72,7 @@ export default function PrayerRequestDetailScreen({ requestId }: Props) {
           title="Prayer request not found"
           description="It may have been removed, or you may not have access to it anymore."
           ctaLabel="Back to Prayer Board"
-          onCta={() => router.replace('/prayer/index')}
+          onCta={() => router.replace('/prayer')}
         />
       </View>
     );
