@@ -18,7 +18,6 @@ Deno.serve(async () => {
       id,
       generated_title,
       generated_message,
-      priority,
       scheduled_for,
       created_at,
       profiles ( expo_push_token )
@@ -29,7 +28,6 @@ Deno.serve(async () => {
     .not('scheduled_for', 'is', null)
     .lte('scheduled_for', new Date().toISOString())
     .order('scheduled_for', { ascending: true })
-    .order('priority', { ascending: true })
     .order('created_at', { ascending: true })
     .limit(1000);
 
