@@ -2,6 +2,7 @@ import { formatBibleVersionSize } from '@/src/lib/bibleVersionService';
 import { useBible } from '@/src/state/BibleContext';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import {
+  ActivityIndicator,
   Alert,
   Modal,
   Pressable,
@@ -63,7 +64,8 @@ export default function BibleVersionsMenu({ visible, menuStyle, onClose }: Props
                 Bible Versions
               </Text>
               <Text className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                Current: {loadingVersionId ? `${version}...` : version}
+                Current:{' '}
+                {loadingVersionId ? <ActivityIndicator size="small" className="ml-2" /> : version}
               </Text>
             </View>
 
