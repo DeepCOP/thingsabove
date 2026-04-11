@@ -41,6 +41,7 @@ export function useAcceptFriendRequest() {
 
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['friends'] });
+      qc.invalidateQueries({ queryKey: ['friend_requests'] });
     },
   });
 }
