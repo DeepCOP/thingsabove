@@ -1,7 +1,8 @@
+import { getCanonicalBookName } from '@/src/bible/books';
 import { useRealtimeScriptureNotes } from '@/src/hooks/useRealtimeScriptureNotes';
 import { useScriptureNotes } from '@/src/hooks/useScriptureNotes';
 import { useAuth } from '@/src/state/AuthContext';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import dayjs from 'dayjs';
 import { useEffect, useMemo, useState } from 'react';
 import {
@@ -37,6 +38,7 @@ type ScopeDescriptor = {
 type Props = {
   onClose: () => void;
   verse: VerseTarget | null;
+  bookId: string;
   book: string;
   chapter: number;
   selectionStart: number;
@@ -58,6 +60,7 @@ const formatScopeKeyBook = (book: string) =>
 export default function ScriptureNotesScreen({
   onClose,
   verse,
+  bookId,
   book,
   chapter,
   selectionStart,
@@ -99,7 +102,7 @@ export default function ScriptureNotesScreen({
     setDraft('');
     setSubmitError('');
     setReplyTo(null);
-  }, [verse?.number, book, chapter]);
+  }, [verse?.number, book, bookId, chapter]);
 
   useEffect(() => {
     const show = Keyboard.addListener('keyboardDidShow', (e) => {
@@ -122,7 +125,7 @@ export default function ScriptureNotesScreen({
     const safeVerseCount = Math.max(verseCount, verse.number);
     const sectionStart = Math.max(1, verse.number - 4);
     const sectionEnd = Math.min(safeVerseCount, verse.number + 4);
-    const bookKey = formatScopeKeyBook(book);
+    const bookKey = formatScopeKeyBook(getCanonicalBookName(bookId) || book);
     const chapterKey = `${bookKey}:${chapter}`;
 
     return {
@@ -134,6 +137,7 @@ export default function ScriptureNotesScreen({
         context: {
           noteType: 'verse',
           scopeKey: `${chapterKey}:${verse.number}`,
+          bookId,
           book,
           chapter,
           verseStart: verse.number,
@@ -148,6 +152,7 @@ export default function ScriptureNotesScreen({
         context: {
           noteType: 'section',
           scopeKey: `${chapterKey}:${sectionStart}-${sectionEnd}`,
+          bookId,
           book,
           chapter,
           verseStart: sectionStart,
@@ -162,6 +167,7 @@ export default function ScriptureNotesScreen({
         context: {
           noteType: 'chapter',
           scopeKey: chapterKey,
+          bookId,
           book,
           chapter,
           verseStart: null,
@@ -176,6 +182,7 @@ export default function ScriptureNotesScreen({
         context: {
           noteType: 'book',
           scopeKey: bookKey,
+          bookId,
           book,
           chapter: null,
           verseStart: null,
@@ -183,7 +190,7 @@ export default function ScriptureNotesScreen({
         },
       },
     };
-  }, [book, chapter, verse, verseCount]);
+  }, [book, bookId, chapter, verse, verseCount]);
 
   const activeScope = scopes?.[activeType] ?? null;
   const { notesQuery, notes, addNote, toggleHelpful } = useScriptureNotes(

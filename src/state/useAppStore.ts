@@ -1,24 +1,35 @@
+import { DEFAULT_BOOK_ID, getCanonicalBookIdByName } from '@/src/bible/books';
+import type {
+  BibleVersionId,
+  BibleVersionInstallState,
+  BibleVersionInstallStatus,
+} from '@/src/bible/types';
 import { DevotionalDays } from '@/src/types/types';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
-export type BibleBook = {
-  name: string;
+export type SelectedBibleBook = {
+  bookId: string;
   chapter: number;
   verseStart?: number;
   verseEnd?: number;
 };
 
-type BibleVersion = 'KJV' | 'ASV';
 type SortOption = 'Recent' | 'Trending';
 type ThemeMode = 'light' | 'dark' | 'system';
 
 type AppState = {
   missedDays: DevotionalDays[] | null;
   setMissedDays: (days: DevotionalDays[]) => void;
-  version: BibleVersion;
-  setVersion: (v: BibleVersion) => void;
+  version: BibleVersionId;
+  setVersion: (v: BibleVersionId) => void;
+  bibleVersionStates: Partial<Record<BibleVersionId, BibleVersionInstallState>>;
+  setBibleVersionState: (
+    versionId: BibleVersionId,
+    patch: Partial<BibleVersionInstallState>,
+  ) => void;
+  clearBibleVersionState: (versionId: BibleVersionId) => void;
 
   isGrid: boolean;
   setIsGrid: (isGrid: boolean) => void;
@@ -29,11 +40,8 @@ type AppState = {
   user: any;
   setUser: (u: any) => void;
 
-  selectedBook: BibleBook;
-  setSelectedBook: (book: BibleBook) => void;
-
-  selectedChapter: number | null;
-  setSelectedChapter: (chapter: number | null) => void;
+  selectedBook: SelectedBibleBook;
+  setSelectedBook: (book: SelectedBibleBook) => void;
 
   currentPlan: any;
   setCurrentPlan: (plan: any) => void;
@@ -48,14 +56,14 @@ type PersistedAppState = Pick<
   | 'isGrid'
   | 'sort'
   | 'version'
+  | 'bibleVersionStates'
   | 'selectedBook'
-  | 'selectedChapter'
   | 'currentPlan'
   | 'theme'
 >;
 
-const DEFAULT_SELECTED_BOOK: BibleBook = {
-  name: 'John',
+const DEFAULT_SELECTED_BOOK: SelectedBibleBook = {
+  bookId: DEFAULT_BOOK_ID,
   chapter: 1,
 };
 
@@ -64,8 +72,8 @@ const DEFAULT_PERSISTED_STATE: PersistedAppState = {
   isGrid: false,
   sort: 'Recent',
   version: 'KJV',
+  bibleVersionStates: {},
   selectedBook: DEFAULT_SELECTED_BOOK,
-  selectedChapter: null,
   currentPlan: null,
   theme: 'system',
 };
@@ -73,8 +81,26 @@ const DEFAULT_PERSISTED_STATE: PersistedAppState = {
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null;
 
-const isBibleVersion = (value: unknown): value is BibleVersion =>
-  value === 'KJV' || value === 'ASV';
+const hasOwn = (value: Record<string, unknown>, key: string) =>
+  Object.prototype.hasOwnProperty.call(value, key);
+
+const toPositiveNumber = (value: unknown, fallback?: number) => {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed) || parsed <= 0) {
+    return fallback;
+  }
+
+  return parsed;
+};
+
+const normalizeBibleVersionId = (value: unknown): BibleVersionId | null => {
+  if (typeof value !== 'string') {
+    return null;
+  }
+
+  const normalized = value.trim().toUpperCase();
+  return normalized ? normalized : null;
+};
 
 const isSortOption = (value: unknown): value is SortOption =>
   value === 'Recent' || value === 'Trending';
@@ -82,31 +108,75 @@ const isSortOption = (value: unknown): value is SortOption =>
 const isThemeMode = (value: unknown): value is ThemeMode =>
   value === 'light' || value === 'dark' || value === 'system';
 
-const isBibleBook = (value: unknown): value is BibleBook => {
-  if (!isRecord(value)) {
-    return false;
-  }
+const isBibleVersionInstallStatus = (value: unknown): value is BibleVersionInstallStatus =>
+  value === 'not_downloaded' ||
+  value === 'downloading' ||
+  value === 'downloaded' ||
+  value === 'error';
 
-  const { name, chapter, verseStart, verseEnd } = value;
+const normalizeSelectedBook = (value: unknown): SelectedBibleBook => {
+  const selectedBook = value as
+    | (Partial<SelectedBibleBook> & {
+        name?: string;
+      })
+    | undefined;
 
-  return (
-    typeof name === 'string' &&
-    typeof chapter === 'number' &&
-    (verseStart === undefined || typeof verseStart === 'number') &&
-    (verseEnd === undefined || typeof verseEnd === 'number')
-  );
+  return {
+    bookId:
+      getCanonicalBookIdByName(selectedBook?.bookId) ||
+      (typeof selectedBook?.bookId === 'string' && selectedBook.bookId.trim().toUpperCase()) ||
+      getCanonicalBookIdByName(selectedBook?.name) ||
+      DEFAULT_BOOK_ID,
+    chapter: toPositiveNumber(selectedBook?.chapter, 1) ?? 1,
+    verseStart: toPositiveNumber(selectedBook?.verseStart),
+    verseEnd: toPositiveNumber(selectedBook?.verseEnd),
+  };
 };
 
-const hasOwn = (value: Record<string, unknown>, key: string) =>
-  Object.prototype.hasOwnProperty.call(value, key);
+const normalizeBibleVersionState = (value: unknown): BibleVersionInstallState | null => {
+  if (!isRecord(value) || !isBibleVersionInstallStatus(value.status)) {
+    return null;
+  }
+
+  return {
+    status: value.status,
+    localUri: typeof value.localUri === 'string' ? value.localUri : undefined,
+    installedAt: typeof value.installedAt === 'string' ? value.installedAt : undefined,
+    sizeBytes: toPositiveNumber(value.sizeBytes),
+    checksum:
+      typeof value.checksum === 'string' || value.checksum === null ? value.checksum : undefined,
+    error: typeof value.error === 'string' || value.error === null ? value.error : undefined,
+  };
+};
+
+const normalizeBibleVersionStates = (
+  value: unknown,
+): Partial<Record<BibleVersionId, BibleVersionInstallState>> => {
+  if (!isRecord(value)) {
+    return {};
+  }
+
+  const normalizedEntries = Object.entries(value).flatMap(([versionId, state]) => {
+    const normalizedVersionId = normalizeBibleVersionId(versionId);
+    const normalizedState = normalizeBibleVersionState(state);
+
+    if (!normalizedVersionId || !normalizedState) {
+      return [];
+    }
+
+    return [[normalizedVersionId, normalizedState] as const];
+  });
+
+  return Object.fromEntries(normalizedEntries);
+};
 
 const partializeAppState = (state: AppState): PersistedAppState => ({
   user: state.user,
   isGrid: state.isGrid,
   sort: state.sort,
   version: state.version,
+  bibleVersionStates: state.bibleVersionStates,
   selectedBook: state.selectedBook,
-  selectedChapter: state.selectedChapter,
   currentPlan: state.currentPlan,
   theme: state.theme,
 });
@@ -123,16 +193,9 @@ const migrateAppState = (persistedState: unknown): PersistedAppState => {
         ? persistedState.isGrid
         : DEFAULT_PERSISTED_STATE.isGrid,
     sort: isSortOption(persistedState.sort) ? persistedState.sort : DEFAULT_PERSISTED_STATE.sort,
-    version: isBibleVersion(persistedState.version)
-      ? persistedState.version
-      : DEFAULT_PERSISTED_STATE.version,
-    selectedBook: isBibleBook(persistedState.selectedBook)
-      ? persistedState.selectedBook
-      : DEFAULT_PERSISTED_STATE.selectedBook,
-    selectedChapter:
-      typeof persistedState.selectedChapter === 'number' || persistedState.selectedChapter === null
-        ? persistedState.selectedChapter
-        : DEFAULT_PERSISTED_STATE.selectedChapter,
+    version: normalizeBibleVersionId(persistedState.version) ?? DEFAULT_PERSISTED_STATE.version,
+    bibleVersionStates: normalizeBibleVersionStates(persistedState.bibleVersionStates),
+    selectedBook: normalizeSelectedBook(persistedState.selectedBook),
     currentPlan: hasOwn(persistedState, 'currentPlan')
       ? persistedState.currentPlan
       : DEFAULT_PERSISTED_STATE.currentPlan,
@@ -147,7 +210,8 @@ export const useAppStore = create<AppState>()(
       setMissedDays: (days) => set({ missedDays: days }),
       sort: DEFAULT_PERSISTED_STATE.sort,
       setSort: (sort) => set({ sort }),
-      user: null,
+
+      user: DEFAULT_PERSISTED_STATE.user,
       setUser: (user) => set({ user }),
       isGrid: DEFAULT_PERSISTED_STATE.isGrid,
       setIsGrid: (isGrid) => set({ isGrid }),
@@ -155,23 +219,37 @@ export const useAppStore = create<AppState>()(
       selectedBook: DEFAULT_SELECTED_BOOK,
       setSelectedBook: (selectedBook) => set({ selectedBook }),
 
-      selectedChapter: DEFAULT_PERSISTED_STATE.selectedChapter,
-      setSelectedChapter: (selectedChapter) => set({ selectedChapter }),
-
       currentPlan: DEFAULT_PERSISTED_STATE.currentPlan,
       setCurrentPlan: (currentPlan) => set({ currentPlan }),
 
       theme: DEFAULT_PERSISTED_STATE.theme,
       setTheme: (theme) => set({ theme }),
+
       version: DEFAULT_PERSISTED_STATE.version,
       setVersion: (version) => set({ version }),
+      bibleVersionStates: DEFAULT_PERSISTED_STATE.bibleVersionStates,
+      setBibleVersionState: (versionId, patch) =>
+        set((state) => ({
+          bibleVersionStates: {
+            ...state.bibleVersionStates,
+            [versionId]: {
+              status: 'not_downloaded',
+              ...state.bibleVersionStates[versionId],
+              ...patch,
+            },
+          },
+        })),
+      clearBibleVersionState: (versionId) =>
+        set((state) => {
+          const nextStates = { ...state.bibleVersionStates };
+          delete nextStates[versionId];
+          return { bibleVersionStates: nextStates };
+        }),
     }),
     {
       name: 'app-storage',
+      version: 2,
       storage: createJSONStorage(() => AsyncStorage),
-      version: 1,
-      // Older installs already have this key in AsyncStorage, so normalize
-      // the saved payload before merging it into the current store shape.
       migrate: (persistedState) => migrateAppState(persistedState),
       merge: (persistedState, currentState) => ({
         ...currentState,

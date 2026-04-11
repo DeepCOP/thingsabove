@@ -1,21 +1,36 @@
+import BibleVersionsMenu from '@/src/components/BibleVersionsMenu';
 import BibleReaderView from '@/src/screens/BibleReaderViewScreen';
-import { Ionicons } from '@expo/vector-icons';
-import { Tabs, useRouter } from 'expo-router';
-import { useRef } from 'react';
-import { Animated, Text, TouchableOpacity, useColorScheme, View } from 'react-native';
+import Ionicons from '@expo/vector-icons/Ionicons';
+import { Tabs } from 'expo-router';
+import { useMemo, useRef, useState } from 'react';
+import {
+  ActivityIndicator,
+  Animated,
+  Text,
+  TouchableOpacity,
+  useWindowDimensions,
+  View,
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useBible } from '../../src/state/BibleContext';
 
 export default function BibleTab() {
   const insets = useSafeAreaInsets();
+  const { width: screenWidth, height: screenHeight } = useWindowDimensions();
   const headerY = useRef(new Animated.Value(0)).current; // 0 shown, -80 hidden
   const tabY = useRef(new Animated.Value(0)).current; // 0 shown, 80 hidden
   const TAB_BAR_HEIGHT = 56;
   const hideDistance = Math.abs(TAB_BAR_HEIGHT);
+  const versionButtonRef = useRef<View | null>(null);
+  const [showVersionsMenu, setShowVersionsMenu] = useState(false);
+  const [versionMenuAnchor, setVersionMenuAnchor] = useState({
+    x: 0,
+    y: 0,
+    width: 0,
+    height: 0,
+  });
 
-  const router = useRouter();
-
-  const { version, setVersion } = useBible();
+  const { loadingVersionId, version } = useBible();
 
   const lastScrollY = useRef(0);
 
@@ -41,7 +56,7 @@ export default function BibleTab() {
     // SCROLLING DOWN → hide immediately
     else if (y > last) {
       Animated.timing(headerY, {
-        toValue: -80,
+        toValue: -80 - insets.top,
         duration: 150,
         useNativeDriver: true,
       }).start();
@@ -70,18 +85,39 @@ export default function BibleTab() {
     lastScrollY.current = y;
   };
 
+  const openVersionsMenu = () => {
+    versionButtonRef.current?.measureInWindow((x, y, width, height) => {
+      setVersionMenuAnchor({ x, y, width, height });
+      setShowVersionsMenu(true);
+    });
+  };
+
+  const versionMenuStyle = useMemo(() => {
+    const menuWidth = Math.min(340, screenWidth - 24);
+    const rightAlignedLeft = versionMenuAnchor.x + versionMenuAnchor.width - menuWidth;
+    const left = Math.min(Math.max(12, rightAlignedLeft), screenWidth - menuWidth - 12);
+    const top = versionMenuAnchor.y + versionMenuAnchor.height + 8;
+    const maxHeight = Math.max(220, screenHeight - top - insets.bottom - 16);
+
+    return {
+      top,
+      left,
+      width: menuWidth,
+      maxHeight,
+    };
+  }, [insets.bottom, screenHeight, screenWidth, versionMenuAnchor]);
+
   const AnimatedHeader = ({
     headerTranslateY,
   }: {
     headerTranslateY: Animated.AnimatedInterpolation<string | number>;
   }) => {
-    const colorScheme = useColorScheme();
-
     return (
       <Animated.View
         style={{
           transform: [{ translateY: headerTranslateY }],
           height: 90,
+          paddingTop: insets.top,
           justifyContent: 'center',
           paddingHorizontal: 16,
           position: 'absolute',
@@ -91,23 +127,22 @@ export default function BibleTab() {
           zIndex: 10,
         }}
         className={'dark:bg-black bg-white'}>
-        <View className="flex-row items-center mr-2 flex-1 justify-end mt-4">
-          {/* Search */}
-          <TouchableOpacity onPress={() => router.push('../search')} className="mr-4 ">
-            <Ionicons
-              name="search-outline"
-              size={22}
-              color={colorScheme === 'dark' ? 'white' : 'black'}
-            />
-          </TouchableOpacity>
-
+        <View className="flex-row items-center mr-2 flex-1 justify-end ">
           {/* Version Switch */}
-          <TouchableOpacity
-            onPress={() => setVersion(version === 'KJV' ? 'ASV' : 'KJV')}
-            className="flex-row items-center bg-blue-100 px-3 py-1.5 rounded-full mr-1">
-            <Ionicons name="globe-outline" size={16} />
-            <Text className="ml-2 font-semibold">{version}</Text>
-          </TouchableOpacity>
+          <View ref={versionButtonRef} collapsable={false}>
+            <TouchableOpacity
+              onPress={openVersionsMenu}
+              disabled={Boolean(loadingVersionId)}
+              style={{ opacity: loadingVersionId ? 0.7 : 1 }}
+              className="flex-row items-center bg-blue-100 px-3 py-1.5 rounded-full mr-1">
+              <Ionicons name="globe-outline" size={16} />
+              {loadingVersionId ? (
+                <ActivityIndicator size="small" className="ml-2" />
+              ) : (
+                <Text className="ml-2 font-semibold">{version}</Text>
+              )}
+            </TouchableOpacity>
+          </View>
         </View>
       </Animated.View>
     );
@@ -136,6 +171,11 @@ export default function BibleTab() {
       <AnimatedHeader headerTranslateY={headerY} />
 
       <BibleReaderView onScroll={onScroll} headerTranslateY={tabY} />
+      <BibleVersionsMenu
+        visible={showVersionsMenu}
+        menuStyle={versionMenuStyle}
+        onClose={() => setShowVersionsMenu(false)}
+      />
     </>
   );
 }

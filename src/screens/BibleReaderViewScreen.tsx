@@ -1,11 +1,20 @@
+import { findBookInBible, getBibleDotComBookCode, getBookNameForId } from '@/src/bible/books';
 import ReaderBottomBar from '@/src/components/ReaderBottomBar';
 import ScriptureSelectionMenu from '@/src/components/ScriptureSelectionMenu';
 import { useAppStore } from '@/src/state/useAppStore';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import * as Clipboard from 'expo-clipboard';
 import { useRouter } from 'expo-router';
-import { useMemo, useState } from 'react';
-import { Animated, Share, Text, TouchableOpacity, useWindowDimensions, View } from 'react-native';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import {
+  Animated,
+  ScrollView,
+  Share,
+  Text,
+  TouchableOpacity,
+  useWindowDimensions,
+  View,
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useBible } from '../state/BibleContext';
 
@@ -27,13 +36,16 @@ export default function BibleReaderView({
   const [showMenu, setShowMenu] = useState(false);
   const [menuAnchor, setMenuAnchor] = useState({ x: 0, y: 0 });
   const [menuHeight, setMenuHeight] = useState(0);
+  const scrollRef = useRef<ScrollView | null>(null);
+  const versePositions = useRef<Record<number, number>>({});
+  const didScrollRef = useRef(false);
 
   const selectedBook = useAppStore((s) => s.selectedBook);
   const setSelectedBook = useAppStore((s) => s.setSelectedBook);
   const { width: screenWidth, height: screenHeight } = useWindowDimensions();
 
   const router = useRouter();
-  const bibleContext = useBible();
+  const { bible, version } = useBible();
   const contextMenuStyle = useMemo(() => {
     const menuWidth = 220;
     const horizontalMargin = 10;
@@ -63,8 +75,70 @@ export default function BibleReaderView({
     screenWidth,
   ]);
 
-  if (!bibleContext) return null;
-  const { bible, version, bookNames } = bibleContext;
+  const currentBook = useMemo(
+    () => findBookInBible(bible, selectedBook.bookId) ?? bible.books[0],
+    [bible, selectedBook.bookId],
+  );
+  const currentBookId = currentBook?.id ?? selectedBook.bookId;
+  const currentBookName = currentBook?.name ?? getBookNameForId(bible, currentBookId);
+  const currentBookIndex = currentBook
+    ? bible.books.findIndex((book) => book.id === currentBook.id)
+    : -1;
+
+  useEffect(() => {
+    if (selectedBook.verseStart == null) {
+      setSelectedVerse([]);
+      didScrollRef.current = false;
+      versePositions.current = {};
+      return;
+    }
+
+    const selectedChapterVerses = currentBook?.chapters[selectedBook.chapter - 1]?.verses ?? [];
+
+    const endVerse = selectedBook.verseEnd ?? selectedBook.verseStart;
+    const nextSelectedVerse = selectedChapterVerses
+      .filter((entry) => entry.verse >= selectedBook.verseStart! && entry.verse <= endVerse)
+      .map((entry) => ({ number: entry.verse, text: entry.text }));
+
+    setSelectedVerse(nextSelectedVerse);
+    didScrollRef.current = false;
+    versePositions.current = {};
+  }, [currentBook, selectedBook.chapter, selectedBook.verseEnd, selectedBook.verseStart]);
+
+  useEffect(() => {
+    if (selectedBook.verseStart == null) {
+      return;
+    }
+
+    let cancelled = false;
+    let attempts = 0;
+    const maxAttempts = 12;
+
+    const tryScroll = () => {
+      if (cancelled || didScrollRef.current) return;
+
+      const y = versePositions.current[selectedBook.verseStart!];
+      if (y != null) {
+        didScrollRef.current = true;
+        scrollRef.current?.scrollTo({
+          y: Math.max(y - 140, 0),
+          animated: true,
+        });
+        return;
+      }
+
+      if (attempts < maxAttempts) {
+        attempts += 1;
+        setTimeout(tryScroll, 50);
+      }
+    };
+
+    setTimeout(tryScroll, 50);
+
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedBook.chapter, selectedBook.bookId, selectedBook.verseStart]);
 
   const formatVerseText = (verses: { number: number; text: string }[]) => {
     if (verses.length === 0) return '';
@@ -85,9 +159,9 @@ export default function BibleReaderView({
     }
 
     // Official Bible.com link
-    const link = `${process.env.EXPO_PUBLIC_BASE_URL}/bible/12/${selectedBook.name
-      .toLowerCase()
-      .slice(0, 3)}.${selectedBook.chapter}.${ranges.join(',')}.${version}`;
+    const link = `${process.env.EXPO_PUBLIC_BASE_URL}/bible/12/${getBibleDotComBookCode(
+      currentBookId,
+    )}.${selectedBook.chapter}.${ranges.join(',')}.${version}`;
 
     return `${header}\n${body}\n${link}`;
   };
@@ -116,7 +190,7 @@ export default function BibleReaderView({
     // Push last range
     ranges.push(start === end ? `${start}` : `${start}-${end}`);
     // Construct header: "Luke 19:1-2,10-12,24 ASV"
-    const header = `${selectedBook.name} ${selectedBook.chapter}:${ranges.join(',')} ${version}`;
+    const header = `${currentBookName} ${selectedBook.chapter}:${ranges.join(',')} ${version}`;
     return { header, ranges, sorted };
   };
 
@@ -128,26 +202,25 @@ export default function BibleReaderView({
       end: sorted[sorted.length - 1],
     };
   };
-  const chapters = bible.books.find((book) => book.name === selectedBook.name)?.chapters;
+  const chapters = currentBook?.chapters;
   const chapterCount = chapters?.length || 0;
 
   const chapterNumber = Number(selectedBook.chapter);
-  const verses = bible.books.find((book) => book.name === selectedBook.name)?.chapters[
-    chapterNumber - 1
-  ]?.verses;
+  const verses = currentBook?.chapters[chapterNumber - 1]?.verses;
   const selectedVerseRange = getSelectedVerseRange();
 
   return (
     <>
       <View className="flex-1 bg-white dark:bg-black">
         <Animated.ScrollView
+          ref={scrollRef}
           scrollEventThrottle={16}
           onScroll={onScroll}
           className="px-5"
           style={{ marginBottom: insets.bottom + 80 }}>
           <View className="justify-center items-center pb-16 gap-4">
             <Text className="text-center text-primary dark:text-gray-100 text-lg pt-28 font-MerriWeather300Light">
-              {selectedBook.name}
+              {currentBookName}
             </Text>
 
             {/* BIG CHAPTER NUMBER */}
@@ -158,7 +231,12 @@ export default function BibleReaderView({
 
           {/* VERSES */}
           {verses?.map(({ verse, text }) => (
-            <View key={verse} className="mb-3">
+            <View
+              key={verse}
+              className="mb-3"
+              onLayout={(event) => {
+                versePositions.current[Number(verse)] = event.nativeEvent.layout.y;
+              }}>
               <TouchableOpacity
                 onPress={() => {
                   if (!selectedVerse.some((item) => item.number === verse)) {
@@ -202,24 +280,16 @@ export default function BibleReaderView({
               className="py-1 mr-8"
               onPress={() => {
                 if (chapterNumber === 1) {
-                  bookNames.forEach((bookName) => {
-                    if (bookName === selectedBook.name) {
-                      const currentBookIndex = bookNames.indexOf(selectedBook.name);
-                      if (currentBookIndex === 0) return;
-                      const prevBookName = bookNames[currentBookIndex - 1];
-                      if (prevBookName) {
-                        const prevChapters = bible.books.find(
-                          (book) => book.name === prevBookName,
-                        )?.chapters;
-                        const lastChapterNumber = prevChapters?.length || 1;
-                        setSelectedBook({ name: prevBookName, chapter: lastChapterNumber });
-                        setSelectedVerse([]);
-                      }
-                    }
-                  });
+                  const previousBook =
+                    currentBookIndex > 0 ? bible.books[currentBookIndex - 1] : null;
+                  if (previousBook) {
+                    const lastChapterNumber = previousBook.chapters.length || 1;
+                    setSelectedBook({ bookId: previousBook.id, chapter: lastChapterNumber });
+                    setSelectedVerse([]);
+                  }
                   return;
                 }
-                setSelectedBook({ name: selectedBook.name, chapter: chapterNumber - 1 });
+                setSelectedBook({ bookId: currentBookId, chapter: chapterNumber - 1 });
                 setSelectedVerse([]);
               }}>
               <Ionicons name="chevron-back" size={20} color="white" />
@@ -228,9 +298,9 @@ export default function BibleReaderView({
           center={
             <TouchableOpacity
               className="px-2 py-1"
-              onPress={() => router.push(`/bible/${selectedBook.name}`)}>
+              onPress={() => router.push(`/bible/${currentBookId}`)}>
               <Text className="text-white font-semibold mx-4">
-                {selectedBook.name} {selectedBook.chapter}
+                {currentBookName} {selectedBook.chapter}
               </Text>
             </TouchableOpacity>
           }
@@ -239,19 +309,15 @@ export default function BibleReaderView({
               className="py-1 ml-8"
               onPress={() => {
                 if (chapterNumber === chapterCount) {
-                  bookNames.forEach((bookName) => {
-                    if (bookName === selectedBook.name) {
-                      const currentBookIndex = bookNames.indexOf(selectedBook.name);
-                      const nextBookName = bookNames[currentBookIndex + 1];
-                      if (nextBookName) {
-                        setSelectedBook({ name: nextBookName, chapter: 1 });
-                        setSelectedVerse([]);
-                      }
-                    }
-                  });
+                  const nextBook =
+                    currentBookIndex >= 0 ? bible.books[currentBookIndex + 1] : undefined;
+                  if (nextBook) {
+                    setSelectedBook({ bookId: nextBook.id, chapter: 1 });
+                    setSelectedVerse([]);
+                  }
                   return;
                 }
-                setSelectedBook({ name: selectedBook.name, chapter: chapterNumber + 1 });
+                setSelectedBook({ bookId: currentBookId, chapter: chapterNumber + 1 });
                 setSelectedVerse([]);
               }}>
               <Ionicons name="chevron-forward" size={20} color="white" />
@@ -276,7 +342,8 @@ export default function BibleReaderView({
             router.push({
               pathname: '/scripture_notes',
               params: {
-                book: selectedBook.name,
+                bookId: currentBookId,
+                book: currentBookName,
                 chapter: String(chapterNumber),
                 verseNumber: String(selectedVerseRange.start.number),
                 verseText: selectedVerseRange.start.text,

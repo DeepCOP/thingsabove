@@ -1,10 +1,11 @@
 import Dropdown from '@/src/components/DropDown';
 import { MyPlansToggle } from '@/src/components/MyPlansToggle';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { Text, TouchableOpacity, useColorScheme, View } from 'react-native';
 import FindPlansList from '../components/plansList/FindPlansList';
 import MyPlansList from '../components/plansList/MyPlansList';
 import SavedPlansList from '../components/plansList/SavedPlansList';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 type Props = {
   isGrid: boolean;
@@ -38,11 +39,14 @@ export default function PlansScreen({
   onContribute,
 }: Props) {
   const colorScheme = useColorScheme();
+  const insets = useSafeAreaInsets();
 
   return (
-    <View className="flex-1 bg-gray-100 dark:bg-black px-4 pt-12">
+    <View className="flex-1 bg-gray-100 dark:bg-black px-4">
       {/* Header */}
-      <View className="flex-row justify-between items-center mb-4">
+      <View
+        className="flex-row justify-between items-center mb-4"
+        style={{ marginTop: insets.top }}>
         <TouchableOpacity onPress={onToggleGrid}>
           <Ionicons
             name={isGrid ? 'list-outline' : 'grid-outline'}

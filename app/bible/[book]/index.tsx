@@ -1,21 +1,28 @@
 import { useAppStore } from '@/src/state/useAppStore';
-import { Ionicons } from '@expo/vector-icons';
-import { Stack, useRouter } from 'expo-router';
-import { useState } from 'react';
+import Ionicons from '@expo/vector-icons/Ionicons';
+import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
+import { useEffect, useState } from 'react';
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useBible } from '../../../src/state/BibleContext';
 
 export default function BibleBooksChapters() {
   const router = useRouter();
-  const { bible, bookNames } = useBible();
+  const params = useLocalSearchParams<{ book?: string | string[] }>();
+  const routeBookId = Array.isArray(params.book) ? params.book[0] : params.book;
+  const { bible } = useBible();
   const setSelectedBook = useAppStore((s) => s.setSelectedBook);
+  const selectedBookId = useAppStore((s) => s.selectedBook.bookId);
 
-  const [expandedBook, setExpandedBook] = useState<string | null>(null);
+  const [expandedBook, setExpandedBook] = useState<string | null>(routeBookId ?? selectedBookId);
   const insets = useSafeAreaInsets();
 
-  const toggleBook = (bookName: string) => {
-    setExpandedBook((prev) => (prev === bookName ? null : bookName));
+  useEffect(() => {
+    setExpandedBook(routeBookId ?? selectedBookId);
+  }, [routeBookId, selectedBookId]);
+
+  const toggleBook = (bookId: string) => {
+    setExpandedBook((prev) => (prev === bookId ? null : bookId));
   };
 
   return (
@@ -30,21 +37,18 @@ export default function BibleBooksChapters() {
       <ScrollView
         className="flex-1 bg-white dark:bg-black px-4 py-4"
         style={{ marginBottom: insets.bottom + 5 }}>
-        {bookNames.map((bookName) => {
-          const chapters = bible.books.find((book) => book.name === bookName)?.chapters;
-          if (!chapters) return null;
-
-          const chapterCount = chapters.length;
-          const isOpen = expandedBook === bookName;
+        {bible.books.map((book) => {
+          const chapterCount = book.chapters.length;
+          const isOpen = expandedBook === book.id;
 
           return (
-            <View key={bookName} className="mb-3">
+            <View key={book.id} className="mb-3">
               {/* BOOK HEADER */}
               <TouchableOpacity
-                onPress={() => toggleBook(bookName)}
+                onPress={() => toggleBook(book.id)}
                 className="flex-row justify-between items-center bg-gray-100 dark:bg-neutral-900 px-4 py-3 rounded-lg">
                 <Text className="text-lg font-semibold text-gray-900 dark:text-gray-200">
-                  {bookName}
+                  {book.name}
                 </Text>
 
                 <Ionicons name={isOpen ? 'chevron-up' : 'chevron-down'} size={22} color="#6b7280" />
@@ -57,7 +61,7 @@ export default function BibleBooksChapters() {
                     <TouchableOpacity
                       key={ch}
                       onPress={() => {
-                        setSelectedBook({ name: bookName, chapter: ch });
+                        setSelectedBook({ bookId: book.id, chapter: ch });
                         router.push('/BibleTab');
                       }}
                       className="bg-gray-200 dark:bg-gray-700 w-16 h-16 justify-center items-center rounded-lg m-1">

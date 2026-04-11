@@ -153,6 +153,7 @@ export type ScriptureNoteType = 'verse' | 'section' | 'chapter' | 'book';
 export type ScriptureNoteContext = {
   noteType: ScriptureNoteType;
   scopeKey: string;
+  bookId: string;
   book: string;
   chapter: number | null;
   verseStart: number | null;

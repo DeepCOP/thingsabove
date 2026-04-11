@@ -1472,6 +1472,8 @@ export type Database = {
       };
       scripture_references: {
         Row: {
+          book_reference: string[] | null;
+          chapter_reference: string[] | null;
           created_at: string | null;
           day_id: string | null;
           id: string;
@@ -1480,6 +1482,8 @@ export type Database = {
           user_id: string | null;
         };
         Insert: {
+          book_reference?: string[] | null;
+          chapter_reference?: string[] | null;
           created_at?: string | null;
           day_id?: string | null;
           id?: string;
@@ -1488,6 +1492,8 @@ export type Database = {
           user_id?: string | null;
         };
         Update: {
+          book_reference?: string[] | null;
+          chapter_reference?: string[] | null;
           created_at?: string | null;
           day_id?: string | null;
           id?: string;
@@ -1507,6 +1513,8 @@ export type Database = {
       };
       scripture_references_draft: {
         Row: {
+          book_reference: string[] | null;
+          chapter_reference: string[] | null;
           created_at: string | null;
           day_id: string | null;
           id: string;
@@ -1515,6 +1523,8 @@ export type Database = {
           user_id: string | null;
         };
         Insert: {
+          book_reference?: string[] | null;
+          chapter_reference?: string[] | null;
           created_at?: string | null;
           day_id?: string | null;
           id?: string;
@@ -1523,6 +1533,8 @@ export type Database = {
           user_id?: string | null;
         };
         Update: {
+          book_reference?: string[] | null;
+          chapter_reference?: string[] | null;
           created_at?: string | null;
           day_id?: string | null;
           id?: string;
@@ -1894,6 +1906,8 @@ export type Database = {
       get_devotional_days_with_scriptures: {
         Args: { p_plan_id: string };
         Returns: {
+          book_reference: string[];
+          chapter_reference: string[];
           content: string;
           day_id: string;
           day_number: number;
@@ -1904,6 +1918,8 @@ export type Database = {
       get_devotional_drafts: {
         Args: { _plan_id: string };
         Returns: {
+          book_reference: string[];
+          chapter_reference: string[];
           content: string;
           day_id: string;
           day_number: number;
