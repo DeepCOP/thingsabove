@@ -43,9 +43,6 @@ type AppState = {
   selectedBook: SelectedBibleBook;
   setSelectedBook: (book: SelectedBibleBook) => void;
 
-  selectedChapter: number | null;
-  setSelectedChapter: (chapter: number | null) => void;
-
   currentPlan: any;
   setCurrentPlan: (plan: any) => void;
 
@@ -61,7 +58,6 @@ type PersistedAppState = Pick<
   | 'version'
   | 'bibleVersionStates'
   | 'selectedBook'
-  | 'selectedChapter'
   | 'currentPlan'
   | 'theme'
 >;
@@ -78,7 +74,6 @@ const DEFAULT_PERSISTED_STATE: PersistedAppState = {
   version: 'KJV',
   bibleVersionStates: {},
   selectedBook: DEFAULT_SELECTED_BOOK,
-  selectedChapter: null,
   currentPlan: null,
   theme: 'system',
 };
@@ -182,7 +177,6 @@ const partializeAppState = (state: AppState): PersistedAppState => ({
   version: state.version,
   bibleVersionStates: state.bibleVersionStates,
   selectedBook: state.selectedBook,
-  selectedChapter: state.selectedChapter,
   currentPlan: state.currentPlan,
   theme: state.theme,
 });
@@ -202,11 +196,6 @@ const migrateAppState = (persistedState: unknown): PersistedAppState => {
     version: normalizeBibleVersionId(persistedState.version) ?? DEFAULT_PERSISTED_STATE.version,
     bibleVersionStates: normalizeBibleVersionStates(persistedState.bibleVersionStates),
     selectedBook: normalizeSelectedBook(persistedState.selectedBook),
-    selectedChapter:
-      persistedState.selectedChapter === null
-        ? null
-        : (toPositiveNumber(persistedState.selectedChapter) ??
-          DEFAULT_PERSISTED_STATE.selectedChapter),
     currentPlan: hasOwn(persistedState, 'currentPlan')
       ? persistedState.currentPlan
       : DEFAULT_PERSISTED_STATE.currentPlan,
@@ -229,9 +218,6 @@ export const useAppStore = create<AppState>()(
 
       selectedBook: DEFAULT_SELECTED_BOOK,
       setSelectedBook: (selectedBook) => set({ selectedBook }),
-
-      selectedChapter: DEFAULT_PERSISTED_STATE.selectedChapter,
-      setSelectedChapter: (selectedChapter) => set({ selectedChapter }),
 
       currentPlan: DEFAULT_PERSISTED_STATE.currentPlan,
       setCurrentPlan: (currentPlan) => set({ currentPlan }),
@@ -262,7 +248,7 @@ export const useAppStore = create<AppState>()(
     }),
     {
       name: 'app-storage',
-      version: 3,
+      version: 2,
       storage: createJSONStorage(() => AsyncStorage),
       migrate: (persistedState) => migrateAppState(persistedState),
       merge: (persistedState, currentState) => ({
