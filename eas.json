@@ -28,7 +28,7 @@
     "production": {
       "ios": {
         "ascAppId": "6759932294",
-        "groups": ["Team (Expo)", "Beta Testers"]
+        "groups": ["Beta Testers"]
       }
     }
   }
