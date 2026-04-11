@@ -3,6 +3,7 @@ import { usePrayerRequest, useSavePrayerRequest } from '@/src/hooks/usePrayer';
 import { useProfile } from '@/src/hooks/useProfile';
 import { useAuth } from '@/src/state/AuthContext';
 import { PrayerCategory, PrayerScope } from '@/src/types/types';
+import { getDisplayName } from '@/src/utils';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -79,10 +80,12 @@ export default function PrayerRequestComposerScreen({ requestId }: Props) {
     requestText.trim().length > 500 ||
     (scope === 'church' && !hasChurch);
 
-  const previewName = isAnonymous
-    ? 'Anonymous'
-    : [profileQuery.data?.first_name, profileQuery.data?.last_name].filter(Boolean).join(' ') ||
-      'Your name';
+  const previewName = getDisplayName({
+    isAnonymous,
+    firstName: profileQuery.data?.first_name,
+    lastName: profileQuery.data?.last_name,
+    fallbackLabel: 'Your name',
+  });
 
   const previewScopeLabel = useMemo(() => {
     if (scope === 'church') {

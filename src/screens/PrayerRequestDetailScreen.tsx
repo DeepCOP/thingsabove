@@ -9,6 +9,7 @@ import {
   useTogglePrayerRequestSupport,
 } from '@/src/hooks/usePrayer';
 import { formatRelativeTime } from '@/src/lib/relativeTime';
+import { getAvatarNameParts, getDisplayName } from '@/src/utils';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
@@ -27,23 +28,6 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 type Props = {
   requestId: string;
 };
-
-function getDisplayName({
-  isAnonymous,
-  firstName,
-  lastName,
-}: {
-  isAnonymous: boolean;
-  firstName?: string | null;
-  lastName?: string | null;
-}) {
-  if (isAnonymous) {
-    return 'Anonymous';
-  }
-
-  const name = [firstName, lastName].filter(Boolean).join(' ').trim();
-  return name || 'Member';
-}
 
 export default function PrayerRequestDetailScreen({ requestId }: Props) {
   const router = useRouter();
@@ -99,7 +83,11 @@ export default function PrayerRequestDetailScreen({ requestId }: Props) {
     firstName: request.author_first_name,
     lastName: request.author_last_name,
   });
-  const avatarInitial = displayName.slice(0, 1).toUpperCase() || 'P';
+  const avatarName = getAvatarNameParts({
+    isAnonymous: request.is_anonymous,
+    firstName: request.author_first_name,
+    lastName: request.author_last_name,
+  });
   const scopeLabel =
     request.scope === 'church'
       ? request.church_name || 'My Church'
@@ -120,7 +108,8 @@ export default function PrayerRequestDetailScreen({ requestId }: Props) {
           <View className="flex-row items-start gap-3">
             <UserAvatar
               uri={request.is_anonymous ? null : request.author_avatar_url}
-              initial={avatarInitial}
+              first_name={avatarName.firstName}
+              last_name={avatarName.lastName}
               size={48}
               border={false}
             />
@@ -286,17 +275,22 @@ export default function PrayerRequestDetailScreen({ requestId }: Props) {
           ) : encouragementsQuery.data && encouragementsQuery.data.length > 0 ? (
             <View className="mt-4 gap-4">
               {encouragementsQuery.data.map((item) => {
-                const authorName = [item.author?.first_name, item.author?.last_name]
-                  .filter(Boolean)
-                  .join(' ')
-                  .trim();
+                const authorName = getDisplayName({
+                  firstName: item.author?.first_name,
+                  lastName: item.author?.last_name,
+                });
+                const authorAvatarName = getAvatarNameParts({
+                  firstName: item.author?.first_name,
+                  lastName: item.author?.last_name,
+                });
 
                 return (
                   <View key={item.id} className="rounded-3xl bg-gray-50 p-4 dark:bg-neutral-900">
                     <View className="flex-row items-start gap-3">
                       <UserAvatar
                         uri={item.author?.avatar_url}
-                        initial={(authorName.slice(0, 1) || 'P').toUpperCase()}
+                        first_name={authorAvatarName.firstName}
+                        last_name={authorAvatarName.lastName}
                         size={38}
                         border={false}
                       />
@@ -304,7 +298,7 @@ export default function PrayerRequestDetailScreen({ requestId }: Props) {
                       <View className="flex-1">
                         <View className="flex-row items-center justify-between gap-3">
                           <Text className="font-medium text-gray-900 dark:text-white">
-                            {authorName || 'Member'}
+                            {authorName}
                           </Text>
                           <Text className="text-xs text-gray-500 dark:text-gray-400">
                             {formatRelativeTime(item.created_at)}
