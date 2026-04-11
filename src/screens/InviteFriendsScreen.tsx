@@ -15,11 +15,14 @@ type Props = {
   friends: Friend[];
   selected: string[];
   isSubmitting: boolean;
+  isSharing: boolean;
+  submitLabel: string;
 
   onToggle: (id: string) => void;
   onSelectAll: () => void;
   onClearSelection: () => void;
   onSubmit: () => void;
+  onShareInviteLink: () => void;
   onAddFriend: () => void;
 };
 
@@ -27,19 +30,30 @@ export default function InviteFriendsScreen({
   friends,
   selected,
   isSubmitting,
+  isSharing,
+  submitLabel,
   onToggle,
   onSelectAll,
   onClearSelection,
   onSubmit,
+  onShareInviteLink,
   onAddFriend,
 }: Props) {
   const insets = useSafeAreaInsets();
 
   return (
     <View className="flex-1 bg-white dark:bg-black px-4" style={{ paddingBottom: insets.bottom }}>
+      <View className="mt-6 rounded-2xl border border-gray-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-950">
+        <Text className="text-lg font-semibold text-gray-900 dark:text-white">
+          Invite friends to this plan
+        </Text>
+        <Text className="mt-2 text-sm leading-6 text-gray-600 dark:text-gray-400">
+          Invite friends, or share a group plan invitation link
+        </Text>
+      </View>
+
       {friends.length > 0 ? (
         <>
-          {/* Selection controls */}
           <View className="flex-row gap-5 mt-6 mb-4 border-b border-gray-300 dark:border-gray-700">
             <TouchableOpacity onPress={onSelectAll} className="py-3 mb-4">
               <Text className="text-gray-700 dark:text-gray-200">Select All</Text>
@@ -52,7 +66,6 @@ export default function InviteFriendsScreen({
             )}
           </View>
 
-          {/* Friends list */}
           <FlatList
             data={friends}
             keyExtractor={(item) => item.id}
@@ -78,30 +91,63 @@ export default function InviteFriendsScreen({
                 </TouchableOpacity>
               );
             }}
+            showsVerticalScrollIndicator={false}
           />
 
-          {/* Submit */}
           <TouchableOpacity
-            disabled={selected.length === 0 || isSubmitting}
+            disabled={isSubmitting}
             onPress={onSubmit}
-            className="bg-black dark:bg-white py-4 rounded-full mt-4 mb-6">
+            className="bg-black dark:bg-white py-4 rounded-full mt-4">
             {isSubmitting ? (
               <LoadingSpinner size="small" />
             ) : (
               <Text className="text-white dark:text-black text-center font-semibold">
-                Invite {selected.length} Friends
+                {submitLabel}
               </Text>
             )}
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            disabled={isSharing}
+            onPress={onShareInviteLink}
+            className="mt-3 mb-6 rounded-full border border-gray-300 py-4 dark:border-neutral-700">
+            <Text className="text-center font-semibold text-gray-900 dark:text-white">
+              Share Invite Link
+            </Text>
           </TouchableOpacity>
         </>
       ) : (
         <View className="flex-1 items-center justify-center">
-          <Text className="dark:text-white">No Friends Found</Text>
+          <Ionicons name="people-outline" size={32} color="#9ca3af" />
+          <Text className="mt-4 text-lg font-semibold text-gray-900 dark:text-white">
+            No friends ready to invite
+          </Text>
+          <Text className="mt-2 text-center text-sm leading-6 text-gray-600 dark:text-gray-400">
+            Add friends, start the plan now, or share a group plan invitation link.
+          </Text>
+
+          <TouchableOpacity
+            disabled={isSubmitting}
+            onPress={onSubmit}
+            className="mt-6 rounded-full bg-black px-6 py-4 dark:bg-white">
+            {isSubmitting ? (
+              <LoadingSpinner size="small" />
+            ) : (
+              <Text className="font-semibold text-white dark:text-black">{submitLabel}</Text>
+            )}
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            disabled={isSharing}
+            onPress={onShareInviteLink}
+            className="mt-3 rounded-full border border-gray-300 px-6 py-4 dark:border-neutral-700">
+            <Text className="font-semibold text-gray-900 dark:text-white">Share Invite Link</Text>
+          </TouchableOpacity>
 
           <TouchableOpacity
             onPress={onAddFriend}
-            className="bg-black dark:bg-white py-4 rounded-full px-4 mt-4">
-            <Text className="text-white dark:text-black font-semibold">Add Friends</Text>
+            className="mt-3 rounded-full border border-gray-300 px-6 py-4 dark:border-neutral-700">
+            <Text className="font-semibold text-gray-900 dark:text-white">Add Friends</Text>
           </TouchableOpacity>
         </View>
       )}
