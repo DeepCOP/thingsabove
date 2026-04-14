@@ -1229,6 +1229,8 @@ export type Database = {
           updated_at: string | null;
           year_baptized: number | null;
           year_believed: number | null;
+          device_os: string | null;
+          device_os_version: string | null;
         };
         Insert: {
           avatar_url?: string | null;
@@ -1246,6 +1248,8 @@ export type Database = {
           updated_at?: string | null;
           year_baptized?: number | null;
           year_believed?: number | null;
+          device_os?: string | null;
+          device_os_version?: string | null;
         };
         Update: {
           avatar_url?: string | null;
@@ -1263,6 +1267,8 @@ export type Database = {
           updated_at?: string | null;
           year_baptized?: number | null;
           year_believed?: number | null;
+          device_os?: string | null;
+          device_os_version?: string | null;
         };
         Relationships: [
           {
