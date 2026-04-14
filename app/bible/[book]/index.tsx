@@ -8,7 +8,9 @@ import { useBible } from '../../../src/state/BibleContext';
 
 export default function BibleBooksChapters() {
   const router = useRouter();
-  const params = useLocalSearchParams<{ book?: string | string[] }>();
+  const params = useLocalSearchParams<{
+    book?: string | string[];
+  }>();
   const routeBookId = Array.isArray(params.book) ? params.book[0] : params.book;
   const { bible } = useBible();
   const setSelectedBook = useAppStore((s) => s.setSelectedBook);
@@ -61,8 +63,10 @@ export default function BibleBooksChapters() {
                     <TouchableOpacity
                       key={ch}
                       onPress={() => {
-                        setSelectedBook({ bookId: book.id, chapter: ch });
-                        router.push('/BibleTab');
+                        const nextSelectedBook = { bookId: book.id, chapter: ch };
+
+                        setSelectedBook(nextSelectedBook);
+                        router.back();
                       }}
                       className="bg-gray-200 dark:bg-gray-700 w-16 h-16 justify-center items-center rounded-lg m-1">
                       <Text className="text-gray-800 dark:text-gray-100 font-semibold">{ch}</Text>

@@ -119,8 +119,9 @@ export type DevotionalPlanView = Database['public']['Views']['devotional_plans_v
 
 export type ParsedVerse = {
   book: string; // "Song of Solomon"
-  chapter: number; // 2
-  verseStart: number; // 1
+  scope: 'book' | 'chapter' | 'verse';
+  chapter?: number; // 2
+  verseStart?: number; // 1
   verseEnd?: number; // 4
 };
 

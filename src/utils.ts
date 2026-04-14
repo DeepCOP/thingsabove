@@ -6,23 +6,51 @@ import { Linking } from 'react-native';
 
 export const utcdayjs = dayjs.extend(utc);
 
+const normalizeScriptureBook = (value: string) =>
+  value.replace(/_/g, ' ').replace(/\s+/g, ' ').trim();
+
 export function parseVerseRef(ref: string): ParsedVerse | null {
   try {
+    const normalizedRef = ref.trim();
+    if (!normalizedRef) return null;
+
     // Matches:
     // "Song of Solomon 2:1-4"
     // "1 Peter 1:3"
     // "Song_of_Solomon 2:1"
-    const match = ref.match(/^(.+?)\s+(\d+):(\d+)(?:-(\d+))?$/);
+    const verseMatch = normalizedRef.match(/^(.+?)\s+(\d+):(\d+)(?:-(\d+))?$/);
+    if (verseMatch) {
+      const [, rawBook, chapter, verseStart, verseEnd] = verseMatch;
 
-    if (!match) return null;
+      return {
+        book: normalizeScriptureBook(rawBook),
+        scope: 'verse',
+        chapter: Number(chapter),
+        verseStart: Number(verseStart),
+        verseEnd: verseEnd ? Number(verseEnd) : undefined,
+      };
+    }
 
-    const [, rawBook, chapter, verseStart, verseEnd] = match;
+    // Matches:
+    // "John 3"
+    // "1 Peter 2"
+    const chapterMatch = normalizedRef.match(/^(.+?)\s+(\d+)$/);
+    if (chapterMatch) {
+      const [, rawBook, chapter] = chapterMatch;
 
+      return {
+        book: normalizeScriptureBook(rawBook),
+        scope: 'chapter',
+        chapter: Number(chapter),
+      };
+    }
+
+    // Matches:
+    // "John"
+    // "Song_of_Solomon"
     return {
-      book: rawBook.replace(/_/g, ' ').trim(),
-      chapter: Number(chapter),
-      verseStart: Number(verseStart),
-      verseEnd: verseEnd ? Number(verseEnd) : undefined,
+      book: normalizeScriptureBook(normalizedRef),
+      scope: 'book',
     };
   } catch {
     return null;

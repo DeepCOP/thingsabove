@@ -3,17 +3,12 @@ import * as Clipboard from 'expo-clipboard';
 import { useRouter } from 'expo-router';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
-import {
-  DEFAULT_BOOK_ID,
-  findBookInBible,
-  getBibleDotComBookCode,
-  getBookNameForId,
-} from '@/src/bible/books';
+import { findBookInBible, getBibleDotComBookCode, getBookNameForId } from '@/src/bible/books';
 import PlanCoverImage from '@/src/components/PlanCoverImage';
 import ReaderBottomBar from '@/src/components/ReaderBottomBar';
 import ScriptureSelectionMenu from '@/src/components/ScriptureSelectionMenu';
 import { useFetchDevotionalPlanById } from '@/src/hooks/useDevotionalPlans';
-import type { SelectedBibleBook } from '@/src/state/useAppStore';
+import { useAppStore, type SelectedBibleBook } from '@/src/state/useAppStore';
 import { UseMutationResult } from '@tanstack/react-query';
 import {
   ActivityIndicator,
@@ -68,6 +63,8 @@ export default function DevotionalPlanReader({
   const [menuHeight, setMenuHeight] = useState(0);
 
   const router = useRouter();
+  const selectedBook = useAppStore((s) => s.selectedBook);
+  const setSelectedBook = useAppStore((s) => s.setSelectedBook);
   const { bible, installedVersionIds, loadingVersionId, selectNextInstalledVersion, version } =
     useBible();
   const versePositions = useRef<Record<number, number>>({});
@@ -78,33 +75,32 @@ export default function DevotionalPlanReader({
     item?.title?.trim() || (item?.day_number ? `Day ${item.day_number}` : 'Devotional');
   const devotionalHtml = item?.devotional_content ?? '';
   const isDevotionalItem = item?.item_type === 'devotional' && item?.item_key === 'main';
-
-  const itemSelectedBook = useMemo<SelectedBibleBook | null>(() => {
+  const parsedReference = useMemo(() => {
     if (item?.item_type !== 'scripture' || !item?.item_key) {
       return null;
     }
 
-    const parsed = parseVerseRef(item.item_key);
-    if (!parsed) {
+    return parseVerseRef(item.item_key);
+  }, [item?.item_key, item?.item_type]);
+
+  const itemSelectedBook = useMemo<SelectedBibleBook | null>(() => {
+    if (!parsedReference) {
       return null;
     }
 
-    const matchingBook = findBookInBible(bible, parsed.book);
-    if (!matchingBook) {
+    const matchedBook = findBookInBible(bible, parsedReference.book);
+    if (!matchedBook) {
       return null;
     }
 
     return {
-      bookId: matchingBook.id,
-      chapter: parsed.chapter,
-      verseStart: parsed.verseStart,
-      verseEnd: parsed.verseEnd,
+      bookId: matchedBook.id,
+      chapter: parsedReference.chapter ?? 1,
+      verseStart: parsedReference.verseStart,
+      verseEnd: parsedReference.verseEnd,
     };
-  }, [bible, item?.item_key, item?.item_type]);
+  }, [bible, parsedReference]);
 
-  const [selectedBook, setSelectedBook] = useState<SelectedBibleBook>(
-    itemSelectedBook ?? { bookId: DEFAULT_BOOK_ID, chapter: 1 },
-  );
   const hasUnavailableScriptureReference = item?.item_type === 'scripture' && !itemSelectedBook;
 
   const currentBook = useMemo(
@@ -113,12 +109,13 @@ export default function DevotionalPlanReader({
   );
   const currentBookId = currentBook?.id ?? selectedBook.bookId;
   const currentBookName = currentBook?.name ?? getBookNameForId(bible, currentBookId);
+  const isWholeBookReference = parsedReference?.scope === 'book';
 
   useEffect(() => {
     if (item?.item_type !== 'scripture') return;
     if (!itemSelectedBook) return;
     setSelectedBook(itemSelectedBook);
-  }, [item?.id, item?.item_type, itemSelectedBook]);
+  }, [item?.id, item?.item_type, itemSelectedBook, setSelectedBook]);
 
   useEffect(() => {
     didScrollRef.current = false;
@@ -222,11 +219,14 @@ export default function DevotionalPlanReader({
   };
 
   const chapterNumber = Number(selectedBook.chapter);
+  const chapterCount = currentBook?.chapters.length ?? 0;
   const verses = currentBook?.chapters.find((chapter) => chapter.chapter === chapterNumber)?.verses;
   const scriptureVerses = verses ?? [];
   const selectedVerseRange = getSelectedVerseRange();
   const showScriptureUnavailableFallback =
     item?.item_type === 'scripture' && (hasUnavailableScriptureReference || !verses);
+  const canGoToPreviousBookChapter = isWholeBookReference && chapterNumber > 1;
+  const canGoToNextBookChapter = isWholeBookReference && chapterNumber < chapterCount;
 
   const contextMenuStyle = useMemo(() => {
     const menuWidth = 220;
@@ -515,6 +515,14 @@ export default function DevotionalPlanReader({
             <TouchableOpacity
               className="py-1 mr-8"
               onPress={() => {
+                if (canGoToPreviousBookChapter) {
+                  setSelectedBook({
+                    bookId: currentBookId,
+                    chapter: chapterNumber - 1,
+                  });
+                  return;
+                }
+
                 HandlePrevious(item.id);
               }}>
               <Ionicons name="chevron-back" size={20} color="white" />
@@ -532,7 +540,14 @@ export default function DevotionalPlanReader({
             ) : (
               <TouchableOpacity
                 className="px-2 py-1"
-                onPress={() => router.push(`/bible/${currentBookId}`)}>
+                onPress={() =>
+                  router.push({
+                    pathname: '/bible/[book]',
+                    params: {
+                      book: currentBookId,
+                    },
+                  })
+                }>
                 <Text className="text-white font-semibold mx-4">
                   {`${currentBookName} ${selectedBook.chapter}`}
                 </Text>
@@ -540,7 +555,18 @@ export default function DevotionalPlanReader({
             )
           }
           right={
-            last ? (
+            canGoToNextBookChapter ? (
+              <TouchableOpacity
+                className="py-1 ml-8"
+                onPress={() => {
+                  setSelectedBook({
+                    bookId: currentBookId,
+                    chapter: chapterNumber + 1,
+                  });
+                }}>
+                <Ionicons name="chevron-forward" size={20} color="white" />
+              </TouchableOpacity>
+            ) : last ? (
               <View className="ml-8">
                 <TouchableOpacity
                   onPress={() =>
