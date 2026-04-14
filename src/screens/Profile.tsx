@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { UseMutateFunction } from '@tanstack/react-query';
-import { Href, useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Alert, Text, TouchableOpacity, View, useColorScheme } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -243,7 +243,12 @@ export default function ProfileScreen({
                       {linkedChurchId ? (
                         <TouchableOpacity
                           className="mt-1 rounded-2xl bg-gray-50 p-3 dark:bg-neutral-900"
-                          onPress={() => router.push(`/church/${linkedChurchId}` as Href)}>
+                          onPress={() =>
+                            router.navigate({
+                              pathname: '/(tabs)/CommunityTab',
+                              params: { section: 'my-church' },
+                            })
+                          }>
                           <View className="flex-row items-center justify-between gap-3">
                             <View className="flex-1">
                               <Text className="text-base text-gray-900 dark:text-white">
