@@ -1,5 +1,5 @@
-import PrayerEmptyState from '@/src/components/prayer/PrayerEmptyState';
 import LoadingSpinner from '@/src/components/LoadingSpinner';
+import PrayerEmptyState from '@/src/components/prayer/PrayerEmptyState';
 import { useProfile } from '@/src/hooks/useProfile';
 import ChurchScreen from '@/src/screens/ChurchScreen';
 import PrayerBoardScreen from '@/src/screens/PrayerBoardScreen';
@@ -30,7 +30,6 @@ export default function CommunityTab() {
     () => (Array.isArray(section) ? section[0] : section),
     [section],
   );
-  const [activeSection, setActiveSection] = useState<CommunitySection>('prayer-board');
 
   useEffect(() => {
     if (isCommunitySection(requestedSection)) {
@@ -39,6 +38,10 @@ export default function CommunityTab() {
   }, [requestedSection]);
 
   const churchId = profileQuery.data?.church?.id;
+
+  const [activeSection, setActiveSection] = useState<CommunitySection>(
+    churchId ? 'my-church' : 'prayer-board',
+  );
 
   const renderContent = () => {
     if (!session) {
