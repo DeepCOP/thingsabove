@@ -27,7 +27,7 @@ export default function App() {
       onPrayerBoard={() =>
         router.navigate({
           pathname: '/(tabs)/CommunityTab',
-          params: { section: 'prayer-requests' },
+          params: { section: 'prayer-board' },
         })
       }
       handleUpdateProfile={updateProfile.mutate}

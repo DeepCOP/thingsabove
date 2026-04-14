@@ -75,7 +75,7 @@ export default function PrayerRequestDetailScreen({ requestId }: Props) {
           onCta={() =>
             router.replace({
               pathname: '/(tabs)/CommunityTab',
-              params: { section: 'prayer-requests' },
+              params: { section: 'prayer-board' },
             })
           }
         />

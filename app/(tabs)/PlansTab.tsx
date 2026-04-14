@@ -29,7 +29,7 @@ export default function PlansTab() {
       onPrayerBoard={() =>
         router.navigate({
           pathname: '/(tabs)/CommunityTab',
-          params: { section: 'prayer-requests' },
+          params: { section: 'prayer-board' },
         })
       }
       notificationCount={notificationsCountQuery.data ?? 0}
