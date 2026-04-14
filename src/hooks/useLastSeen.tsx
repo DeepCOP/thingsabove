@@ -1,4 +1,6 @@
 import { useAuth } from '@/src/state/AuthContext';
+import * as Application from 'expo-application';
+import Constants from 'expo-constants';
 import * as Device from 'expo-device';
 import { useEffect, useRef } from 'react';
 import { AppState, AppStateStatus, Platform } from 'react-native';
@@ -19,6 +21,7 @@ export function useLastSeenTracker() {
 
       await syncProfilePresence({
         userId: session.user.id,
+        appVersion: Application.nativeApplicationVersion ?? Constants.expoConfig?.version ?? null,
         deviceOs: Device.osName ?? Platform.OS,
         deviceOsVersion: Device.osVersion ?? null,
       });

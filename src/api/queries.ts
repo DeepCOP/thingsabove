@@ -348,14 +348,17 @@ export const syncProfilePresence = async ({
   userId,
   deviceOs,
   deviceOsVersion,
+  appVersion,
 }: {
   userId: string;
   deviceOs: string;
   deviceOsVersion?: string | null;
+  appVersion?: string | null;
 }) => {
   await supabase
     .from('profiles')
     .update({
+      app_version: appVersion ?? null,
       device_os: deviceOs,
       device_os_version: deviceOsVersion ?? null,
       last_seen: new Date().toISOString(),
