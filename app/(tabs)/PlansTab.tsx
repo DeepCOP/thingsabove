@@ -26,7 +26,12 @@ export default function PlansTab() {
       onChangeSort={setSort}
       onSearch={() => router.push('/search/devotionals')}
       onNotifications={() => router.push('/notifications')}
-      onPrayerBoard={() => router.push('/prayer')}
+      onPrayerBoard={() =>
+        router.navigate({
+          pathname: '/(tabs)/CommunityTab',
+          params: { section: 'prayer-requests' },
+        })
+      }
       notificationCount={notificationsCountQuery.data ?? 0}
       onLogin={() => router.push('/(auth)/signin')}
       onContribute={() => openExternalUrl(`${process.env.EXPO_PUBLIC_WEB_INTERFACE_URL}/plans/new`)}

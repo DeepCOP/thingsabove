@@ -18,7 +18,7 @@ export default function TabLayout() {
           },
           tabBarActiveTintColor: colorScheme === 'dark' ? '#fff' : '#0F0D23',
           tabBarItemStyle: {
-            width: '100%',
+            flex: 1,
             height: '100%',
             justifyContent: 'center',
             alignItems: 'center',
@@ -39,6 +39,22 @@ export default function TabLayout() {
             tabBarIcon: ({ focused, color, size }) => {
               return (
                 <Ionicons name={`${focused ? 'home' : 'home-outline'}`} size={size} color={color} />
+              );
+            },
+          }}
+        />
+        <Tabs.Screen
+          name="CommunityTab"
+          options={{
+            title: 'Community',
+            headerShown: false,
+            tabBarIcon: ({ focused, color, size }) => {
+              return (
+                <Ionicons
+                  name={`${focused ? 'people' : 'people-outline'}`}
+                  size={size}
+                  color={color}
+                />
               );
             },
           }}

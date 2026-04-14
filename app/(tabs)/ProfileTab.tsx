@@ -24,7 +24,12 @@ export default function App() {
       profile={profileQuery.data}
       onSignOut={onSignOut}
       onSetting={() => router.push('/settings')}
-      onPrayerBoard={() => router.push('/prayer')}
+      onPrayerBoard={() =>
+        router.navigate({
+          pathname: '/(tabs)/CommunityTab',
+          params: { section: 'prayer-requests' },
+        })
+      }
       handleUpdateProfile={updateProfile.mutate}
       handleUploadAvatar={uploadAvatar.mutate}
       uploading={uploadAvatar.isPending}
