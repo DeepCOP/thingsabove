@@ -58,16 +58,14 @@ export default function DevotionalDayScreen() {
     const prevItem = items[currentItemIdx - 1];
     setActiveItemId(prevItem?.id || '');
   };
-  const item = dayItemsProgress?.items.find((item) => item.id === activeItemId);
-  const last =
-    !!item &&
-    !!dayItemsProgress?.items?.length &&
-    dayItemsProgress.items[dayItemsProgress.items.length - 1]?.id === item.id;
+  const items = dayItemsProgress?.items ?? [];
+  const item = items.find((entry) => entry.id === activeItemId) ?? items[0];
+  const last = !!item && items.length > 0 && items[items.length - 1]?.id === item.id;
   if (dayItemsProgressQuery.isLoading) {
     return <LoadingSpinner />;
   }
 
-  if (!dayItemsProgressQuery.data?.length) {
+  if (items.length === 0) {
     return (
       <View className="flex-1 justify-center items-center">
         <Text>Item Not Found</Text>
