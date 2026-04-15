@@ -351,19 +351,18 @@ export const syncProfilePresence = async ({
   appVersion,
 }: {
   userId: string;
-  deviceOs: string;
+  deviceOs?: string | null;
   deviceOsVersion?: string | null;
   appVersion?: string | null;
 }) => {
-  await supabase
-    .from('profiles')
-    .update({
-      app_version: appVersion ?? null,
-      device_os: deviceOs,
-      device_os_version: deviceOsVersion ?? null,
-      last_seen: new Date().toISOString(),
-    })
-    .eq('id', userId);
+  const updates = {
+    last_seen: new Date().toISOString(),
+    ...(appVersion != null ? { app_version: appVersion } : {}),
+    ...(deviceOs != null ? { device_os: deviceOs } : {}),
+    ...(deviceOsVersion != null ? { device_os_version: deviceOsVersion } : {}),
+  };
+
+  await supabase.from('profiles').update(updates).eq('id', userId);
 };
 
 export const fetchMyPlanRating = async (planId: string) => {
