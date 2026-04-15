@@ -78,13 +78,7 @@ Message rules:
 - Every message must first speak directly to the user, then include a related Bible verse excerpt or faithful paraphrase with its reference
 - The main message should lead, and the verse should support or reinforce that message
 - Keep the verse connected to the invitation, encouragement, or challenge you are giving
-- Use double quotes around the Bible verse text, followed by the reference in parentheses
-- Use short form for book names (e.g., Ps. instead of Psalm, Prov. instead of Proverbs, Matt. instead of Matthew)
-- Add an empty line between the main message and the Bible verse
-- Example shape only:
-  "Take a few quiet minutes with God today and let Him steady your heart.
-
-  "Be still, and know that I am God" (Ps. 46:10)."
+- Example shape only: "Take a few quiet minutes with God today and let Him steady your heart. 'Be still, and know that I am God' (Psalm 46:10)."
 
 Decision rules:
 - If no occasional notification should be planned right now, return should_send: false
