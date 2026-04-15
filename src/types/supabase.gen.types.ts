@@ -1214,6 +1214,7 @@ export type Database = {
       };
       profiles: {
         Row: {
+          app_version: string | null;
           avatar_url: string | null;
           bio: string | null;
           church_id: string | null;
@@ -1229,8 +1230,11 @@ export type Database = {
           updated_at: string | null;
           year_baptized: number | null;
           year_believed: number | null;
+          device_os: string | null;
+          device_os_version: string | null;
         };
         Insert: {
+          app_version?: string | null;
           avatar_url?: string | null;
           bio?: string | null;
           church_id?: string | null;
@@ -1246,8 +1250,11 @@ export type Database = {
           updated_at?: string | null;
           year_baptized?: number | null;
           year_believed?: number | null;
+          device_os?: string | null;
+          device_os_version?: string | null;
         };
         Update: {
+          app_version?: string | null;
           avatar_url?: string | null;
           bio?: string | null;
           church_id?: string | null;
@@ -1263,6 +1270,8 @@ export type Database = {
           updated_at?: string | null;
           year_baptized?: number | null;
           year_believed?: number | null;
+          device_os?: string | null;
+          device_os_version?: string | null;
         };
         Relationships: [
           {

@@ -1,7 +1,10 @@
 import { useAuth } from '@/src/state/AuthContext';
+import * as Application from 'expo-application';
+import Constants from 'expo-constants';
+import * as Device from 'expo-device';
 import { useEffect, useRef } from 'react';
-import { AppState, AppStateStatus } from 'react-native';
-import { updateLastSeen } from '../api/queries';
+import { AppState, AppStateStatus, Platform } from 'react-native';
+import { syncProfilePresence } from '../api/queries';
 
 export function useLastSeenTracker() {
   const { session } = useAuth();
@@ -15,7 +18,13 @@ export function useLastSeenTracker() {
       const now = Date.now();
       if (now - lastPing < 60_000) return;
       lastPing = now;
-      await updateLastSeen(session?.user?.id);
+
+      await syncProfilePresence({
+        userId: session.user.id,
+        appVersion: Application.nativeApplicationVersion ?? Constants.expoConfig?.version ?? null,
+        deviceOs: Device.osName ?? Platform.OS,
+        deviceOsVersion: Device.osVersion ?? null,
+      });
     };
 
     // mark active immediately

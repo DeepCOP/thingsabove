@@ -344,8 +344,25 @@ export const getNotificationsPreferences = async (userId: string) => {
   return data;
 };
 
-export const updateLastSeen = async (userId: string) => {
-  await supabase.from('profiles').update({ last_seen: new Date().toISOString() }).eq('id', userId);
+export const syncProfilePresence = async ({
+  userId,
+  deviceOs,
+  deviceOsVersion,
+  appVersion,
+}: {
+  userId: string;
+  deviceOs?: string | null;
+  deviceOsVersion?: string | null;
+  appVersion?: string | null;
+}) => {
+  const updates = {
+    last_seen: new Date().toISOString(),
+    ...(appVersion != null ? { app_version: appVersion } : {}),
+    ...(deviceOs != null ? { device_os: deviceOs } : {}),
+    ...(deviceOsVersion != null ? { device_os_version: deviceOsVersion } : {}),
+  };
+
+  await supabase.from('profiles').update(updates).eq('id', userId);
 };
 
 export const fetchMyPlanRating = async (planId: string) => {
