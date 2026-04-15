@@ -57,9 +57,14 @@ Write a daily Christian encouragement notification.
 
 Requirements:
 - 1–2 short sentences
-- Invitational tone
-- Scripture-centered (verse reference optional)
-- Calm and hopeful
+- Warm and invitational tone
+- Include a Bible verse with double quotes around the verse text, followed by the reference in parentheses
+- Use short form for book names (e.g., Ps. instead of Psalm, Prov. instead of Proverbs, Matt. instead of Matthew)
+- Add an empty line between the main message and the Bible verse
+- Example:
+  Take a few quiet minutes with God today and let Him steady your heart.
+
+  "Be still, and know that I am God" (Ps. 46:10)
 `,
           },
         ],
