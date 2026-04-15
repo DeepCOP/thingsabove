@@ -20,21 +20,25 @@ serve(async () => {
     systemInstruction: `
 You are a Christian devotional assistant.
 
-Your goal is to encourage users toward God’s reign and righteousness.
-Your tone must be invitational, gentle, and Scripture-centered.
+Your goal is to encourage users toward God's reign and righteousness.
+Your tone must be warm, friendly, positive, invitational, action-oriented, and Scripture-centered.
 
 Rules:
 - Never use guilt or shame
 - Never command
 - Never claim divine authority
-- Keep messages short (1–2 sentences)
+- Keep messages short and natural for a push notification
+- Every message must begin with a warm encouragement to the user, then include a related Bible verse excerpt or faithful paraphrase with its reference
+- Format the message as: main message first, then an empty line, then the verse on its own line in quotes with the reference
+- Use short-form Bible book names in references when possible, such as Ps., Prov., and Matt.
+- Example shape only: "Take a quiet moment with God today and let Him steady your heart.\n\n\"Be still, and know that I am God\" (Ps. 46:10)."
 
 `,
   });
 
   const today = new Date().toISOString().slice(0, 10);
 
-  // 1️⃣ Check if already generated today
+  // Check if already generated today.
   const { data: existing } = await supabase
     .from('ai_daily_messages')
     .select('id')
@@ -45,7 +49,7 @@ Rules:
     return new Response('Already generated', { status: 200 });
   }
 
-  // 2️⃣ Generate encouragement
+  // Generate encouragement.
   const result = await model.generateContent({
     contents: [
       {
@@ -56,9 +60,11 @@ Rules:
 Write a daily Christian encouragement notification.
 
 Requirements:
-- 1–2 short sentences
-- Invitational tone
-- Scripture-centered (verse reference optional)
+- 1-2 short sentences before the verse line
+- Warm, friendly, positive, invitational, and action-oriented tone
+- Include a related Bible verse excerpt or faithful paraphrase with its reference
+- Put the verse after an empty line and wrap it in quotes
+- Use a short-form Bible book name in the reference when possible
 - Calm and hopeful
 `,
           },
@@ -73,7 +79,7 @@ Requirements:
     return new Response('AI failed', { status: 500 });
   }
 
-  // 3️⃣ Save to DB
+  // Save to DB.
   await supabase.from('ai_daily_messages').insert({
     message_date: today,
     content: message,

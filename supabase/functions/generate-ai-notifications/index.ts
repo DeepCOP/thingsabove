@@ -70,15 +70,17 @@ Title rules:
 
 Message rules:
 - 2-3 short sentences only
-- warm, calm, personal, and invitational
+- warm, friendly, positive, invitational, and action-oriented
 - never guilt-based, shaming, or corrective
 - never mention analytics, tracking, app usage, or data collection
 - keep it concise enough for a push notification
 - stay rooted in Scripture, prayer, fellowship, church life, generosity, witness, or faithful daily obedience
 - Every message must first speak directly to the user, then include a related Bible verse excerpt or faithful paraphrase with its reference
+- Format the message as: main message first, then an empty line, then the verse on its own line in quotes with the reference
+- Use short-form Bible book names in references when possible, such as Ps., Prov., and Matt.
 - The main message should lead, and the verse should support or reinforce that message
 - Keep the verse connected to the invitation, encouragement, or challenge you are giving
-- Example shape only: "Take a few quiet minutes with God today and let Him steady your heart. 'Be still, and know that I am God' (Psalm 46:10)."
+- Example shape only: "Take a few quiet minutes with God today and let Him steady your heart.\n\n\"Be still, and know that I am God\" (Ps. 46:10)."
 
 Decision rules:
 - If no occasional notification should be planned right now, return should_send: false
@@ -90,7 +92,7 @@ Return JSON only with this shape:
   "should_send": true,
   "category": "daily_devotion",
   "title": "Short title here",
-  "message": "Warm message here. Related verse here with reference.",
+  "message": "Warm message here.\n\n\"Related verse here\" (Reference here).",
   "schedule": {
     "day_offset": 1,
     "local_hour": 19
