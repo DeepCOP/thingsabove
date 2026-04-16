@@ -8,7 +8,6 @@ export const fetchPlanGroupByGroupId = async ({ groupId }: { groupId: string }) 
     .single();
 
   if (error) {
-    console.log('Error fetching plan group:', error);
     throw error;
   }
 

@@ -183,7 +183,6 @@ export const acceptPlanGroupInvite = async ({
   });
 
   if (error) {
-    console.error('Error accepting plan group invite:', error);
     throw error;
   }
   return data as PlanProgress;
