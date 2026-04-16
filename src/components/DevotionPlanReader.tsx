@@ -193,11 +193,12 @@ export default function DevotionalPlanReader({
     const body = selected.map((v) => `[${v.number}] ${v.text}`).join('\n');
 
     // Official Bible.com link
-    const link = `${process.env.EXPO_PUBLIC_BASE_URL}/bible/12/${getBibleDotComBookCode(
-      currentBookId,
-    )}.${selectedBook.chapter}.${range}.${version}`;
+    const bookCode = getBibleDotComBookCode(currentBookId);
+    const link = bookCode
+      ? `${process.env.EXPO_PUBLIC_BASE_URL}/bible/12/${bookCode}.${selectedBook.chapter}.${range}.${version}`
+      : '';
 
-    return `${header}\n${body}\n${link}`;
+    return link ? `${header}\n${body}\n${link}` : `${header}\n${body}`;
   };
 
   const formatSelectedVerseTitle = () => {

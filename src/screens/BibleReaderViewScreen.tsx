@@ -93,7 +93,9 @@ export default function BibleReaderView({
       return;
     }
 
-    const selectedChapterVerses = currentBook?.chapters[selectedBook.chapter - 1]?.verses ?? [];
+    const selectedChapterVerses =
+      currentBook?.chapters.find((chapter) => chapter.chapter === selectedBook.chapter)?.verses ??
+      [];
 
     const endVerse = selectedBook.verseEnd ?? selectedBook.verseStart;
     const nextSelectedVerse = selectedChapterVerses
@@ -159,11 +161,12 @@ export default function BibleReaderView({
     }
 
     // Official Bible.com link
-    const link = `${process.env.EXPO_PUBLIC_BASE_URL}/bible/12/${getBibleDotComBookCode(
-      currentBookId,
-    )}.${selectedBook.chapter}.${ranges.join(',')}.${version}`;
+    const bookCode = getBibleDotComBookCode(currentBookId);
+    const link = bookCode
+      ? `${process.env.EXPO_PUBLIC_BASE_URL}/bible/12/${bookCode}.${selectedBook.chapter}.${ranges.join(',')}.${version}`
+      : '';
 
-    return `${header}\n${body}\n${link}`;
+    return link ? `${header}\n${body}\n${link}` : `${header}\n${body}`;
   };
 
   const formatSelectedVerseTitle = () => {
@@ -206,7 +209,7 @@ export default function BibleReaderView({
   const chapterCount = chapters?.length || 0;
 
   const chapterNumber = Number(selectedBook.chapter);
-  const verses = currentBook?.chapters[chapterNumber - 1]?.verses;
+  const verses = currentBook?.chapters.find((chapter) => chapter.chapter === chapterNumber)?.verses;
   const selectedVerseRange = getSelectedVerseRange();
 
   return (
