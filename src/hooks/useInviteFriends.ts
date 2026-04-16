@@ -28,6 +28,8 @@ export function useAcceptPlanInvite(
       await acceptPlanGroupInvite({ group_id, plan_id, startDate }),
     onSuccess: () => {
       qc.setQueryData(['has_user_plan_progress', user_id], true);
+      qc.invalidateQueries({ queryKey: ['plan_group_members', group_id] });
+      qc.invalidateQueries({ queryKey: ['plan_group_invitation_members', group_id] });
       qc.invalidateQueries({ queryKey: ['my_plan_progress_plans', user_id] });
     },
     onError: (e) => {},
