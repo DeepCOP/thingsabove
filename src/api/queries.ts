@@ -253,12 +253,9 @@ export const getUserNotifications = async () => {
 };
 
 export const getUserNotificationsCount = async () => {
-  const { count, error } = await supabase
-    .from('notifications')
-    .select('*', { count: 'exact', head: true })
-    .eq('is_read', false);
+  const { data, error } = await supabase.rpc('unread_notifications_count');
   if (error) throw error;
-  return count;
+  return data ?? 0;
 };
 
 export const togglePlanReaction = async (planId: string, userId: string) => {
