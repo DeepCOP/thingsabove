@@ -1,7 +1,7 @@
 import canonicalBookNames from '../../assets/versions/bookNames.json';
 import type { BibleBook, BibleChapter, BibleJSON, RawBibleJSON } from './types';
 
-export const CANONICAL_BOOK_IDS = [
+const LEGACY_CANONICAL_BOOK_IDS = [
   'GEN',
   'EXO',
   'LEV',
@@ -70,10 +70,70 @@ export const CANONICAL_BOOK_IDS = [
   'REV',
 ] as const;
 
+const OT_BOOK_COUNT = 39;
+
+const DEUTEROCANONICAL_BOOK_DEFINITIONS = [
+  { id: 'TOB', name: 'Tobit', aliases: ['Book of Tobit', 'Tobias'] },
+  { id: 'JDT', name: 'Judith', aliases: ['Book of Judith'] },
+  {
+    id: 'ESG',
+    name: 'Greek Esther',
+    aliases: ['Esther (Greek)', 'Additions to Esther', 'Esther Greek'],
+  },
+  {
+    id: 'WIS',
+    name: 'Wisdom of Solomon',
+    aliases: ['Wisdom', 'Book of Wisdom', 'Wisdom of Sol'],
+  },
+  {
+    id: 'SIR',
+    name: 'Sirach',
+    aliases: ['Ecclesiasticus', 'Wisdom of Sirach', 'Book of Sirach'],
+  },
+  { id: 'BAR', name: 'Baruch', aliases: ['Book of Baruch'] },
+  { id: '1MA', name: '1 Maccabees', aliases: ['First Maccabees'] },
+  { id: '2MA', name: '2 Maccabees', aliases: ['Second Maccabees'] },
+  { id: '1ES', name: '1 Esdras', aliases: ['First Esdras'] },
+  {
+    id: 'MAN',
+    name: 'Prayer of Manasseh',
+    aliases: ['Manasseh', 'Prayer of Manasses'],
+  },
+  { id: 'PS2', name: 'Psalm 151', aliases: ['Psalms 151'] },
+  { id: '3MA', name: '3 Maccabees', aliases: ['Third Maccabees'] },
+  { id: '2ES', name: '2 Esdras', aliases: ['Second Esdras'] },
+  { id: '4MA', name: '4 Maccabees', aliases: ['Fourth Maccabees'] },
+  {
+    id: 'DAG',
+    name: 'Greek Daniel',
+    aliases: ['Daniel (Greek)', 'Additions to Daniel', 'Daniel with Additions'],
+  },
+] as const;
+
+export const CANONICAL_BOOK_IDS = [
+  ...LEGACY_CANONICAL_BOOK_IDS.slice(0, OT_BOOK_COUNT),
+  ...DEUTEROCANONICAL_BOOK_DEFINITIONS.map((book) => book.id),
+  ...LEGACY_CANONICAL_BOOK_IDS.slice(OT_BOOK_COUNT),
+] as const;
+
 export const DEFAULT_BOOK_ID = 'JOH';
 
+const knownBookDefinitions = [
+  ...LEGACY_CANONICAL_BOOK_IDS.slice(0, OT_BOOK_COUNT).map((id, index) => ({
+    id,
+    name: canonicalBookNames[index] ?? id,
+    aliases: [],
+  })),
+  ...DEUTEROCANONICAL_BOOK_DEFINITIONS,
+  ...LEGACY_CANONICAL_BOOK_IDS.slice(OT_BOOK_COUNT).map((id, index) => ({
+    id,
+    name: canonicalBookNames[OT_BOOK_COUNT + index] ?? id,
+    aliases: [],
+  })),
+];
+
 const canonicalBookNameById = new Map<string, string>(
-  CANONICAL_BOOK_IDS.map((id, index) => [id, canonicalBookNames[index] ?? id]),
+  knownBookDefinitions.map((book) => [book.id, book.name]),
 );
 
 const normalizeBookLookup = (value: string) => {
@@ -96,10 +156,13 @@ const normalizeBookLookup = (value: string) => {
 
 const canonicalBookIdByAlias = new Map<string, string>();
 
-for (const [index, bookId] of CANONICAL_BOOK_IDS.entries()) {
-  const canonicalName = canonicalBookNames[index] ?? bookId;
-  canonicalBookIdByAlias.set(normalizeBookLookup(bookId), bookId);
-  canonicalBookIdByAlias.set(normalizeBookLookup(canonicalName), bookId);
+for (const { id, name, aliases } of knownBookDefinitions) {
+  canonicalBookIdByAlias.set(normalizeBookLookup(id), id);
+  canonicalBookIdByAlias.set(normalizeBookLookup(name), id);
+
+  for (const alias of aliases) {
+    canonicalBookIdByAlias.set(normalizeBookLookup(alias), id);
+  }
 }
 
 const normalizeChapters = (chapters: BibleChapter[]) =>
@@ -161,26 +224,56 @@ export const getBookNameForId = (input: BibleJSON | BibleBook[], bookId?: string
   return findBookInBible(input, bookId)?.name ?? getCanonicalBookName(bookId);
 };
 
-export const getBibleDotComBookCode = (bookId?: string | null) =>
-  (bookId ?? '').trim().toLowerCase();
+const BIBLE_DOT_COM_BOOK_IDS = new Set<string>(LEGACY_CANONICAL_BOOK_IDS);
+
+export const getBibleDotComBookCode = (bookId?: string | null) => {
+  const normalizedId = (bookId ?? '').trim().toUpperCase();
+  if (!BIBLE_DOT_COM_BOOK_IDS.has(normalizedId)) {
+    return '';
+  }
+
+  return normalizedId.toLowerCase();
+};
+
+const getFallbackBookIds = (books: RawBibleJSON['books']) => {
+  const baseOrder =
+    books.length > LEGACY_CANONICAL_BOOK_IDS.length
+      ? CANONICAL_BOOK_IDS
+      : LEGACY_CANONICAL_BOOK_IDS;
+  const firstBook = books[0];
+  const firstBookHint =
+    (typeof firstBook?.id === 'string' && firstBook.id.trim()) ||
+    (typeof firstBook?.name === 'string' && firstBook.name.trim()) ||
+    '';
+  const firstBookId = getCanonicalBookIdByName(firstBookHint);
+  const startIndex = firstBookId
+    ? baseOrder.indexOf(firstBookId as (typeof baseOrder)[number])
+    : -1;
+
+  return startIndex >= 0 ? baseOrder.slice(startIndex) : baseOrder;
+};
 
 export const normalizeBibleJson = (bible: RawBibleJSON | BibleJSON): BibleJSON => ({
-  translation: bible.translation,
-  books: bible.books.map((book, index) => {
-    const fallbackBookId = CANONICAL_BOOK_IDS[index] ?? `BOOK_${index + 1}`;
-    const normalizedBookId =
-      getCanonicalBookIdByName(book.id) ??
-      (typeof book.id === 'string' && book.id.trim()
-        ? book.id.trim().toUpperCase()
-        : fallbackBookId);
-    const fallbackBookName = getCanonicalBookName(normalizedBookId);
-    const normalizedBookName =
-      typeof book.name === 'string' && book.name.trim() ? book.name.trim() : fallbackBookName;
+  ...bible,
+  books: (() => {
+    const fallbackBookIds = getFallbackBookIds(bible.books);
 
-    return {
-      id: normalizedBookId,
-      name: normalizedBookName,
-      chapters: normalizeChapters(book.chapters),
-    };
-  }),
+    return bible.books.map((book, index) => {
+      const fallbackBookId = fallbackBookIds[index] ?? `BOOK_${index + 1}`;
+      const normalizedBookId =
+        getCanonicalBookIdByName(book.id) ??
+        (typeof book.id === 'string' && book.id.trim()
+          ? book.id.trim().toUpperCase()
+          : fallbackBookId);
+      const fallbackBookName = getCanonicalBookName(normalizedBookId);
+      const normalizedBookName =
+        typeof book.name === 'string' && book.name.trim() ? book.name.trim() : fallbackBookName;
+
+      return {
+        id: normalizedBookId,
+        name: normalizedBookName,
+        chapters: normalizeChapters(book.chapters),
+      };
+    });
+  })(),
 });
