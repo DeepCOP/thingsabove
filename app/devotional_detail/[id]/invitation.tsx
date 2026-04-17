@@ -1,6 +1,6 @@
 import LoadingSpinner from '@/src/components/LoadingSpinner';
 import { useFetchDevotionalPlanById } from '@/src/hooks/useDevotionalPlans';
-import { useAcceptPlanInvite } from '@/src/hooks/useInviteFriends';
+import { useAcceptPlanInvite, useDeclinePlanInvite } from '@/src/hooks/useInviteFriends';
 import { usePlanGroupInvitation, usePlanGroupInvitationMembers } from '@/src/hooks/usePlanGroup';
 import PlanInvitationScreen from '@/src/screens/PlanInvitationScreen';
 import { useAuth } from '@/src/state/AuthContext';
@@ -22,6 +22,7 @@ export default function PlanInvitation() {
   const router = useRouter();
 
   const acceptMutation = useAcceptPlanInvite(groupId, id, session?.user?.id);
+  const declineMutation = useDeclinePlanInvite(groupId, session?.user?.id);
 
   const planGroupQuery = usePlanGroupInvitation(groupId);
   const planGroupMembersQuery = usePlanGroupInvitationMembers(groupId);
@@ -81,8 +82,10 @@ export default function PlanInvitation() {
       hasAccepted={!!currentUser}
       isGuest={isGuest}
       isAccepting={acceptMutation.isPending}
+      isDeclining={declineMutation.isPending}
       onAccept={() => {
         if (isGuest) {
+          router.push('/(auth)/signin');
           return;
         }
 
@@ -101,7 +104,18 @@ export default function PlanInvitation() {
           },
         );
       }}
-      onDecline={() => router.back()}
+      onDecline={() => {
+        if (isGuest) {
+          router.back();
+          return;
+        }
+
+        declineMutation.mutate(undefined, {
+          onSuccess: () => {
+            router.back();
+          },
+        });
+      }}
     />
   );
 }

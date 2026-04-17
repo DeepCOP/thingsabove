@@ -35,7 +35,7 @@ export default function PlanInviteHandoff() {
         ...(invitedBy ? { redirectInvitedBy: invitedBy } : {}),
       },
     } as Href);
-  }, [loading, session, id, groupId, invitedBy]);
+  }, [loading, session, id, groupId, invitedBy, router]);
 
   return <LoadingSpinner />;
 }

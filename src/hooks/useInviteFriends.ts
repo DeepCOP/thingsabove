@@ -1,4 +1,8 @@
-import { acceptPlanGroupInvite, inviteFriendsToPlanGroup } from '@/src/api/mutations';
+import {
+  acceptPlanGroupInvite,
+  declinePlanGroupInvite,
+  inviteFriendsToPlanGroup,
+} from '@/src/api/mutations';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 export function useInviteFriends(groupId: string) {
@@ -33,5 +37,18 @@ export function useAcceptPlanInvite(
       qc.invalidateQueries({ queryKey: ['my_plan_progress_plans', user_id] });
     },
     onError: (e) => {},
+  });
+}
+
+export function useDeclinePlanInvite(group_id: string, user_id: string | undefined) {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: async () => await declinePlanGroupInvite({ group_id, user_id }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['plan_group_members', group_id] });
+      qc.invalidateQueries({ queryKey: ['plan_group_invitation_members', group_id] });
+      qc.invalidateQueries({ queryKey: ['my_plan_progress_plans', user_id] });
+    },
   });
 }

@@ -19,6 +19,7 @@ type Props = {
   hasAccepted: boolean;
   isGuest: boolean;
   isAccepting: boolean;
+  isDeclining: boolean;
 
   onAccept: () => void;
   onDecline: () => void;
@@ -35,12 +36,13 @@ export default function PlanInvitationScreen({
   startDateLabel,
   hasAccepted,
   isAccepting,
+  isDeclining,
   onAccept,
   onDecline,
 }: Props) {
   const insets = useSafeAreaInsets();
   const inviterName = [firstName, lastName].filter(Boolean).join(' ').trim();
-  const isBusy = isAccepting;
+  const isBusy = isAccepting || isDeclining;
 
   return (
     <View className="flex-1 bg-white dark:bg-black px-6 ">
@@ -110,7 +112,11 @@ export default function PlanInvitationScreen({
             onPress={onDecline}
             disabled={isBusy}
             className="py-2 rounded-full bg-gray-300 dark:bg-neutral-600">
-            <Text className="text-center text-lg dark:text-white">DECLINE</Text>
+            {isDeclining ? (
+              <ActivityIndicator color="#6b7280" />
+            ) : (
+              <Text className="text-center text-lg dark:text-white">DECLINE</Text>
+            )}
           </TouchableOpacity>
         </View>
       ) : (
