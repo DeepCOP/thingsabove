@@ -1,3 +1,7 @@
+-- Add missing is_read column to ai_notifications (safe, no data loss)
+ALTER TABLE IF EXISTS public.ai_notifications ADD COLUMN IF NOT EXISTS is_read boolean DEFAULT true;
+ALTER TABLE IF EXISTS public.ai_daily_messages ADD COLUMN IF NOT EXISTS is_read boolean DEFAULT true;
+
 -- Update get_my_notifications to include all 3 notification tables
 CREATE OR REPLACE FUNCTION public.get_my_notifications()
 RETURNS TABLE (
@@ -31,6 +35,7 @@ BEGIN
         'notifications'::text as source_table
     FROM public.notifications n
     WHERE n.user_id = auth.uid()
+      AND n.is_read = false
     
     UNION ALL
     
@@ -47,6 +52,7 @@ BEGIN
         'ai_notifications'::text as source_table
     FROM public.ai_notifications an
     WHERE an.user_id = auth.uid()
+      AND an.is_read = false
     
     UNION ALL
     
@@ -63,6 +69,7 @@ BEGIN
         'ai_daily_messages'::text as source_table
     FROM public.ai_daily_messages adm
     WHERE adm.user_id = auth.uid()
+      AND adm.is_read = false
     
     ORDER BY created_at DESC;
 END;
