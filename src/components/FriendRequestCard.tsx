@@ -17,6 +17,7 @@ type Props = {
   onAdd?: (id: string) => void;
   onAccept?: (id: string) => void;
   onDecline?: (id: string) => void;
+  onPressProfile?: (id: string) => void;
 
   isAdding?: boolean;
   isAccepting?: boolean;
@@ -33,22 +34,28 @@ export default function FriendRequestCard({
   onAdd,
   onAccept,
   onDecline,
+  onPressProfile,
   isAdding,
   isAccepting,
   isDeclining,
 }: Props) {
   return (
     <View className="flex-row items-center p-3 mb-3 rounded-xl bg-gray-100 dark:bg-neutral-900">
-      <UserAvatar uri={avatar_url} first_name={first_name} last_name={last_name} size={34} />
+      <TouchableOpacity
+        className="flex-1 flex-row items-center"
+        disabled={!onPressProfile}
+        onPress={() => onPressProfile?.(id)}>
+        <UserAvatar uri={avatar_url} first_name={first_name} last_name={last_name} size={34} />
 
-      <View className="flex-1 ml-3">
-        <Text className="font-semibold dark:text-white">
-          {first_name} {last_name}
-        </Text>
-        <Text className="text-xs text-gray-500">
-          {mode === 'receiver' ? 'Sent you a friend request' : statusText}
-        </Text>
-      </View>
+        <View className="flex-1 ml-3">
+          <Text className="font-semibold dark:text-white">
+            {first_name} {last_name}
+          </Text>
+          <Text className="text-xs text-gray-500">
+            {mode === 'receiver' ? 'Sent you a friend request' : statusText}
+          </Text>
+        </View>
+      </TouchableOpacity>
 
       {/* REQUESTER */}
       {mode === 'requester' && onAdd && (

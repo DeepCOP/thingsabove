@@ -5,9 +5,10 @@ import { Text, TouchableOpacity, View } from 'react-native';
 type Props = {
   members: ChurchMemberPreview[];
   onSeeAll?: () => void;
+  onMemberPress?: (userId: string) => void;
 };
 
-export default function ChurchMembersPreview({ members, onSeeAll }: Props) {
+export default function ChurchMembersPreview({ members, onSeeAll, onMemberPress }: Props) {
   return (
     <View className="rounded-2xl border border-gray-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-950">
       <View className="flex-row items-center justify-between">
@@ -26,7 +27,11 @@ export default function ChurchMembersPreview({ members, onSeeAll }: Props) {
       ) : (
         <View className="mt-4 flex-row flex-wrap gap-4">
           {members.map((member) => (
-            <View key={member.id} className="items-center">
+            <TouchableOpacity
+              key={member.id}
+              className="items-center"
+              disabled={!onMemberPress}
+              onPress={() => onMemberPress?.(member.id)}>
               <UserAvatar
                 uri={member.avatar_url}
                 first_name={member.first_name}
@@ -37,7 +42,7 @@ export default function ChurchMembersPreview({ members, onSeeAll }: Props) {
               <Text className="mt-2 text-xs text-gray-600 dark:text-gray-400">
                 {member.first_name ?? 'Member'}
               </Text>
-            </View>
+            </TouchableOpacity>
           ))}
         </View>
       )}

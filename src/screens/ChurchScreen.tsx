@@ -62,6 +62,10 @@ export default function ChurchScreen({ churchId }: Props) {
     router.push(`/church/${churchId}/members` as Href);
   };
 
+  const handleOpenMemberProfile = (userId: string) => {
+    router.push(`/profile/${userId}` as Href);
+  };
+
   const handleOpenPlan = (planId: string) => {
     router.push({
       pathname: '/devotional_detail/[id]',
@@ -152,7 +156,11 @@ export default function ChurchScreen({ churchId }: Props) {
             onRetry={() => membersQuery.refetch()}
           />
         ) : (
-          <ChurchMembersPreview members={membersPreview} onSeeAll={handleOpenMembers} />
+          <ChurchMembersPreview
+            members={membersPreview}
+            onSeeAll={handleOpenMembers}
+            onMemberPress={handleOpenMemberProfile}
+          />
         )}
       </View>
 

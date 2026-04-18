@@ -1,5 +1,6 @@
 import LoadingSpinner from '@/src/components/LoadingSpinner';
-import { Text, TextInput, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { Text, TextInput, TouchableOpacity, View } from 'react-native';
 import FriendRequestCard from '../components/FriendRequestCard';
 import { useAuth } from '../state/AuthContext';
 
@@ -21,6 +22,8 @@ type Props = {
   isSearching: boolean;
   isAdding: boolean;
   onAddFriend: (friendId: string) => void;
+  onPressProfile: (friendId: string) => void;
+  onShareInviteLink: () => void;
 };
 
 export default function AddFriendScreen({
@@ -31,6 +34,8 @@ export default function AddFriendScreen({
   isSearching,
   isAdding,
   onAddFriend,
+  onPressProfile,
+  onShareInviteLink,
 }: Props) {
   const { session, loading: sessionLoading } = useAuth();
   const currentUserId = session?.user?.id;
@@ -86,6 +91,7 @@ export default function AddFriendScreen({
                 : 'Not friends'
           }
           onAdd={onAddFriend}
+          onPressProfile={onPressProfile}
           isAdding={isAdding}
         />
       )}
@@ -94,6 +100,24 @@ export default function AddFriendScreen({
       {isEmailValid && !isSearching && !user && (
         <Text className="mt-4 text-gray-500 text-sm">No user found</Text>
       )}
+
+      <View className="mt-6 rounded-2xl border border-gray-200 bg-gray-50 p-4 dark:border-neutral-800 dark:bg-neutral-950">
+        <Text className="text-base font-semibold text-gray-900 dark:text-white">
+          Invite someone new
+        </Text>
+        <Text className="mt-1 text-sm leading-6 text-gray-600 dark:text-gray-400">
+          Share a link so a friend can join ThingsAbove and connect with you.
+        </Text>
+
+        <TouchableOpacity
+          onPress={onShareInviteLink}
+          className="mt-4 flex-row items-center justify-center rounded-full border border-blue-600 bg-blue-50/70 px-4 py-3 dark:border-blue-400 dark:bg-blue-950/30">
+          <Ionicons name="share-social-outline" size={18} color="#2563eb" />
+          <Text className="ml-2 font-semibold text-blue-600 dark:text-blue-400">
+            Share Invite Link
+          </Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }

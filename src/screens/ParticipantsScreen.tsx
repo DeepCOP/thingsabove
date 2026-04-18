@@ -21,6 +21,7 @@ type Props = {
   refreshing: boolean;
   onRefresh: () => void;
   onInvite: () => void;
+  onOpenProfile: (userId: string) => void;
 };
 
 export default function ParticipantsScreen({
@@ -30,6 +31,7 @@ export default function ParticipantsScreen({
   refreshing,
   onRefresh,
   onInvite,
+  onOpenProfile,
 }: Props) {
   const insets = useSafeAreaInsets();
 
@@ -47,7 +49,9 @@ export default function ParticipantsScreen({
           const percentage = (completed / Math.max(totalDays, 1)) * 100;
 
           return (
-            <View className="mb-3 p-3 rounded-xl bg-gray-100 dark:bg-neutral-900">
+            <TouchableOpacity
+              className="mb-3 p-3 rounded-xl bg-gray-100 dark:bg-neutral-900"
+              onPress={() => onOpenProfile(item.user_id)}>
               <View className="flex-row items-center mb-2">
                 <UserAvatar
                   uri={item.profiles.avatar_url}
@@ -70,7 +74,7 @@ export default function ParticipantsScreen({
               </View>
 
               {progress && <ProgressBar percentage={percentage} />}
-            </View>
+            </TouchableOpacity>
           );
         }}
       />
