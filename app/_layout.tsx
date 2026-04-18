@@ -142,6 +142,7 @@ function RootLayoutContent() {
         <Stack.Screen name="scripture_notes/index" options={{ headerShown: false }} />
         <Stack.Screen name="search/devotionals/index" options={{ title: 'search devotionals' }} />
         <Stack.Screen name="devotional_detail/[id]/index" options={{ title: '' }} />
+        <Stack.Screen name="devotional_detail/[id]/invite" options={{ title: 'Invitation' }} />
         <Stack.Protected guard={session == null}>
           <Stack.Screen name="(auth)" options={{ presentation: 'modal', headerShown: false }} />
           <Stack.Screen name="confirm-email" options={{ title: 'Confirm Email' }} />

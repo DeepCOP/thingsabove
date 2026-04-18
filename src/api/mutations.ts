@@ -182,8 +182,29 @@ export const acceptPlanGroupInvite = async ({
     p_start_date: startDate,
   });
 
-  if (error) throw error;
+  if (error) {
+    throw error;
+  }
   return data as PlanProgress;
+};
+
+export const declinePlanGroupInvite = async ({
+  group_id,
+  user_id,
+}: {
+  group_id: string;
+  user_id?: string;
+}) => {
+  if (!group_id || !user_id) return;
+
+  const { error } = await supabase
+    .from('plan_group_members')
+    .delete()
+    .eq('group_id', group_id)
+    .eq('user_id', user_id)
+    .eq('status', 'pending');
+
+  if (error) throw error;
 };
 
 export const markNotificationRead = async (p_notification_id: string) => {

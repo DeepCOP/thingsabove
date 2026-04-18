@@ -2,6 +2,7 @@ import { useSignInUserWithPassword } from '@/src/hooks/useProfile';
 import { openExternalUrl } from '@/src/utils';
 import { Ionicons } from '@expo/vector-icons';
 import { Input } from '@rneui/themed';
+import { Href, useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import {
   Keyboard,
@@ -15,13 +16,40 @@ import {
 } from 'react-native';
 
 export default function SignIn() {
+  const router = useRouter();
+  const { redirectPlanId, redirectGroupId, redirectInvitedBy } = useLocalSearchParams<{
+    redirectPlanId?: string;
+    redirectGroupId?: string;
+    redirectInvitedBy?: string;
+  }>();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const colorScheme = useColorScheme();
   const signInWithPassword = useSignInUserWithPassword();
+
+  const redirectToInvitation = () => {
+    if (!redirectPlanId || !redirectGroupId) return;
+
+    router.push({
+      pathname: '/devotional_detail/[id]/invitation',
+      params: {
+        id: redirectPlanId,
+        groupId: redirectGroupId,
+        ...(redirectInvitedBy ? { invitedBy: redirectInvitedBy } : {}),
+      },
+    } as Href);
+  };
+
   async function signIn() {
-    signInWithPassword.mutate({ email, password });
+    signInWithPassword.mutate(
+      { email, password },
+      {
+        onSuccess: () => {
+          redirectToInvitation();
+        },
+      },
+    );
   }
   const isDisabled = !email || !password || signInWithPassword.isPending;
 

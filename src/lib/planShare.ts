@@ -29,7 +29,7 @@ export const buildPlanInvitationUrl = ({
   groupId: string;
   invitedBy?: string;
 }) => {
-  return buildUrl(`/devotional_detail/${planId}/invitation`, {
+  return buildUrl(`/devotional_detail/${planId}/invite`, {
     groupId,
     invitedBy,
   });

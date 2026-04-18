@@ -1,37 +1,60 @@
 import LoadingSpinner from '@/src/components/LoadingSpinner';
 import { useFetchDevotionalPlanById } from '@/src/hooks/useDevotionalPlans';
-import { useAcceptPlanInvite } from '@/src/hooks/useInviteFriends';
-import { usePlanGroup, usePlanGroupMembers } from '@/src/hooks/usePlanGroup';
+import { useAcceptPlanInvite, useDeclinePlanInvite } from '@/src/hooks/useInviteFriends';
+import { usePlanGroupInvitation, usePlanGroupInvitationMembers } from '@/src/hooks/usePlanGroup';
 import PlanInvitationScreen from '@/src/screens/PlanInvitationScreen';
 import { useAuth } from '@/src/state/AuthContext';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React from 'react';
+import { Text, TouchableOpacity, View } from 'react-native';
 
 dayjs.extend(utc);
 
 export default function PlanInvitation() {
   const { groupId, id } = useLocalSearchParams<{
     groupId: string;
-    invitedBy: string;
+    invitedBy?: string;
     id: string;
   }>();
-
-  const { session, isGuest } = useAuth();
+  const { session, isGuest, loading: authLoading } = useAuth();
   const router = useRouter();
 
   const acceptMutation = useAcceptPlanInvite(groupId, id, session?.user?.id);
+  const declineMutation = useDeclinePlanInvite(groupId, session?.user?.id);
 
-  const planGroupQuery = usePlanGroup(groupId);
-  const planGroupMembersQuery = usePlanGroupMembers(groupId);
-  const members = planGroupMembersQuery.data;
+  const planGroupQuery = usePlanGroupInvitation(groupId);
+  const planGroupMembersQuery = usePlanGroupInvitationMembers(groupId);
+  const members = planGroupMembersQuery.data ?? [];
   const group = planGroupQuery.data;
   const planQuery = useFetchDevotionalPlanById(id as string);
   const plan = planQuery.data;
   const currentUser = members?.find((member) => member.user_id === session?.user?.id);
-  if (planGroupQuery.isLoading || planQuery.isLoading) {
+  if (authLoading || planGroupQuery.isLoading || planQuery.isLoading) {
     return <LoadingSpinner />;
+  }
+
+  if (planGroupQuery.error || planQuery.error || !group) {
+    return (
+      <View className="flex-1 items-center justify-center bg-white px-6 dark:bg-black">
+        <Text className="text-lg font-semibold text-gray-900 dark:text-white">
+          Unable to load invitation
+        </Text>
+        <Text className="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
+          This invitation may be unavailable, expired, or the group could not be found.
+        </Text>
+        <TouchableOpacity
+          className="mt-5 rounded-full bg-black px-5 py-3 dark:bg-white"
+          onPress={() => {
+            planGroupQuery.refetch();
+            planGroupMembersQuery.refetch();
+            planQuery.refetch();
+          }}>
+          <Text className="font-semibold text-white dark:text-black">Try again</Text>
+        </TouchableOpacity>
+      </View>
+    );
   }
 
   const today = dayjs().utc().startOf('day');
@@ -47,9 +70,9 @@ export default function PlanInvitation() {
 
   return (
     <PlanInvitationScreen
-      firstName={group?.profiles?.first_name ?? ''}
-      lastName={group?.profiles?.last_name ?? ''}
-      inviterAvatar={group?.profiles?.avatar_url}
+      firstName={group.inviter.first_name ?? ''}
+      lastName={group.inviter.last_name ?? ''}
+      inviterAvatar={group.inviter.avatar_url}
       planTitle={plan?.title ?? undefined}
       planCover={plan?.cover_image}
       totalDays={plan?.total_days ?? undefined}
@@ -59,6 +82,7 @@ export default function PlanInvitation() {
       hasAccepted={!!currentUser}
       isGuest={isGuest}
       isAccepting={acceptMutation.isPending}
+      isDeclining={declineMutation.isPending}
       onAccept={() => {
         if (isGuest) {
           router.push('/(auth)/signin');
@@ -80,7 +104,18 @@ export default function PlanInvitation() {
           },
         );
       }}
-      onDecline={() => router.back()}
+      onDecline={() => {
+        if (isGuest) {
+          router.back();
+          return;
+        }
+
+        declineMutation.mutate(undefined, {
+          onSuccess: () => {
+            router.back();
+          },
+        });
+      }}
     />
   );
 }
