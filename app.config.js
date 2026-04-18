@@ -1,5 +1,27 @@
 const { version } = require('./package.json');
 
+const androidAppLinkPaths = [
+  '/PlansTab',
+  '/CommunityTab',
+  '/BibleTab',
+  '/ProfileTab',
+  '/about-details',
+  '/accept_friend',
+  '/add_friend',
+  '/bible',
+  '/church',
+  '/confirm-email',
+  '/devotional_detail',
+  '/notifications',
+  '/plan_progress',
+  '/prayer',
+  '/scripture_notes',
+  '/search/devotionals',
+  '/settings',
+  '/signin',
+  '/signup',
+];
+
 export default ({ config }) => ({
   expo: {
     name: 'Things Above',
@@ -37,33 +59,11 @@ export default ({ config }) => ({
         {
           action: 'VIEW',
           autoVerify: true,
-          data: [
-            {
-              scheme: 'https',
-              host: 'thingsabove.life',
-              pathPrefix: '/auth',
-            },
-            {
-              scheme: 'https',
-              host: 'thingsabove.life',
-              pathPrefix: '/church',
-            },
-            {
-              scheme: 'https',
-              host: 'thingsabove.life',
-              pathPrefix: '/devotional_detail',
-            },
-            {
-              scheme: 'https',
-              host: 'thingsabove.life',
-              pathPrefix: '/plan_progress',
-            },
-            {
-              scheme: 'https',
-              host: 'thingsabove.life',
-              pathPrefix: '/bible',
-            },
-          ],
+          data: androidAppLinkPaths.map((pathPrefix) => ({
+            scheme: 'https',
+            host: 'thingsabove.life',
+            pathPrefix,
+          })),
           category: ['BROWSABLE', 'DEFAULT'],
         },
       ],
