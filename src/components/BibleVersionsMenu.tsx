@@ -14,7 +14,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-type Props = {};
+type Props = Record<string, never>;
 type BibleVersionListEntry = ReturnType<typeof useBible>['versions'][number];
 
 const BibleVersionsMenu = forwardRef<BottomSheet, Props>((_, ref) => {

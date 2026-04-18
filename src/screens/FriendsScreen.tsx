@@ -81,7 +81,8 @@ export default function FriendsScreen({
               return (
                 <View className="mb-3 flex-row items-center rounded-xl bg-gray-100 p-3 dark:bg-neutral-900">
                   <UserAvatar
-                    initial={item.first_name?.[0] ?? 'U'}
+                    first_name={item.first_name}
+                    last_name={item.last_name}
                     uri={item.avatar_url}
                     size={42}
                   />
