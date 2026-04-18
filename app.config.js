@@ -41,11 +41,6 @@ export default ({ config }) => ({
             {
               scheme: 'https',
               host: 'thingsabove.life',
-              pathPrefix: '/auth',
-            },
-            {
-              scheme: 'https',
-              host: 'thingsabove.life',
               pathPrefix: '/church',
             },
             {
