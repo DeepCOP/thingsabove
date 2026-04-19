@@ -6,6 +6,8 @@ import { useAuth } from '../state/AuthContext';
 import { Profiles, UpdateProfileInput } from '../types/types';
 import UserAvatar from './UserAvatar';
 
+type AvatarProfile = Pick<Profiles, 'avatar_url' | 'first_name' | 'last_name'>;
+
 interface Props {
   size: number;
   handleUpdateProfile: UseMutateFunction<void, Error, UpdateProfileInput, unknown>;
@@ -27,7 +29,7 @@ interface Props {
   updating?: boolean;
   deleting?: boolean;
   handleDeleteAvatar: UseMutateFunction<void, Error, string, unknown>;
-  profile: Profiles | undefined;
+  profile: AvatarProfile | undefined;
 }
 
 export default function Avatar({

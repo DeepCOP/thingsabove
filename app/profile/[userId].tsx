@@ -9,14 +9,13 @@ export default function PublicProfileRoute() {
   const { userId } = useLocalSearchParams<{ userId: string }>();
   const router = useRouter();
   const { session } = useAuth();
-  const profileQuery = useProfile(userId);
-  const viewerProfileQuery = useProfile(session?.user?.id);
+  const targetUserProfile = useProfile(userId);
 
-  if (profileQuery.isLoading || viewerProfileQuery.isLoading) {
+  if (targetUserProfile.isLoading) {
     return <LoadingSpinner style={{ marginTop: 30 }} />;
   }
 
-  if (profileQuery.error || !profileQuery.data || viewerProfileQuery.error) {
+  if (targetUserProfile.error || !targetUserProfile.data) {
     return (
       <View className="flex-1 items-center justify-center bg-white px-6 dark:bg-black">
         <Text className="text-lg font-semibold text-gray-900 dark:text-white">
@@ -28,8 +27,7 @@ export default function PublicProfileRoute() {
         <TouchableOpacity
           className="mt-5 rounded-full bg-black px-5 py-3 dark:bg-white"
           onPress={() => {
-            profileQuery.refetch();
-            viewerProfileQuery.refetch();
+            targetUserProfile.refetch();
           }}>
           <Text className="font-semibold text-white dark:text-black">Try again</Text>
         </TouchableOpacity>
@@ -37,20 +35,15 @@ export default function PublicProfileRoute() {
     );
   }
 
-  const viewerChurchId = viewerProfileQuery.data?.church?.id ?? null;
-  const profileChurchId = profileQuery.data.church?.id ?? null;
+  const profileChurchId = targetUserProfile.data.church?.id ?? null;
 
   return (
     <PublicProfileScreen
-      profile={profileQuery.data}
-      isCurrentUser={session?.user?.id === profileQuery.data.id}
-      canOpenChurch={Boolean(
-        viewerChurchId && profileChurchId && viewerChurchId === profileChurchId,
-      )}
+      profile={targetUserProfile.data}
+      isCurrentUser={session?.user?.id === targetUserProfile.data.id}
+      canOpenChurch={Boolean(profileChurchId)}
       onOpenChurch={
-        viewerChurchId && profileChurchId && viewerChurchId === profileChurchId
-          ? () => router.push(`/church/${profileChurchId}` as Href)
-          : undefined
+        profileChurchId ? () => router.push(`/church/${profileChurchId}` as Href) : undefined
       }
     />
   );
