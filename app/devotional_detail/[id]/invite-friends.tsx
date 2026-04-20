@@ -188,7 +188,12 @@ export default function InviteFriends() {
       onSelectAll={() => setSelected(friends.map((f) => f.id))}
       onClearSelection={() => setSelected([])}
       onShareInviteLink={handleShareInviteLink}
-      onAddFriend={() => router.push('/add_friend')}
+      onAddFriend={() =>
+        router.push({
+          pathname: '/(tabs)/CommunityTab',
+          params: { section: 'friends' },
+        })
+      }
       onSubmit={handleSubmit}
     />
   );

@@ -1,6 +1,12 @@
-import LoadingSpinner from '@/src/components/LoadingSpinner';
 import { Ionicons } from '@expo/vector-icons';
-import { FlatList, Text, TouchableOpacity, View } from 'react-native';
+import {
+  ActivityIndicator,
+  FlatList,
+  Text,
+  TouchableOpacity,
+  useColorScheme,
+  View,
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import UserAvatar from '../components/UserAvatar';
 
@@ -40,6 +46,21 @@ export default function InviteFriendsScreen({
   onAddFriend,
 }: Props) {
   const insets = useSafeAreaInsets();
+  const colorScheme = useColorScheme();
+  const submitIndicatorColor = colorScheme === 'dark' ? '#000000' : '#ffffff';
+
+  const renderSubmitButtonContent = (textClassName: string) => (
+    <View className="items-center justify-center">
+      <Text className={`${textClassName}${isSubmitting ? ' opacity-0' : ''}`}>{submitLabel}</Text>
+      {isSubmitting ? (
+        <ActivityIndicator
+          size="small"
+          color={submitIndicatorColor}
+          style={{ position: 'absolute' }}
+        />
+      ) : null}
+    </View>
+  );
 
   return (
     <View className="flex-1 bg-white dark:bg-black px-4" style={{ paddingBottom: insets.bottom }}>
@@ -98,13 +119,7 @@ export default function InviteFriendsScreen({
             disabled={isSubmitting}
             onPress={onSubmit}
             className="bg-black dark:bg-white py-4 rounded-full mt-4">
-            {isSubmitting ? (
-              <LoadingSpinner size="small" />
-            ) : (
-              <Text className="text-white dark:text-black text-center font-semibold">
-                {submitLabel}
-              </Text>
-            )}
+            {renderSubmitButtonContent('text-white dark:text-black text-center font-semibold')}
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -130,11 +145,7 @@ export default function InviteFriendsScreen({
             disabled={isSubmitting}
             onPress={onSubmit}
             className="mt-6 rounded-full bg-black px-6 py-4 dark:bg-white">
-            {isSubmitting ? (
-              <LoadingSpinner size="small" />
-            ) : (
-              <Text className="font-semibold text-white dark:text-black">{submitLabel}</Text>
-            )}
+            {renderSubmitButtonContent('font-semibold text-white dark:text-black')}
           </TouchableOpacity>
 
           <TouchableOpacity

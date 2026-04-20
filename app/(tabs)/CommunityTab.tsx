@@ -1,7 +1,9 @@
 import LoadingSpinner from '@/src/components/LoadingSpinner';
 import PrayerEmptyState from '@/src/components/prayer/PrayerEmptyState';
+import { useFriends, usePendingFriendRequests } from '@/src/hooks/useFriends';
 import { useProfile } from '@/src/hooks/useProfile';
 import ChurchScreen from '@/src/screens/ChurchScreen';
+import FriendsScreen from '@/src/screens/FriendsScreen';
 import PrayerBoardScreen from '@/src/screens/PrayerBoardScreen';
 import { useAuth } from '@/src/state/AuthContext';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -9,15 +11,16 @@ import { useEffect, useMemo, useState } from 'react';
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-type CommunitySection = 'my-church' | 'prayer-board';
+type CommunitySection = 'my-church' | 'prayer-board' | 'friends';
 
 const COMMUNITY_SECTIONS: { key: CommunitySection; label: string }[] = [
   { key: 'my-church', label: 'My Church' },
   { key: 'prayer-board', label: 'Prayer Board' },
+  { key: 'friends', label: 'Friends' },
 ];
 
 function isCommunitySection(value: string | undefined): value is CommunitySection {
-  return value === 'my-church' || value === 'prayer-board';
+  return value === 'my-church' || value === 'prayer-board' || value === 'friends';
 }
 
 export default function CommunityTab() {
@@ -25,6 +28,8 @@ export default function CommunityTab() {
   const router = useRouter();
   const { session } = useAuth();
   const profileQuery = useProfile(session?.user?.id);
+  const friendsQuery = useFriends(session?.user?.id);
+  const pendingRequestsQuery = usePendingFriendRequests(session?.user?.id);
   const { section } = useLocalSearchParams<{ section?: string | string[] }>();
   const requestedSection = useMemo(
     () => (Array.isArray(section) ? section[0] : section),
@@ -76,6 +81,18 @@ export default function CommunityTab() {
 
     if (activeSection === 'prayer-board') {
       return <PrayerBoardScreen />;
+    }
+
+    if (activeSection === 'friends') {
+      return (
+        <FriendsScreen
+          friends={friendsQuery.data ?? []}
+          isLoading={friendsQuery.isLoading || pendingRequestsQuery.isLoading}
+          pendingCount={pendingRequestsQuery.data?.length ?? 0}
+          onAddFriend={() => router.push('/add_friend')}
+          onFriendRequests={() => router.push('/accept_friend')}
+        />
+      );
     }
 
     if (profileQuery.isLoading) {

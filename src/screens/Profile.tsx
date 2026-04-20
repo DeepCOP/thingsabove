@@ -142,11 +142,29 @@ export default function ProfileScreen({
                 {profile?.email}
               </Text>
 
-              <TouchableOpacity
-                className="mt-4 rounded-full bg-black px-5 py-3 dark:bg-white"
-                onPress={onPrayerBoard}>
-                <Text className="font-semibold text-white dark:text-black">Prayer Board</Text>
-              </TouchableOpacity>
+              <View className="mt-5 w-full max-w-sm flex-row gap-3 px-6">
+                <TouchableOpacity
+                  className="h-12 flex-1 items-center justify-center rounded-full bg-black px-4 dark:bg-white"
+                  onPress={onPrayerBoard}>
+                  <Text className="text-center font-semibold text-white dark:text-black">
+                    Prayer Board
+                  </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  className="h-12 flex-1 flex-row items-center justify-center rounded-full border border-blue-600 bg-blue-50/70 px-4 dark:border-blue-400 dark:bg-blue-950/30"
+                  onPress={() =>
+                    router.push({
+                      pathname: '/(tabs)/CommunityTab',
+                      params: { section: 'friends' },
+                    })
+                  }>
+                  <Ionicons name="people-outline" size={16} color={actionColor} />
+                  <Text className="ml-2 text-sm font-semibold text-blue-600 dark:text-blue-400">
+                    Friends
+                  </Text>
+                </TouchableOpacity>
+              </View>
             </View>
 
             {displayBio ? (
