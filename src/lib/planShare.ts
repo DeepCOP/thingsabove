@@ -62,3 +62,15 @@ export const buildPlanInvitationMessage = ({
     invitationUrl,
   ].join('\n\n');
 };
+
+export const buildFriendInviteUrl = () => buildUrl('/signup');
+
+export const buildFriendInviteMessage = () => {
+  const invitationUrl = buildFriendInviteUrl();
+
+  return [
+    'Join me on ThingsAbove.',
+    "Create your account and let's connect there.",
+    invitationUrl,
+  ].join('\n\n');
+};

@@ -20,6 +20,7 @@ const androidAppLinkPaths = [
   '/settings',
   '/signin',
   '/signup',
+  '/profile',
 ];
 
 export default ({ config }) => ({

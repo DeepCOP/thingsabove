@@ -1881,6 +1881,7 @@ export type Database = {
           last_name: string;
         }[];
       };
+      get_profile: { Args: { p_user_id: string }; Returns: Json };
       get_day_items_progress: {
         Args: {
           p_day_id: string;

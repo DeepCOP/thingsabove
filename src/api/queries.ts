@@ -288,29 +288,18 @@ export const reportPlan = async (reason: string, planId: string) => {
 };
 
 export const getProfile = async (userId: string) => {
-  const { data, error } = await supabase
-    .from('profiles')
-    .select(
-      `
-        *,
-        church:churches (
-          id,
-          name,
-          address,
-          website_url,
-          created_at,
-          updated_at,
-          normalized_name,
-          normalized_address,
-          normalized_website_url
-        )
-      `,
-    )
-    .eq('id', userId)
-    .single();
+  const { data, error } = await supabase.rpc('get_profile', {
+    p_user_id: userId,
+  });
+
   if (error) {
     throw error;
   }
+
+  if (!data) {
+    throw new Error('Profile not found');
+  }
+
   return data as ProfileWithChurch;
 };
 

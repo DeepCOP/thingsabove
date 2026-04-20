@@ -18,8 +18,20 @@ export type ChurchInsert = Database['public']['Tables']['churches']['Insert'];
 
 export type ChurchUpdate = Database['public']['Tables']['churches']['Update'];
 
-export type ProfileWithChurch = Profiles & {
-  church: Church | null;
+export type ProfileChurch = Pick<Church, 'id' | 'name' | 'address' | 'website_url'>;
+
+export type ProfileWithChurch = Pick<
+  Profiles,
+  | 'id'
+  | 'email'
+  | 'first_name'
+  | 'last_name'
+  | 'avatar_url'
+  | 'bio'
+  | 'year_believed'
+  | 'year_baptized'
+> & {
+  church: ProfileChurch | null;
 };
 
 export type ChurchStats = {
