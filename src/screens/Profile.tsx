@@ -153,7 +153,12 @@ export default function ProfileScreen({
 
                 <TouchableOpacity
                   className="h-12 flex-1 flex-row items-center justify-center rounded-full border border-blue-600 bg-blue-50/70 px-4 dark:border-blue-400 dark:bg-blue-950/30"
-                  onPress={() => router.push('/friends')}>
+                  onPress={() =>
+                    router.push({
+                      pathname: '/(tabs)/CommunityTab',
+                      params: { section: 'friends' },
+                    })
+                  }>
                   <Ionicons name="people-outline" size={16} color={actionColor} />
                   <Text className="ml-2 text-sm font-semibold text-blue-600 dark:text-blue-400">
                     Friends
