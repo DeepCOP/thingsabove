@@ -43,10 +43,8 @@ type BibleContextType = {
   setVersion: (versionId: BibleVersionId) => Promise<void>;
   installVersion: (versionId: BibleVersionId) => Promise<void>;
   removeVersion: (versionId: BibleVersionId) => Promise<void>;
-  installedVersionIds: BibleVersionId[];
   versions: BibleVersionListItem[];
   isVersionInstalled: (versionId: BibleVersionId) => boolean;
-  selectNextInstalledVersion: () => Promise<void>;
   loadingVersionId: BibleVersionId | null;
   versionsCatalogLoading: boolean;
   versionsCatalogError: string | null;
@@ -265,27 +263,6 @@ export function BibleProvider({ children }: { children: ReactNode }) {
     [clearBibleVersionState, isVersionInstalled, persistedVersion, setPersistedVersion, versionMap],
   );
 
-  const installedVersionIds = useMemo(
-    () =>
-      availableVersions.filter((entry) => isVersionInstalled(entry.id)).map((entry) => entry.id),
-    [availableVersions, isVersionInstalled],
-  );
-
-  const selectNextInstalledVersion = useCallback(async () => {
-    if (installedVersionIds.length <= 1) {
-      return;
-    }
-
-    const currentIndex = installedVersionIds.indexOf(version);
-    const nextVersion =
-      installedVersionIds[(currentIndex + 1) % installedVersionIds.length] ??
-      installedVersionIds[0];
-
-    if (nextVersion && nextVersion !== version) {
-      await setVersion(nextVersion);
-    }
-  }, [installedVersionIds, setVersion, version]);
-
   const versions = useMemo(
     () =>
       availableVersions.map((entry) => {
@@ -314,10 +291,8 @@ export function BibleProvider({ children }: { children: ReactNode }) {
         setVersion,
         installVersion,
         removeVersion,
-        installedVersionIds,
         versions,
         isVersionInstalled,
-        selectNextInstalledVersion,
         loadingVersionId,
         versionsCatalogLoading,
         versionsCatalogError,

@@ -5,7 +5,7 @@ import { useChurchAnalytics } from '@/src/hooks/useChurchAnalytics';
 import { useChurchMembers } from '@/src/hooks/useChurchMembers';
 import { useDebounce } from '@/src/utils';
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { Href, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { FlatList, Share, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -171,7 +171,7 @@ export default function ChurchMembersScreen({ churchId }: Props) {
         renderItem={({ item }) => (
           <TouchableOpacity
             className="mx-4 mt-4 rounded-2xl border border-gray-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-950"
-            onPress={() => router.push(`/profile/${item.id}`)}>
+            onPress={() => router.push(`/profile/${item.id}` as Href)}>
             <View className="flex-row items-center gap-3">
               <UserAvatar
                 uri={item.avatar_url}
