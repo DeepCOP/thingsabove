@@ -425,3 +425,9 @@ entrypoint = "./functions/send-occasional-notifications/index.ts"
 # Specifies static files to be bundled with the function. Supports glob patterns.
 # For example, if you want to serve static HTML pages in your function:
 # static_files = [ "./functions/send-occasional-notifications/*.html" ]
+
+[functions.screen-plan-submission]
+enabled = true
+verify_jwt = true
+import_map = "./functions/screen-plan-submission/deno.json"
+entrypoint = "./functions/screen-plan-submission/index.ts"
