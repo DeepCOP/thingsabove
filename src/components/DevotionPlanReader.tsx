@@ -65,8 +65,7 @@ export default function DevotionalPlanReader({
   const router = useRouter();
   const selectedBook = useAppStore((s) => s.selectedBook);
   const setSelectedBook = useAppStore((s) => s.setSelectedBook);
-  const { bible, installedVersionIds, loadingVersionId, selectNextInstalledVersion, version } =
-    useBible();
+  const { bible, loadingVersionId, version } = useBible();
   const versePositions = useRef<Record<number, number>>({});
   const scrollRef = useRef<ScrollView | null>(null);
   const didScrollRef = useRef(false);
@@ -282,14 +281,7 @@ export default function DevotionalPlanReader({
             </TouchableOpacity>
           ) : (
             <TouchableOpacity
-              onPress={() => {
-                if (installedVersionIds.length <= 1) {
-                  router.push('/settings');
-                  return;
-                }
-
-                void selectNextInstalledVersion();
-              }}
+              onPress={() => router.push('/bible/versions')}
               disabled={Boolean(loadingVersionId)}
               style={{ opacity: loadingVersionId ? 0.7 : 1 }}
               className="flex-row items-center bg-blue-100 px-3 py-1.5 rounded-full mr-1">
@@ -297,7 +289,15 @@ export default function DevotionalPlanReader({
               {loadingVersionId ? (
                 <ActivityIndicator size="small" className="ml-2" />
               ) : (
-                <Text className="ml-2 font-semibold">{version}</Text>
+                <>
+                  <Text className="ml-2 font-semibold">{version}</Text>
+                  <Ionicons
+                    name="chevron-forward"
+                    size={14}
+                    color="#1f2937"
+                    style={{ marginLeft: 4 }}
+                  />
+                </>
               )}
             </TouchableOpacity>
           )}

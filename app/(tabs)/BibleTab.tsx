@@ -1,20 +1,18 @@
-import BibleVersionsMenu from '@/src/components/BibleVersionsMenu';
 import BibleReaderView from '@/src/screens/BibleReaderViewScreen';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import BottomSheet from '@gorhom/bottom-sheet';
-import { Tabs } from 'expo-router';
+import { Tabs, useRouter } from 'expo-router';
 import { useRef } from 'react';
 import { ActivityIndicator, Animated, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useBible } from '../../src/state/BibleContext';
 
 export default function BibleTab() {
+  const router = useRouter();
   const insets = useSafeAreaInsets();
   const headerY = useRef(new Animated.Value(0)).current; // 0 shown, -80 hidden
   const tabY = useRef(new Animated.Value(0)).current; // 0 shown, 80 hidden
   const TAB_BAR_HEIGHT = 56;
   const hideDistance = Math.abs(TAB_BAR_HEIGHT);
-  const versionsSheetRef = useRef<BottomSheet>(null);
 
   const { loadingVersionId, version } = useBible();
 
@@ -94,7 +92,7 @@ export default function BibleTab() {
         <View className="flex-row items-center mr-2 flex-1 justify-end ">
           {/* Version Switch */}
           <TouchableOpacity
-            onPress={() => versionsSheetRef.current?.expand()}
+            onPress={() => router.push('/bible/versions')}
             disabled={Boolean(loadingVersionId)}
             style={{ opacity: loadingVersionId ? 0.7 : 1 }}
             className="flex-row items-center bg-blue-100 px-3 py-1.5 rounded-full mr-1">
@@ -102,7 +100,15 @@ export default function BibleTab() {
             {loadingVersionId ? (
               <ActivityIndicator size="small" className="ml-2" />
             ) : (
-              <Text className="ml-2 font-semibold">{version}</Text>
+              <>
+                <Text className="ml-2 font-semibold">{version}</Text>
+                <Ionicons
+                  name="chevron-forward"
+                  size={14}
+                  color="#1f2937"
+                  style={{ marginLeft: 4 }}
+                />
+              </>
             )}
           </TouchableOpacity>
         </View>
@@ -133,7 +139,6 @@ export default function BibleTab() {
       <AnimatedHeader headerTranslateY={headerY} />
 
       <BibleReaderView onScroll={onScroll} headerTranslateY={tabY} />
-      <BibleVersionsMenu ref={versionsSheetRef} />
     </>
   );
 }
