@@ -1,7 +1,9 @@
 import { formatBibleVersionSize } from '@/src/lib/bibleVersionService';
 import { useBible } from '@/src/state/BibleContext';
+import NetInfo from '@react-native-community/netinfo';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useRouter } from 'expo-router';
+import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -19,6 +21,7 @@ export default function BibleVersionsScreen() {
   const colorScheme = useColorScheme();
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const [isOffline, setIsOffline] = useState(false);
   const {
     installVersion,
     loadingVersionId,
@@ -29,6 +32,23 @@ export default function BibleVersionsScreen() {
     versionsCatalogError,
     versionsCatalogLoading,
   } = useBible();
+
+  useEffect(() => {
+    const updateOfflineState = (state: {
+      isConnected: boolean | null;
+      isInternetReachable: boolean | null;
+    }) => {
+      setIsOffline(state.isConnected === false || state.isInternetReachable === false);
+    };
+
+    void NetInfo.fetch().then(updateOfflineState);
+
+    const unsubscribe = NetInfo.addEventListener((state) => {
+      updateOfflineState(state);
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   const handleInstallVersion = async (versionId: (typeof versions)[number]['id']) => {
     try {
@@ -96,101 +116,133 @@ export default function BibleVersionsScreen() {
                 Unable to refresh the version catalog. Built-in versions are still available.
               </Text>
             ) : null}
+
+            {isOffline ? (
+              <View className="mt-4 flex-row items-start rounded-2xl bg-amber-50 px-3 py-3 dark:bg-amber-950/30">
+                <Ionicons name="cloud-offline-outline" size={18} color="#d97706" />
+                <Text className="ml-3 flex-1 text-xs text-amber-700 dark:text-amber-300">
+                  You&apos;re offline. Downloaded versions are still available, but new installs are
+                  disabled until you reconnect.
+                </Text>
+              </View>
+            ) : null}
           </View>
         }
-        renderItem={({ item: entry }) => (
-          <TouchableOpacity
-            onPress={() => void handleSelectVersion(entry.id)}
-            disabled={!entry.isInstalled || entry.isActive || loadingVersionId === entry.id}
-            activeOpacity={0.8}
-            className={`mb-3 rounded-3xl border px-4 py-4 ${
-              entry.isActive
-                ? 'border-blue-200 bg-blue-50 dark:border-blue-900/60 dark:bg-blue-950/20'
-                : 'border-gray-200 bg-white dark:border-neutral-800 dark:bg-neutral-950'
-            }`}>
-            <View className="flex-row items-start justify-between">
-              <View className="flex-1 pr-3">
-                <View className="flex-row items-center">
-                  <Text className="font-semibold text-primary dark:text-gray-100">
-                    {entry.shortLabel}
+        renderItem={({ item: entry }) => {
+          const isVersionUnavailableOffline = isOffline && !entry.isInstalled;
+          const isRowDisabled =
+            isVersionUnavailableOffline ||
+            !entry.isInstalled ||
+            entry.isActive ||
+            loadingVersionId === entry.id;
+          const isInstallDisabled = isOffline || entry.isDownloading;
+
+          return (
+            <TouchableOpacity
+              onPress={() => void handleSelectVersion(entry.id)}
+              disabled={isRowDisabled}
+              activeOpacity={0.8}
+              className={`mb-3 rounded-3xl border px-4 py-4 ${
+                entry.isActive
+                  ? 'border-blue-200 bg-blue-50 dark:border-blue-900/60 dark:bg-blue-950/20'
+                  : 'border-gray-200 bg-white dark:border-neutral-800 dark:bg-neutral-950'
+              } ${isVersionUnavailableOffline ? 'opacity-60' : ''}`}>
+              <View className="flex-row items-start justify-between">
+                <View className="flex-1 pr-3">
+                  <View className="flex-row items-center">
+                    <Text className="font-semibold text-primary dark:text-gray-100">
+                      {entry.shortLabel}
+                    </Text>
+                    {entry.isActive ? (
+                      <Text className="ml-2 text-[11px] font-semibold text-blue-500">Active</Text>
+                    ) : null}
+                  </View>
+
+                  <Text className="mt-1 text-sm text-gray-900 dark:text-gray-300">
+                    {entry.label}
                   </Text>
-                  {entry.isActive ? (
-                    <Text className="ml-2 text-[11px] font-semibold text-blue-500">Active</Text>
+                  <Text className="mt-1 text-[11px] text-gray-500 dark:text-gray-400">
+                    {formatBibleVersionSize(entry.sizeBytes)}
+                  </Text>
+
+                  {isVersionUnavailableOffline ? (
+                    <Text className="mt-1 text-[11px] text-amber-600 dark:text-amber-400">
+                      Unavailable offline. Connect to the internet to download this version.
+                    </Text>
+                  ) : null}
+
+                  {!entry.isBundled && entry.isDownloading ? (
+                    <Text className="mt-1 text-[11px] text-gray-500 dark:text-gray-400">
+                      Downloading...
+                    </Text>
+                  ) : null}
+
+                  {entry.installState?.error ? (
+                    <Text className="mt-1 text-[11px] text-red-500">
+                      {entry.installState.error}
+                    </Text>
                   ) : null}
                 </View>
 
-                <Text className="mt-1 text-sm text-gray-900 dark:text-gray-300">{entry.label}</Text>
-                <Text className="mt-1 text-[11px] text-gray-500 dark:text-gray-400">
-                  {formatBibleVersionSize(entry.sizeBytes)}
-                </Text>
-
-                {!entry.isBundled && entry.isDownloading ? (
-                  <Text className="mt-1 text-[11px] text-gray-500 dark:text-gray-400">
-                    Downloading...
-                  </Text>
-                ) : null}
-
-                {entry.installState?.error ? (
-                  <Text className="mt-1 text-[11px] text-red-500">{entry.installState.error}</Text>
-                ) : null}
-              </View>
-
-              <View className="items-end">
-                {entry.isInstalled ? (
-                  <Ionicons
-                    name={entry.isActive ? 'checkmark-circle' : 'chevron-forward'}
-                    size={18}
-                    color={
-                      entry.isActive ? '#3b82f6' : colorScheme === 'dark' ? '#9ca3af' : '#6b7280'
-                    }
-                  />
-                ) : (
-                  <TouchableOpacity
-                    onPress={(e) => {
-                      e.stopPropagation();
-                      void handleInstallVersion(entry.id);
-                    }}
-                    disabled={entry.isDownloading}
-                    className={`items-center justify-center rounded-full p-2.5 ${
-                      entry.isDownloading ? 'bg-gray-300 dark:bg-neutral-700' : 'bg-blue-600'
-                    }`}>
+                <View className="items-end">
+                  {entry.isInstalled ? (
                     <Ionicons
-                      name={entry.isDownloading ? 'arrow-down-circle-outline' : 'download-outline'}
-                      size={16}
-                      color="#ffffff"
+                      name={entry.isActive ? 'checkmark-circle' : 'chevron-forward'}
+                      size={18}
+                      color={
+                        entry.isActive ? '#3b82f6' : colorScheme === 'dark' ? '#9ca3af' : '#6b7280'
+                      }
                     />
-                  </TouchableOpacity>
-                )}
+                  ) : (
+                    <TouchableOpacity
+                      onPress={(e) => {
+                        e.stopPropagation();
+                        void handleInstallVersion(entry.id);
+                      }}
+                      disabled={isInstallDisabled}
+                      className={`items-center justify-center rounded-full p-2.5 ${
+                        isInstallDisabled ? 'bg-gray-300 dark:bg-neutral-700' : 'bg-blue-600'
+                      }`}>
+                      <Ionicons
+                        name={
+                          entry.isDownloading ? 'arrow-down-circle-outline' : 'download-outline'
+                        }
+                        size={16}
+                        color="#ffffff"
+                      />
+                    </TouchableOpacity>
+                  )}
 
-                {entry.canDelete ? (
-                  <TouchableOpacity
-                    className="mt-2 flex-row items-center"
-                    onPress={(e) => {
-                      e.stopPropagation();
+                  {entry.canDelete ? (
+                    <TouchableOpacity
+                      className="mt-2 flex-row items-center"
+                      onPress={(e) => {
+                        e.stopPropagation();
 
-                      Alert.alert(
-                        'Remove version',
-                        entry.isActive
-                          ? `Remove ${entry.label}?`
-                          : `Remove ${entry.label} from this device?`,
-                        [
-                          { text: 'Cancel', style: 'cancel' },
-                          {
-                            text: 'Remove',
-                            style: 'destructive',
-                            onPress: () => void removeVersion(entry.id),
-                          },
-                        ],
-                      );
-                    }}>
-                    <Ionicons name="trash-outline" size={14} color="#ef4444" />
-                    <Text className="ml-1 text-xs font-medium text-red-500">Remove</Text>
-                  </TouchableOpacity>
-                ) : null}
+                        Alert.alert(
+                          'Remove version',
+                          entry.isActive
+                            ? `Remove ${entry.label}?`
+                            : `Remove ${entry.label} from this device?`,
+                          [
+                            { text: 'Cancel', style: 'cancel' },
+                            {
+                              text: 'Remove',
+                              style: 'destructive',
+                              onPress: () => void removeVersion(entry.id),
+                            },
+                          ],
+                        );
+                      }}>
+                      <Ionicons name="trash-outline" size={14} color="#ef4444" />
+                      <Text className="ml-1 text-xs font-medium text-red-500">Remove</Text>
+                    </TouchableOpacity>
+                  ) : null}
+                </View>
               </View>
-            </View>
-          </TouchableOpacity>
-        )}
+            </TouchableOpacity>
+          );
+        }}
       />
     </View>
   );
