@@ -146,7 +146,10 @@ export default function BibleVersionsScreen() {
                   />
                 ) : (
                   <TouchableOpacity
-                    onPress={() => void handleInstallVersion(entry.id)}
+                    onPress={(e) => {
+                      e.stopPropagation();
+                      void handleInstallVersion(entry.id);
+                    }}
                     disabled={entry.isDownloading}
                     className={`items-center justify-center rounded-full p-2.5 ${
                       entry.isDownloading ? 'bg-gray-300 dark:bg-neutral-700' : 'bg-blue-600'
@@ -162,7 +165,9 @@ export default function BibleVersionsScreen() {
                 {entry.canDelete ? (
                   <TouchableOpacity
                     className="mt-2 flex-row items-center"
-                    onPress={() => {
+                    onPress={(e) => {
+                      e.stopPropagation();
+
                       Alert.alert(
                         'Remove version',
                         entry.isActive
