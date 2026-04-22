@@ -570,21 +570,15 @@ export default function DevotionalPlanReader({
             ) : last ? (
               <View className="ml-8">
                 <TouchableOpacity
-                  onPress={() =>
-                    toggleItem.mutate(
-                      {
-                        item_id: item?.id || '',
-                        item_type: item?.item_type as 'devotional' | 'scripture',
-                        item_key: item?.item_key || '',
-                        completed: true,
-                      },
-                      {
-                        onSettled: async () => {
-                          router.back();
-                        },
-                      },
-                    )
-                  }
+                  onPress={() => {
+                    toggleItem.mutate({
+                      item_id: item?.id || '',
+                      item_type: item?.item_type as 'devotional' | 'scripture',
+                      item_key: item?.item_key || '',
+                      completed: true,
+                    });
+                    router.back();
+                  }}
                   className="rounded-full p-2 border border-white bg-green-500">
                   <Ionicons name="checkmark" size={12} color="white" />
                 </TouchableOpacity>
@@ -593,19 +587,13 @@ export default function DevotionalPlanReader({
               <TouchableOpacity
                 className="py-1 ml-8"
                 onPress={() => {
-                  toggleItem.mutate(
-                    {
-                      item_id: item?.id || '',
-                      item_type: item?.item_type as 'devotional' | 'scripture',
-                      item_key: item?.item_key || '',
-                      completed: true,
-                    },
-                    {
-                      onSettled: () => {
-                        HandleNext(item.id);
-                      },
-                    },
-                  );
+                  toggleItem.mutate({
+                    item_id: item?.id || '',
+                    item_type: item?.item_type as 'devotional' | 'scripture',
+                    item_key: item?.item_key || '',
+                    completed: true,
+                  });
+                  HandleNext(item.id);
                 }}>
                 <Ionicons name="chevron-forward" size={20} color="white" />
               </TouchableOpacity>

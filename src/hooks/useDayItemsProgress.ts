@@ -137,7 +137,6 @@ export function useDayItemsProgress({ user_id, plan_id, progress_id, day_id, gro
       };
     },
     onError: (error, _variables, context) => {
-      console.error('Error toggling item completion:', error);
       if (!context) return;
 
       if (context.previousDayItems === undefined) {
