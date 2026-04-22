@@ -20,7 +20,22 @@ export type ChurchUpdate = Database['public']['Tables']['churches']['Update'];
 
 export type ProfileChurch = Pick<Church, 'id' | 'name' | 'address' | 'website_url'>;
 
-export type ProfileWithChurch = Pick<
+export type ProfileLocationSource = 'device' | 'ip';
+
+export type ProfileLocation = {
+  source: ProfileLocationSource;
+  latitude: number | null;
+  longitude: number | null;
+  accuracy_meters: number | null;
+  city: string | null;
+  region: string | null;
+  country: string | null;
+  country_code: string | null;
+  timezone: string | null;
+  captured_at: string;
+};
+
+type ProfileWithChurchBase = Pick<
   Profiles,
   | 'id'
   | 'email'
@@ -30,7 +45,11 @@ export type ProfileWithChurch = Pick<
   | 'bio'
   | 'year_believed'
   | 'year_baptized'
-> & {
+  | 'location'
+>;
+
+export type ProfileWithChurch = Omit<ProfileWithChurchBase, 'location'> & {
+  location: ProfileLocation | null;
   church: ProfileChurch | null;
 };
 

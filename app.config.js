@@ -79,6 +79,13 @@ export default ({ config }) => ({
     plugins: [
       'expo-router',
       [
+        'expo-location',
+        {
+          locationWhenInUsePermission:
+            'Allow $(PRODUCT_NAME) to use your location for nearby features and local defaults.',
+        },
+      ],
+      [
         'expo-splash-screen',
         {
           image: './assets/images/splash-icon.png',

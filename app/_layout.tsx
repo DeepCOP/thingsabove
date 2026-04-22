@@ -26,6 +26,7 @@ import { usePushNotifications } from '@/src/hooks/usePushNotifications';
 import { useRealtimeFriends } from '@/src/hooks/useRealtimeFriends';
 import { useRealtimeNotifications } from '@/src/hooks/useRealtimeNotifications';
 import { useThemePreference } from '@/src/hooks/useThemePreference';
+import { useUserLocation } from '@/src/hooks/useUserLocation';
 import { mutationQueue } from '@/src/lib/mutationQueue';
 import { QueryProviderWrapper } from '@/src/lib/queryClient';
 import { supabase } from '@/src/lib/supabaseClient';
@@ -68,6 +69,7 @@ function RootLayoutContent() {
   const PandingFriendsQuery = usePendingFriendRequests(session?.user.id);
 
   usePushNotifications();
+  useUserLocation();
   const handleNotificationsNew = useCallback(() => {
     notificationsQuery.refetch();
     notificationsCountQuery.refetch();

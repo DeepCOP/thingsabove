@@ -1220,6 +1220,7 @@ export type Database = {
           church_id: string | null;
           church_joined_at: string | null;
           created_at: string | null;
+          location: Json | null;
           email: string;
           expo_push_token: string | null;
           first_name: string;
@@ -1240,6 +1241,7 @@ export type Database = {
           church_id?: string | null;
           church_joined_at?: string | null;
           created_at?: string | null;
+          location?: Json | null;
           email: string;
           expo_push_token?: string | null;
           first_name: string;
@@ -1260,6 +1262,7 @@ export type Database = {
           church_id?: string | null;
           church_joined_at?: string | null;
           created_at?: string | null;
+          location?: Json | null;
           email?: string;
           expo_push_token?: string | null;
           first_name?: string;

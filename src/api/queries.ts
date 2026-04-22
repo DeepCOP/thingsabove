@@ -1,5 +1,5 @@
 import { supabase } from '../lib/supabaseClient';
-import { ProfileWithChurch } from '../types/types';
+import { ProfileLocation, ProfileWithChurch } from '../types/types';
 
 export const searchRelatedPlans = async (currentPlanId: string, tags: string[]) => {
   if (!tags.length) return [];
@@ -301,6 +301,22 @@ export const getProfile = async (userId: string) => {
   }
 
   return data as ProfileWithChurch;
+};
+
+export const resolveApproximateLocationFromIp = async () => {
+  const { data, error } = await supabase.functions.invoke('resolve-ip-location');
+
+  if (error) {
+    throw error;
+  }
+
+  const location = data?.location as ProfileLocation | undefined;
+
+  if (!location) {
+    throw new Error('Approximate location not found');
+  }
+
+  return location;
 };
 
 export const searchChurches = async (query: string) => {

@@ -2,6 +2,7 @@ import { getCurrentDeviceExpoPushToken } from '../lib/pushToken';
 import { supabase } from '../lib/supabaseClient';
 import {
   PlanProgress,
+  ProfileLocation,
   SignUpAboutDetailsInput,
   SignUpProfileInput,
   UpdateProfileInput,
@@ -373,6 +374,27 @@ export const clearPushNotificationSetup = async (userId?: string) => {
     .update({ expo_push_token: null })
     .eq('id', userId)
     .eq('expo_push_token', currentDeviceToken);
+};
+
+export const saveUserLocation = async ({
+  userId,
+  location,
+}: {
+  userId: string;
+  location: ProfileLocation;
+}) => {
+  const { error } = await supabase
+    .from('profiles')
+    .update({
+      location,
+      updated_at: new Date().toISOString(),
+      ...(location.timezone ? { timezone: location.timezone } : {}),
+    })
+    .eq('id', userId);
+
+  if (error) throw error;
+
+  return location;
 };
 
 export const upsertPlanRating = async ({ planId, rating }: { planId: string; rating: number }) => {
