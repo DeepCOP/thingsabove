@@ -1,6 +1,6 @@
 import BibleReaderView from '@/src/screens/BibleReaderViewScreen';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { Tabs, useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { useRef } from 'react';
 import { ActivityIndicator, Animated, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -10,9 +10,6 @@ export default function BibleTab() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const headerY = useRef(new Animated.Value(0)).current; // 0 shown, -80 hidden
-  const tabY = useRef(new Animated.Value(0)).current; // 0 shown, 80 hidden
-  const TAB_BAR_HEIGHT = 56;
-  const hideDistance = Math.abs(TAB_BAR_HEIGHT);
 
   const { loadingVersionId, version } = useBible();
 
@@ -30,12 +27,6 @@ export default function BibleTab() {
         duration: 150,
         useNativeDriver: true,
       }).start();
-
-      Animated.timing(tabY, {
-        toValue: 0,
-        duration: 150,
-        useNativeDriver: true,
-      }).start();
     }
     // SCROLLING DOWN → hide immediately
     else if (y > last) {
@@ -44,22 +35,10 @@ export default function BibleTab() {
         duration: 150,
         useNativeDriver: true,
       }).start();
-
-      Animated.timing(tabY, {
-        toValue: hideDistance,
-        duration: 150,
-        useNativeDriver: true,
-      }).start();
     }
     // SCROLLING UP → show
     else if (y < last) {
       Animated.timing(headerY, {
-        toValue: 0,
-        duration: 150,
-        useNativeDriver: true,
-      }).start();
-
-      Animated.timing(tabY, {
         toValue: 0,
         duration: 150,
         useNativeDriver: true,
@@ -119,26 +98,9 @@ export default function BibleTab() {
   return (
     <>
       {/* TOP NAV BAR */}
-      <Tabs.Screen
-        options={{
-          headerStyle: {
-            transform: [{ translateY: headerY }],
-          },
-          tabBarStyle: {
-            transform: [{ translateY: tabY }],
-            position: 'absolute',
-            elevation: 0,
-            height: TAB_BAR_HEIGHT + insets.bottom,
-          },
-          title: 'bible',
-
-          headerTitleAlign: 'center',
-          headerShadowVisible: false,
-        }}
-      />
       <AnimatedHeader headerTranslateY={headerY} />
 
-      <BibleReaderView onScroll={onScroll} headerTranslateY={tabY} />
+      <BibleReaderView onScroll={onScroll} />
     </>
   );
 }
