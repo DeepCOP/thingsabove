@@ -44,6 +44,20 @@ export default function TabLayout() {
           }}
         />
         <Tabs.Screen
+          name="BibleTab"
+          options={{
+            title: 'Bible',
+
+            headerShown: false,
+
+            tabBarIcon: ({ focused, color, size }) => {
+              return (
+                <Ionicons name={`${focused ? 'book' : 'book-outline'}`} size={size} color={color} />
+              );
+            },
+          }}
+        />
+        <Tabs.Screen
           name="CommunityTab"
           options={{
             title: 'Community',
@@ -55,20 +69,6 @@ export default function TabLayout() {
                   size={size}
                   color={color}
                 />
-              );
-            },
-          }}
-        />
-        <Tabs.Screen
-          name="BibleTab"
-          options={{
-            title: 'Bible',
-
-            headerShown: false,
-
-            tabBarIcon: ({ focused, color, size }) => {
-              return (
-                <Ionicons name={`${focused ? 'book' : 'book-outline'}`} size={size} color={color} />
               );
             },
           }}
