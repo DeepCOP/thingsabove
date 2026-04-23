@@ -1,4 +1,5 @@
 import { useComments } from '@/src/hooks/useComments';
+import dayjs from '@/src/lib/dayjs';
 import { Ionicons } from '@expo/vector-icons';
 import BottomSheet, {
   BottomSheetBackdrop,
@@ -6,7 +7,6 @@ import BottomSheet, {
   BottomSheetTextInput,
   BottomSheetView,
 } from '@gorhom/bottom-sheet';
-import dayjs from 'dayjs';
 import { forwardRef, useMemo, useState } from 'react';
 import { Text, TouchableOpacity, useColorScheme, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';

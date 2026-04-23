@@ -1,7 +1,7 @@
 import LoadingSpinner from '@/src/components/LoadingSpinner';
+import dayjs from '@/src/lib/dayjs';
 import { Json } from '@/src/types/supabase.gen.types';
 import { Ionicons } from '@expo/vector-icons';
-import dayjs from 'dayjs';
 import { FlatList, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { GetMyNotifications } from '../types/types';

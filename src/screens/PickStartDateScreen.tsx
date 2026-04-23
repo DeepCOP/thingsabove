@@ -1,6 +1,6 @@
 import DaysPicker from '@/src/components/DaysPicker';
+import dayjs, { type Dayjs } from '@/src/lib/dayjs';
 import { Ionicons } from '@expo/vector-icons';
-import dayjs, { Dayjs } from 'dayjs';
 import { Image, ScrollView, Text, TouchableOpacity, useColorScheme, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -21,7 +21,7 @@ export default function PickStartDateScreen({
 }: Props) {
   const insets = useSafeAreaInsets();
   const colorScheme = useColorScheme();
-  const startDate = dayjs().utc().startOf('day');
+  const startDate = dayjs().startOf('day');
 
   return (
     <View className="flex-1 dark:bg-black items-center" style={{ paddingBottom: insets.bottom }}>

@@ -4,6 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useDayItemsProgress } from '@/src/hooks/useDayItemsProgress';
 import { useFetchDevotionalPlanById } from '@/src/hooks/useDevotionalPlans';
 import { useDevotionalDays, usePlanProgress } from '@/src/hooks/usePlanProgress';
+import dayjs from '@/src/lib/dayjs';
 import { useAuth } from '@/src/state/AuthContext';
 import { useAppStore } from '@/src/state/useAppStore';
 import {
@@ -12,8 +13,6 @@ import {
   sortByItemKey,
 } from '@/src/utils';
 import { useQueryClient } from '@tanstack/react-query';
-import dayjs from 'dayjs';
-import utc from 'dayjs/plugin/utc';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
@@ -22,8 +21,6 @@ import { usePlanGroupMembers } from '@/src/hooks/usePlanGroup';
 import PlanProgressScreen from '@/src/screens/PlanProgressScreen';
 import { DayItemsProgress } from '@/src/types/types';
 import { Platform, Text, useColorScheme, View } from 'react-native';
-
-dayjs.extend(utc);
 
 export default function PlanProgress() {
   const colorScheme = useColorScheme();
@@ -45,14 +42,14 @@ export default function PlanProgress() {
   const planQuery = useFetchDevotionalPlanById(planProgress?.plan_id as string);
   const plan = planQuery.data;
   const [selectedDayNumber, setSelectedDay] = useState<number>(1);
+  const today = dayjs().startOf('day');
+  const planStartDate = planProgress?.start_date
+    ? dayjs(planProgress.start_date).startOf('day')
+    : null;
 
-  const currentDayData = days?.find(
-    (d) =>
-      dayjs(planProgress?.start_date)
-        .startOf('day')
-        .add(d.day_number - 1, 'day')
-        .format('MMM DD') === dayjs().startOf('day').format('MMM DD'),
-  );
+  const currentDayData = planStartDate
+    ? days?.find((d) => planStartDate.add(d.day_number - 1, 'day').isSame(today, 'day'))
+    : undefined;
 
   const selectedDay = days?.find((d) => d.day_number === selectedDayNumber);
 
@@ -129,7 +126,7 @@ export default function PlanProgress() {
   }, [currentDayData]);
 
   const missedDays = useMemo(() => {
-    if (!planProgress || !plan) return null;
+    if (!planProgress || !plan || !planStartDate) return null;
     return days?.filter((d) => {
       if (currentDayData) {
         return (
@@ -140,12 +137,10 @@ export default function PlanProgress() {
 
       return (
         !planProgress?.completed_days?.includes(d.day_number) &&
-        dayjs(planProgress.start_date)
-          .add(d.day_number - 1, 'day')
-          .diff(dayjs().utc().startOf('day'), 'day') < 0
+        planStartDate.add(d.day_number - 1, 'day').diff(today, 'day') < 0
       );
     });
-  }, [planProgress, currentDayData, plan]);
+  }, [planProgress, currentDayData, plan, planStartDate, today.valueOf(), days]);
 
   function handleItemPress(item: DayItemsProgress) {
     router.push({

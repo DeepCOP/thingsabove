@@ -1,5 +1,5 @@
+import dayjs from '@/src/lib/dayjs';
 import { Ionicons } from '@expo/vector-icons';
-import dayjs from 'dayjs';
 import { FlatList, Text, TouchableOpacity, useColorScheme, View } from 'react-native';
 
 type MissedDay = {

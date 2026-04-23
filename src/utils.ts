@@ -1,10 +1,6 @@
 import { ParsedVerse } from '@/src/types/types';
-import dayjs from 'dayjs';
-import utc from 'dayjs/plugin/utc';
 import { useEffect, useState } from 'react';
 import { Linking } from 'react-native';
-
-export const utcdayjs = dayjs.extend(utc);
 
 const normalizeScriptureBook = (value: string) =>
   value.replace(/_/g, ' ').replace(/\s+/g, ' ').trim();

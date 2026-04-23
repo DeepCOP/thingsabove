@@ -2,15 +2,12 @@ import LoadingSpinner from '@/src/components/LoadingSpinner';
 import { useFetchDevotionalPlanById } from '@/src/hooks/useDevotionalPlans';
 import { useAcceptPlanInvite, useDeclinePlanInvite } from '@/src/hooks/useInviteFriends';
 import { usePlanGroupInvitation, usePlanGroupInvitationMembers } from '@/src/hooks/usePlanGroup';
+import dayjs from '@/src/lib/dayjs';
 import PlanInvitationScreen from '@/src/screens/PlanInvitationScreen';
 import { useAuth } from '@/src/state/AuthContext';
-import dayjs from 'dayjs';
-import utc from 'dayjs/plugin/utc';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
-
-dayjs.extend(utc);
 
 export default function PlanInvitation() {
   const { groupId, id } = useLocalSearchParams<{
@@ -57,8 +54,8 @@ export default function PlanInvitation() {
     );
   }
 
-  const today = dayjs().utc().startOf('day');
-  const startDate = dayjs(group?.start_date);
+  const today = dayjs().startOf('day');
+  const startDate = group?.start_date ? dayjs(group.start_date).startOf('day') : today;
 
   const diffDays = startDate.diff(today, 'day');
   const startDateLabel =
@@ -91,7 +88,7 @@ export default function PlanInvitation() {
 
         acceptMutation.mutate(
           {
-            startDate: group?.start_date ?? dayjs().utc().toISOString(),
+            startDate: group?.start_date ?? dayjs().toISOString(),
           },
           {
             onSuccess: (progress) => {
