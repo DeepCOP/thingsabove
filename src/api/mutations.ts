@@ -86,6 +86,22 @@ export const startPlanProgress = async ({
   return data as PlanProgress;
 };
 
+export const stopPlanProgress = async ({
+  user_id,
+  progress_id,
+}: {
+  user_id: string;
+  progress_id: string;
+}) => {
+  const { error } = await (supabase as any).rpc('stop_plan_progress', {
+    p_progress_id: progress_id,
+  });
+
+  if (error) throw error;
+
+  return { progress_id, user_id };
+};
+
 export const addPlanDayComment = async ({
   planId,
   dayId,
