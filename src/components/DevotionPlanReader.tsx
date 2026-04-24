@@ -28,15 +28,15 @@ import { DayItemsProgress } from '../types/types';
 import { parseVerseRef } from '../utils';
 
 export default function DevotionalPlanReader({
-  onScroll,
   headerTranslateY,
   item,
   HandleNext,
+  first,
   last,
   HandlePrevious,
   toggleItem,
 }: {
-  onScroll?: (...args: any[]) => void;
+  first: boolean;
   last: boolean;
   headerTranslateY?: Animated.AnimatedInterpolation<string | number>;
   item: DayItemsProgress;
@@ -152,7 +152,7 @@ export default function DevotionalPlanReader({
     return () => {
       cancelled = true;
     };
-  }, [selectedBook.bookId, selectedBook.chapter, selectedBook.verseStart]);
+  }, [selectedBook.bookId, selectedBook.chapter, selectedBook.verseStart, item.id]);
 
   const getSelectedRange = () => {
     if (!selectedBook?.verseStart) return '';
@@ -227,6 +227,7 @@ export default function DevotionalPlanReader({
     item?.item_type === 'scripture' && (hasUnavailableScriptureReference || !verses);
   const canGoToPreviousBookChapter = isWholeBookReference && chapterNumber > 1;
   const canGoToNextBookChapter = isWholeBookReference && chapterNumber < chapterCount;
+  const canGoBack = canGoToPreviousBookChapter || !first;
 
   const contextMenuStyle = useMemo(() => {
     const menuWidth = 220;
@@ -435,11 +436,7 @@ export default function DevotionalPlanReader({
             </Text>
           </View>
         ) : (
-          <Animated.ScrollView
-            scrollEventThrottle={16}
-            onScroll={onScroll}
-            ref={scrollRef}
-            className="px-5 mb-20">
+          <Animated.ScrollView scrollEventThrottle={16} ref={scrollRef} className="px-5 mb-20">
             <View className="justify-center items-center pb-16 gap-4">
               <Text className="text-center text-primary dark:text-gray-100 text-lg pt-28 font-MerriWeather300Light">
                 {currentBookName}
@@ -511,105 +508,81 @@ export default function DevotionalPlanReader({
           translateY={headerTranslateY || 0}
           bottom={0}
           paddingBottom={insets.bottom}
-          barPaddingHorizontal={16}
-          left={
-            <TouchableOpacity
-              className="py-1 mr-8"
-              onPress={() => {
-                if (canGoToPreviousBookChapter) {
-                  setSelectedBook({
-                    bookId: currentBookId,
-                    chapter: chapterNumber - 1,
-                  });
-                  return;
-                }
+          leftAction={{
+            icon: 'chevron-back',
+            disabled: !canGoBack,
+            onPress: () => {
+              if (!canGoBack) return;
 
-                HandlePrevious(item.id);
-              }}>
-              <Ionicons name="chevron-back" size={20} color="white" />
-            </TouchableOpacity>
+              if (canGoToPreviousBookChapter) {
+                setSelectedBook({
+                  bookId: currentBookId,
+                  chapter: chapterNumber - 1,
+                });
+                return;
+              }
+
+              HandlePrevious(item.id);
+            },
+          }}
+          centerAction={
+            isDevotionalItem
+              ? {
+                  label: 'Devotional',
+                }
+              : showScriptureUnavailableFallback
+                ? {
+                    label: 'Scripture unavailable',
+                    muted: true,
+                  }
+                : {
+                    label: `${currentBookName} ${selectedBook.chapter}`,
+                    onPress: () =>
+                      router.push({
+                        pathname: '/bible/[book]',
+                        params: {
+                          book: currentBookId,
+                        },
+                      }),
+                  }
           }
-          center={
-            isDevotionalItem ? (
-              <TouchableOpacity className="px-2 py-1">
-                <Text className="text-white font-semibold mx-4">Devotional</Text>
-              </TouchableOpacity>
-            ) : showScriptureUnavailableFallback ? (
-              <TouchableOpacity disabled>
-                <Text className="mx-4 font-semibold text-white/70">Scripture unavailable</Text>
-              </TouchableOpacity>
-            ) : (
-              <TouchableOpacity
-                className="px-2 py-1"
-                onPress={() =>
-                  router.push({
-                    pathname: '/bible/[book]',
-                    params: {
-                      book: currentBookId,
-                    },
-                  })
-                }>
-                <Text className="text-white font-semibold mx-4">
-                  {`${currentBookName} ${selectedBook.chapter}`}
-                </Text>
-              </TouchableOpacity>
-            )
-          }
-          right={
-            canGoToNextBookChapter ? (
-              <TouchableOpacity
-                className="py-1 ml-8"
-                onPress={() => {
-                  setSelectedBook({
-                    bookId: currentBookId,
-                    chapter: chapterNumber + 1,
-                  });
-                }}>
-                <Ionicons name="chevron-forward" size={20} color="white" />
-              </TouchableOpacity>
-            ) : last ? (
-              <View className="ml-8">
-                <TouchableOpacity
-                  onPress={() =>
-                    toggleItem.mutate(
-                      {
+          rightAction={
+            canGoToNextBookChapter
+              ? {
+                  icon: 'chevron-forward',
+                  onPress: () => {
+                    setSelectedBook({
+                      bookId: currentBookId,
+                      chapter: chapterNumber + 1,
+                    });
+                  },
+                }
+              : last
+                ? {
+                    icon: 'checkmark',
+                    variant: 'complete',
+                    onPress: () => {
+                      toggleItem.mutate({
                         item_id: item?.id || '',
                         item_type: item?.item_type as 'devotional' | 'scripture',
                         item_key: item?.item_key || '',
                         completed: true,
-                      },
-                      {
-                        onSettled: async () => {
-                          router.back();
-                        },
-                      },
-                    )
+                      });
+                      router.back();
+                    },
                   }
-                  className="rounded-full p-2 border border-white bg-green-500">
-                  <Ionicons name="checkmark" size={12} color="white" />
-                </TouchableOpacity>
-              </View>
-            ) : (
-              <TouchableOpacity
-                className="py-1 ml-8"
-                onPress={() => {
-                  toggleItem.mutate(
-                    {
-                      item_id: item?.id || '',
-                      item_type: item?.item_type as 'devotional' | 'scripture',
-                      item_key: item?.item_key || '',
-                      completed: true,
+                : {
+                    icon: 'chevron-forward',
+                    onPress: () => {
+                      toggleItem.mutate({
+                        item_id: item?.id || '',
+                        item_type: item?.item_type as 'devotional' | 'scripture',
+                        item_key: item?.item_key || '',
+                        completed: true,
+                      });
+                      HandleNext(item.id);
                     },
-                    {
-                      onSettled: () => {
-                        HandleNext(item.id);
-                      },
-                    },
-                  );
-                }}>
-                <Ionicons name="chevron-forward" size={20} color="white" />
-              </TouchableOpacity>
-            )
+                  }
           }
         />
         <ScriptureSelectionMenu

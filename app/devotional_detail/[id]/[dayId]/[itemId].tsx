@@ -60,6 +60,7 @@ export default function DevotionalDayScreen() {
   };
   const items = dayItemsProgress?.items ?? [];
   const item = items.find((entry) => entry.id === activeItemId) ?? items[0];
+  const first = !!item && items.length > 0 && items[0]?.id === item.id;
   const last = !!item && items.length > 0 && items[items.length - 1]?.id === item.id;
   if (dayItemsProgressQuery.isLoading) {
     return <LoadingSpinner />;
@@ -79,6 +80,7 @@ export default function DevotionalDayScreen() {
           item={item}
           HandleNext={HandleNext}
           HandlePrevious={HandlePrevious}
+          first={first}
           last={last}
           toggleItem={toggleMutation}
         />

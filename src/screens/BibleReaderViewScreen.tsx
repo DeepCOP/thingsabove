@@ -2,7 +2,6 @@ import { findBookInBible, getBibleDotComBookCode, getBookNameForId } from '@/src
 import ReaderBottomBar from '@/src/components/ReaderBottomBar';
 import ScriptureSelectionMenu from '@/src/components/ScriptureSelectionMenu';
 import { useAppStore } from '@/src/state/useAppStore';
-import Ionicons from '@expo/vector-icons/Ionicons';
 import * as Clipboard from 'expo-clipboard';
 import { useRouter } from 'expo-router';
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -211,6 +210,11 @@ export default function BibleReaderView({
   const chapterNumber = Number(selectedBook.chapter);
   const verses = currentBook?.chapters.find((chapter) => chapter.chapter === chapterNumber)?.verses;
   const selectedVerseRange = getSelectedVerseRange();
+  const hasBibleChapter = currentBookIndex >= 0 && chapterCount > 0;
+  const isFirstBibleChapter = !hasBibleChapter || (currentBookIndex === 0 && chapterNumber <= 1);
+  const isLastBibleChapter =
+    !hasBibleChapter ||
+    (currentBookIndex === bible.books.length - 1 && chapterNumber >= chapterCount);
 
   return (
     <>
@@ -277,55 +281,49 @@ export default function BibleReaderView({
         <ReaderBottomBar
           translateY={headerTranslateY}
           bottom={56 + insets.bottom}
-          barPaddingHorizontal={24}
-          left={
-            <TouchableOpacity
-              className="py-1 mr-8"
-              onPress={() => {
-                if (chapterNumber === 1) {
-                  const previousBook =
-                    currentBookIndex > 0 ? bible.books[currentBookIndex - 1] : null;
-                  if (previousBook) {
-                    const lastChapterNumber = previousBook.chapters.length || 1;
-                    setSelectedBook({ bookId: previousBook.id, chapter: lastChapterNumber });
-                    setSelectedVerse([]);
-                  }
-                  return;
+          leftAction={{
+            icon: 'chevron-back',
+            disabled: isFirstBibleChapter,
+            onPress: () => {
+              if (isFirstBibleChapter) return;
+
+              if (chapterNumber === 1) {
+                const previousBook =
+                  currentBookIndex > 0 ? bible.books[currentBookIndex - 1] : null;
+                if (previousBook) {
+                  const lastChapterNumber = previousBook.chapters.length || 1;
+                  setSelectedBook({ bookId: previousBook.id, chapter: lastChapterNumber });
+                  setSelectedVerse([]);
                 }
-                setSelectedBook({ bookId: currentBookId, chapter: chapterNumber - 1 });
-                setSelectedVerse([]);
-              }}>
-              <Ionicons name="chevron-back" size={20} color="white" />
-            </TouchableOpacity>
-          }
-          center={
-            <TouchableOpacity
-              className="px-2 py-1"
-              onPress={() => router.push(`/bible/${currentBookId}`)}>
-              <Text className="text-white font-semibold mx-4">
-                {currentBookName} {selectedBook.chapter}
-              </Text>
-            </TouchableOpacity>
-          }
-          right={
-            <TouchableOpacity
-              className="py-1 ml-8"
-              onPress={() => {
-                if (chapterNumber === chapterCount) {
-                  const nextBook =
-                    currentBookIndex >= 0 ? bible.books[currentBookIndex + 1] : undefined;
-                  if (nextBook) {
-                    setSelectedBook({ bookId: nextBook.id, chapter: 1 });
-                    setSelectedVerse([]);
-                  }
-                  return;
+                return;
+              }
+              setSelectedBook({ bookId: currentBookId, chapter: chapterNumber - 1 });
+              setSelectedVerse([]);
+            },
+          }}
+          centerAction={{
+            label: `${currentBookName} ${selectedBook.chapter}`,
+            onPress: () => router.push(`/bible/${currentBookId}`),
+          }}
+          rightAction={{
+            icon: 'chevron-forward',
+            disabled: isLastBibleChapter,
+            onPress: () => {
+              if (isLastBibleChapter) return;
+
+              if (chapterNumber === chapterCount) {
+                const nextBook =
+                  currentBookIndex >= 0 ? bible.books[currentBookIndex + 1] : undefined;
+                if (nextBook) {
+                  setSelectedBook({ bookId: nextBook.id, chapter: 1 });
+                  setSelectedVerse([]);
                 }
-                setSelectedBook({ bookId: currentBookId, chapter: chapterNumber + 1 });
-                setSelectedVerse([]);
-              }}>
-              <Ionicons name="chevron-forward" size={20} color="white" />
-            </TouchableOpacity>
-          }
+                return;
+              }
+              setSelectedBook({ bookId: currentBookId, chapter: chapterNumber + 1 });
+              setSelectedVerse([]);
+            },
+          }}
         />
         <ScriptureSelectionMenu
           visible={showMenu}
