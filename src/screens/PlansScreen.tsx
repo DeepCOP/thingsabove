@@ -2,10 +2,10 @@ import Dropdown from '@/src/components/DropDown';
 import { MyPlansToggle } from '@/src/components/MyPlansToggle';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Text, TouchableOpacity, useColorScheme, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import FindPlansList from '../components/plansList/FindPlansList';
 import MyPlansList from '../components/plansList/MyPlansList';
 import SavedPlansList from '../components/plansList/SavedPlansList';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 type Props = {
   isGrid: boolean;
@@ -58,11 +58,7 @@ export default function PlansScreen({
         <View className="flex-row items-center gap-4">
           {isAuthenticated && (
             <TouchableOpacity onPress={onPrayerBoard}>
-              <Ionicons
-                name="heart-outline"
-                size={22}
-                color={colorScheme === 'dark' ? '#fff' : '#222'}
-              />
+              <Text className="text-base">🙏</Text>
             </TouchableOpacity>
           )}
           {isAuthenticated && (
