@@ -1,9 +1,15 @@
 /* eslint-disable react-hooks/exhaustive-deps */
+import Ionicons from '@expo/vector-icons/Ionicons';
+import { useHeaderHeight } from '@react-navigation/elements';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useDayItemsProgress } from '@/src/hooks/useDayItemsProgress';
 import { useFetchDevotionalPlanById } from '@/src/hooks/useDevotionalPlans';
-import { useDevotionalDays, usePlanProgress } from '@/src/hooks/usePlanProgress';
+import {
+  useDevotionalDays,
+  usePlanProgress,
+  useStopPlanProgress,
+} from '@/src/hooks/usePlanProgress';
 import dayjs from '@/src/lib/dayjs';
 import { useAuth } from '@/src/state/AuthContext';
 import { useAppStore } from '@/src/state/useAppStore';
@@ -20,12 +26,23 @@ import LoadingSpinner from '@/src/components/LoadingSpinner';
 import { usePlanGroupMembers } from '@/src/hooks/usePlanGroup';
 import PlanProgressScreen from '@/src/screens/PlanProgressScreen';
 import { DayItemsProgress } from '@/src/types/types';
-import { Platform, Text, useColorScheme, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Alert,
+  Modal,
+  Platform,
+  Pressable,
+  Text,
+  TouchableOpacity,
+  useColorScheme,
+  View,
+} from 'react-native';
 
 export default function PlanProgress() {
   const colorScheme = useColorScheme();
 
   const insets = useSafeAreaInsets();
+  const headerHeight = useHeaderHeight();
   const { progressId } = useLocalSearchParams();
   const router = useRouter();
   const qc = useQueryClient();
@@ -42,6 +59,8 @@ export default function PlanProgress() {
   const planQuery = useFetchDevotionalPlanById(planProgress?.plan_id as string);
   const plan = planQuery.data;
   const [selectedDayNumber, setSelectedDay] = useState<number>(1);
+  const [menuVisible, setMenuVisible] = useState(false);
+  const stopPlanProgressMutation = useStopPlanProgress();
   const today = dayjs().startOf('day');
   const planStartDate = planProgress?.start_date
     ? dayjs(planProgress.start_date).startOf('day')
@@ -155,6 +174,39 @@ export default function PlanProgress() {
     });
   }
 
+  function handleStopPlanPress() {
+    const userId = session?.user?.id;
+    const targetProgressId = planProgress?.id;
+
+    if (!userId || !targetProgressId) return;
+
+    Alert.alert(
+      'Stop plan?',
+      'This will delete your progress for this plan. You can start it again later.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Stop Plan',
+          style: 'destructive',
+          onPress: () => {
+            stopPlanProgressMutation.mutate(
+              { user_id: userId, progress_id: targetProgressId },
+              {
+                onSuccess: () => {
+                  router.replace('/(tabs)/PlansTab');
+                },
+                onError: (error) => {
+                  console.error('Error stopping plan:', error);
+                  Alert.alert('Unable to stop plan', 'Please try again.');
+                },
+              },
+            );
+          },
+        },
+      ],
+    );
+  }
+
   if (planProgressQuery.isLoading || daysQuery.isLoading || planQuery.isLoading || sessionLoading) {
     return <LoadingSpinner />;
   }
@@ -187,6 +239,24 @@ export default function PlanProgress() {
                   ? 'rgba(0, 0, 0, 0.65)'
                   : 'rgba(255, 255, 255, 0.65)',
           },
+          headerRight: () => (
+            <TouchableOpacity
+              accessibilityRole="button"
+              accessibilityLabel="Open plan options"
+              className="h-10 w-10 items-center justify-center"
+              disabled={stopPlanProgressMutation.isPending}
+              onPress={() => setMenuVisible(true)}>
+              {stopPlanProgressMutation.isPending ? (
+                <ActivityIndicator size="small" color={colorScheme === 'dark' ? '#fff' : '#111'} />
+              ) : (
+                <Ionicons
+                  name="ellipsis-vertical"
+                  size={22}
+                  color={colorScheme === 'dark' ? '#fff' : '#111'}
+                />
+              )}
+            </TouchableOpacity>
+          ),
         }}
       />
 
@@ -235,6 +305,35 @@ export default function PlanProgress() {
         }}
         devotionalItem={devotional}
       />
+
+      <Modal
+        visible={menuVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setMenuVisible(false)}>
+        <Pressable className="absolute inset-0 bg-black/10" onPress={() => setMenuVisible(false)} />
+
+        <View style={{ position: 'absolute', top: headerHeight + 8, right: 16 }}>
+          <View className="min-w-44 overflow-hidden rounded-2xl border border-neutral-200 bg-white dark:border-neutral-700 dark:bg-neutral-900">
+            <TouchableOpacity
+              disabled={stopPlanProgressMutation.isPending}
+              className={`flex-row items-center px-4 py-3 ${
+                stopPlanProgressMutation.isPending ? 'opacity-60' : ''
+              }`}
+              onPress={() => {
+                setMenuVisible(false);
+                handleStopPlanPress();
+              }}>
+              {stopPlanProgressMutation.isPending ? (
+                <ActivityIndicator size="small" color="#dc2626" />
+              ) : (
+                <Ionicons name="trash-outline" size={22} color="#dc2626" />
+              )}
+              <Text className="ml-3 text-base font-semibold text-red-600">Stop Plan</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </>
   );
 }

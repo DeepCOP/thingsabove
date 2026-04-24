@@ -5,7 +5,7 @@ import {
   fetchPlanProgress,
 } from '@/src/api/queries';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { startPlanProgress } from '../api/mutations';
+import { startPlanProgress, stopPlanProgress } from '../api/mutations';
 
 export function usePlanProgress(progress_id: string, user_id: string | undefined) {
   const planProgressQuery = useQuery({
@@ -29,6 +29,37 @@ export function useStartPlanProgress() {
       queryClient.setQueryData(['has_user_plan_progress', variables.user_id], true);
       queryClient.invalidateQueries({
         queryKey: ['my_plan_progress_plans', variables.user_id],
+      });
+    },
+  });
+}
+
+export function useStopPlanProgress() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: stopPlanProgress,
+    onSuccess: (_result, variables) => {
+      queryClient.removeQueries({
+        queryKey: ['plan_progress', variables.progress_id, variables.user_id],
+        exact: true,
+      });
+      queryClient.removeQueries({
+        queryKey: ['day_items_progress', variables.user_id, variables.progress_id],
+      });
+      queryClient.setQueryData(['my_plan_progress_plans', variables.user_id], (old: unknown) => {
+        if (!Array.isArray(old)) return old;
+
+        return old.filter((item) => {
+          const progress = item as { progress_id?: string | null };
+          return progress.progress_id !== variables.progress_id;
+        });
+      });
+      queryClient.invalidateQueries({
+        queryKey: ['my_plan_progress_plans', variables.user_id],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ['has_user_plan_progress', variables.user_id],
       });
     },
   });
