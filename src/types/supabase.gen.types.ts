@@ -1035,6 +1035,176 @@ export type Database = {
           },
         ];
       };
+      plan_screening_runs: {
+        Row: {
+          completed_at: string | null;
+          confidence: number | null;
+          created_at: string;
+          decision: string;
+          id: string;
+          model: string;
+          prompt_version: string;
+          provider: string;
+          raw_response: Json | null;
+          reason_codes: string[];
+          scores: Json;
+          submission_id: string;
+          summary: string | null;
+        };
+        Insert: {
+          completed_at?: string | null;
+          confidence?: number | null;
+          created_at?: string;
+          decision: string;
+          id?: string;
+          model: string;
+          prompt_version: string;
+          provider: string;
+          raw_response?: Json | null;
+          reason_codes?: string[];
+          scores?: Json;
+          submission_id: string;
+          summary?: string | null;
+        };
+        Update: {
+          completed_at?: string | null;
+          confidence?: number | null;
+          created_at?: string;
+          decision?: string;
+          id?: string;
+          model?: string;
+          prompt_version?: string;
+          provider?: string;
+          raw_response?: Json | null;
+          reason_codes?: string[];
+          scores?: Json;
+          submission_id?: string;
+          summary?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'plan_screening_runs_submission_id_fkey';
+            columns: ['submission_id'];
+            isOneToOne: false;
+            referencedRelation: 'plan_submissions';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      plan_submissions: {
+        Row: {
+          author_id: string;
+          content_hash: string;
+          created_at: string;
+          id: string;
+          plan_id: string;
+          published_at: string | null;
+          rejected_at: string | null;
+          screening_completed_at: string | null;
+          screening_confidence: number | null;
+          screening_decision: string | null;
+          screening_reason_codes: string[];
+          screening_started_at: string | null;
+          screening_summary: string | null;
+          status: string;
+          submission_number: number;
+          submitted_at: string;
+          submitted_cover_image: string | null;
+          submitted_description: string;
+          submitted_payload: Json;
+          submitted_tags: string[];
+          submitted_title: string;
+          submitted_total_days: number;
+          updated_at: string;
+        };
+        Insert: {
+          author_id: string;
+          content_hash: string;
+          created_at?: string;
+          id?: string;
+          plan_id: string;
+          published_at?: string | null;
+          rejected_at?: string | null;
+          screening_completed_at?: string | null;
+          screening_confidence?: number | null;
+          screening_decision?: string | null;
+          screening_reason_codes?: string[];
+          screening_started_at?: string | null;
+          screening_summary?: string | null;
+          status: string;
+          submission_number: number;
+          submitted_at?: string;
+          submitted_cover_image?: string | null;
+          submitted_description: string;
+          submitted_payload: Json;
+          submitted_tags?: string[];
+          submitted_title: string;
+          submitted_total_days: number;
+          updated_at?: string;
+        };
+        Update: {
+          author_id?: string;
+          content_hash?: string;
+          created_at?: string;
+          id?: string;
+          plan_id?: string;
+          published_at?: string | null;
+          rejected_at?: string | null;
+          screening_completed_at?: string | null;
+          screening_confidence?: number | null;
+          screening_decision?: string | null;
+          screening_reason_codes?: string[];
+          screening_started_at?: string | null;
+          screening_summary?: string | null;
+          status?: string;
+          submission_number?: number;
+          submitted_at?: string;
+          submitted_cover_image?: string | null;
+          submitted_description?: string;
+          submitted_payload?: Json;
+          submitted_tags?: string[];
+          submitted_title?: string;
+          submitted_total_days?: number;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'plan_submissions_author_id_fkey';
+            columns: ['author_id'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'plan_submissions_author_id_fkey';
+            columns: ['author_id'];
+            isOneToOne: false;
+            referencedRelation: 'user_behavior_scored';
+            referencedColumns: ['user_id'];
+          },
+          {
+            foreignKeyName: 'plan_submissions_author_id_fkey';
+            columns: ['author_id'];
+            isOneToOne: false;
+            referencedRelation: 'user_behavior_snapshot';
+            referencedColumns: ['user_id'];
+          },
+          {
+            foreignKeyName: 'plan_submissions_plan_id_fkey';
+            columns: ['plan_id'];
+            isOneToOne: false;
+            referencedRelation: 'devotional_plans';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'plan_submissions_plan_id_fkey';
+            columns: ['plan_id'];
+            isOneToOne: false;
+            referencedRelation: 'devotional_plans_view';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       prayer_request_encouragements: {
         Row: {
           content: string;
@@ -1220,19 +1390,19 @@ export type Database = {
           church_id: string | null;
           church_joined_at: string | null;
           created_at: string | null;
-          location: Json | null;
+          device_os: string | null;
+          device_os_version: string | null;
           email: string;
           expo_push_token: string | null;
           first_name: string;
           id: string;
           last_name: string;
           last_seen: string | null;
+          location: Json | null;
           timezone: string | null;
           updated_at: string | null;
           year_baptized: number | null;
           year_believed: number | null;
-          device_os: string | null;
-          device_os_version: string | null;
         };
         Insert: {
           app_version?: string | null;
@@ -1241,19 +1411,19 @@ export type Database = {
           church_id?: string | null;
           church_joined_at?: string | null;
           created_at?: string | null;
-          location?: Json | null;
+          device_os?: string | null;
+          device_os_version?: string | null;
           email: string;
           expo_push_token?: string | null;
           first_name: string;
           id: string;
           last_name: string;
           last_seen?: string | null;
+          location?: Json | null;
           timezone?: string | null;
           updated_at?: string | null;
           year_baptized?: number | null;
           year_believed?: number | null;
-          device_os?: string | null;
-          device_os_version?: string | null;
         };
         Update: {
           app_version?: string | null;
@@ -1262,19 +1432,19 @@ export type Database = {
           church_id?: string | null;
           church_joined_at?: string | null;
           created_at?: string | null;
-          location?: Json | null;
+          device_os?: string | null;
+          device_os_version?: string | null;
           email?: string;
           expo_push_token?: string | null;
           first_name?: string;
           id?: string;
           last_name?: string;
           last_seen?: string | null;
+          location?: Json | null;
           timezone?: string | null;
           updated_at?: string | null;
           year_baptized?: number | null;
           year_believed?: number | null;
-          device_os?: string | null;
-          device_os_version?: string | null;
         };
         Relationships: [
           {
@@ -1852,7 +2022,7 @@ export type Database = {
         Args: { p_requester_id: string };
         Returns: undefined;
       };
-      plan_tags: { Args: never; Returns: string[] };
+      devotional_plan_allowed_tags: { Args: never; Returns: string[] };
       ensure_day_items_exist: {
         Args: {
           p_day_id: string;
@@ -1876,7 +2046,6 @@ export type Database = {
           p_search?: string;
         };
         Returns: {
-          active_plans_count: number;
           avatar_url: string;
           church_joined_at: string;
           first_name: string;
@@ -1884,7 +2053,6 @@ export type Database = {
           last_name: string;
         }[];
       };
-      get_profile: { Args: { p_user_id: string }; Returns: Json };
       get_day_items_progress: {
         Args: {
           p_day_id: string;
@@ -2036,6 +2204,35 @@ export type Database = {
           user_id: string;
         }[];
       };
+      get_plan_group_invitation: {
+        Args: { p_group_id: string };
+        Returns: {
+          completed_days: number;
+          created_at: string;
+          created_by: string;
+          id: string;
+          inviter_avatar_url: string;
+          inviter_first_name: string;
+          inviter_id: string;
+          inviter_last_name: string;
+          max_members: number;
+          plan_id: string;
+          start_date: string;
+        }[];
+      };
+      get_plan_group_invitation_members: {
+        Args: { p_group_id: string };
+        Returns: {
+          avatar_url: string;
+          first_name: string;
+          id: string;
+          joined_at: string;
+          last_name: string;
+          profile_id: string;
+          status: string;
+          user_id: string;
+        }[];
+      };
       get_plan_reaction_summary: {
         Args: { p_plan_id: string };
         Returns: {
@@ -2102,6 +2299,7 @@ export type Database = {
           viewer_is_owner: boolean;
         }[];
       };
+      get_profile: { Args: { p_user_id: string }; Returns: Json };
       get_scripture_notes: {
         Args: {
           p_limit?: number;
@@ -2172,8 +2370,13 @@ export type Database = {
         Args: { p_value: string };
         Returns: string;
       };
+      plan_tags: { Args: never; Returns: string[] };
       publish_devotional_plan: {
         Args: { p_days: Json; p_plan_id: string };
+        Returns: undefined;
+      };
+      publish_submitted_devotional_plan: {
+        Args: { p_submission_id: string };
         Returns: undefined;
       };
       queue_daily_notifications: { Args: never; Returns: undefined };
@@ -2265,6 +2468,20 @@ export type Database = {
           isOneToOne: true;
           isSetofReturn: false;
         };
+      };
+      stop_plan_progress: {
+        Args: { p_progress_id: string };
+        Returns: undefined;
+      };
+      submit_devotional_plan_for_screening: {
+        Args: { p_plan_id: string };
+        Returns: {
+          plan_id: string;
+          status: string;
+          submission_id: string;
+          submission_number: number;
+          submitted_at: string;
+        }[];
       };
       tags_to_text: { Args: { tags: string[] }; Returns: string };
       toggle_day_completion: {

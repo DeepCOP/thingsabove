@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { useHeaderHeight } from '@react-navigation/elements';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import { useHeaderHeight } from '@react-navigation/elements';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useDayItemsProgress } from '@/src/hooks/useDayItemsProgress';
@@ -311,31 +311,28 @@ export default function PlanProgress() {
         transparent
         animationType="fade"
         onRequestClose={() => setMenuVisible(false)}>
-        <Pressable className="flex-1 bg-black/10" onPress={() => setMenuVisible(false)}>
-          <TouchableOpacity
-            activeOpacity={1}
-            onPress={() => {}}
-            style={{ position: 'absolute', top: headerHeight + 8, right: 16 }}>
-            <View className="min-w-44 overflow-hidden rounded-2xl border border-neutral-200 bg-white dark:border-neutral-700 dark:bg-neutral-900">
-              <TouchableOpacity
-                disabled={stopPlanProgressMutation.isPending}
-                className={`flex-row items-center px-4 py-3 ${
-                  stopPlanProgressMutation.isPending ? 'opacity-60' : ''
-                }`}
-                onPress={() => {
-                  setMenuVisible(false);
-                  handleStopPlanPress();
-                }}>
-                {stopPlanProgressMutation.isPending ? (
-                  <ActivityIndicator size="small" color="#dc2626" />
-                ) : (
-                  <Ionicons name="trash-outline" size={22} color="#dc2626" />
-                )}
-                <Text className="ml-3 text-base font-semibold text-red-600">Stop Plan</Text>
-              </TouchableOpacity>
-            </View>
-          </TouchableOpacity>
-        </Pressable>
+        <Pressable className="absolute inset-0 bg-black/10" onPress={() => setMenuVisible(false)} />
+
+        <View style={{ position: 'absolute', top: headerHeight + 8, right: 16 }}>
+          <View className="min-w-44 overflow-hidden rounded-2xl border border-neutral-200 bg-white dark:border-neutral-700 dark:bg-neutral-900">
+            <TouchableOpacity
+              disabled={stopPlanProgressMutation.isPending}
+              className={`flex-row items-center px-4 py-3 ${
+                stopPlanProgressMutation.isPending ? 'opacity-60' : ''
+              }`}
+              onPress={() => {
+                setMenuVisible(false);
+                handleStopPlanPress();
+              }}>
+              {stopPlanProgressMutation.isPending ? (
+                <ActivityIndicator size="small" color="#dc2626" />
+              ) : (
+                <Ionicons name="trash-outline" size={22} color="#dc2626" />
+              )}
+              <Text className="ml-3 text-base font-semibold text-red-600">Stop Plan</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
       </Modal>
     </>
   );

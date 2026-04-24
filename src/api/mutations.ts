@@ -93,7 +93,7 @@ export const stopPlanProgress = async ({
   user_id: string;
   progress_id: string;
 }) => {
-  const { error } = await (supabase as any).rpc('stop_plan_progress', {
+  const { error } = await supabase.rpc('stop_plan_progress', {
     p_progress_id: progress_id,
   });
 

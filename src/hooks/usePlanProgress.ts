@@ -38,7 +38,6 @@ export function useStopPlanProgress() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationKey: ['stop_plan_progress'],
     mutationFn: stopPlanProgress,
     onSuccess: (_result, variables) => {
       queryClient.removeQueries({
