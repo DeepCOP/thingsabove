@@ -1,6 +1,7 @@
 import Dropdown from '@/src/components/DropDown';
 import { MyPlansToggle } from '@/src/components/MyPlansToggle';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { Text, TouchableOpacity, useColorScheme, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import FindPlansList from '../components/plansList/FindPlansList';
@@ -45,7 +46,7 @@ export default function PlansScreen({
     <View className="flex-1 bg-gray-100 dark:bg-black px-4">
       {/* Header */}
       <View
-        className="flex-row justify-between items-center mb-4"
+        className="mb-4 flex-row items-center justify-between"
         style={{ marginTop: insets.top }}>
         <TouchableOpacity onPress={onToggleGrid}>
           <Ionicons
@@ -58,16 +59,20 @@ export default function PlansScreen({
         <View className="flex-row items-center gap-4">
           {isAuthenticated && (
             <TouchableOpacity onPress={onPrayerBoard}>
-              <Text className="text-base">🙏</Text>
+              <MaterialCommunityIcons
+                name="hands-pray"
+                size={22}
+                color={colorScheme === 'dark' ? '#fff' : '#222'}
+              />
             </TouchableOpacity>
           )}
           {isAuthenticated && (
             <TouchableOpacity onPress={onNotifications} className="relative">
               {notificationCount > 0 && (
                 <View
-                  className="absolute -top-2 -right-2 min-w-[16px] h-4 rounded-full items-center justify-center px-1"
+                  className="absolute -right-2 -top-2 h-4 min-w-[16px] items-center justify-center rounded-full px-1"
                   style={{ backgroundColor: '#ef4444' }}>
-                  <Text className="text-[10px] leading-none text-white font-bold">
+                  <Text className="text-[10px] font-bold leading-none text-white">
                     {notificationCount > 99 ? '99+' : notificationCount}
                   </Text>
                 </View>
@@ -99,8 +104,8 @@ export default function PlansScreen({
 
       <MyPlansToggle activeTab={activeTab} onChange={onChangeTab} />
 
-      <View className="flex-row items-center mb-3">
-        <Text className="text-gray-700 dark:text-gray-200 mr-2">Sort by:</Text>
+      <View className="mb-3 flex-row items-center">
+        <Text className="mr-2 text-gray-700 dark:text-gray-200">Sort by:</Text>
         <Dropdown
           value={sort}
           onChange={(v) => onChangeSort(v as 'Recent' | 'Trending')}
@@ -118,8 +123,8 @@ export default function PlansScreen({
 
       <TouchableOpacity
         onPress={onContribute}
-        className="absolute bottom-4 right-4 flex-row items-center gap-1  px-4 py-2 rounded-full">
-        <Text className="text-xs font-bold text-gray-800 dark:text-gray-300  underline">
+        className="absolute bottom-4 right-4 flex-row items-center gap-1 rounded-full px-4 py-2">
+        <Text className="text-xs font-bold text-gray-800 underline dark:text-gray-300">
           Have a plan you&apos;d like to contribute?
         </Text>
         <Ionicons name="arrow-forward" color={colorScheme === 'dark' ? '#fff' : '#000'} />
