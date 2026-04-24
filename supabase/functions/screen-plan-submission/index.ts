@@ -746,7 +746,7 @@ ${prompt}
         await markFailed(
           supabase,
           submissionId,
-          'Unexpected screening error.',
+          'Failed to review the devotional plan submission, please try again later!',
           {
             error: rawError,
           },
