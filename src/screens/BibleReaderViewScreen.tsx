@@ -18,6 +18,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useBible } from '../state/BibleContext';
 
 export default function BibleReaderView({ onScroll }: { onScroll: (...args: any[]) => void }) {
+  const SCROLLvIEWBOTTOMPADDING = 80;
   const insets = useSafeAreaInsets();
   const [selectedVerse, setSelectedVerse] = useState<
     {
@@ -218,7 +219,7 @@ export default function BibleReaderView({ onScroll }: { onScroll: (...args: any[
           scrollEventThrottle={16}
           onScroll={onScroll}
           className="px-5"
-          contentContainerStyle={{ paddingBottom: insets.bottom + 80 }}>
+          contentContainerStyle={{ paddingBottom: insets.bottom + SCROLLvIEWBOTTOMPADDING }}>
           <View className="justify-center items-center pb-16 gap-4">
             <Text className="text-center text-primary dark:text-gray-100 text-lg pt-28 font-MerriWeather300Light">
               {currentBookName}
