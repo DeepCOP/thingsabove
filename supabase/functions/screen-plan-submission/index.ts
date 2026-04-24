@@ -21,6 +21,7 @@ type ScreeningDecision = {
   reason_codes: ReasonCode[];
   scores: {
     completeness_score: number;
+    relevance_score: number;
     nicene_creed_alignment_score: number;
     spam_risk: number;
     unsafe_content_risk: number;
@@ -84,13 +85,18 @@ Your job is to make a binary moderation decision:
 
 Evaluate the plan using these dimensions:
 1. completeness
-2. alignment with the Nicene Creed
-3. spam
-4. unsafe or inappropriate content
+2. relevance to a Christian devotional plan app
+3. alignment with the Nicene Creed
+4. spam
+5. unsafe or inappropriate content
 
 Decision rules:
 - Return pass only when the submission is complete enough to publish, clearly relevant to the app, not spam, not unsafe, and not in clear conflict with Nicene Christianity.
 - Return reject if any one of those conditions fails badly enough that the plan should not be published.
+
+Relevance guidance:
+- The plan should clearly function as Christian devotional content.
+- Reject content that is mostly unrelated, generic filler, or not meaningfully devotional.
 
 Nicene Creed guidance:
 - Focus on clear contradictions to core Nicene beliefs, not denominational differences.
@@ -120,6 +126,7 @@ Return JSON only in this exact shape:
   "reason_codes": [],
   "scores": {
     "completeness_score": 0.95,
+    "relevance_score": 0.94,
     "nicene_creed_alignment_score": 0.9,
     "spam_risk": 0.02,
     "unsafe_content_risk": 0.01
@@ -137,6 +144,7 @@ Rules for the response:
   - unsafe_content
 - scores must include:
   - completeness_score
+  - relevance_score
   - nicene_creed_alignment_score
   - spam_risk
   - unsafe_content_risk
@@ -231,6 +239,7 @@ function normalizeDecision(value: unknown): DecisionParseResult {
 
   const normalizedScores = {
     completeness_score: clampScore(scores.completeness_score),
+    relevance_score: clampScore(scores.relevance_score),
     nicene_creed_alignment_score: clampScore(scores.nicene_creed_alignment_score),
     spam_risk: clampScore(scores.spam_risk),
     unsafe_content_risk: clampScore(scores.unsafe_content_risk),
@@ -240,6 +249,13 @@ function normalizeDecision(value: unknown): DecisionParseResult {
     return {
       decision: null,
       parseError: 'scores.completeness_score must be a number between 0 and 1.',
+    };
+  }
+
+  if (normalizedScores.relevance_score === null) {
+    return {
+      decision: null,
+      parseError: 'scores.relevance_score must be a number between 0 and 1.',
     };
   }
 
@@ -549,7 +565,7 @@ ${prompt}
       await markFailed(
         supabase,
         submissionId,
-        'Screening model returned an invalid response.',
+        'Failed to review the devotional plan submission, please try again later!',
         {
           raw_text: rawText,
           parse_error: parseError,
