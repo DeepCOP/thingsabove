@@ -1,9 +1,9 @@
 import { getCanonicalBookName } from '@/src/bible/books';
 import { useRealtimeScriptureNotes } from '@/src/hooks/useRealtimeScriptureNotes';
 import { useScriptureNotes } from '@/src/hooks/useScriptureNotes';
+import dayjs from '@/src/lib/dayjs';
 import { useAuth } from '@/src/state/AuthContext';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import dayjs from 'dayjs';
 import { useEffect, useMemo, useState } from 'react';
 import {
   Keyboard,

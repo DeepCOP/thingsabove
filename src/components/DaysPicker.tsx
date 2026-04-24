@@ -1,11 +1,9 @@
+import dayjs, { type Dayjs } from '@/src/lib/dayjs';
 import { Ionicons } from '@expo/vector-icons';
-import dayjs from 'dayjs';
-import utc from 'dayjs/plugin/utc'; // Import the plugin
 import { Text, TouchableOpacity, View } from 'react-native';
-dayjs.extend(utc);
 
 type Props = {
-  setSelectedDate?: (date: dayjs.Dayjs) => void;
+  setSelectedDate?: (date: Dayjs) => void;
   setSelectedDayNumber?: (dayNumber: number) => void;
   startDate: string;
   completed: boolean;
@@ -33,7 +31,6 @@ export default function DaysPicker({
         if (setSelectedDate) {
           setSelectedDate(
             dayjs(startDate)
-              .utc()
               .startOf('day')
               .add(day_number - 1, 'day'),
           );
@@ -53,7 +50,6 @@ export default function DaysPicker({
       <Text className="text-center font-semibold dark:text-white">
         {setSelectedDate
           ? dayjs(startDate)
-              .utc()
               .startOf('day')
               .add(day_number - 1, 'day')
               .format('ddd')
@@ -62,7 +58,6 @@ export default function DaysPicker({
       <Text
         className={`text-xs ${isCurrentDay ? 'text-white dark:text-gray-800 bg-black dark:bg-white px-2 font-semibold rounded-full' : 'text-gray-500'} dark:text-gray-400 `}>
         {dayjs(startDate)
-          .utc()
           .startOf('day')
           .add(day_number - 1, 'day')
           .format('MMM DD')}
