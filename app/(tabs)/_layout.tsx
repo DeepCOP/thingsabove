@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
 import React from 'react';
-import { useColorScheme, View } from 'react-native';
+import { useColorScheme } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function TabLayout() {
@@ -90,18 +90,6 @@ export default function TabLayout() {
           }}
         />
       </Tabs>
-      <View
-        pointerEvents="none"
-        style={{
-          position: 'absolute',
-          left: 0,
-          right: 0,
-          bottom: 0,
-          height: insets.bottom,
-          zIndex: 0,
-        }}
-        className="dark:bg-neutral-900 bg-white"
-      />
     </>
   );
 }

@@ -1,84 +1,73 @@
 import BibleReaderView from '@/src/screens/BibleReaderViewScreen';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { Tabs, useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { useRef } from 'react';
-import { ActivityIndicator, Animated, Text, TouchableOpacity, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Animated,
+  NativeScrollEvent,
+  NativeSyntheticEvent,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useBible } from '../../src/state/BibleContext';
 
 export default function BibleTab() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const headerY = useRef(new Animated.Value(0)).current; // 0 shown, -80 hidden
-  const tabY = useRef(new Animated.Value(0)).current; // 0 shown, 80 hidden
-  const TAB_BAR_HEIGHT = 56;
-  const hideDistance = Math.abs(TAB_BAR_HEIGHT);
+  const headerHeight = 90;
+  const headerTranslateY = useRef(new Animated.Value(0)).current;
+  const lastScrollY = useRef(0);
+  const isHeaderHidden = useRef(false);
 
   const { loadingVersionId, version } = useBible();
 
-  const lastScrollY = useRef(0);
+  const animateHeader = (toValue: number) => {
+    Animated.timing(headerTranslateY, {
+      toValue,
+      duration: 160,
+      useNativeDriver: true,
+    }).start();
+  };
 
-  const onScroll = (e: any) => {
-    const y = e.nativeEvent.contentOffset.y;
-    const last = lastScrollY.current;
-    if (Math.abs(y - last) < 2) return;
+  const onScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const y = event.nativeEvent.contentOffset.y;
+    const lastY = lastScrollY.current;
 
-    // TOP → always show
     if (y <= 0) {
-      Animated.timing(headerY, {
-        toValue: 0,
-        duration: 150,
-        useNativeDriver: true,
-      }).start();
-
-      Animated.timing(tabY, {
-        toValue: 0,
-        duration: 150,
-        useNativeDriver: true,
-      }).start();
+      if (isHeaderHidden.current) {
+        isHeaderHidden.current = false;
+        animateHeader(0);
+      }
+      lastScrollY.current = 0;
+      return;
     }
-    // SCROLLING DOWN → hide immediately
-    else if (y > last) {
-      Animated.timing(headerY, {
-        toValue: -80 - insets.top,
-        duration: 150,
-        useNativeDriver: true,
-      }).start();
 
-      Animated.timing(tabY, {
-        toValue: hideDistance,
-        duration: 150,
-        useNativeDriver: true,
-      }).start();
-    }
-    // SCROLLING UP → show
-    else if (y < last) {
-      Animated.timing(headerY, {
-        toValue: 0,
-        duration: 150,
-        useNativeDriver: true,
-      }).start();
+    if (Math.abs(y - lastY) < 2) return;
 
-      Animated.timing(tabY, {
-        toValue: 0,
-        duration: 150,
-        useNativeDriver: true,
-      }).start();
+    if (y > lastY && !isHeaderHidden.current) {
+      isHeaderHidden.current = true;
+      animateHeader(-headerHeight);
+    } else if (y < lastY && isHeaderHidden.current) {
+      isHeaderHidden.current = false;
+      animateHeader(0);
     }
 
     lastScrollY.current = y;
   };
 
   const AnimatedHeader = ({
-    headerTranslateY,
+    headerTranslateY: translateY,
   }: {
-    headerTranslateY: Animated.AnimatedInterpolation<string | number>;
+    headerTranslateY: Animated.Value;
   }) => {
     return (
       <Animated.View
         style={{
-          transform: [{ translateY: headerTranslateY }],
-          height: 90,
+          transform: [{ translateY }],
+          height: headerHeight,
           paddingTop: insets.top,
           justifyContent: 'center',
           paddingHorizontal: 16,
@@ -88,14 +77,13 @@ export default function BibleTab() {
           right: 0,
           zIndex: 10,
         }}
-        className={'dark:bg-black bg-white'}>
-        <View className="flex-row items-center mr-2 flex-1 justify-end ">
-          {/* Version Switch */}
+        className="bg-white dark:bg-black">
+        <View className="mr-2 flex-1 flex-row items-center justify-end">
           <TouchableOpacity
             onPress={() => router.push('/bible/versions')}
             disabled={Boolean(loadingVersionId)}
             style={{ opacity: loadingVersionId ? 0.7 : 1 }}
-            className="flex-row items-center bg-blue-100 px-3 py-1.5 rounded-full mr-1">
+            className="mr-1 flex-row items-center rounded-full bg-blue-100 px-3 py-1.5">
             <Ionicons name="globe-outline" size={16} />
             {loadingVersionId ? (
               <ActivityIndicator size="small" className="ml-2" />
@@ -118,27 +106,8 @@ export default function BibleTab() {
 
   return (
     <>
-      {/* TOP NAV BAR */}
-      <Tabs.Screen
-        options={{
-          headerStyle: {
-            transform: [{ translateY: headerY }],
-          },
-          tabBarStyle: {
-            transform: [{ translateY: tabY }],
-            position: 'absolute',
-            elevation: 0,
-            height: TAB_BAR_HEIGHT + insets.bottom,
-          },
-          title: 'bible',
-
-          headerTitleAlign: 'center',
-          headerShadowVisible: false,
-        }}
-      />
-      <AnimatedHeader headerTranslateY={headerY} />
-
-      <BibleReaderView onScroll={onScroll} headerTranslateY={tabY} />
+      <AnimatedHeader headerTranslateY={headerTranslateY} />
+      <BibleReaderView onScroll={onScroll} />
     </>
   );
 }
