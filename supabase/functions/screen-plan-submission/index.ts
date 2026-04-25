@@ -85,7 +85,7 @@ Your job is to make a binary moderation decision:
 
 Evaluate the plan using these dimensions:
 1. completeness
-2. relevance to a Christian devotional plan app
+2. relevance to a Christian devotional or Bible study app
 3. alignment with the Nicene Creed
 4. spam
 5. unsafe or inappropriate content
@@ -95,8 +95,8 @@ Decision rules:
 - Return reject if any one of those conditions fails badly enough that the plan should not be published.
 
 Relevance guidance:
-- The plan should clearly function as Christian devotional content.
-- Reject content that is mostly unrelated, generic filler, or not meaningfully devotional.
+-The plan should clearly function as Christian devotional or Bible study content.
+-Reject content that is mostly unrelated, generic filler, or not meaningfully devotional or Bible study–oriented.
 
 Nicene Creed guidance:
 - Focus on clear contradictions to core Nicene beliefs, not denominational differences.
