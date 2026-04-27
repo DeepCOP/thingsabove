@@ -12,7 +12,7 @@ import { Text, TouchableOpacity, useColorScheme, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRealtimeComments } from '../hooks/useRealtimeComments';
 import LoadingSpinner from './LoadingSpinner';
-import UserAvatar from './UserAvatar';
+import ProfileIdentityRow from './ProfileIdentityRow';
 
 type Props = {
   planId: string;
@@ -91,20 +91,16 @@ const DayCommentsBottomSheet = forwardRef<BottomSheet, Props>(
                 };
               }) => {
                 return (
-                  <View className="flex-row items-start gap-3 mb-4 px-4">
-                    {/* Avatar */}
-                    <UserAvatar
-                      uri={item.avatar_url}
-                      first_name={item.first_name}
-                      last_name={item.last_name}
-                      size={40}
-                    />
-
-                    <View className={`flex-1 px-3 py-2 rounded-xl bg-neutral-600`}>
-                      <Text className="font-semibold text-sm text-gray-200 dark:text-gray-200">
-                        {item.first_name} {item.last_name}
-                      </Text>
-
+                  <ProfileIdentityRow
+                    className="mb-4 px-4 items-start"
+                    contentClassName="rounded-xl bg-neutral-600 px-3 py-2"
+                    first_name={item.first_name}
+                    last_name={item.last_name}
+                    size={40}
+                    titleClassName="text-sm font-semibold text-gray-200 dark:text-gray-200"
+                    uri={item.avatar_url}
+                    userId={item.user_id}>
+                    <>
                       <Text className="mt-1 text-sm dark:text-white text-white">
                         {item.content}
                       </Text>
@@ -113,8 +109,8 @@ const DayCommentsBottomSheet = forwardRef<BottomSheet, Props>(
                       <Text className="mt-1 text-xs text-gray-300 ">
                         {dayjs(item.created_at).format('MMM DD')}
                       </Text>
-                    </View>
-                  </View>
+                    </>
+                  </ProfileIdentityRow>
                 );
               }}
             />

@@ -1,6 +1,6 @@
 import LoadingSpinner from '@/src/components/LoadingSpinner';
+import ProfileIdentityRow from '@/src/components/ProfileIdentityRow';
 import PrayerEmptyState from '@/src/components/prayer/PrayerEmptyState';
-import UserAvatar from '@/src/components/UserAvatar';
 import {
   useAddPrayerRequestEncouragement,
   usePrayerRequest,
@@ -110,19 +110,17 @@ export default function PrayerRequestDetailScreen({ requestId }: Props) {
           paddingBottom: insets.bottom + 24,
         }}>
         <View className="rounded-3xl border border-gray-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-950">
-          <View className="flex-row items-start gap-3">
-            <UserAvatar
-              uri={request.is_anonymous ? null : request.author_avatar_url}
-              first_name={avatarName.firstName}
-              last_name={avatarName.lastName}
-              size={48}
-              border={false}
-            />
-
-            <View className="flex-1">
-              <View className="flex-row flex-wrap items-center gap-2">
-                <Text className="font-semibold text-gray-900 dark:text-white">{displayName}</Text>
-
+          <ProfileIdentityRow
+            border={false}
+            className="items-start"
+            first_name={avatarName.firstName}
+            last_name={avatarName.lastName}
+            name={displayName}
+            size={48}
+            subtitle={formatRelativeTime(request.created_at)}
+            subtitleClassName="text-xs text-gray-500 dark:text-gray-400"
+            titleAside={
+              <>
                 <View className="rounded-full bg-gray-100 px-2 py-1 dark:bg-neutral-900">
                   <Text className="text-xs text-gray-600 dark:text-gray-400">{scopeLabel}</Text>
                 </View>
@@ -138,13 +136,13 @@ export default function PrayerRequestDetailScreen({ requestId }: Props) {
                     <Text className="text-xs text-emerald-700 dark:text-emerald-300">Answered</Text>
                   </View>
                 ) : null}
-              </View>
-
-              <Text className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                {formatRelativeTime(request.created_at)}
-              </Text>
-            </View>
-          </View>
+              </>
+            }
+            titleClassName="font-semibold text-gray-900 dark:text-white"
+            titleRowClassName="flex-row flex-wrap items-center gap-2"
+            uri={request.is_anonymous ? null : request.author_avatar_url}
+            userId={request.is_anonymous ? null : request.user_id}
+          />
 
           <Text className="mt-5 text-base leading-7 text-gray-800 dark:text-gray-200">
             {request.content}
@@ -291,30 +289,26 @@ export default function PrayerRequestDetailScreen({ requestId }: Props) {
 
                 return (
                   <View key={item.id} className="rounded-3xl bg-gray-50 p-4 dark:bg-neutral-900">
-                    <View className="flex-row items-start gap-3">
-                      <UserAvatar
-                        uri={item.author?.avatar_url}
-                        first_name={authorAvatarName.firstName}
-                        last_name={authorAvatarName.lastName}
-                        size={38}
-                        border={false}
-                      />
-
-                      <View className="flex-1">
-                        <View className="flex-row items-center justify-between gap-3">
-                          <Text className="font-medium text-gray-900 dark:text-white">
-                            {authorName}
-                          </Text>
-                          <Text className="text-xs text-gray-500 dark:text-gray-400">
-                            {formatRelativeTime(item.created_at)}
-                          </Text>
-                        </View>
-
-                        <Text className="mt-2 text-sm leading-6 text-gray-700 dark:text-gray-300">
-                          {item.content}
+                    <ProfileIdentityRow
+                      border={false}
+                      className="items-start"
+                      first_name={authorAvatarName.firstName}
+                      last_name={authorAvatarName.lastName}
+                      name={authorName}
+                      size={38}
+                      titleAside={
+                        <Text className="text-xs text-gray-500 dark:text-gray-400">
+                          {formatRelativeTime(item.created_at)}
                         </Text>
-                      </View>
-                    </View>
+                      }
+                      titleClassName="font-medium text-gray-900 dark:text-white"
+                      titleRowClassName="flex-row items-center justify-between gap-3"
+                      uri={item.author?.avatar_url}
+                      userId={item.author?.id}>
+                      <Text className="mt-2 text-sm leading-6 text-gray-700 dark:text-gray-300">
+                        {item.content}
+                      </Text>
+                    </ProfileIdentityRow>
                   </View>
                 );
               })}

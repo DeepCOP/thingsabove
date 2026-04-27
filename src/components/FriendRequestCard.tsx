@@ -1,5 +1,5 @@
 import LoadingSpinner from '@/src/components/LoadingSpinner';
-import UserAvatar from '@/src/components/UserAvatar';
+import ProfileIdentityRow from '@/src/components/ProfileIdentityRow';
 import { Text, TouchableOpacity, View } from 'react-native';
 
 type Mode = 'requester' | 'receiver' | 'friends';
@@ -17,7 +17,6 @@ type Props = {
   onAdd?: (id: string) => void;
   onAccept?: (id: string) => void;
   onDecline?: (id: string) => void;
-  onPressProfile?: (id: string) => void;
 
   isAdding?: boolean;
   isAccepting?: boolean;
@@ -34,28 +33,23 @@ export default function FriendRequestCard({
   onAdd,
   onAccept,
   onDecline,
-  onPressProfile,
   isAdding,
   isAccepting,
   isDeclining,
 }: Props) {
   return (
     <View className="flex-row items-center p-3 mb-3 rounded-xl bg-gray-100 dark:bg-neutral-900">
-      <TouchableOpacity
-        className="flex-1 flex-row items-center"
-        disabled={!onPressProfile}
-        onPress={() => onPressProfile?.(id)}>
-        <UserAvatar uri={avatar_url} first_name={first_name} last_name={last_name} size={34} />
-
-        <View className="flex-1 ml-3">
-          <Text className="font-semibold dark:text-white">
-            {first_name} {last_name}
-          </Text>
-          <Text className="text-xs text-gray-500">
-            {mode === 'receiver' ? 'Sent you a friend request' : statusText}
-          </Text>
-        </View>
-      </TouchableOpacity>
+      <ProfileIdentityRow
+        className="flex-1"
+        first_name={first_name}
+        last_name={last_name}
+        size={34}
+        subtitle={mode === 'receiver' ? 'Sent you a friend request' : statusText}
+        subtitleClassName="text-xs text-gray-500"
+        titleClassName="font-semibold dark:text-white"
+        uri={avatar_url}
+        userId={id}
+      />
 
       {/* REQUESTER */}
       {mode === 'requester' && onAdd && (

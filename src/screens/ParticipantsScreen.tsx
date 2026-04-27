@@ -1,8 +1,8 @@
 import { ProgressBar } from '@/src/components/ProgressBar';
+import ProfileIdentityRow from '@/src/components/ProfileIdentityRow';
 import { PlanProgress } from '@/src/types/types';
 import { FlatList, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import UserAvatar from '../components/UserAvatar';
 
 type Member = {
   id: string;
@@ -21,7 +21,6 @@ type Props = {
   refreshing: boolean;
   onRefresh: () => void;
   onInvite: () => void;
-  onOpenProfile: (userId: string) => void;
 };
 
 export default function ParticipantsScreen({
@@ -31,7 +30,6 @@ export default function ParticipantsScreen({
   refreshing,
   onRefresh,
   onInvite,
-  onOpenProfile,
 }: Props) {
   const insets = useSafeAreaInsets();
 
@@ -49,32 +47,24 @@ export default function ParticipantsScreen({
           const percentage = (completed / Math.max(totalDays, 1)) * 100;
 
           return (
-            <TouchableOpacity
-              className="mb-3 p-3 rounded-xl bg-gray-100 dark:bg-neutral-900"
-              onPress={() => onOpenProfile(item.user_id)}>
-              <View className="flex-row items-center mb-2">
-                <UserAvatar
-                  uri={item.profiles.avatar_url}
+            <View className="mb-3 rounded-xl bg-gray-100 p-3 dark:bg-neutral-900">
+              <View className="mb-2 flex-row items-center">
+                <ProfileIdentityRow
+                  className="flex-1"
                   first_name={item.profiles.first_name}
                   last_name={item.profiles.last_name}
                   size={40}
+                  subtitle={`${completed} / ${totalDays} days completed`}
+                  subtitleClassName="mt-0.5 text-xs text-gray-700 dark:text-neutral-200"
+                  titleClassName="font-semibold dark:text-white"
+                  uri={item.profiles.avatar_url}
+                  userId={item.user_id}
                 />
-
-                <View className="flex-1 ml-2">
-                  <Text className="dark:text-white font-semibold">
-                    {item.profiles.first_name} {item.profiles.last_name}
-                  </Text>
-
-                  <Text className="text-xs text-gray-700 dark:text-neutral-200 mt-0.5">
-                    {completed} / {totalDays} days completed
-                  </Text>
-                </View>
-
                 <Text className="font-semibold text-green-600">{percentage.toFixed(2)}%</Text>
               </View>
 
               {progress && <ProgressBar percentage={percentage} />}
-            </TouchableOpacity>
+            </View>
           );
         }}
       />

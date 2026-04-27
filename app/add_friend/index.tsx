@@ -3,13 +3,11 @@ import { buildFriendInviteMessage } from '@/src/lib/planShare';
 import AddFriendScreen from '@/src/screens/AddFriendScreen';
 import { useAuth } from '@/src/state/AuthContext';
 import { isValidEmail, useDebounce } from '@/src/utils';
-import { Href, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Share } from 'react-native';
 
 export default function AddFriend() {
   const { session } = useAuth();
-  const router = useRouter();
   const userId = session?.user?.id!;
 
   const [email, setEmail] = useState('');
@@ -38,7 +36,6 @@ export default function AddFriend() {
           userId,
         })
       }
-      onPressProfile={(friendId) => router.push(`/profile/${friendId}` as Href)}
       onShareInviteLink={() => Share.share({ message: buildFriendInviteMessage() })}
     />
   );

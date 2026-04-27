@@ -1,11 +1,10 @@
 import LoadingSpinner from '@/src/components/LoadingSpinner';
-import UserAvatar from '@/src/components/UserAvatar';
+import ProfileIdentityRow from '@/src/components/ProfileIdentityRow';
 import { useChurch } from '@/src/hooks/useChurch';
 import { useChurchAnalytics } from '@/src/hooks/useChurchAnalytics';
 import { useChurchMembers } from '@/src/hooks/useChurchMembers';
 import { useDebounce } from '@/src/utils';
 import { Ionicons } from '@expo/vector-icons';
-import { Href, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { FlatList, Share, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -31,7 +30,6 @@ export default function ChurchMembersScreen({ churchId }: Props) {
   const [query, setQuery] = useState('');
   const [isRefreshing, setIsRefreshing] = useState(false);
   const debouncedQuery = useDebounce(query.trim(), 300);
-  const router = useRouter();
 
   const churchQuery = useChurch(churchId);
   const { membersQuery, members } = useChurchMembers(churchId, debouncedQuery);
@@ -168,38 +166,28 @@ export default function ChurchMembersScreen({ churchId }: Props) {
             </Text>
           </View>
         }
-        renderItem={({ item }) => (
-          <TouchableOpacity
-            className="mx-4 mt-4 rounded-2xl border border-gray-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-950"
-            onPress={() => router.push(`/profile/${item.id}` as Href)}>
-            <View className="flex-row items-center gap-3">
-              <UserAvatar
-                uri={item.avatar_url}
+        renderItem={({ item }) => {
+          const joinedLabel = formatJoinedLabel(item.church_joined_at);
+
+          return (
+            <View className="mx-4 mt-4 rounded-2xl border border-gray-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-950">
+              <ProfileIdentityRow
+                border={false}
                 first_name={item.first_name}
                 last_name={item.last_name}
+                name={
+                  [item.first_name, item.last_name].filter(Boolean).join(' ') || 'Church Member'
+                }
                 size={52}
-                border={false}
+                subtitle={joinedLabel}
+                subtitleClassName="text-sm text-gray-500 dark:text-gray-400"
+                titleClassName="text-base font-semibold text-gray-900 dark:text-white"
+                uri={item.avatar_url}
+                userId={item.id}
               />
-
-              <View className="flex-1">
-                <Text className="text-base font-semibold text-gray-900 dark:text-white">
-                  {[item.first_name, item.last_name].filter(Boolean).join(' ') || 'Church Member'}
-                </Text>
-
-                {(() => {
-                  const joinedLabel = formatJoinedLabel(item.church_joined_at);
-                  if (!joinedLabel) return null;
-
-                  return (
-                    <Text className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                      {joinedLabel}
-                    </Text>
-                  );
-                })()}
-              </View>
             </View>
-          </TouchableOpacity>
-        )}
+          );
+        }}
         ListFooterComponent={
           <View className="px-4 pt-6">
             {membersQuery.isFetchingNextPage ? (

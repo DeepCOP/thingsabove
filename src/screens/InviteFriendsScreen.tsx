@@ -8,7 +8,7 @@ import {
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import UserAvatar from '../components/UserAvatar';
+import ProfileIdentityRow from '../components/ProfileIdentityRow';
 
 type Friend = {
   id: string;
@@ -97,18 +97,19 @@ export default function InviteFriendsScreen({
                 <TouchableOpacity
                   onPress={() => onToggle(item.id)}
                   className="flex-row items-center gap-2 mb-3 p-3 rounded-xl bg-gray-100 dark:bg-neutral-900">
-                  <UserAvatar
-                    uri={item.avatar_url}
+                  <ProfileIdentityRow
+                    className="flex-1"
                     first_name={item.first_name}
                     last_name={item.last_name}
                     size={34}
+                    titleClassName="font-semibold dark:text-white"
+                    trailing={
+                      isSelected ? (
+                        <Ionicons name="checkmark-circle" size={22} color="#22c55e" />
+                      ) : null
+                    }
+                    uri={item.avatar_url}
                   />
-
-                  <Text className="flex-1 dark:text-white font-semibold">
-                    {item.first_name} {item.last_name}
-                  </Text>
-
-                  {isSelected && <Ionicons name="checkmark-circle" size={22} color="#22c55e" />}
                 </TouchableOpacity>
               );
             }}
