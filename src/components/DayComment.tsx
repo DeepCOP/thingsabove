@@ -140,11 +140,7 @@ const DayCommentsBottomSheet = forwardRef<BottomSheet, Props>(
                         {item.content}
                       </Text>
 
-                      <View className="mt-2 flex-row items-center justify-between">
-                        <Text className="text-xs text-gray-300">
-                          {formatRelativeTime(item.created_at)}
-                        </Text>
-
+                      <View className="mt-2 flex-row items-center justify-end">
                         {isOwner && (
                           <View className="flex-row items-center gap-3">
                             {isEditing && (

@@ -11,7 +11,7 @@ type Props = {
 
 function getItemLabel(item: DayItemsProgress) {
   if (item.item_type === 'devotional') return 'Devotional';
-  if (item.item_type === 'comment') return 'Comments';
+  if (item.item_type === 'comment') return 'Reflect & Share';
   return item.item_key || 'Scripture';
 }
 
