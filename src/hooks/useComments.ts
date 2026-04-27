@@ -1,26 +1,48 @@
-import { addPlanDayComment } from '@/src/api/mutations';
+import { addPlanDayComment, deletePlanDayComment, updatePlanDayComment } from '@/src/api/mutations';
+import { PlanDayComment } from '@/src/types/types';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { fetchPlanDayComments } from '../api/groupQueries';
 
 export function useComments(planId: string, dayId: string, group_id?: string) {
   const queryClient = useQueryClient();
+  const queryKey = ['day_comments', planId, dayId, group_id] as const;
+
   const fetchComments = useQuery({
-    queryKey: ['day_comments', planId, dayId, group_id],
+    queryKey,
     enabled: !!planId && !!dayId,
     staleTime: 0,
-    queryFn: async () => await fetchPlanDayComments({ planId, dayId, group_id }),
+    queryFn: async () =>
+      (await fetchPlanDayComments({ planId, dayId, group_id })) as PlanDayComment[],
   });
 
   const addComment = useMutation({
     mutationFn: async (content: string) =>
       await addPlanDayComment({ planId, dayId, content, group_id }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['day_comments', planId, dayId, group_id] });
+      queryClient.invalidateQueries({ queryKey });
+    },
+  });
+
+  const updateComment = useMutation({
+    mutationFn: async ({ commentId, content }: { commentId: string; content: string }) =>
+      await updatePlanDayComment({ commentId, content }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey });
+    },
+  });
+
+  const deleteComment = useMutation({
+    mutationFn: async ({ commentId }: { commentId: string }) =>
+      await deletePlanDayComment({ commentId }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey });
     },
   });
 
   return {
     commentsQuery: fetchComments,
     addComment,
+    updateComment,
+    deleteComment,
   };
 }

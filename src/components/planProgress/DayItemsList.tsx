@@ -4,10 +4,16 @@ import { Text, TouchableOpacity, useColorScheme, View } from 'react-native';
 
 type Props = {
   items: DayItemsProgress[];
-  onPressItem: (item: any) => void;
-  onToggle: (item: any) => void;
+  onPressItem: (item: DayItemsProgress) => void;
+  onToggle: (item: DayItemsProgress) => void;
   toggleLoading: boolean;
 };
+
+function getItemLabel(item: DayItemsProgress) {
+  if (item.item_type === 'devotional') return 'Devotional';
+  if (item.item_type === 'comment') return 'Comments';
+  return item.item_key || 'Scripture';
+}
 
 export function DayItemsList({ items, onPressItem, onToggle, toggleLoading }: Props) {
   const colorScheme = useColorScheme();
@@ -33,9 +39,7 @@ export function DayItemsList({ items, onPressItem, onToggle, toggleLoading }: Pr
                 />
               </TouchableOpacity>
 
-              <Text className="text-lg dark:text-white">
-                {item?.item_type === 'devotional' ? 'Devotional' : item?.item_key || 'Scripture'}
-              </Text>
+              <Text className="text-lg dark:text-white">{getItemLabel(item)}</Text>
             </View>
 
             <Ionicons

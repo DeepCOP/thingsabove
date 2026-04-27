@@ -1,4 +1,6 @@
-import { ParsedVerse } from '@/src/types/types';
+import type { DayItemsProgress, ParsedVerse } from '@/src/types/types';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
 import { useEffect, useState } from 'react';
 import { Linking } from 'react-native';
 
@@ -111,6 +113,27 @@ export const sortByItemKey = (a?: string | null, b?: string | null) => {
   }
 
   return na - nb;
+};
+
+const DAY_ITEM_TYPE_ORDER: Record<string, number> = {
+  devotional: 0,
+  scripture: 1,
+  comment: 2,
+};
+
+export const sortDayItems = (
+  a: Pick<DayItemsProgress, 'item_key' | 'item_type'>,
+  b: Pick<DayItemsProgress, 'item_key' | 'item_type'>,
+) => {
+  const typeOrder =
+    (DAY_ITEM_TYPE_ORDER[a.item_type ?? ''] ?? Number.MAX_SAFE_INTEGER) -
+    (DAY_ITEM_TYPE_ORDER[b.item_type ?? ''] ?? Number.MAX_SAFE_INTEGER);
+
+  if (typeOrder !== 0) {
+    return typeOrder;
+  }
+
+  return sortByItemKey(a.item_key, b.item_key);
 };
 
 export function useDebounce<T>(value: T, delay = 500) {

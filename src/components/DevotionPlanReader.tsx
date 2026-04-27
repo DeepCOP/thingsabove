@@ -24,7 +24,7 @@ import {
 import RenderHTML from 'react-native-render-html';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useBible } from '../state/BibleContext';
-import { DayItemsProgress } from '../types/types';
+import { DayItemsProgress, DayItemType } from '../types/types';
 import { parseVerseRef } from '../utils';
 
 export default function DevotionalPlanReader({
@@ -47,7 +47,7 @@ export default function DevotionalPlanReader({
     Error,
     {
       item_id: string;
-      item_type: 'devotional' | 'scripture';
+      item_type: DayItemType;
       item_key: string;
       completed: boolean;
     },
@@ -564,7 +564,7 @@ export default function DevotionalPlanReader({
                     onPress: () => {
                       toggleItem.mutate({
                         item_id: item?.id || '',
-                        item_type: item?.item_type as 'devotional' | 'scripture',
+                        item_type: item?.item_type as DayItemType,
                         item_key: item?.item_key || '',
                         completed: true,
                       });
@@ -576,7 +576,7 @@ export default function DevotionalPlanReader({
                     onPress: () => {
                       toggleItem.mutate({
                         item_id: item?.id || '',
-                        item_type: item?.item_type as 'devotional' | 'scripture',
+                        item_type: item?.item_type as DayItemType,
                         item_key: item?.item_key || '',
                         completed: true,
                       });

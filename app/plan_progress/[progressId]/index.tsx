@@ -16,7 +16,7 @@ import { useAppStore } from '@/src/state/useAppStore';
 import {
   incrementPlanCompletions,
   incrementPlanCompletionsInInfiniteData,
-  sortByItemKey,
+  sortDayItems,
 } from '@/src/utils';
 import { useQueryClient } from '@tanstack/react-query';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
@@ -25,7 +25,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import LoadingSpinner from '@/src/components/LoadingSpinner';
 import { usePlanGroupMembers } from '@/src/hooks/usePlanGroup';
 import PlanProgressScreen from '@/src/screens/PlanProgressScreen';
-import { DayItemsProgress } from '@/src/types/types';
+import { DayItemType, DayItemsProgress } from '@/src/types/types';
 import {
   ActivityIndicator,
   Alert,
@@ -85,7 +85,7 @@ export default function PlanProgress() {
     const data = dayItemsProgressQuery?.data;
 
     return {
-      items: [...data].sort((a, b) => sortByItemKey(a.item_key, b.item_key)),
+      items: [...data].sort(sortDayItems),
     };
   }, [dayItemsProgressQuery?.data]);
 
@@ -278,7 +278,6 @@ export default function PlanProgress() {
         toggleLoading={toggleMutation.isPending}
         planProgress={planProgress}
         onSelectDay={setSelectedDay}
-        onComments={() => {}}
         onMissedDays={() => {
           setMissedDays(missedDays || []);
           router.push(`/plan_progress/${progressId}/missedDays`);
@@ -298,7 +297,7 @@ export default function PlanProgress() {
         onToggleItem={(item) => {
           toggleMutation.mutate({
             item_id: item.id,
-            item_type: item.item_type as 'scripture' | 'devotional',
+            item_type: item.item_type as DayItemType,
             item_key: item.item_key as string,
             completed: !item.completed,
           });
