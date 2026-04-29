@@ -30,7 +30,7 @@ Mission:
 - Never optimize engagement in a manipulative, fear-based, or merely attention-seeking way.
 
 Your job is to decide:
-- whether a notification should be sent in the next 48 hours
+- whether a notification should be sent for the user's next 36-hour notification window
 - which ministry category it belongs to
 - what the notification title should say
 - when to schedule it in the user's local time
@@ -58,8 +58,11 @@ Category rules:
 - For cheering_up_with_humor, keep the humor gentle and wholesome; never mock, trivialize suffering, or undermine spiritual seriousness
 
 Scheduling rules:
-- Return day_offset as 0, 1, or 2 only
+- Return day_offset as 0 or 1 only
 - Return local_hour as an integer from 8 through 20 only
+- Keep the scheduled time within the next 36 hours
+- If notification_timing.latest_send_at is present in the planning context, schedule the notification no later than that timestamp
+- Treat the 36-hour cadence as measured from the user's most recent sent notification
 - Prefer natural waking hours and avoid late-night scheduling
 
 Title rules:
@@ -154,6 +157,39 @@ function buildPlannerContext(candidate: {
   };
 }
 
+function getLatestSendAtFromContext(context: Record<string, unknown>) {
+  const notificationTiming =
+    context.notification_timing && typeof context.notification_timing === 'object'
+      ? (context.notification_timing as Record<string, unknown>)
+      : null;
+
+  if (!notificationTiming) return null;
+
+  const latestSendAt =
+    typeof notificationTiming.latest_send_at === 'string'
+      ? notificationTiming.latest_send_at.trim()
+      : '';
+
+  if (!latestSendAt || Number.isNaN(Date.parse(latestSendAt))) {
+    return null;
+  }
+
+  return latestSendAt;
+}
+
+function constrainScheduledFor(scheduledFor: string, latestSendAt: string | null) {
+  if (!latestSendAt) return scheduledFor;
+
+  const scheduledAtMs = Date.parse(scheduledFor);
+  const latestSendAtMs = Date.parse(latestSendAt);
+
+  if (Number.isNaN(scheduledAtMs) || Number.isNaN(latestSendAtMs)) {
+    return scheduledFor;
+  }
+
+  return scheduledAtMs > latestSendAtMs ? latestSendAt : scheduledFor;
+}
+
 function extractJsonObject(text: string) {
   const start = text.indexOf('{');
   if (start === -1) return null;
@@ -233,7 +269,7 @@ function normalizePlannerDecision(value: unknown): PlannerDecision | null {
   if (!category) return null;
   if (!title || title.length < 4 || title.length > 60) return null;
   if (!message || message.length < 12 || message.length > 320) return null;
-  if (!Number.isInteger(dayOffset) || dayOffset < 0 || dayOffset > 2) return null;
+  if (!Number.isInteger(dayOffset) || dayOffset < 0 || dayOffset > 1) return null;
   if (!Number.isInteger(localHour) || localHour < 8 || localHour > 20) return null;
 
   return {
@@ -309,6 +345,7 @@ serve(async () => {
             ? candidate.timezone
             : 'UTC';
         const plannerContext = buildPlannerContext(candidate);
+        const latestSendAt = getLatestSendAtFromContext(plannerContext);
 
         const prompt = buildPlannerPrompt(firstName, timezone, plannerContext);
         const result = await model.generateContent(`
@@ -354,6 +391,8 @@ ${prompt}
           continue;
         }
 
+        const finalScheduledFor = constrainScheduledFor(scheduledFor, latestSendAt);
+
         const { error: insertError } = await supabase.from('ai_triggers').insert({
           user_id: candidate.user_id,
           trigger_reason: decision.reason,
@@ -361,7 +400,7 @@ ${prompt}
           context: plannerContext,
           generated_title: decision.title,
           generated_message: decision.message,
-          scheduled_for: scheduledFor,
+          scheduled_for: finalScheduledFor,
         });
 
         if (insertError) {
