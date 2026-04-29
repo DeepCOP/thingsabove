@@ -2,7 +2,7 @@ import LoadingSpinner from '@/src/components/LoadingSpinner';
 import { usePlanGroupMembers } from '@/src/hooks/usePlanGroup';
 import { useGroupPlanProgressList } from '@/src/hooks/usePlanProgress';
 import ParticipantsScreen from '@/src/screens/ParticipantsScreen';
-import { Href, useLocalSearchParams, useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -46,7 +46,6 @@ export default function Participants() {
       progresses={usersPlanProgresses.data || []}
       refreshing={refreshing}
       onRefresh={onRefresh}
-      onOpenProfile={(userId) => router.push(`/profile/${userId}` as Href)}
       onInvite={() =>
         router.push({
           pathname: '/devotional_detail/[id]/invite-friends',

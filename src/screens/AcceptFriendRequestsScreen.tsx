@@ -9,7 +9,6 @@ type Props = {
   isLoading: boolean;
   onAccept: (friendId: string) => void;
   onDecline: (friendId: string) => void;
-  onPressProfile: (friendId: string) => void;
   isAccepting: boolean;
   isDeclining: boolean;
 };
@@ -19,7 +18,6 @@ export default function AcceptFriendRequestsScreen({
   isLoading,
   onAccept,
   onDecline,
-  onPressProfile,
   isAccepting,
   isDeclining,
 }: Props) {
@@ -49,7 +47,6 @@ export default function AcceptFriendRequestsScreen({
             mode="receiver"
             onAccept={onAccept}
             onDecline={onDecline}
-            onPressProfile={onPressProfile}
             isAccepting={isAccepting}
             isDeclining={isDeclining}
           />

@@ -1,4 +1,4 @@
-import UserAvatar from '@/src/components/UserAvatar';
+import ProfileIdentityRow from '@/src/components/ProfileIdentityRow';
 import { formatRelativeTime } from '@/src/lib/relativeTime';
 import { PrayerRequestDetail, PrayerRequestFeedItem } from '@/src/types/types';
 import { getAvatarNameParts, getDisplayName } from '@/src/utils';
@@ -47,19 +47,17 @@ export default function PrayerRequestCard({
   return (
     <View className="rounded-3xl border border-gray-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-950">
       <TouchableOpacity activeOpacity={0.9} onPress={onPress}>
-        <View className="flex-row items-start gap-3">
-          <UserAvatar
-            uri={item.is_anonymous ? null : item.author_avatar_url}
-            first_name={avatarName.firstName}
-            last_name={avatarName.lastName}
-            size={42}
-            border={false}
-          />
-
-          <View className="flex-1">
-            <View className="flex-row flex-wrap items-center gap-2">
-              <Text className="font-semibold text-gray-900 dark:text-white">{displayName}</Text>
-
+        <ProfileIdentityRow
+          border={false}
+          className="items-start"
+          first_name={avatarName.firstName}
+          last_name={avatarName.lastName}
+          name={displayName}
+          size={42}
+          subtitle={formatRelativeTime(item.created_at)}
+          subtitleClassName="text-xs text-gray-500 dark:text-gray-400"
+          titleAside={
+            <>
               <View className="rounded-full bg-gray-100 px-2 py-1 dark:bg-neutral-900">
                 <Text className="text-xs text-gray-600 dark:text-gray-400">{scopeLabel}</Text>
               </View>
@@ -75,13 +73,13 @@ export default function PrayerRequestCard({
                   <Text className="text-xs text-emerald-700 dark:text-emerald-300">Answered</Text>
                 </View>
               ) : null}
-            </View>
-
-            <Text className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-              {formatRelativeTime(item.created_at)}
-            </Text>
-          </View>
-        </View>
+            </>
+          }
+          titleClassName="font-semibold text-gray-900 dark:text-white"
+          titleRowClassName="flex-row flex-wrap items-center gap-2"
+          uri={item.is_anonymous ? null : item.author_avatar_url}
+          userId={item.is_anonymous ? null : item.user_id}
+        />
 
         <Text
           className="mt-4 text-base leading-7 text-gray-800 dark:text-gray-200"

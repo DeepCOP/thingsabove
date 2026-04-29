@@ -22,7 +22,6 @@ type Props = {
   isSearching: boolean;
   isAdding: boolean;
   onAddFriend: (friendId: string) => void;
-  onPressProfile: (friendId: string) => void;
   onShareInviteLink: () => void;
 };
 
@@ -34,7 +33,6 @@ export default function AddFriendScreen({
   isSearching,
   isAdding,
   onAddFriend,
-  onPressProfile,
   onShareInviteLink,
 }: Props) {
   const { session, loading: sessionLoading } = useAuth();
@@ -91,7 +89,6 @@ export default function AddFriendScreen({
                 : 'Not friends'
           }
           onAdd={onAddFriend}
-          onPressProfile={onPressProfile}
           isAdding={isAdding}
         />
       )}

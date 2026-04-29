@@ -1,5 +1,5 @@
 import LoadingSpinner from '@/src/components/LoadingSpinner';
-import UserAvatar from '@/src/components/UserAvatar';
+import ProfileIdentityRow from '@/src/components/ProfileIdentityRow';
 import { Ionicons } from '@expo/vector-icons';
 import { FlatList, Text, TouchableOpacity, View, useColorScheme } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -79,20 +79,18 @@ export default function FriendsScreen({
               const fullName = [item.first_name, item.last_name].filter(Boolean).join(' ').trim();
 
               return (
-                <View className="mb-3 flex-row items-center rounded-xl bg-gray-100 p-3 dark:bg-neutral-900">
-                  <UserAvatar
+                <View className="mb-3 rounded-xl bg-gray-100 p-3 dark:bg-neutral-900">
+                  <ProfileIdentityRow
                     first_name={item.first_name}
                     last_name={item.last_name}
-                    uri={item.avatar_url}
+                    name={fullName || 'Unknown user'}
                     size={42}
+                    subtitle="Friend"
+                    subtitleClassName="mt-1 text-xs text-gray-500 dark:text-gray-400"
+                    titleClassName="font-semibold text-gray-900 dark:text-white"
+                    uri={item.avatar_url}
+                    userId={item.id}
                   />
-
-                  <View className="ml-3 flex-1">
-                    <Text className="font-semibold text-gray-900 dark:text-white">
-                      {fullName || 'Unknown user'}
-                    </Text>
-                    <Text className="mt-1 text-xs text-gray-500 dark:text-gray-400">Friend</Text>
-                  </View>
                 </View>
               );
             }}

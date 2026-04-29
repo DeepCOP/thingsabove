@@ -18,7 +18,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import LoadingSpinner from '../components/LoadingSpinner';
-import UserAvatar from '../components/UserAvatar';
+import ProfileIdentityRow from '../components/ProfileIdentityRow';
 import { ScriptureNote, ScriptureNoteContext, ScriptureNoteType } from '../types/types';
 import { getVerseNumbersFromRange, getVerseRangeLabels } from '../utils';
 
@@ -316,23 +316,18 @@ export default function ScriptureNotesScreen({
                     <View
                       key={note.id}
                       className="mb-3 p-3 rounded-xl border border-gray-200 dark:border-neutral-700 bg-white dark:bg-neutral-900">
-                      <View className="flex-row items-start">
-                        <UserAvatar
-                          uri={note.avatar_url}
-                          first_name={note.first_name}
-                          last_name={note.last_name}
-                          size={34}
-                        />
-
-                        <View className="flex-1 ml-2">
-                          <Text className="font-semibold text-primary dark:text-gray-100">
-                            {note.first_name} {note.last_name?.[0] ? `${note.last_name[0]}.` : ''}
-                          </Text>
-                          <Text className="text-xs text-gray-500 dark:text-gray-300">
-                            {dayjs(note.created_at).format('MMM D, YYYY')}
-                          </Text>
-                        </View>
-                      </View>
+                      <ProfileIdentityRow
+                        className="items-start"
+                        first_name={note.first_name}
+                        last_name={note.last_name}
+                        name={`${note.first_name} ${note.last_name?.[0] ? `${note.last_name[0]}.` : ''}`.trim()}
+                        size={34}
+                        subtitle={dayjs(note.created_at).format('MMM D, YYYY')}
+                        subtitleClassName="text-xs text-gray-500 dark:text-gray-300"
+                        titleClassName="font-semibold text-primary dark:text-gray-100"
+                        uri={note.avatar_url}
+                        userId={note.user_id}
+                      />
 
                       <Text className="mt-3 text-[15px] leading-6 text-primary dark:text-gray-100">
                         {note.content}
@@ -386,24 +381,18 @@ export default function ScriptureNotesScreen({
                         <View
                           key={reply.id}
                           className="mt-3 ml-5 p-3 rounded-xl border border-gray-200 dark:border-neutral-700 bg-gray-50 dark:bg-neutral-800">
-                          <View className="flex-row items-start">
-                            <UserAvatar
-                              uri={reply.avatar_url}
-                              first_name={reply.first_name}
-                              last_name={reply.last_name}
-                              size={30}
-                            />
-
-                            <View className="flex-1 ml-2">
-                              <Text className="font-semibold text-primary dark:text-gray-100">
-                                {reply.first_name}{' '}
-                                {reply.last_name?.[0] ? `${reply.last_name[0]}.` : ''}
-                              </Text>
-                              <Text className="text-xs text-gray-500 dark:text-gray-300">
-                                {dayjs(reply.created_at).format('MMM D, YYYY')}
-                              </Text>
-                            </View>
-                          </View>
+                          <ProfileIdentityRow
+                            className="items-start"
+                            first_name={reply.first_name}
+                            last_name={reply.last_name}
+                            name={`${reply.first_name} ${reply.last_name?.[0] ? `${reply.last_name[0]}.` : ''}`.trim()}
+                            size={30}
+                            subtitle={dayjs(reply.created_at).format('MMM D, YYYY')}
+                            subtitleClassName="text-xs text-gray-500 dark:text-gray-300"
+                            titleClassName="font-semibold text-primary dark:text-gray-100"
+                            uri={reply.avatar_url}
+                            userId={reply.user_id}
+                          />
 
                           <Text className="mt-2 text-[15px] leading-6 text-primary dark:text-gray-100">
                             {reply.content}
