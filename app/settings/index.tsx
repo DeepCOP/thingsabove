@@ -42,12 +42,12 @@ export default function NotificationSettingsScreen() {
     <View className="flex-1 bg-white dark:bg-black px-4 pt-6">
       <Text className="text-xl font-bold dark:text-white mb-6">Notifications</Text>
 
-      {/* DAILY ENCOURAGEMENT */}
+      {/* OCCASIONAL AI NOTIFICATIONS */}
       <View className="flex-row items-center justify-between py-4 border-b border-gray-200 dark:border-neutral-800">
         <View className="flex-1 pr-4">
-          <Text className="font-semibold dark:text-white">Daily Encouragement</Text>
+          <Text className="font-semibold dark:text-white">Encouragement Notifications</Text>
           <Text className="text-xs text-gray-500 mt-1">
-            Receive a daily faith-based encouragement
+            Receive Scripture-based encouragement and spiritual prompts
           </Text>
         </View>
 

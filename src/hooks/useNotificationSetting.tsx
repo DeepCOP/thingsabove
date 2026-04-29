@@ -17,7 +17,7 @@ export function useNotificationSettings() {
     queryFn: async () => getNotificationsPreferences(userId!),
   });
 
-  const dailyEncouragement = data?.daily ?? false;
+  const dailyEncouragement = data?.daily ?? true;
 
   // 2️⃣ Update preference
   const { mutate: toggleDailyEncouragementMutation, isPending } = useMutation({
