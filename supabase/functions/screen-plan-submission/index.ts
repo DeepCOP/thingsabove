@@ -94,6 +94,10 @@ Decision rules:
 - Return pass only when the submission is complete enough to publish, clearly relevant to the app, not spam, not unsafe, and not in clear conflict with Nicene Christianity.
 - Return reject if any one of those conditions fails badly enough that the plan should not be published.
 
+Reject summary guidance:
+- When the decision is reject, write the summary for the author in a gentle, encouraging, and constructive tone.
+- Briefly explain what to improve without shaming or insulting the author.
+
 Relevance guidance:
 -The plan should clearly function as Christian devotional or Bible study content.
 -Reject content that is mostly unrelated, generic filler, or not meaningfully devotional or Bible study–oriented.
