@@ -2,7 +2,6 @@ import { useComments } from '@/src/hooks/useComments';
 import { formatRelativeTime } from '@/src/lib/relativeTime';
 import { useAuth } from '@/src/state/AuthContext';
 import { PlanDayComment } from '@/src/types/types';
-import dayjs from '@/src/lib/dayjs';
 import { Ionicons } from '@expo/vector-icons';
 import BottomSheet, {
   BottomSheetBackdrop,
@@ -126,16 +125,23 @@ const DayCommentsBottomSheet = forwardRef<BottomSheet, Props>(
                 const isDeleting = deletingCommentId === item.id;
 
                 return (
-                  <ProfileIdentityRow
-                    className="mb-4 px-4 items-start"
-                    contentClassName="rounded-xl bg-neutral-600 px-3 py-2"
-                    first_name={item.first_name}
-                    last_name={item.last_name}
-                    size={40}
-                    titleClassName="text-sm font-semibold text-gray-200 dark:text-gray-200"
-                    uri={item.avatar_url}
-                    userId={item.user_id}>
-                    <>
+                  <View className="mb-4 px-4">
+                    <ProfileIdentityRow
+                      className="items-start"
+                      first_name={item.first_name}
+                      last_name={item.last_name}
+                      size={40}
+                      titleAside={
+                        <Text className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                          {formatRelativeTime(item.created_at)}
+                        </Text>
+                      }
+                      titleClassName="text-sm font-semibold text-gray-200 dark:text-gray-200"
+                      uri={item.avatar_url}
+                      userId={item.user_id}
+                    />
+
+                    <View className="ml-[52px]  rounded-xl bg-neutral-600 px-3 py-2">
                       <Text className="mt-1 text-sm dark:text-white text-white">
                         {item.content}
                       </Text>
@@ -176,8 +182,8 @@ const DayCommentsBottomSheet = forwardRef<BottomSheet, Props>(
                           </View>
                         )}
                       </View>
-                    </>
-                  </ProfileIdentityRow>
+                    </View>
+                  </View>
                 );
               }}
             />
