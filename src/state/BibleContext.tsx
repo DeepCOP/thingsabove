@@ -265,19 +265,30 @@ export function BibleProvider({ children }: { children: ReactNode }) {
 
   const versions = useMemo(
     () =>
-      availableVersions.map((entry) => {
-        const installState = bibleVersionStates[entry.id];
-        const installed = isVersionInstalled(entry.id);
+      availableVersions
+        .map((entry) => {
+          const installState = bibleVersionStates[entry.id];
+          const installed = isVersionInstalled(entry.id);
 
-        return {
-          ...entry,
-          installState,
-          isInstalled: installed,
-          isActive: entry.id === version,
-          isDownloading: installState?.status === 'downloading',
-          canDelete: installed && !entry.isBundled,
-        };
-      }),
+          return {
+            ...entry,
+            installState,
+            isInstalled: installed,
+            isActive: entry.id === version,
+            isDownloading: installState?.status === 'downloading',
+            canDelete: installed && !entry.isBundled,
+          };
+        })
+        .sort((a, b) => {
+          const aIsInstalled = a.isInstalled;
+          const bIsInstalled = b.isInstalled;
+
+          if (aIsInstalled !== bIsInstalled) {
+            return aIsInstalled ? -1 : 1;
+          }
+
+          return a.id.localeCompare(b.id);
+        }),
     [availableVersions, bibleVersionStates, isVersionInstalled, version],
   );
 

@@ -10,7 +10,6 @@ insert into public.bible_versions (
   public_url,
   is_bundled,
   is_enabled,
-  sort_order,
   checksum
 )
 values
@@ -26,7 +25,6 @@ values
     'https://ujdyhgasuwikfvldhxnb.supabase.co/storage/v1/object/public/bible_versions/ASV.json',
     false,
     true,
-    13,
     null
   ),
   (
@@ -41,7 +39,6 @@ values
     'https://ujdyhgasuwikfvldhxnb.supabase.co/storage/v1/object/public/bible_versions/ACV.json',
     false,
     true,
-    19,
     null
   ),
   (
@@ -56,7 +53,6 @@ values
     'https://ujdyhgasuwikfvldhxnb.supabase.co/storage/v1/object/public/bible_versions/YLT.json',
     false,
     true,
-    15,
     null
   ),
   (
@@ -71,7 +67,6 @@ values
     'https://ujdyhgasuwikfvldhxnb.supabase.co/storage/v1/object/public/bible_versions/NHEB.json',
     false,
     true,
-    16,
     null
   ),
   (
@@ -86,7 +81,6 @@ values
     'https://ujdyhgasuwikfvldhxnb.supabase.co/storage/v1/object/public/bible_versions/RWEBSTER.json',
     false,
     true,
-    20,
     null
   ),
   (
@@ -101,7 +95,6 @@ values
     'https://ujdyhgasuwikfvldhxnb.supabase.co/storage/v1/object/public/bible_versions/JPS.json',
     false,
     true,
-    21,
     null
   ),
   (
@@ -116,7 +109,6 @@ values
     'https://ujdyhgasuwikfvldhxnb.supabase.co/storage/v1/object/public/bible_versions/CUVL.json',
     false,
     true,
-    1,
     null
   ),
   (
@@ -131,7 +123,6 @@ values
     'https://ujdyhgasuwikfvldhxnb.supabase.co/storage/v1/object/public/bible_versions/RUSSYNODAL.json',
     false,
     true,
-    4,
     null
   ),
   (
@@ -146,7 +137,6 @@ values
     'https://ujdyhgasuwikfvldhxnb.supabase.co/storage/v1/object/public/bible_versions/KORRV.json',
     false,
     true,
-    11,
     null
   ),
   (
@@ -161,7 +151,6 @@ values
     'https://ujdyhgasuwikfvldhxnb.supabase.co/storage/v1/object/public/bible_versions/RV1909.json',
     false,
     true,
-    2,
     null
   ),
   (
@@ -176,7 +165,6 @@ values
     'https://ujdyhgasuwikfvldhxnb.supabase.co/storage/v1/object/public/bible_versions/LSG1910.json',
     false,
     true,
-    5,
     null
   ),
   (
@@ -191,7 +179,6 @@ values
     'https://ujdyhgasuwikfvldhxnb.supabase.co/storage/v1/object/public/bible_versions/LUTHER1912.json',
     false,
     true,
-    6,
     null
   ),
   (
@@ -206,7 +193,6 @@ values
     'https://ujdyhgasuwikfvldhxnb.supabase.co/storage/v1/object/public/bible_versions/DRA.json',
     false,
     true,
-    12,
     null
   ),
   (
@@ -221,7 +207,6 @@ values
     'https://ujdyhgasuwikfvldhxnb.supabase.co/storage/v1/object/public/bible_versions/WEB.json',
     false,
     true,
-    14,
     null
   ),
   (
@@ -236,7 +221,6 @@ values
     'https://ujdyhgasuwikfvldhxnb.supabase.co/storage/v1/object/public/bible_versions/HINCV.json',
     false,
     true,
-    10,
     null
   ),
   (
@@ -251,7 +235,6 @@ values
     'https://ujdyhgasuwikfvldhxnb.supabase.co/storage/v1/object/public/bible_versions/SWHCV.json',
     false,
     true,
-    9,
     null
   ),
   (
@@ -266,7 +249,6 @@ values
     'https://ujdyhgasuwikfvldhxnb.supabase.co/storage/v1/object/public/bible_versions/LXXRP.json',
     false,
     true,
-    25,
     null
   ),
   (
@@ -281,7 +263,6 @@ values
     'https://ujdyhgasuwikfvldhxnb.supabase.co/storage/v1/object/public/bible_versions/OEB.json',
     false,
     true,
-    17,
     null
   ),
   (
@@ -296,7 +277,6 @@ values
     'https://ujdyhgasuwikfvldhxnb.supabase.co/storage/v1/object/public/bible_versions/MSB.json',
     false,
     true,
-    18,
     null
   ),
   (
@@ -311,7 +291,6 @@ values
     'https://ujdyhgasuwikfvldhxnb.supabase.co/storage/v1/object/public/bible_versions/WPB.json',
     false,
     true,
-    8,
     null
   ),
   (
@@ -326,7 +305,6 @@ values
     'https://ujdyhgasuwikfvldhxnb.supabase.co/storage/v1/object/public/bible_versions/FFHB.json',
     false,
     true,
-    22,
     null
   ),
   (
@@ -341,7 +319,6 @@ values
     'https://ujdyhgasuwikfvldhxnb.supabase.co/storage/v1/object/public/bible_versions/ARBVD.json',
     false,
     true,
-    7,
     null
   ),
   (
@@ -356,7 +333,6 @@ values
     'https://ujdyhgasuwikfvldhxnb.supabase.co/storage/v1/object/public/bible_versions/MHB.json',
     false,
     true,
-    23,
     null
   ),
   (
@@ -371,7 +347,6 @@ values
     'https://ujdyhgasuwikfvldhxnb.supabase.co/storage/v1/object/public/bible_versions/TCGNT.json',
     false,
     true,
-    24,
     null
   ),
   (
@@ -386,7 +361,6 @@ values
     'https://ujdyhgasuwikfvldhxnb.supabase.co/storage/v1/object/public/bible_versions/SFBW.json',
     false,
     true,
-    26,
     null
   )
 on conflict (id) do update
@@ -401,5 +375,4 @@ set
   public_url = excluded.public_url,
   is_bundled = excluded.is_bundled,
   is_enabled = excluded.is_enabled,
-  sort_order = excluded.sort_order,
   checksum = excluded.checksum;

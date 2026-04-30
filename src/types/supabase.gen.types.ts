@@ -172,7 +172,6 @@ export type Database = {
           public_url: string | null;
           short_label: string;
           size_bytes: number;
-          sort_order: number;
           storage_path: string | null;
           updated_at: string;
         };
@@ -189,7 +188,6 @@ export type Database = {
           public_url?: string | null;
           short_label: string;
           size_bytes: number;
-          sort_order?: number;
           storage_path?: string | null;
           updated_at?: string;
         };
@@ -206,7 +204,6 @@ export type Database = {
           public_url?: string | null;
           short_label?: string;
           size_bytes?: number;
-          sort_order?: number;
           storage_path?: string | null;
           updated_at?: string;
         };
