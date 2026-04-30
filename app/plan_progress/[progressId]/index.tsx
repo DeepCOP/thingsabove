@@ -59,6 +59,7 @@ export default function PlanProgress() {
   const planQuery = useFetchDevotionalPlanById(planProgress?.plan_id as string);
   const plan = planQuery.data;
   const [selectedDayNumber, setSelectedDay] = useState<number>(1);
+  const [refreshing, setRefreshing] = useState(false);
   const [menuVisible, setMenuVisible] = useState(false);
   const stopPlanProgressMutation = useStopPlanProgress();
   const today = dayjs().startOf('day');
@@ -207,6 +208,35 @@ export default function PlanProgress() {
     );
   }
 
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    const refreshStartedAt = Date.now();
+
+    try {
+      const refreshTasks: Promise<unknown>[] = [
+        planProgressQuery.refetch(),
+        daysQuery.refetch(),
+        planQuery.refetch(),
+        dayItemsProgressQuery.refetch(),
+      ];
+
+      if (planProgress?.group_id) {
+        refreshTasks.push(planGroupMembersQuery.refetch());
+      }
+
+      await Promise.allSettled(refreshTasks);
+    } finally {
+      const elapsed = Date.now() - refreshStartedAt;
+      const minimumVisibleDuration = 500;
+
+      if (elapsed < minimumVisibleDuration) {
+        await new Promise((resolve) => setTimeout(resolve, minimumVisibleDuration - elapsed));
+      }
+
+      setRefreshing(false);
+    }
+  };
+
   if (planProgressQuery.isLoading || daysQuery.isLoading || planQuery.isLoading || sessionLoading) {
     return <LoadingSpinner />;
   }
@@ -224,20 +254,9 @@ export default function PlanProgress() {
       <Stack.Screen
         options={{
           title: planTitle,
-          headerTransparent: true,
-          headerBlurEffect:
-            Platform.OS === 'ios'
-              ? colorScheme === 'dark'
-                ? 'systemMaterialDark'
-                : 'systemMaterialLight'
-              : undefined,
+          headerTransparent: false,
           headerStyle: {
-            backgroundColor:
-              Platform.OS === 'ios'
-                ? 'transparent'
-                : colorScheme === 'dark'
-                  ? 'rgba(0, 0, 0, 0.65)'
-                  : 'rgba(255, 255, 255, 0.65)',
+            backgroundColor: colorScheme === 'dark' ? '#000' : '#fff',
           },
           headerRight: () => (
             <TouchableOpacity
@@ -262,7 +281,6 @@ export default function PlanProgress() {
 
       <PlanProgressScreen
         insetsBottom={insets.bottom}
-        insetsTop={insets.top}
         title={planTitle}
         coverImage={plan.cover_image || undefined}
         completions={plan.completions ?? 0}
@@ -276,8 +294,10 @@ export default function PlanProgress() {
         items={dayItemsProgress?.items}
         itemsLoading={dayItemsProgressQuery.isLoading}
         toggleLoading={toggleMutation.isPending}
+        refreshing={refreshing}
         planProgress={planProgress}
         onSelectDay={setSelectedDay}
+        onRefresh={handleRefresh}
         onMissedDays={() => {
           setMissedDays(missedDays || []);
           router.push(`/plan_progress/${progressId}/missedDays`);
