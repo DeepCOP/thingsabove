@@ -18,7 +18,6 @@ export const BIBLE_VERSION_MANIFEST: Record<BibleVersionId, BibleVersionManifest
     sizeBytes: 6852878,
     localFilename: 'kjv.json',
     isBundled: true,
-    sortOrder: 0,
     loadBundledJson: loadKjvBible,
   },
 };
@@ -46,7 +45,6 @@ type BibleVersionCatalogRow = {
   is_bundled: boolean;
   checksum: string | null;
   updated_at: string;
-  sort_order: number;
 };
 
 const mapBibleVersionRow = (row: BibleVersionCatalogRow): BibleVersionManifestEntry => {
@@ -65,7 +63,6 @@ const mapBibleVersionRow = (row: BibleVersionCatalogRow): BibleVersionManifestEn
     downloadUrl: row.storage_path ? resolvePublicUrl(row.storage_path) : row.public_url,
     checksum: row.checksum,
     updatedAt: row.updated_at,
-    sortOrder: row.sort_order,
     loadBundledJson: builtInVersion?.loadBundledJson,
   };
 };
@@ -74,11 +71,10 @@ export const fetchBibleVersionCatalog = async (): Promise<BibleVersionManifestEn
   const { data, error } = await supabase
     .from('bible_versions')
     .select(
-      'id, short_label, label, description, language, size_bytes, local_filename, storage_path, public_url, is_bundled, checksum, updated_at, sort_order',
+      'id, short_label, label, description, language, size_bytes, local_filename, storage_path, public_url, is_bundled, checksum, updated_at',
     )
     .eq('is_enabled', true)
-    .order('sort_order', { ascending: true })
-    .order('label', { ascending: true });
+    .order('id', { ascending: true });
 
   if (error) {
     throw error;
@@ -100,13 +96,5 @@ export const mergeBibleVersionCatalog = (remoteVersions: BibleVersionManifestEnt
     }
   }
 
-  return [...merged.values()].sort((a, b) => {
-    const sortOrderDiff =
-      (a.sortOrder ?? Number.MAX_SAFE_INTEGER) - (b.sortOrder ?? Number.MAX_SAFE_INTEGER);
-    if (sortOrderDiff !== 0) {
-      return sortOrderDiff;
-    }
-
-    return a.label.localeCompare(b.label);
-  });
+  return [...merged.values()].sort((a, b) => a.id.localeCompare(b.id));
 };

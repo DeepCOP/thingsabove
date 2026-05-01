@@ -10,14 +10,13 @@ create table if not exists public.bible_versions (
   public_url text,
   is_bundled boolean not null default false,
   is_enabled boolean not null default true,
-  sort_order integer not null default 0,
   checksum text,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
 
-create index if not exists bible_versions_enabled_sort_order_idx
-on public.bible_versions (is_enabled, sort_order, label);
+create index if not exists bible_versions_enabled_id_idx
+on public.bible_versions (is_enabled, id);
 
 alter table public.bible_versions enable row level security;
 
@@ -60,7 +59,6 @@ insert into public.bible_versions (
   public_url,
   is_bundled,
   is_enabled,
-  sort_order,
   checksum
 )
 values
@@ -76,7 +74,6 @@ values
     'https://ujdyhgasuwikfvldhxnb.supabase.co/storage/v1/object/public/bible_versions/ASV.json',
     false,
     true,
-    10,
     null
   ),
   (  
@@ -91,7 +88,6 @@ values
     'https://ujdyhgasuwikfvldhxnb.supabase.co/storage/v1/object/public/bible_versions/AMH_NASV.json',
     false,
     true,
-    32,
     null
   ),
   (
@@ -106,7 +102,6 @@ values
     'https://ujdyhgasuwikfvldhxnb.supabase.co/storage/v1/object/public/bible_versions/HABH.json',
     false,
     true,
-    20,
     null
   ),
   (
@@ -121,7 +116,6 @@ values
     'https://ujdyhgasuwikfvldhxnb.supabase.co/storage/v1/object/public/bible_versions/AMH.json',
     false,
     true,
-    30,
     null
   ),
   (
@@ -136,7 +130,6 @@ values
   'https://ujdyhgasuwikfvldhxnb.supabase.co/storage/v1/object/public/bible_versions/CUVS.json',
   false,
   true,
-  40,
   null
 ),
 (
@@ -151,7 +144,6 @@ values
   'https://ujdyhgasuwikfvldhxnb.supabase.co/storage/v1/object/public/bible_versions/CUVT.json',
   false,
   true,
-  41,
   null
 )
 on conflict (id) do update
@@ -166,5 +158,4 @@ set
   public_url = excluded.public_url,
   is_bundled = excluded.is_bundled,
   is_enabled = excluded.is_enabled,
-  sort_order = excluded.sort_order,
   checksum = excluded.checksum;

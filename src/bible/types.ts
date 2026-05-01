@@ -54,6 +54,5 @@ export type BibleVersionManifestEntry = {
   downloadUrl?: string | null;
   checksum?: string | null;
   updatedAt?: string | null;
-  sortOrder?: number;
   loadBundledJson?: () => Promise<BibleJSON>;
 };
