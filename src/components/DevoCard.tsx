@@ -87,7 +87,7 @@ export function ListCard({
       {(item.completed_days ?? 0) > 0 && (
         <View className="flex-1 flex-row items-end justify-end">
           <Text className="font-semibold text-green-600 text-end">
-            {percentageCompletion.toFixed(2)}%
+            {percentageCompletion.toFixed(0)}%
           </Text>
         </View>
       )}
@@ -173,7 +173,7 @@ export function GridCard({
       {(item.completed_days ?? 0) > 0 && (
         <View className="flex-1 flex-row items-end justify-end">
           <Text className="font-semibold text-green-600 text-end">
-            {percentageCompletion.toFixed(2)}%
+            {percentageCompletion.toFixed(0)}%
           </Text>
         </View>
       )}
