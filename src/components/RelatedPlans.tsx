@@ -33,7 +33,7 @@ export function RelatedPlansSection({ plan }: { plan: DevotionalPlan | undefined
           <FlatList
             horizontal
             data={data}
-            keyExtractor={(item) => item.id}
+            keyExtractor={(item, index) => item.id ?? `related-plan-${index}`}
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={{ paddingRight: 10 }}
             renderItem={({ item }) => (

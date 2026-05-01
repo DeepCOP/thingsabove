@@ -14,9 +14,9 @@ import { DayItemsProgress, DevotionalDays, PlanProgress } from '@/src/types/type
 
 type Props = {
   insetsBottom: number;
-  title: string;
   coverImage?: string;
   completions?: number;
+  visibility?: string | null;
   days: any[];
   selectedDay: number;
   currentDayId?: string;
@@ -40,9 +40,9 @@ type Props = {
 
 export default function PlanProgressScreen({
   insetsBottom,
-  title,
   coverImage,
   completions,
+  visibility,
   days,
   selectedDay,
   selectedDayData,
@@ -77,10 +77,10 @@ export default function PlanProgressScreen({
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#2563eb" />
         }>
         <PlanHeader
-          title={title}
           coverImage={coverImage}
           selectedDay={selectedDay}
           completions={completions}
+          visibility={visibility}
         />
 
         <DaysCarousel

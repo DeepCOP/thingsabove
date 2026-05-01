@@ -23,6 +23,9 @@ type Props = {
   plan: any;
   isLoading: boolean;
   hasActiveSoloPlanProgress: boolean;
+  hasActivePlanProgress: boolean;
+  canStartPlan: boolean;
+  isPrivatePlan: boolean;
   onStartPress: (mode: 'solo' | 'group') => void;
   onContinuePress: () => void;
   isSaved: boolean;
@@ -37,6 +40,9 @@ export default function DevotionalDetailScreen({
   plan,
   isLoading,
   hasActiveSoloPlanProgress,
+  hasActivePlanProgress,
+  canStartPlan,
+  isPrivatePlan,
   onStartPress,
   onContinuePress,
   isSaved,
@@ -48,6 +54,9 @@ export default function DevotionalDetailScreen({
 
   const { isGuest } = useAuth();
   const resolvedTopInset = insets.top;
+  const startButtonLabel =
+    isPrivatePlan && !canStartPlan && hasActivePlanProgress ? 'Continue Plan' : 'Start Plan';
+
   if (isLoading) {
     return <LoadingSpinner style={{ marginTop: 30 }} />;
   }
@@ -89,7 +98,22 @@ export default function DevotionalDetailScreen({
 
           <View className="flex-row items-center gap-2 mt-2">
             <Text className="text-gray-600 dark:text-gray-300">{plan?.total_days} Days</Text>
+            {isPrivatePlan && (
+              <View className="rounded-full bg-amber-100 px-2 py-1 dark:bg-amber-900/40">
+                <Text className="text-[10px] font-semibold uppercase tracking-wide text-amber-700 dark:text-amber-200">
+                  Private
+                </Text>
+              </View>
+            )}
           </View>
+
+          {isPrivatePlan && (
+            <Text className="mt-3 text-sm leading-6 text-gray-600 dark:text-gray-300">
+              {canStartPlan
+                ? 'Only people you invite can join this plan.'
+                : 'You can keep reading through the private plan invitation you already joined.'}
+            </Text>
+          )}
         </View>
         <View className="px-4 mt-4 flex-row items-center gap-6">
           <TouchableOpacity
@@ -134,12 +158,22 @@ export default function DevotionalDetailScreen({
         </View>
 
         <TouchableOpacity
-          className="mt-6 mx-4 bg-black dark:bg-white py-4 rounded-full"
+          className={`mt-6 mx-4 rounded-full py-4 ${
+            isPrivatePlan && !canStartPlan && !hasActivePlanProgress
+              ? 'bg-gray-400 dark:bg-neutral-700'
+              : 'bg-black dark:bg-white'
+          }`}
           onPress={() => {
+            if (isPrivatePlan && !canStartPlan && hasActivePlanProgress) {
+              onContinuePress();
+              return;
+            }
+
             bottomSheetRef.current?.expand();
-          }}>
+          }}
+          disabled={isPrivatePlan && !canStartPlan && !hasActivePlanProgress}>
           <Text className="text-center text-white dark:text-black font-semibold text-lg">
-            Start Plan
+            {startButtonLabel}
           </Text>
         </TouchableOpacity>
 

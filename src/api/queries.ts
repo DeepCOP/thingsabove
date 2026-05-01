@@ -3,16 +3,14 @@ import { ProfileLocation, ProfileWithChurch } from '../types/types';
 
 export const searchRelatedPlans = async (currentPlanId: string, tags: string[]) => {
   if (!tags.length) return [];
-  const { data, error } = await supabase
-    .from('devotional_plans')
-    .select('id, title, cover_image, total_days, tags, description')
-    .neq('id', currentPlanId)
-    .neq('status', 'draft')
-    .overlaps('tags', tags)
-    .limit(10);
+  const { data, error } = await supabase.rpc('get_related_public_plans', {
+    p_current_plan_id: currentPlanId,
+    p_tags: tags,
+    p_limit_count: 10,
+  });
   if (error) throw error;
 
-  return data;
+  return data ?? [];
 };
 
 export const searchPlans = async ({
@@ -48,41 +46,38 @@ export const fetchPlans = async ({
   const PAGE_SIZE = 10;
   const { created_at, id } = pageParam ?? {};
 
-  let query = supabase
-    .from('devotional_plans_view')
-    .select('*')
-    .neq('status', 'draft')
-    .order('created_at', { ascending: false })
-    .order('id', { ascending: false }) // secondary key for stable ordering
-    .limit(PAGE_SIZE);
-
-  if (created_at && id) {
-    query = query.or(`created_at.lt.${created_at},and(created_at.eq.${created_at},id.lt.${id})`);
-  }
-
-  const { data, error } = await query;
+  const { data, error } = await supabase.rpc('get_discover_plans', {
+    p_limit_count: PAGE_SIZE,
+    p_cursor_created_at: created_at ?? undefined,
+    p_cursor_id: id ?? undefined,
+  });
   if (error) throw error;
 
+  const items = data ?? [];
+
   // last item becomes the new cursor
-  const last = data[data.length - 1];
+  const last = items[items.length - 1];
 
   return {
-    items: data,
+    items,
     nextCursor: last ? { created_at: last.created_at, id: last.id } : null,
   };
 };
 
 export const fetchPlanById = async (id: string) => {
-  let { data, error } = await supabase
-    .from('devotional_plans_view')
-    .select('*')
-    .eq('id', id)
-    .neq('status', 'draft')
-    .single();
+  const { data, error } = await supabase.rpc('get_published_plan_by_id', {
+    p_plan_id: id,
+  });
 
   if (error) throw error;
 
-  return data;
+  const plan = data?.[0];
+
+  if (!plan) {
+    throw new Error('Plan not found');
+  }
+
+  return plan;
 };
 
 export const fetchDayItems = async ({
@@ -179,13 +174,15 @@ export const fetchUserFriends = async ({ userId }: { userId: string }) => {
 };
 
 export const fetchUserPlans = async (planId: string[]) => {
-  const { data, error } = await supabase
-    .from('devotional_plans_view')
-    .select('*')
-    .neq('status', 'draft')
-    .in('id', planId);
+  if (!planId.length) {
+    return [];
+  }
+
+  const { data, error } = await supabase.rpc('get_published_plans_by_ids', {
+    p_plan_ids: planId,
+  });
   if (error) throw error;
-  return data;
+  return data ?? [];
 };
 
 export const fetchMySavedPlans = async () => {
@@ -196,6 +193,14 @@ export const fetchMySavedPlans = async () => {
   const items = data ?? [];
 
   return items;
+};
+
+export const fetchMyDevotionalPlans = async () => {
+  const { data, error } = await supabase.rpc('get_my_devotional_plans');
+
+  if (error) throw error;
+
+  return data ?? [];
 };
 
 export const fetchMyPlanProgressPlans = async () => {

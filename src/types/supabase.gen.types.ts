@@ -491,6 +491,7 @@ export type Database = {
           title: string;
           total_days: number;
           updated_at: string | null;
+          visibility: string;
         };
         Insert: {
           author_id?: string | null;
@@ -504,6 +505,7 @@ export type Database = {
           title: string;
           total_days?: number;
           updated_at?: string | null;
+          visibility?: string;
         };
         Update: {
           author_id?: string | null;
@@ -517,6 +519,7 @@ export type Database = {
           title?: string;
           total_days?: number;
           updated_at?: string | null;
+          visibility?: string;
         };
         Relationships: [];
       };
@@ -1664,6 +1667,7 @@ export type Database = {
           total_days: number | null;
           updated_at: string | null;
           user_reaction: string | null;
+          visibility: string | null;
         };
         Insert: {
           author_id?: string | null;
@@ -1681,6 +1685,7 @@ export type Database = {
           total_days?: number | null;
           updated_at?: string | null;
           user_reaction?: never;
+          visibility?: string | null;
         };
         Update: {
           author_id?: string | null;
@@ -1698,6 +1703,7 @@ export type Database = {
           total_days?: number | null;
           updated_at?: string | null;
           user_reaction?: never;
+          visibility?: string | null;
         };
         Relationships: [];
       };
@@ -2030,6 +2036,7 @@ export type Database = {
           status: string;
           title: string;
           total_days: number;
+          visibility: string;
         }[];
       };
       get_my_notifications: {
@@ -2067,6 +2074,7 @@ export type Database = {
           total_days: number;
           updated_at: string;
           user_reaction: string;
+          visibility: string;
         }[];
       };
       get_my_plan_rating: { Args: { p_plan_id: string }; Returns: number };
@@ -2089,6 +2097,99 @@ export type Database = {
           total_days: number;
           updated_at: string;
           user_reaction: string;
+          visibility: string;
+        }[];
+      };
+      get_discover_plans: {
+        Args: {
+          p_cursor_created_at?: string;
+          p_cursor_id?: string;
+          p_limit_count?: number;
+        };
+        Returns: {
+          author_id: string | null;
+          completions: number | null;
+          cover_image: string | null;
+          created_at: string | null;
+          description: string | null;
+          helpful_count: number | null;
+          id: string | null;
+          rating_avg: number | null;
+          rating_count: number | null;
+          status: string | null;
+          tags: string[] | null;
+          title: string | null;
+          total_days: number | null;
+          updated_at: string | null;
+          user_reaction: string | null;
+          visibility: string | null;
+        }[];
+      };
+      get_published_plan_by_id: {
+        Args: { p_plan_id: string };
+        Returns: {
+          author_id: string | null;
+          completions: number | null;
+          cover_image: string | null;
+          created_at: string | null;
+          description: string | null;
+          helpful_count: number | null;
+          id: string | null;
+          rating_avg: number | null;
+          rating_count: number | null;
+          status: string | null;
+          tags: string[] | null;
+          title: string | null;
+          total_days: number | null;
+          updated_at: string | null;
+          user_reaction: string | null;
+          visibility: string | null;
+        }[];
+      };
+      get_published_plans_by_ids: {
+        Args: { p_plan_ids: string[] };
+        Returns: {
+          author_id: string | null;
+          completions: number | null;
+          cover_image: string | null;
+          created_at: string | null;
+          description: string | null;
+          helpful_count: number | null;
+          id: string | null;
+          rating_avg: number | null;
+          rating_count: number | null;
+          status: string | null;
+          tags: string[] | null;
+          title: string | null;
+          total_days: number | null;
+          updated_at: string | null;
+          user_reaction: string | null;
+          visibility: string | null;
+        }[];
+      };
+      get_related_public_plans: {
+        Args: {
+          p_current_plan_id: string;
+          p_limit_count?: number;
+          p_tags: string[];
+        };
+        Returns: {
+          author_id: string | null;
+          completions: number | null;
+          cover_image: string | null;
+          created_at: string | null;
+          description: string | null;
+          helpful_count: number | null;
+          id: string | null;
+          rating_avg: number | null;
+          rating_count: number | null;
+          status: string | null;
+          tags: string[] | null;
+          title: string | null;
+          total_days: number | null;
+          updated_at: string | null;
+          user_reaction: string | null;
+          visibility: string | null;
         }[];
       };
       get_pending_friend_requests: {
@@ -2127,7 +2228,11 @@ export type Database = {
           inviter_id: string;
           inviter_last_name: string;
           max_members: number;
+          plan_cover_image: string;
           plan_id: string;
+          plan_title: string;
+          plan_total_days: number;
+          plan_visibility: string;
           start_date: string;
         }[];
       };
@@ -2339,6 +2444,7 @@ export type Database = {
           total_days: number | null;
           updated_at: string | null;
           user_reaction: string | null;
+          visibility: string | null;
         }[];
         SetofOptions: {
           from: '*';
