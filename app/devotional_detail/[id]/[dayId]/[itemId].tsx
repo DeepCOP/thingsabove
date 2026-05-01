@@ -2,7 +2,7 @@ import DevotionalPlanReader from '@/src/components/DevotionPlanReader';
 import LoadingSpinner from '@/src/components/LoadingSpinner';
 import { useDayItemsProgress } from '@/src/hooks/useDayItemsProgress';
 import { useAuth } from '@/src/state/AuthContext';
-import { sortByItemKey } from '@/src/utils';
+import { sortDayItems } from '@/src/utils';
 import { useLocalSearchParams } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
 import { Text, View } from 'react-native';
@@ -22,10 +22,10 @@ export default function DevotionalDayScreen() {
 
   const dayItemsProgress = useMemo(() => {
     if (!dayItemsProgressQuery?.data) return null;
-    const data = dayItemsProgressQuery?.data;
+    const data = dayItemsProgressQuery?.data.filter((item) => item.item_type !== 'comment');
 
     return {
-      items: [...data].sort((a, b) => sortByItemKey(a.item_key, b.item_key)),
+      items: [...data].sort(sortDayItems),
     };
   }, [dayItemsProgressQuery?.data]);
 

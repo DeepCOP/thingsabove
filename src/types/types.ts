@@ -142,6 +142,9 @@ export type CommentsInsert = Database['public']['Tables']['comments']['Insert'];
 
 export type CommentsUpdate = Database['public']['Tables']['comments']['Update'];
 
+export type PlanDayComment =
+  Database['public']['Functions']['get_plan_day_comments']['Returns'][number];
+
 export type PlanProgress = Database['public']['Tables']['plan_progress']['Row'];
 export type PlanProgressInsert = Database['public']['Tables']['plan_progress']['Insert'];
 export type PlanProgressUpdate = Database['public']['Tables']['plan_progress']['Update'];
@@ -164,6 +167,8 @@ export type GetMyNotifications = Database['public']['Functions']['get_my_notific
 export type PlanGroupMembers = Database['public']['Tables']['plan_group_members']['Row'];
 export type PlanGroupMembersInsert = Database['public']['Tables']['plan_group_members']['Insert'];
 export type PlanGroupMembersUpdate = Database['public']['Tables']['plan_group_members']['Update'];
+
+export type DayItemType = 'devotional' | 'scripture' | 'comment';
 
 export type DayItemsProgress = Database['public']['Tables']['day_items_progress']['Row'] & {
   title?: string | null;

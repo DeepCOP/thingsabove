@@ -1,7 +1,7 @@
 // hooks/useDayItemsProgress.ts
 import { toggleDayCompletion, toggleItemCompletion } from '@/src/api/mutations';
 import { fetchDayItems } from '@/src/api/queries';
-import { DayItemsProgress, PlanProgress } from '@/src/types/types';
+import { DayItemsProgress, DayItemType, PlanProgress } from '@/src/types/types';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 interface Params {
@@ -87,7 +87,7 @@ export function useDayItemsProgress({ user_id, plan_id, progress_id, day_id, gro
       completed,
     }: {
       item_id: string;
-      item_type: 'devotional' | 'scripture';
+      item_type: DayItemType;
       item_key: string;
       completed: boolean;
     }) => {
@@ -222,12 +222,7 @@ export function useDayItemsProgress({ user_id, plan_id, progress_id, day_id, gro
     },
   });
 
-  const toggleItem = (
-    item_id: string,
-    type: 'devotional' | 'scripture',
-    key: string,
-    completed: boolean,
-  ) => {
+  const toggleItem = (item_id: string, type: DayItemType, key: string, completed: boolean) => {
     toggleMutation.mutate({ item_id, item_type: type, item_key: key, completed });
   };
 

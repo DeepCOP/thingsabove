@@ -30,7 +30,6 @@ type Props = {
   itemsLoading: boolean;
   toggleLoading: boolean;
   onSelectDay: (day: number) => void;
-  onComments: () => void;
   onMissedDays: () => void;
   onParticipants: () => void;
   onPressItem: (item: DayItemsProgress) => void;
@@ -63,6 +62,7 @@ export default function PlanProgressScreen({
   devotionalItem,
 }: Props) {
   const commentsSheetRef = useRef<BottomSheet>(null);
+  const openComments = () => commentsSheetRef.current?.expand();
 
   return (
     <>
@@ -87,10 +87,8 @@ export default function PlanProgressScreen({
 
         <PlanMetaRow
           day={selectedDay}
-          groupId={planProgress.group_id || ''}
           totalDays={totalDays}
           missedCount={missedCount}
-          onComments={() => commentsSheetRef.current?.expand()}
           onMissedDays={onMissedDays}
         />
 
@@ -101,7 +99,14 @@ export default function PlanProgressScreen({
         ) : items ? (
           <DayItemsList
             items={items}
-            onPressItem={onPressItem}
+            onPressItem={(item) => {
+              if (item.item_type === 'comment') {
+                openComments();
+                return;
+              }
+
+              onPressItem(item);
+            }}
             onToggle={(item) => onToggleItem(item)}
             toggleLoading={toggleLoading}
           />

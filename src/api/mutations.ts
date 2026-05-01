@@ -1,6 +1,7 @@
 import { getCurrentDeviceExpoPushToken } from '../lib/pushToken';
 import { supabase } from '../lib/supabaseClient';
 import {
+  DayItemType,
   PlanProgress,
   ProfileLocation,
   SignUpAboutDetailsInput,
@@ -17,7 +18,7 @@ export const toggleItemCompletion = async ({
   day_id,
   groupId,
 }: {
-  item_type: 'devotional' | 'scripture';
+  item_type: DayItemType;
   item_key: string;
   completed: boolean;
   user_id: string;
@@ -119,6 +120,28 @@ export const addPlanDayComment = async ({
     p_content: content,
     p_group_id: group_id,
   });
+
+  if (error) throw error;
+};
+
+export const updatePlanDayComment = async ({
+  commentId,
+  content,
+}: {
+  commentId: string;
+  content: string;
+}) => {
+  const trimmedContent = content.trim();
+  const { error } = await supabase
+    .from('comments')
+    .update({ content: trimmedContent })
+    .eq('id', commentId);
+
+  if (error) throw error;
+};
+
+export const deletePlanDayComment = async ({ commentId }: { commentId: string }) => {
+  const { error } = await supabase.from('comments').delete().eq('id', commentId);
 
   if (error) throw error;
 };
