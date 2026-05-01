@@ -14,11 +14,13 @@ export default function MyPlansList({
   listFooterComponent,
   containterStyle,
   mode = 'all',
+  showSaveButton = true,
 }: {
   listHeaderComponent?: React.JSX.Element;
   listFooterComponent?: React.JSX.Element;
   containterStyle?: object;
   mode?: 'all' | 'completed';
+  showSaveButton?: boolean;
 }) {
   const { session, loading: sessionLoading } = useAuth();
   const myPlansQuery = useMyPlanProgressPlans(session?.user?.id);
@@ -180,7 +182,9 @@ export default function MyPlansList({
             <GridCard
               item={item}
               isSaved={isSaved}
-              onToggleSave={() => planId && toggleSavedPlan(planId, isSaved, item)}
+              onToggleSave={
+                showSaveButton ? () => planId && toggleSavedPlan(planId, isSaved, item) : undefined
+              }
               onPress={() =>
                 router.push({
                   pathname: '/plan_progress/[progressId]',
@@ -196,7 +200,9 @@ export default function MyPlansList({
             <ListCard
               item={item}
               isSaved={isSaved}
-              onToggleSave={() => planId && toggleSavedPlan(planId, isSaved, item)}
+              onToggleSave={
+                showSaveButton ? () => planId && toggleSavedPlan(planId, isSaved, item) : undefined
+              }
               onPress={() =>
                 router.push({
                   pathname: '/plan_progress/[progressId]',

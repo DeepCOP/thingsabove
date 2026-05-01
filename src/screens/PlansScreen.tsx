@@ -118,7 +118,10 @@ export default function PlansScreen({
       ) : activeTab === 'saved-plans' ? (
         <SavedPlansList />
       ) : (
-        <MyPlansList mode={activeTab === 'completed-plans' ? 'completed' : 'all'} />
+        <MyPlansList
+          mode={activeTab === 'completed-plans' ? 'completed' : 'all'}
+          showSaveButton={activeTab !== 'my-plans'}
+        />
       )}
 
       <TouchableOpacity
