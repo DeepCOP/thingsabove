@@ -1,6 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { useHeaderHeight } from '@react-navigation/elements';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useDayItemsProgress } from '@/src/hooks/useDayItemsProgress';
@@ -30,7 +29,6 @@ import {
   ActivityIndicator,
   Alert,
   Modal,
-  Platform,
   Pressable,
   Text,
   TouchableOpacity,
@@ -42,7 +40,6 @@ export default function PlanProgress() {
   const colorScheme = useColorScheme();
 
   const insets = useSafeAreaInsets();
-  const headerHeight = useHeaderHeight();
   const { progressId } = useLocalSearchParams();
   const router = useRouter();
   const qc = useQueryClient();
@@ -332,7 +329,7 @@ export default function PlanProgress() {
         onRequestClose={() => setMenuVisible(false)}>
         <Pressable className="absolute inset-0 bg-black/10" onPress={() => setMenuVisible(false)} />
 
-        <View style={{ position: 'absolute', top: headerHeight + 8, right: 16 }}>
+        <View style={{ position: 'absolute', top: insets.top + 8, right: 16 }}>
           <View className="min-w-44 overflow-hidden rounded-2xl border border-neutral-200 bg-white dark:border-neutral-700 dark:bg-neutral-900">
             <TouchableOpacity
               disabled={stopPlanProgressMutation.isPending}
