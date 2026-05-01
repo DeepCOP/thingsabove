@@ -1,6 +1,7 @@
 import { ActivityIndicator, Image, Text, TouchableOpacity, View } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import PlanVisibilityBadge from '../components/PlanVisibilityBadge';
 import UserAvatar from '../components/UserAvatar';
 
 type Props = {
@@ -77,13 +78,7 @@ export default function PlanInvitationScreen({
           <Text className="dark:text-white text-lg font-semibold mt-3">{planTitle}</Text>
           <View className="mb-3 mt-1 flex-row items-center gap-2">
             <Text className="dark:text-gray-400 text-sm">{totalDays} Days</Text>
-            {isPrivatePlan && (
-              <View className="rounded-full bg-amber-100 px-2 py-1 dark:bg-amber-900/40">
-                <Text className="text-[10px] font-semibold uppercase tracking-wide text-amber-700 dark:text-amber-200">
-                  Private
-                </Text>
-              </View>
-            )}
+            <PlanVisibilityBadge visibility={isPrivatePlan ? 'private' : null} />
           </View>
 
           {/* Participants */}

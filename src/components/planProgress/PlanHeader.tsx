@@ -1,6 +1,6 @@
-import Ionicons from '@expo/vector-icons/Ionicons';
 import { Text, View } from 'react-native';
 import PlanCoverImage from '../PlanCoverImage';
+import PlanVisibilityBadge from '../PlanVisibilityBadge';
 
 type Props = {
   coverImage?: string;
@@ -25,14 +25,7 @@ export function PlanHeader({ coverImage, selectedDay, completions, visibility }:
       <View className="px-4 pt-4">
         <View className="mb-4 flex-row items-center gap-2">
           <Text className="text-2xl font-bold dark:text-white">Day {selectedDay}</Text>
-          {visibility === 'private' && (
-            <View className="flex-row items-center gap-1 rounded-full bg-amber-100 px-2 py-1 dark:bg-amber-900/40">
-              <Ionicons name="lock-closed" size={12} color="#b45309" />
-              <Text className="text-[10px] font-semibold uppercase tracking-wide text-amber-700 dark:text-amber-200">
-                Private
-              </Text>
-            </View>
-          )}
+          <PlanVisibilityBadge visibility={visibility} />
         </View>
       </View>
     </>

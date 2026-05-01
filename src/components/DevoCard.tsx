@@ -1,6 +1,7 @@
 /* -------------------- LIST VIEW CARD --------------------- */
 
 import PlanCoverImage from '@/src/components/PlanCoverImage';
+import PlanVisibilityBadge from '@/src/components/PlanVisibilityBadge';
 import Stat from '@/src/components/Stat';
 import { DevotionalPlanView } from '@/src/types/types';
 import { Ionicons } from '@expo/vector-icons';
@@ -32,7 +33,6 @@ export function ListCard({
   const ratingCount = Number.isFinite(ratingCountRaw) ? ratingCountRaw : 0;
   const hasRating = ratingCount > 0;
   const ratingDisplay = hasRating ? ratingAverage.toFixed(1) : '0';
-  const isPrivate = item.visibility === 'private';
   return (
     <TouchableOpacity
       className="bg-white dark:bg-neutral-900 rounded-xl p-3 mb-3 shadow-sm "
@@ -66,13 +66,7 @@ export function ListCard({
 
           <View className="mt-1 flex-row items-center gap-2">
             <Text className="text-sm text-gray-600 dark:text-gray-200">{item.total_days} Days</Text>
-            {isPrivate && (
-              <View className="rounded-full bg-amber-100 px-2 py-1 dark:bg-amber-900/40">
-                <Text className="text-[10px] font-semibold uppercase tracking-wide text-amber-700 dark:text-amber-200">
-                  Private
-                </Text>
-              </View>
-            )}
+            <PlanVisibilityBadge visibility={item.visibility} />
           </View>
 
           {/* Icons Row */}
@@ -131,8 +125,6 @@ export function GridCard({
   const ratingCount = Number.isFinite(ratingCountRaw) ? ratingCountRaw : 0;
   const hasRating = ratingCount > 0;
   const ratingDisplay = hasRating ? ratingAverage.toFixed(1) : '0';
-  const isPrivate = item.visibility === 'private';
-
   return (
     <TouchableOpacity
       className="bg-white dark:bg-neutral-900 rounded-xl p-3 mb-3 w-[48%] shadow-sm"
@@ -165,13 +157,7 @@ export function GridCard({
 
       <View className="mt-1 flex-row items-center gap-2">
         <Text className="text-sm text-gray-600 dark:text-gray-200">{item.total_days} Days</Text>
-        {isPrivate && (
-          <View className="rounded-full bg-amber-100 px-2 py-1 dark:bg-amber-900/40">
-            <Text className="text-[10px] font-semibold uppercase tracking-wide text-amber-700 dark:text-amber-200">
-              Private
-            </Text>
-          </View>
-        )}
+        <PlanVisibilityBadge visibility={item.visibility} />
       </View>
       {/* Icons Row */}
       <View className="flex-row items-center gap-4 mt-2">

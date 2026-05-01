@@ -93,12 +93,12 @@ export default function PrivatePlansList() {
           />
         </View>
         <Text className="mb-2 text-center text-lg font-semibold text-gray-900 dark:text-white">
-          {session?.user?.id ? 'No private plans yet' : 'Sign in to view private plans'}
+          {session?.user?.id ? 'No invite-only plans yet' : 'Sign in to view invite-only plans'}
         </Text>
         <Text className="text-center text-gray-600 dark:text-gray-400">
           {session?.user?.id
-            ? 'Private plans you publish will show up here so you can open and share them.'
-            : 'Your authored private plans will appear here after you sign in.'}
+            ? 'Invite-only plans you publish will show up here so you can open and share them.'
+            : 'Your authored invite-only plans will appear here after you sign in.'}
         </Text>
         {!session?.user?.id && (
           <TouchableOpacity

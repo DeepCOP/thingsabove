@@ -1,5 +1,6 @@
 import LoadingSpinner from '@/src/components/LoadingSpinner';
 import PlanCoverImage from '@/src/components/PlanCoverImage';
+import PlanVisibilityBadge from '@/src/components/PlanVisibilityBadge';
 import { RelatedPlansSection } from '@/src/components/RelatedPlans';
 import { Ionicons } from '@expo/vector-icons';
 import BottomSheet from '@gorhom/bottom-sheet';
@@ -98,20 +99,14 @@ export default function DevotionalDetailScreen({
 
           <View className="flex-row items-center gap-2 mt-2">
             <Text className="text-gray-600 dark:text-gray-300">{plan?.total_days} Days</Text>
-            {isPrivatePlan && (
-              <View className="rounded-full bg-amber-100 px-2 py-1 dark:bg-amber-900/40">
-                <Text className="text-[10px] font-semibold uppercase tracking-wide text-amber-700 dark:text-amber-200">
-                  Private
-                </Text>
-              </View>
-            )}
+            <PlanVisibilityBadge visibility={isPrivatePlan ? 'private' : null} />
           </View>
 
           {isPrivatePlan && (
             <Text className="mt-3 text-sm leading-6 text-gray-600 dark:text-gray-300">
               {canStartPlan
                 ? 'Only people you invite can join this plan.'
-                : 'You can keep reading through the private plan invitation you already joined.'}
+                : 'You can keep reading through the invite-only plan invitation you already joined.'}
             </Text>
           )}
         </View>

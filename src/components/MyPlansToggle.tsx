@@ -22,11 +22,11 @@ type Props = {
 };
 
 const tabs: Tab[] = [
-  { key: 'private-plans', label: 'Private' },
   { key: 'find-plans', label: 'Find Plans' },
   { key: 'my-plans', label: 'My Plans' },
   { key: 'saved-plans', label: 'Saved' },
   { key: 'completed-plans', label: 'Completed' },
+  { key: 'private-plans', label: 'Invite Only' },
 ];
 
 export function MyPlansToggle({ activeTab, onChange }: Props) {
