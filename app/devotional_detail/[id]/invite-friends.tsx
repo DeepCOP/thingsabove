@@ -180,9 +180,7 @@ export default function InviteFriends() {
       friends={friends}
       selected={selected}
       isSubmitting={isSubmitting}
-      isSharing={
-        isSharing || inviteFriendsToExistingGroup.isPending || createPlanGroupMutation.isPending
-      }
+      isSharing={isSharing}
       submitLabel={submitLabel}
       onToggle={toggle}
       onSelectAll={() => setSelected(friends.map((f) => f.id))}

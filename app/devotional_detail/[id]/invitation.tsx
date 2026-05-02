@@ -2,12 +2,14 @@ import LoadingSpinner from '@/src/components/LoadingSpinner';
 import { useFetchDevotionalPlanById } from '@/src/hooks/useDevotionalPlans';
 import { useAcceptPlanInvite, useDeclinePlanInvite } from '@/src/hooks/useInviteFriends';
 import { usePlanGroupInvitation, usePlanGroupInvitationMembers } from '@/src/hooks/usePlanGroup';
+import { useMyPlanProgressPlans } from '@/src/hooks/usePlanProgress';
 import dayjs from '@/src/lib/dayjs';
 import PlanInvitationScreen from '@/src/screens/PlanInvitationScreen';
 import { useAuth } from '@/src/state/AuthContext';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import Ionicons from '@expo/vector-icons/Ionicons';
+import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import React from 'react';
-import { Text, TouchableOpacity, View } from 'react-native';
+import { Text, TouchableOpacity, View, useColorScheme } from 'react-native';
 
 export default function PlanInvitation() {
   const { groupId, id } = useLocalSearchParams<{
@@ -17,9 +19,11 @@ export default function PlanInvitation() {
   }>();
   const { session, isGuest, loading: authLoading } = useAuth();
   const router = useRouter();
+  const colorScheme = useColorScheme();
 
   const acceptMutation = useAcceptPlanInvite(groupId, id, session?.user?.id);
   const declineMutation = useDeclinePlanInvite(groupId, session?.user?.id);
+  const myPlanProgressPlansQuery = useMyPlanProgressPlans(session?.user?.id);
 
   const planGroupQuery = usePlanGroupInvitation(groupId);
   const planGroupMembersQuery = usePlanGroupInvitationMembers(groupId);
@@ -28,6 +32,18 @@ export default function PlanInvitation() {
   const planQuery = useFetchDevotionalPlanById(id as string);
   const plan = planQuery.data;
   const currentUser = members?.find((member) => member.user_id === session?.user?.id);
+  const existingProgress = myPlanProgressPlansQuery.data?.find(
+    (progress) => progress.group_id === groupId && progress.id === id,
+  );
+  const handleLeaveInvitation = () => {
+    if (router.canGoBack()) {
+      router.back();
+      return;
+    }
+
+    router.replace('/(tabs)/PlansTab');
+  };
+
   if (authLoading || planGroupQuery.isLoading || planQuery.isLoading) {
     return <LoadingSpinner />;
   }
@@ -66,53 +82,85 @@ export default function PlanInvitation() {
         : `Started ${Math.abs(diffDays)} days ago`;
 
   return (
-    <PlanInvitationScreen
-      firstName={group.inviter.first_name ?? ''}
-      lastName={group.inviter.last_name ?? ''}
-      inviterAvatar={group.inviter.avatar_url}
-      planTitle={plan?.title ?? undefined}
-      planCover={plan?.cover_image}
-      totalDays={plan?.total_days ?? undefined}
-      members={members}
-      diffDays={diffDays}
-      startDateLabel={startDateLabel}
-      hasAccepted={!!currentUser}
-      isGuest={isGuest}
-      isAccepting={acceptMutation.isPending}
-      isDeclining={declineMutation.isPending}
-      onAccept={() => {
-        if (isGuest) {
-          router.push('/(auth)/signin');
-          return;
-        }
+    <>
+      <Stack.Screen
+        options={{
+          title: 'Invitation',
+          headerBackVisible: false,
+          headerLeft: () => (
+            <TouchableOpacity
+              accessibilityRole="button"
+              accessibilityLabel="Leave invitation"
+              className="h-10 w-10 items-center justify-center"
+              onPress={handleLeaveInvitation}>
+              <Ionicons
+                name="chevron-back"
+                size={28}
+                color={colorScheme === 'dark' ? '#fff' : '#111'}
+              />
+            </TouchableOpacity>
+          ),
+        }}
+      />
+      <PlanInvitationScreen
+        firstName={group.inviter.first_name ?? ''}
+        lastName={group.inviter.last_name ?? ''}
+        inviterAvatar={group.inviter.avatar_url}
+        planTitle={plan?.title ?? undefined}
+        planCover={plan?.cover_image}
+        totalDays={plan?.total_days ?? undefined}
+        members={members}
+        diffDays={diffDays}
+        startDateLabel={startDateLabel}
+        hasAccepted={!!currentUser}
+        isGuest={isGuest}
+        isAccepting={acceptMutation.isPending}
+        isDeclining={declineMutation.isPending}
+        isContinuing={myPlanProgressPlansQuery.isLoading}
+        onAccept={() => {
+          if (isGuest) {
+            router.push('/(auth)/signin');
+            return;
+          }
 
-        acceptMutation.mutate(
-          {
-            startDate: group?.start_date ?? dayjs().toISOString(),
-          },
-          {
-            onSuccess: (progress) => {
-              if (!progress) return;
-              router.replace({
-                pathname: '/plan_progress/[progressId]',
-                params: { progressId: progress.id },
-              });
+          acceptMutation.mutate(
+            {
+              startDate: group?.start_date ?? dayjs().format('YYYY-MM-DD'),
             },
-          },
-        );
-      }}
-      onDecline={() => {
-        if (isGuest) {
-          router.back();
-          return;
+            {
+              onSuccess: (progress) => {
+                if (!progress) return;
+                router.replace({
+                  pathname: '/plan_progress/[progressId]',
+                  params: { progressId: progress.id },
+                });
+              },
+            },
+          );
+        }}
+        onContinue={
+          existingProgress?.progress_id
+            ? () => {
+                router.push({
+                  pathname: '/plan_progress/[progressId]',
+                  params: { progressId: existingProgress.progress_id },
+                });
+              }
+            : undefined
         }
+        onDecline={() => {
+          if (isGuest) {
+            handleLeaveInvitation();
+            return;
+          }
 
-        declineMutation.mutate(undefined, {
-          onSuccess: () => {
-            router.back();
-          },
-        });
-      }}
-    />
+          declineMutation.mutate(undefined, {
+            onSuccess: () => {
+              handleLeaveInvitation();
+            },
+          });
+        }}
+      />
+    </>
   );
 }

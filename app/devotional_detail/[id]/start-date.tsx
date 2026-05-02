@@ -54,7 +54,7 @@ export default function PickStartDate() {
           pathname: '/devotional_detail/[id]/invite-friends',
           params: {
             id,
-            startDate: selectedDate.toISOString(),
+            startDate: selectedDate.format('YYYY-MM-DD'),
           },
         })
       }
