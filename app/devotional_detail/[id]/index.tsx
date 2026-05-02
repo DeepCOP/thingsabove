@@ -3,13 +3,12 @@ import { useMyPlanProgressPlans, useStartPlanProgress } from '@/src/hooks/usePla
 import { useSavedPlans, useToggleSavedPlan } from '@/src/hooks/useSavedPlans';
 import DevotionalDetailScreen from '@/src/screens/DevotionalDetailScreen';
 import { useAuth } from '@/src/state/AuthContext';
-import Ionicons from '@expo/vector-icons/Ionicons';
 import BottomSheet from '@gorhom/bottom-sheet';
 import { useMemo, useRef } from 'react';
 
 import { useTogglePlanReaction } from '@/src/hooks/usePlanReactions';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
-import { Platform, Share, TouchableOpacity, useColorScheme } from 'react-native';
+import { Platform, useColorScheme } from 'react-native';
 
 export default function DevotionalDetail() {
   const { id } = useLocalSearchParams();
@@ -66,21 +65,6 @@ export default function DevotionalDetail() {
     <>
       <Stack.Screen
         options={{
-          headerRight: () => {
-            return (
-              <TouchableOpacity
-                onPress={async () => {
-                  const content = `Join me in reading ${plan?.title}\n\n ${process.env.EXPO_PUBLIC_BASE_URL}/devotional_detail/${plan?.id}`;
-                  await Share.share({ message: content });
-                }}>
-                <Ionicons
-                  name="share-social-outline"
-                  size={24}
-                  color={colorScheme === 'dark' ? '#fff' : '#111'}
-                />
-              </TouchableOpacity>
-            );
-          },
           headerTransparent: true,
           headerBlurEffect:
             Platform.OS === 'ios'
