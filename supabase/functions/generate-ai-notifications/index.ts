@@ -5,6 +5,15 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 const MODEL_NAME = 'gemini-2.5-flash';
 const PLANNER_LIMIT = 12;
 const PLANNER_REQUEST_DELAY_MS = 1200;
+const DEFAULT_NOTIFICATION_WINDOW_HOURS = 36;
+const NOTIFICATION_WINDOW_HOURS = (() => {
+  const rawValue = Deno.env.get('AI_NOTIFICATION_WINDOW_HOURS');
+  const parsedValue = rawValue ? Number.parseInt(rawValue, 10) : Number.NaN;
+
+  return Number.isFinite(parsedValue) && parsedValue > 0
+    ? parsedValue
+    : DEFAULT_NOTIFICATION_WINDOW_HOURS;
+})();
 
 const ALLOWED_CATEGORIES = [
   'invite_friends',
@@ -30,7 +39,7 @@ Mission:
 - Never optimize engagement in a manipulative, fear-based, or merely attention-seeking way.
 
 Your job is to decide:
-- whether a notification should be sent for the user's next 36-hour notification window
+- whether a notification should be sent for the user's next ${NOTIFICATION_WINDOW_HOURS}-hour notification window
 - which ministry category it belongs to
 - what the notification title should say
 - when to schedule it in the user's local time
@@ -60,9 +69,9 @@ Category rules:
 Scheduling rules:
 - Return day_offset as 0 or 1 only
 - Return local_hour as an integer from 8 through 20 only
-- Keep the scheduled time within the next 36 hours
+- Keep the scheduled time within the next ${NOTIFICATION_WINDOW_HOURS} hours
 - If notification_timing.latest_send_at is present in the planning context, schedule the notification no later than that timestamp
-- Treat the 36-hour cadence as measured from the user's most recent sent notification
+- Treat the ${NOTIFICATION_WINDOW_HOURS}-hour cadence as measured from the user's most recent sent notification
 - Prefer natural waking hours and avoid late-night scheduling
 
 Title rules:

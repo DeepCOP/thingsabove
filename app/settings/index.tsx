@@ -7,8 +7,7 @@ import Constants from 'expo-constants';
 import { Switch, Text, TouchableOpacity, View } from 'react-native';
 
 export default function NotificationSettingsScreen() {
-  const { dailyEncouragement, toggleDailyEncouragementMutation, loading } =
-    useNotificationSettings();
+  const { aiNotificationsEnabled, toggleAiNotifications, loading } = useNotificationSettings();
 
   const { theme, setTheme } = useAppStore();
   const appVersion =
@@ -35,7 +34,7 @@ export default function NotificationSettingsScreen() {
       const token = await registerForPushNotificationsAsync();
       if (!token) return;
     }
-    toggleDailyEncouragementMutation(nextValue);
+    toggleAiNotifications(nextValue);
   };
 
   return (
@@ -51,7 +50,7 @@ export default function NotificationSettingsScreen() {
           </Text>
         </View>
 
-        <Switch value={dailyEncouragement} onValueChange={handleToggleDailyEncouragement} />
+        <Switch value={aiNotificationsEnabled} onValueChange={handleToggleDailyEncouragement} />
       </View>
 
       {/* THEME */}
