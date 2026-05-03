@@ -150,6 +150,8 @@ export type PlanProgressInsert = Database['public']['Tables']['plan_progress']['
 export type PlanProgressUpdate = Database['public']['Tables']['plan_progress']['Update'];
 
 export type DevotionalPlanView = Database['public']['Views']['devotional_plans_view']['Row'];
+export type MyPlanProgressPlan =
+  Database['public']['Functions']['get_my_plan_progress_plans']['Returns'][number];
 
 export type ParsedVerse = {
   book: string; // "Song of Solomon"

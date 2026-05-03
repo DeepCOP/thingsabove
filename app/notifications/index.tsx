@@ -47,11 +47,11 @@ export default function NotificationsTab() {
     switch (item.type) {
       case 'plan_invite':
         router.push({
-          pathname: '/devotional_detail/[id]/invitation',
+          pathname: '/devotional_detail/[planId]/invitation',
           params: {
             groupId: data.group_id,
             invitedBy: data.invited_by,
-            id: data.plan_id,
+            planId: data.plan_id,
           },
         });
         break;

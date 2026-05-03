@@ -20,8 +20,10 @@ type Props = {
   isGuest: boolean;
   isAccepting: boolean;
   isDeclining: boolean;
+  isContinuing?: boolean;
 
   onAccept: () => void;
+  onContinue?: () => void;
   onDecline: () => void;
 };
 
@@ -37,7 +39,9 @@ export default function PlanInvitationScreen({
   hasAccepted,
   isAccepting,
   isDeclining,
+  isContinuing,
   onAccept,
+  onContinue,
   onDecline,
 }: Props) {
   const insets = useSafeAreaInsets();
@@ -121,9 +125,19 @@ export default function PlanInvitationScreen({
         </View>
       ) : (
         <View className="absolute left-0 right-0 px-6" style={{ bottom: insets.bottom + 20 }}>
-          <Text className="text-center dark:text-white text-lg bg-gray-300 dark:bg-neutral-600 rounded-full py-3">
-            You have accepted the invitation
-          </Text>
+          <TouchableOpacity
+            onPress={onContinue}
+            disabled={!onContinue || isContinuing}
+            className={`rounded-full py-3 ${!onContinue || isContinuing ? 'bg-gray-300 dark:bg-neutral-600' : 'bg-black dark:bg-white'}`}>
+            {isContinuing ? (
+              <ActivityIndicator color="#9ca3af" />
+            ) : (
+              <Text
+                className={`text-center text-lg font-semibold ${!onContinue ? 'text-gray-600 dark:text-gray-300' : 'text-white dark:text-black'}`}>
+                Continue to Plan
+              </Text>
+            )}
+          </TouchableOpacity>
         </View>
       )}
     </View>

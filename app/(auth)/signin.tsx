@@ -32,9 +32,9 @@ export default function SignIn() {
     if (!redirectPlanId || !redirectGroupId) return;
 
     router.push({
-      pathname: '/devotional_detail/[id]/invitation',
+      pathname: '/devotional_detail/[planId]/invitation',
       params: {
-        id: redirectPlanId,
+        planId: redirectPlanId,
         groupId: redirectGroupId,
         ...(redirectInvitedBy ? { invitedBy: redirectInvitedBy } : {}),
       },

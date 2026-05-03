@@ -48,16 +48,24 @@ export default function InviteFriendsScreen({
   const insets = useSafeAreaInsets();
   const colorScheme = useColorScheme();
   const submitIndicatorColor = colorScheme === 'dark' ? '#000000' : '#ffffff';
+  const shareIndicatorColor = colorScheme === 'dark' ? '#ffffff' : '#111111';
+  const isAnyActionPending = isSubmitting || isSharing;
 
-  const renderSubmitButtonContent = (textClassName: string) => (
+  const renderButtonContent = ({
+    label,
+    loading,
+    indicatorColor,
+    textClassName,
+  }: {
+    label: string;
+    loading: boolean;
+    indicatorColor: string;
+    textClassName: string;
+  }) => (
     <View className="items-center justify-center">
-      <Text className={`${textClassName}${isSubmitting ? ' opacity-0' : ''}`}>{submitLabel}</Text>
-      {isSubmitting ? (
-        <ActivityIndicator
-          size="small"
-          color={submitIndicatorColor}
-          style={{ position: 'absolute' }}
-        />
+      <Text className={`${textClassName}${loading ? ' opacity-0' : ''}`}>{label}</Text>
+      {loading ? (
+        <ActivityIndicator size="small" color={indicatorColor} style={{ position: 'absolute' }} />
       ) : null}
     </View>
   );
@@ -117,19 +125,27 @@ export default function InviteFriendsScreen({
           />
 
           <TouchableOpacity
-            disabled={isSubmitting}
+            disabled={isAnyActionPending}
             onPress={onSubmit}
             className="bg-black dark:bg-white py-4 rounded-full mt-4">
-            {renderSubmitButtonContent('text-white dark:text-black text-center font-semibold')}
+            {renderButtonContent({
+              label: submitLabel,
+              loading: isSubmitting,
+              indicatorColor: submitIndicatorColor,
+              textClassName: 'text-white dark:text-black text-center font-semibold',
+            })}
           </TouchableOpacity>
 
           <TouchableOpacity
-            disabled={isSharing}
+            disabled={isAnyActionPending}
             onPress={onShareInviteLink}
             className="mt-3 mb-6 rounded-full border border-gray-300 py-4 dark:border-neutral-700">
-            <Text className="text-center font-semibold text-gray-900 dark:text-white">
-              Share Invite Link
-            </Text>
+            {renderButtonContent({
+              label: 'Share Invite Link',
+              loading: isSharing,
+              indicatorColor: shareIndicatorColor,
+              textClassName: 'text-center font-semibold text-gray-900 dark:text-white',
+            })}
           </TouchableOpacity>
         </>
       ) : (
@@ -143,20 +159,31 @@ export default function InviteFriendsScreen({
           </Text>
 
           <TouchableOpacity
-            disabled={isSubmitting}
+            disabled={isAnyActionPending}
             onPress={onSubmit}
             className="mt-6 rounded-full bg-black px-6 py-4 dark:bg-white">
-            {renderSubmitButtonContent('font-semibold text-white dark:text-black')}
+            {renderButtonContent({
+              label: submitLabel,
+              loading: isSubmitting,
+              indicatorColor: submitIndicatorColor,
+              textClassName: 'font-semibold text-white dark:text-black',
+            })}
           </TouchableOpacity>
 
           <TouchableOpacity
-            disabled={isSharing}
+            disabled={isAnyActionPending}
             onPress={onShareInviteLink}
             className="mt-3 rounded-full border border-gray-300 px-6 py-4 dark:border-neutral-700">
-            <Text className="font-semibold text-gray-900 dark:text-white">Share Invite Link</Text>
+            {renderButtonContent({
+              label: 'Share Invite Link',
+              loading: isSharing,
+              indicatorColor: shareIndicatorColor,
+              textClassName: 'font-semibold text-gray-900 dark:text-white',
+            })}
           </TouchableOpacity>
 
           <TouchableOpacity
+            disabled={isAnyActionPending}
             onPress={onAddFriend}
             className="mt-3 rounded-full border border-gray-300 px-6 py-4 dark:border-neutral-700">
             <Text className="font-semibold text-gray-900 dark:text-white">Add Friends</Text>

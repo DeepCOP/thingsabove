@@ -8,7 +8,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Text, View } from 'react-native';
 
 export default function DevotionalDayScreen() {
-  const { dayId, id: planId, progressId, groupId, itemId: routeItemId } = useLocalSearchParams();
+  const { dayId, planId, progressId, groupId, itemId: routeItemId } = useLocalSearchParams();
   const { session } = useAuth();
   const [activeItemId, setActiveItemId] = useState((routeItemId as string) || '');
 

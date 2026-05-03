@@ -4,8 +4,8 @@ import { Href, useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect } from 'react';
 
 export default function PlanInviteHandoff() {
-  const { id, groupId, invitedBy } = useLocalSearchParams<{
-    id: string;
+  const { planId, groupId, invitedBy } = useLocalSearchParams<{
+    planId: string;
     groupId: string;
     invitedBy?: string;
   }>();
@@ -13,13 +13,13 @@ export default function PlanInviteHandoff() {
   const router = useRouter();
 
   useEffect(() => {
-    if (loading || !id || !groupId) return;
+    if (loading || !planId || !groupId) return;
 
     if (session) {
       router.replace({
-        pathname: '/devotional_detail/[id]/invitation',
+        pathname: '/devotional_detail/[planId]/invitation',
         params: {
-          id,
+          planId,
           groupId,
           ...(invitedBy ? { invitedBy } : {}),
         },
@@ -30,12 +30,12 @@ export default function PlanInviteHandoff() {
     router.replace({
       pathname: '/(auth)/signin',
       params: {
-        redirectPlanId: id,
+        redirectPlanId: planId,
         redirectGroupId: groupId,
         ...(invitedBy ? { redirectInvitedBy: invitedBy } : {}),
       },
     } as Href);
-  }, [loading, session, id, groupId, invitedBy, router]);
+  }, [loading, session, planId, groupId, invitedBy, router]);
 
   return <LoadingSpinner />;
 }

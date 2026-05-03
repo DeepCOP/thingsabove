@@ -11,8 +11,8 @@ type Props = {
 };
 
 const tabs: Tab[] = [
-  { key: 'my-plans', label: 'My Plans' },
   { key: 'find-plans', label: 'Find Plans' },
+  { key: 'my-plans', label: 'My Plans' },
   { key: 'saved-plans', label: 'Saved' },
   { key: 'completed-plans', label: 'Completed' },
 ];

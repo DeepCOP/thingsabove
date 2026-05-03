@@ -6,13 +6,13 @@ import { useMemo, useState } from 'react';
 import { ActivityIndicator, Text, View } from 'react-native';
 
 export default function PickStartDate() {
-  const { id } = useLocalSearchParams<{
-    id: string;
+  const { planId } = useLocalSearchParams<{
+    planId: string;
   }>();
 
   const router = useRouter();
   const [selectedDate, setSelectedDate] = useState(dayjs().startOf('day'));
-  const planQuery = useFetchDevotionalPlanById(id as string);
+  const planQuery = useFetchDevotionalPlanById(planId);
   const plan = planQuery.data;
 
   const dates = useMemo(() => {
@@ -51,10 +51,10 @@ export default function PickStartDate() {
       onSelectDate={setSelectedDate}
       onNext={() =>
         router.replace({
-          pathname: '/devotional_detail/[id]/invite-friends',
+          pathname: '/devotional_detail/[planId]/invite-friends',
           params: {
-            id,
-            startDate: selectedDate.toISOString(),
+            planId,
+            startDate: selectedDate.format('YYYY-MM-DD'),
           },
         })
       }

@@ -10,7 +10,7 @@ export default function PlansTab() {
   const { session } = useAuth();
   const [activeTab, setActiveTab] = useState<
     'my-plans' | 'saved-plans' | 'completed-plans' | 'find-plans'
-  >('my-plans');
+  >('find-plans');
   const { notificationsCountQuery } = useNotifications(session?.user?.id);
 
   const { sort, setSort, isGrid, setIsGrid } = useAppStore();

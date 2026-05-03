@@ -1,3 +1,4 @@
+drop function if exists public.get_my_plan_progress_plans();
 create or replace function public.get_my_plan_progress_plans()
 returns table (
   plan_id uuid,

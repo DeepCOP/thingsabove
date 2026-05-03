@@ -4,6 +4,7 @@ import { useMyPlanProgressPlans } from '@/src/hooks/usePlanProgress';
 import { useSavedPlans, useToggleSavedPlan } from '@/src/hooks/useSavedPlans';
 import { useAuth } from '@/src/state/AuthContext';
 import { useAppStore } from '@/src/state/useAppStore';
+import { MyPlanProgressPlan } from '@/src/types/types';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useMemo, useState } from 'react';
@@ -25,7 +26,7 @@ export default function MyPlansList({
   const { session, loading: sessionLoading } = useAuth();
   const myPlansQuery = useMyPlanProgressPlans(session?.user?.id);
   const colorScheme = useColorScheme();
-  const flataData = useMemo(() => {
+  const flataData = useMemo<MyPlanProgressPlan[]>(() => {
     if (!myPlansQuery.data) return [];
 
     return myPlansQuery.data;
@@ -175,22 +176,28 @@ export default function MyPlansList({
         columnWrapperStyle={isGrid ? { gap: 12 } : undefined}
         contentContainerStyle={{ paddingBottom: 40, ...containterStyle }}
         renderItem={({ item }) => {
-          const planId = item.id as string | null;
+          const planId = item.plan_id as string | null;
           const isSaved = !!planId && savedPlanIds.includes(planId);
+          const cardItem = {
+            ...item,
+            id: item.plan_id,
+          };
 
           return isGrid ? (
             <GridCard
-              item={item}
+              item={cardItem}
               isSaved={isSaved}
               onToggleSave={
-                showSaveButton ? () => planId && toggleSavedPlan(planId, isSaved, item) : undefined
+                showSaveButton
+                  ? () => planId && toggleSavedPlan(planId, isSaved, cardItem)
+                  : undefined
               }
               onPress={() =>
                 router.push({
                   pathname: '/plan_progress/[progressId]',
                   params: {
                     groupId: item.group_id,
-                    planId: item.id!,
+                    planId: item.plan_id,
                     progressId: item.progress_id!,
                   },
                 })
@@ -198,17 +205,19 @@ export default function MyPlansList({
             />
           ) : (
             <ListCard
-              item={item}
+              item={cardItem}
               isSaved={isSaved}
               onToggleSave={
-                showSaveButton ? () => planId && toggleSavedPlan(planId, isSaved, item) : undefined
+                showSaveButton
+                  ? () => planId && toggleSavedPlan(planId, isSaved, cardItem)
+                  : undefined
               }
               onPress={() =>
                 router.push({
                   pathname: '/plan_progress/[progressId]',
                   params: {
                     groupId: item.group_id,
-                    planId: item.id!,
+                    planId: item.plan_id,
                     progressId: item.progress_id!,
                   },
                 })

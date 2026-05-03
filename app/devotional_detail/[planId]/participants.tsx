@@ -7,8 +7,8 @@ import { useMemo, useState } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function Participants() {
-  const { id, groupId, progressId, totalDays } = useLocalSearchParams<{
-    id: string;
+  const { planId, groupId, progressId, totalDays } = useLocalSearchParams<{
+    planId: string;
     groupId: string;
     totalDays: string;
     progressId: string;
@@ -48,9 +48,9 @@ export default function Participants() {
       onRefresh={onRefresh}
       onInvite={() =>
         router.push({
-          pathname: '/devotional_detail/[id]/invite-friends',
+          pathname: '/devotional_detail/[planId]/invite-friends',
           params: {
-            id,
+            planId,
             groupId,
             progressId,
           },

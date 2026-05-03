@@ -1,5 +1,6 @@
 import { getCurrentDeviceExpoPushToken } from '../lib/pushToken';
 import { supabase } from '../lib/supabaseClient';
+import dayjs from '../lib/dayjs';
 import {
   DayItemType,
   PlanProgress,
@@ -8,6 +9,12 @@ import {
   SignUpProfileInput,
   UpdateProfileInput,
 } from '../types/types';
+
+const normalizePlanStartDate = (value: string) => {
+  const parsedValue = dayjs(value);
+  return parsedValue.isValid() ? parsedValue.format('YYYY-MM-DD') : value;
+};
+
 export const toggleItemCompletion = async ({
   item_type,
   item_key,
@@ -160,7 +167,7 @@ export const createPlanGroup = async ({
   const { data, error } = await supabase.rpc('create_plan_group', {
     p_user_id: user_id,
     p_plan_id: plan_id,
-    p_start_date: start_date, // YYYY-MM-DD,
+    p_start_date: normalizePlanStartDate(start_date),
     p_friends_ids: invited_user_ids,
   });
 
@@ -219,7 +226,7 @@ export const acceptPlanGroupInvite = async ({
   const { data, error } = await supabase.rpc('accept_plan_group_invite', {
     p_group_id: group_id,
     p_plan_id: plan_id,
-    p_start_date: startDate,
+    p_start_date: normalizePlanStartDate(startDate),
   });
 
   if (error) {

@@ -48,9 +48,9 @@ export default function PickStartDateScreen({
 
               return (
                 <DaysPicker
-                  key={date.toISOString()}
+                  key={date.format('YYYY-MM-DD')}
                   isActive={isSelected}
-                  startDate={startDate.toISOString()}
+                  startDate={startDate.format('YYYY-MM-DD')}
                   day_number={index + 1}
                   isCurrentDay={date.isSame(startDate, 'day')}
                   completed={false}

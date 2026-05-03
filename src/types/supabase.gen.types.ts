@@ -2056,7 +2056,7 @@ export type Database = {
           description: string;
           group_id: string;
           helpful_count: number;
-          id: string;
+          plan_id: string;
           progress_id: string;
           rating_avg: number;
           rating_count: number;

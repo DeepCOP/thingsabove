@@ -60,9 +60,12 @@ export default function PlanProgress() {
   const [menuVisible, setMenuVisible] = useState(false);
   const stopPlanProgressMutation = useStopPlanProgress();
   const today = dayjs().startOf('day');
-  const planStartDate = planProgress?.start_date
-    ? dayjs(planProgress.start_date).startOf('day')
+  const normalizedStartDate = planProgress?.start_date
+    ? planProgress.group_id
+      ? planProgress.start_date.slice(0, 10)
+      : planProgress.start_date
     : null;
+  const planStartDate = normalizedStartDate ? dayjs(normalizedStartDate).startOf('day') : null;
 
   const currentDayData = planStartDate
     ? days?.find((d) => planStartDate.add(d.day_number - 1, 'day').isSame(today, 'day'))
@@ -161,10 +164,10 @@ export default function PlanProgress() {
 
   function handleItemPress(item: DayItemsProgress) {
     router.push({
-      pathname: `/devotional_detail/[id]/[dayId]/[itemId]`,
+      pathname: `/devotional_detail/[planId]/[dayId]/[itemId]`,
       params: {
         progressId: progressId,
-        id: plan?.id || '',
+        planId: plan?.id || '',
         dayId: selectedDay?.id || '',
         itemId: item.id || '',
         groupId: planProgress?.group_id as string,
@@ -292,7 +295,10 @@ export default function PlanProgress() {
         itemsLoading={dayItemsProgressQuery.isLoading}
         toggleLoading={toggleMutation.isPending}
         refreshing={refreshing}
-        planProgress={planProgress}
+        planProgress={{
+          ...planProgress,
+          start_date: normalizedStartDate,
+        }}
         onSelectDay={setSelectedDay}
         onRefresh={handleRefresh}
         onMissedDays={() => {
@@ -301,9 +307,9 @@ export default function PlanProgress() {
         }}
         onParticipants={() =>
           router.push({
-            pathname: `/devotional_detail/[id]/participants`,
+            pathname: `/devotional_detail/[planId]/participants`,
             params: {
-              id: plan.id ?? '',
+              planId: plan.id ?? '',
               groupId: planProgress.group_id,
               totalDays: planTotalDays,
               progressId: planProgress.id,
