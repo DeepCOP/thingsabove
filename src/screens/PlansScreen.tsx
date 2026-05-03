@@ -6,16 +6,19 @@ import { Text, TouchableOpacity, useColorScheme, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import FindPlansList from '../components/plansList/FindPlansList';
 import MyPlansList from '../components/plansList/MyPlansList';
+import PrivatePlansList from '../components/plansList/PrivatePlansList';
 import SavedPlansList from '../components/plansList/SavedPlansList';
 
 type Props = {
   isGrid: boolean;
   sort: 'Recent' | 'Trending';
-  activeTab: 'my-plans' | 'saved-plans' | 'completed-plans' | 'find-plans';
+  activeTab: 'my-plans' | 'private-plans' | 'saved-plans' | 'completed-plans' | 'find-plans';
   isAuthenticated: boolean;
   notificationCount?: number;
   onToggleGrid: () => void;
-  onChangeTab: (tab: 'my-plans' | 'saved-plans' | 'completed-plans' | 'find-plans') => void;
+  onChangeTab: (
+    tab: 'my-plans' | 'private-plans' | 'saved-plans' | 'completed-plans' | 'find-plans',
+  ) => void;
   onChangeSort: (sort: 'Recent' | 'Trending') => void;
   onSearch: () => void;
   onNotifications: () => void;
@@ -115,6 +118,8 @@ export default function PlansScreen({
 
       {activeTab === 'find-plans' ? (
         <FindPlansList />
+      ) : activeTab === 'private-plans' ? (
+        <PrivatePlansList />
       ) : activeTab === 'saved-plans' ? (
         <SavedPlansList />
       ) : (

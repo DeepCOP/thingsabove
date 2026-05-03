@@ -3,7 +3,7 @@ import { GoogleGenerativeAI } from 'https://esm.sh/@google/generative-ai';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const MODEL_NAME = 'gemini-2.5-flash';
-const PROMPT_VERSION = 'plan-screening-v1';
+const PROMPT_VERSION = 'plan-screening-v2';
 const REASON_CODES = [
   'incomplete',
   'irrelevant',
@@ -13,6 +13,7 @@ const REASON_CODES = [
 ] as const;
 
 type ReasonCode = (typeof REASON_CODES)[number];
+type PlanVisibility = 'public' | 'private';
 
 type ScreeningDecision = {
   decision: 'pass' | 'reject';
@@ -76,7 +77,7 @@ function previewText(text: string, maxLength = 280) {
   return text.length > maxLength ? `${text.slice(0, maxLength)}...` : text;
 }
 
-const SYSTEM_PROMPT = `
+const BASE_SYSTEM_PROMPT = `
 You are screening a devotional plan submission for a Christian devotional app.
 
 Your job is to make a binary moderation decision:
@@ -155,6 +156,24 @@ Rules for the response:
 - use an empty reason_codes array for pass
 - use one or more reason codes for reject
 `;
+
+function buildSystemPrompt(planVisibility: PlanVisibility) {
+  if (planVisibility === 'private') {
+    return `
+${BASE_SYSTEM_PROMPT}
+
+Private plan guidance:
+- This submission is for a private, invite-only plan and is not meant for public discovery.
+- Apply relaxed standards for polish, breadth, and public-readiness.
+- Do not reject a private plan only because it is brief, simple, repetitive in a non-spammy way, narrowly tailored to a small group, or less polished than a public devotional.
+- Do not reject a private plan for light theological detail, secondary doctrinal differences, or reflective writing that assumes shared context among invited readers.
+- For private plans, completeness and relevance should be judged more leniently. Reject on those dimensions only if the content is obviously unfinished, placeholder-heavy, incoherent, or clearly not functioning as Christian devotional or Bible study content at all.
+- Continue to reject private plans for unsafe content, obvious spam, or clear contradictions to core Nicene beliefs.
+`;
+  }
+
+  return BASE_SYSTEM_PROMPT;
+}
 
 function extractJsonObject(text: string) {
   const start = text.indexOf('{');
@@ -323,7 +342,7 @@ function parseDecision(rawText: string): DecisionParseResult {
   }
 }
 
-function buildPrompt(submission: Record<string, unknown>) {
+function buildPrompt(submission: Record<string, unknown>, planVisibility: PlanVisibility) {
   return `
 Screen this devotional plan submission.
 
@@ -332,6 +351,7 @@ ${JSON.stringify(
   {
     submission_id: submission.id,
     plan_id: submission.plan_id,
+    plan_visibility: planVisibility,
     submission_number: submission.submission_number,
     title: submission.submitted_title,
     description: submission.submitted_description,
@@ -531,21 +551,59 @@ serve(async (req) => {
       total_days: transitionedSubmission.submitted_total_days,
     });
 
+    const { data: planRecord, error: planError } = await supabase
+      .from('devotional_plans')
+      .select('visibility')
+      .eq('id', transitionedSubmission.plan_id)
+      .single();
+
+    if (planError || !planRecord) {
+      logError('plan_visibility_lookup_failed', planError ?? new Error('Plan not found'), {
+        request_id: requestId,
+        submission_id: submissionId,
+        plan_id: transitionedSubmission.plan_id,
+      });
+      await markFailed(
+        supabase,
+        submissionId,
+        'Could not load plan visibility for screening.',
+        {
+          error: planError?.message ?? 'Plan visibility not found',
+        },
+        {
+          request_id: requestId,
+        },
+      );
+      return new Response('Could not load plan visibility', { status: 500 });
+    }
+
+    const planVisibility: PlanVisibility =
+      planRecord.visibility === 'private' ? 'private' : 'public';
+
+    logInfo('plan_visibility_loaded', {
+      request_id: requestId,
+      submission_id: submissionId,
+      plan_id: transitionedSubmission.plan_id,
+      plan_visibility: planVisibility,
+    });
+
     const genAI = new GoogleGenerativeAI(googleApiKey);
     const model = genAI.getGenerativeModel({ model: MODEL_NAME });
 
-    const prompt = buildPrompt(transitionedSubmission);
+    const systemPrompt = buildSystemPrompt(planVisibility);
+    const prompt = buildPrompt(transitionedSubmission, planVisibility);
     logInfo('model_request_started', {
       request_id: requestId,
       submission_id: submissionId,
       model: MODEL_NAME,
       prompt_version: PROMPT_VERSION,
+      plan_visibility: planVisibility,
       prompt_length: prompt.length,
     });
 
     const result = await model.generateContent(`
 SYSTEM:
-${SYSTEM_PROMPT}
+${systemPrompt}
 
 USER:
 ${prompt}

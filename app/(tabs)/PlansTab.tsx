@@ -9,7 +9,7 @@ import { useState } from 'react';
 export default function PlansTab() {
   const { session } = useAuth();
   const [activeTab, setActiveTab] = useState<
-    'my-plans' | 'saved-plans' | 'completed-plans' | 'find-plans'
+    'my-plans' | 'private-plans' | 'saved-plans' | 'completed-plans' | 'find-plans'
   >('find-plans');
   const { notificationsCountQuery } = useNotifications(session?.user?.id);
 

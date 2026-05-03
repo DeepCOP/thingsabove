@@ -1,6 +1,7 @@
 /* -------------------- LIST VIEW CARD --------------------- */
 
 import PlanCoverImage from '@/src/components/PlanCoverImage';
+import PlanVisibilityBadge from '@/src/components/PlanVisibilityBadge';
 import Stat from '@/src/components/Stat';
 import { DevotionalPlanView } from '@/src/types/types';
 import { Ionicons } from '@expo/vector-icons';
@@ -63,9 +64,10 @@ export function ListCard({
             )}
           </View>
 
-          <Text className="text-gray-600 dark:text-gray-200 text-sm mt-1">
-            {item.total_days} Days
-          </Text>
+          <View className="mt-1 flex-row items-center gap-2">
+            <Text className="text-sm text-gray-600 dark:text-gray-200">{item.total_days} Days</Text>
+            <PlanVisibilityBadge visibility={item.visibility} />
+          </View>
 
           {/* Icons Row */}
           <View className="flex-row items-center gap-4 mt-2">
@@ -123,7 +125,6 @@ export function GridCard({
   const ratingCount = Number.isFinite(ratingCountRaw) ? ratingCountRaw : 0;
   const hasRating = ratingCount > 0;
   const ratingDisplay = hasRating ? ratingAverage.toFixed(1) : '0';
-
   return (
     <TouchableOpacity
       className="bg-white dark:bg-neutral-900 rounded-xl p-3 mb-3 w-[48%] shadow-sm"
@@ -154,7 +155,10 @@ export function GridCard({
         )}
       </View>
 
-      <Text className="text-gray-600 dark:text-gray-200 text-sm mt-1">{item.total_days} Days</Text>
+      <View className="mt-1 flex-row items-center gap-2">
+        <Text className="text-sm text-gray-600 dark:text-gray-200">{item.total_days} Days</Text>
+        <PlanVisibilityBadge visibility={item.visibility} />
+      </View>
       {/* Icons Row */}
       <View className="flex-row items-center gap-4 mt-2">
         <Stat

@@ -32,16 +32,23 @@ export default function DevotionalDetail() {
   const myPlanProgressPlansQuery = useMyPlanProgressPlans(session?.user.id);
   const planQuery = useFetchDevotionalPlanById(planId);
   const plan = planQuery.data;
-  const currentSoloPlanProgress = useMemo(
+  const isPrivatePlan = plan?.visibility === 'private';
+  const canStartPlan = !isPrivatePlan || plan?.author_id === session?.user.id;
+  const activePlanProgresses = useMemo(
     () =>
-      (myPlanProgressPlansQuery.data ?? []).find((userPlan) => {
+      (myPlanProgressPlansQuery.data ?? []).filter((userPlan) => {
         const totalDays = typeof userPlan.total_days === 'number' ? userPlan.total_days : 0;
         const completedDays = userPlan.completed_days ?? 0;
 
-        return userPlan.plan_id === planId && !userPlan.group_id && completedDays < totalDays;
+        return userPlan.plan_id === planId && completedDays < totalDays;
       }),
     [myPlanProgressPlansQuery.data, planId],
   );
+  const currentSoloPlanProgress = useMemo(
+    () => activePlanProgresses.find((userPlan) => !userPlan.group_id),
+    [activePlanProgresses],
+  );
+  const currentActivePlanProgress = currentSoloPlanProgress ?? activePlanProgresses[0];
   const currentReaction = {
     helpful_count: plan?.helpful_count ?? 0,
     user_reaction: plan?.user_reaction === 'helpful' ? ('helpful' as const) : null,
@@ -89,10 +96,13 @@ export default function DevotionalDetail() {
         reportSheetRef={reportSheetRef}
         isLoading={planQuery.isLoading || myPlanProgressPlansQuery.isLoading}
         hasActiveSoloPlanProgress={!!currentSoloPlanProgress?.progress_id}
+        hasActivePlanProgress={!!currentActivePlanProgress?.progress_id}
+        canStartPlan={!!canStartPlan}
+        isPrivatePlan={!!isPrivatePlan}
         onContinuePress={() => {
-          if (!currentSoloPlanProgress?.progress_id) return;
+          if (!currentActivePlanProgress?.progress_id) return;
 
-          router.push(`/plan_progress/${currentSoloPlanProgress.progress_id}`);
+          router.push(`/plan_progress/${currentActivePlanProgress.progress_id}`);
         }}
         isSaved={isSaved}
         onToggleSave={() => {
@@ -105,6 +115,13 @@ export default function DevotionalDetail() {
         onStartPress={(mode: string) => {
           if (isGuest) {
             router.push('/(auth)/signin');
+            return;
+          }
+
+          if (plan?.visibility === 'private' && plan.author_id !== session?.user.id) {
+            if (currentActivePlanProgress?.progress_id) {
+              router.push(`/plan_progress/${currentActivePlanProgress.progress_id}`);
+            }
             return;
           }
 

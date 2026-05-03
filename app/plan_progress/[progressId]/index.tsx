@@ -281,9 +281,9 @@ export default function PlanProgress() {
 
       <PlanProgressScreen
         insetsBottom={insets.bottom}
-        title={planTitle}
         coverImage={plan.cover_image || undefined}
         completions={plan.completions ?? 0}
+        visibility={plan.visibility}
         days={days}
         selectedDay={selectedDayNumber}
         selectedDayData={selectedDay}

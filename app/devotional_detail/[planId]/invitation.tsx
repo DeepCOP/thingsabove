@@ -1,5 +1,4 @@
 import LoadingSpinner from '@/src/components/LoadingSpinner';
-import { useFetchDevotionalPlanById } from '@/src/hooks/useDevotionalPlans';
 import { useAcceptPlanInvite, useDeclinePlanInvite } from '@/src/hooks/useInviteFriends';
 import { usePlanGroupInvitation, usePlanGroupInvitationMembers } from '@/src/hooks/usePlanGroup';
 import { useMyPlanProgressPlans } from '@/src/hooks/usePlanProgress';
@@ -29,8 +28,6 @@ export default function PlanInvitation() {
   const planGroupMembersQuery = usePlanGroupInvitationMembers(groupId);
   const members = planGroupMembersQuery.data ?? [];
   const group = planGroupQuery.data;
-  const planQuery = useFetchDevotionalPlanById(planId);
-  const plan = planQuery.data;
   const currentUser = members?.find((member) => member.user_id === session?.user?.id);
   const existingProgress = myPlanProgressPlansQuery.data?.find(
     (progress) => progress.group_id === groupId && progress.plan_id === planId,
@@ -44,11 +41,11 @@ export default function PlanInvitation() {
     router.replace('/(tabs)/PlansTab');
   };
 
-  if (authLoading || planGroupQuery.isLoading || planQuery.isLoading) {
+  if (authLoading || planGroupQuery.isLoading) {
     return <LoadingSpinner />;
   }
 
-  if (planGroupQuery.error || planQuery.error || !group) {
+  if (planGroupQuery.error || !group) {
     return (
       <View className="flex-1 items-center justify-center bg-white px-6 dark:bg-black">
         <Text className="text-lg font-semibold text-gray-900 dark:text-white">
@@ -62,7 +59,6 @@ export default function PlanInvitation() {
           onPress={() => {
             planGroupQuery.refetch();
             planGroupMembersQuery.refetch();
-            planQuery.refetch();
           }}>
           <Text className="font-semibold text-white dark:text-black">Try again</Text>
         </TouchableOpacity>
@@ -106,9 +102,10 @@ export default function PlanInvitation() {
         firstName={group.inviter.first_name ?? ''}
         lastName={group.inviter.last_name ?? ''}
         inviterAvatar={group.inviter.avatar_url}
-        planTitle={plan?.title ?? undefined}
-        planCover={plan?.cover_image}
-        totalDays={plan?.total_days ?? undefined}
+        planTitle={group.plan_title ?? undefined}
+        planCover={group.plan_cover_image}
+        totalDays={group.plan_total_days ?? undefined}
+        isPrivatePlan={group.plan_visibility === 'private'}
         members={members}
         diffDays={diffDays}
         startDateLabel={startDateLabel}

@@ -1,4 +1,5 @@
 import {
+  fetchMyDevotionalPlans,
   fetchPlanById,
   fetchPlans,
   fetchUserPlans,
@@ -62,5 +63,13 @@ export const useFetchPlansByIds = (planIds: string[]) => {
     queryKey: ['plans_by_ids', planIds],
     enabled: planIds.length > 0,
     queryFn: async () => await fetchUserPlans(planIds),
+  });
+};
+
+export const useMyDevotionalPlans = (userId?: string) => {
+  return useQuery({
+    queryKey: ['my_devotional_plans', userId],
+    enabled: !!userId,
+    queryFn: async () => fetchMyDevotionalPlans(),
   });
 };

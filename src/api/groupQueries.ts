@@ -28,6 +28,10 @@ export type PlanGroupInvitation = {
     last_name: string | null;
     avatar_url: string | null;
   };
+  plan_title: string | null;
+  plan_cover_image: string | null;
+  plan_total_days: number | null;
+  plan_visibility: string | null;
 };
 
 export type PlanGroupInvitationMember = {
@@ -72,6 +76,10 @@ export const fetchPlanGroupInvitation = async ({ groupId }: { groupId: string })
       last_name: data.inviter_last_name,
       avatar_url: data.inviter_avatar_url,
     },
+    plan_title: data.plan_title,
+    plan_cover_image: data.plan_cover_image,
+    plan_total_days: data.plan_total_days,
+    plan_visibility: data.plan_visibility,
   } satisfies PlanGroupInvitation;
 };
 

@@ -1,14 +1,15 @@
 import { Text, View } from 'react-native';
 import PlanCoverImage from '../PlanCoverImage';
+import PlanVisibilityBadge from '../PlanVisibilityBadge';
 
 type Props = {
-  title: string;
   coverImage?: string;
   selectedDay: number | null;
   completions?: number;
+  visibility?: string | null;
 };
 
-export function PlanHeader({ title, coverImage, selectedDay, completions }: Props) {
+export function PlanHeader({ coverImage, selectedDay, completions, visibility }: Props) {
   return (
     <>
       <View>
@@ -22,7 +23,10 @@ export function PlanHeader({ title, coverImage, selectedDay, completions }: Prop
       </View>
 
       <View className="px-4 pt-4">
-        <Text className="text-2xl font-bold dark:text-white mb-4">Day {selectedDay}</Text>
+        <View className="mb-4 flex-row items-center gap-2">
+          <Text className="text-2xl font-bold dark:text-white">Day {selectedDay}</Text>
+          <PlanVisibilityBadge visibility={visibility} />
+        </View>
       </View>
     </>
   );
