@@ -8,92 +8,6 @@ export type Database = {
   };
   public: {
     Tables: {
-      ai_daily_messages: {
-        Row: {
-          content: string;
-          created_at: string | null;
-          id: string;
-          message_date: string;
-          type: string;
-        };
-        Insert: {
-          content: string;
-          created_at?: string | null;
-          id?: string;
-          message_date: string;
-          type: string;
-        };
-        Update: {
-          content?: string;
-          created_at?: string | null;
-          id?: string;
-          message_date?: string;
-          type?: string;
-        };
-        Relationships: [];
-      };
-      ai_notifications: {
-        Row: {
-          content: string | null;
-          created_at: string | null;
-          id: string;
-          message_id: string | null;
-          scheduled_for: string | null;
-          sent_at: string | null;
-          type: string | null;
-          user_id: string | null;
-        };
-        Insert: {
-          content?: string | null;
-          created_at?: string | null;
-          id?: string;
-          message_id?: string | null;
-          scheduled_for?: string | null;
-          sent_at?: string | null;
-          type?: string | null;
-          user_id?: string | null;
-        };
-        Update: {
-          content?: string | null;
-          created_at?: string | null;
-          id?: string;
-          message_id?: string | null;
-          scheduled_for?: string | null;
-          sent_at?: string | null;
-          type?: string | null;
-          user_id?: string | null;
-        };
-        Relationships: [
-          {
-            foreignKeyName: 'ai_notifications_message_id_fkey';
-            columns: ['message_id'];
-            isOneToOne: false;
-            referencedRelation: 'ai_daily_messages';
-            referencedColumns: ['id'];
-          },
-          {
-            foreignKeyName: 'ai_notifications_user_id_fkey';
-            columns: ['user_id'];
-            isOneToOne: false;
-            referencedRelation: 'profiles';
-            referencedColumns: ['id'];
-          },
-          {
-            foreignKeyName: 'ai_notifications_user_id_fkey';
-            columns: ['user_id'];
-            isOneToOne: false;
-            referencedRelation: 'user_behavior_scored';
-            referencedColumns: ['user_id'];
-          },
-          {
-            foreignKeyName: 'ai_notifications_user_id_fkey';
-            columns: ['user_id'];
-            isOneToOne: false;
-            referencedRelation: 'user_behavior_snapshot';
-            referencedColumns: ['user_id'];
-          },
-        ];
-      };
       ai_triggers: {
         Row: {
           context: Json;
@@ -2376,7 +2290,6 @@ export type Database = {
         Args: { p_submission_id: string };
         Returns: undefined;
       };
-      queue_daily_notifications: { Args: never; Returns: undefined };
       report_plan: {
         Args: { p_plan_id: string; p_reason: string };
         Returns: undefined;

@@ -17,10 +17,10 @@ export function useNotificationSettings() {
     queryFn: async () => getNotificationsPreferences(userId!),
   });
 
-  const dailyEncouragement = data?.daily ?? false;
+  const aiNotificationsEnabled = data?.daily ?? true;
 
   // 2️⃣ Update preference
-  const { mutate: toggleDailyEncouragementMutation, isPending } = useMutation({
+  const { mutate: toggleAiNotifications, isPending } = useMutation({
     mutationFn: async (value: boolean) => toggleDailyEncouragement(value, userId),
 
     // 3️⃣ Optimistic update
@@ -62,8 +62,8 @@ export function useNotificationSettings() {
 
   return {
     loading,
-    dailyEncouragement,
-    toggleDailyEncouragementMutation,
+    aiNotificationsEnabled,
+    toggleAiNotifications,
     isUpdating: isPending,
   };
 }

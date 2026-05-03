@@ -16,6 +16,7 @@ Deno.serve(async () => {
     .select(
       `
       id,
+      user_id,
       generated_title,
       generated_message,
       scheduled_for,
@@ -35,7 +36,40 @@ Deno.serve(async () => {
     return new Response('No notifications', { status: 200 });
   }
 
-  const eligible = triggers.filter((trigger) => trigger.profiles?.expo_push_token);
+  const userIds = Array.from(new Set(triggers.map((trigger) => trigger.user_id).filter(Boolean)));
+  const { data: preferences, error: preferencesError } = userIds.length
+    ? await supabase
+        .from('notification_preferences')
+        .select('user_id, daily')
+        .in('user_id', userIds)
+    : {
+        data: [] as { user_id: string; daily: boolean | null }[],
+        error: null,
+      };
+
+  if (preferencesError) {
+    console.error('Failed to load notification preferences', preferencesError);
+  }
+
+  const preferenceByUserId = new Map(
+    (preferencesError ? [] : (preferences ?? [])).map((preference) => [
+      preference.user_id,
+      preference.daily,
+    ]),
+  );
+
+  const disabledTriggerIds = triggers
+    .filter((trigger) => preferenceByUserId.get(trigger.user_id) === false)
+    .map((trigger) => trigger.id);
+
+  if (disabledTriggerIds.length > 0) {
+    await supabase.from('ai_triggers').update({ sent: true }).in('id', disabledTriggerIds);
+  }
+
+  const eligible = triggers.filter(
+    (trigger) =>
+      trigger.profiles?.expo_push_token && preferenceByUserId.get(trigger.user_id) !== false,
+  );
   const messages = eligible.map((trigger) => ({
     id: trigger.id,
     to: trigger.profiles!.expo_push_token!,

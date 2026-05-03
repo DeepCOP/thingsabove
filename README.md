@@ -1,12 +1,12 @@
 # Devotional App
 
-A Bible devotional mobile app built with React Native, Expo, and Supabase. It supports devotional plans, comments, reactions, reporting, group plans, and push notifications (daily and AI-driven).
+A Bible devotional mobile app built with React Native, Expo, and Supabase. It supports devotional plans, comments, reactions, reporting, group plans, and push notifications.
 
 **Features**
 - Devotional plans with daily content
 - Reactions and reporting
 - Comments in group plans
-- Push notifications (daily encouragement and occasional AI nudges)
+- Push notifications (occasional AI nudges)
 - Supabase Auth, RLS, Storage
 
 **Tech Stack**
@@ -158,11 +158,6 @@ pnpx supabase functions deploy
 ```
 
 ## Notification Pipeline Notes
-
-Daily notifications:
-- `generate-daily-notifications` creates the daily message.
-- `queue_daily_notifications` schedules per-user delivery.
-- `send-daily-encouragement` sends via Expo.
 
 Occasional AI notifications:
 - `generate_ai_triggers` inserts AI triggers based on user behavior.

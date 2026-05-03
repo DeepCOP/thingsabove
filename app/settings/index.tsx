@@ -7,8 +7,7 @@ import Constants from 'expo-constants';
 import { Switch, Text, TouchableOpacity, View } from 'react-native';
 
 export default function NotificationSettingsScreen() {
-  const { dailyEncouragement, toggleDailyEncouragementMutation, loading } =
-    useNotificationSettings();
+  const { aiNotificationsEnabled, toggleAiNotifications, loading } = useNotificationSettings();
 
   const { theme, setTheme } = useAppStore();
   const appVersion =
@@ -35,23 +34,23 @@ export default function NotificationSettingsScreen() {
       const token = await registerForPushNotificationsAsync();
       if (!token) return;
     }
-    toggleDailyEncouragementMutation(nextValue);
+    toggleAiNotifications(nextValue);
   };
 
   return (
     <View className="flex-1 bg-white dark:bg-black px-4 pt-6">
       <Text className="text-xl font-bold dark:text-white mb-6">Notifications</Text>
 
-      {/* DAILY ENCOURAGEMENT */}
+      {/* OCCASIONAL AI NOTIFICATIONS */}
       <View className="flex-row items-center justify-between py-4 border-b border-gray-200 dark:border-neutral-800">
         <View className="flex-1 pr-4">
-          <Text className="font-semibold dark:text-white">Daily Encouragement</Text>
+          <Text className="font-semibold dark:text-white">Encouragement Notifications</Text>
           <Text className="text-xs text-gray-500 mt-1">
-            Receive a daily faith-based encouragement
+            Receive Scripture-based encouragement and spiritual prompts
           </Text>
         </View>
 
-        <Switch value={dailyEncouragement} onValueChange={handleToggleDailyEncouragement} />
+        <Switch value={aiNotificationsEnabled} onValueChange={handleToggleDailyEncouragement} />
       </View>
 
       {/* THEME */}
