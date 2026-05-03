@@ -68,8 +68,8 @@ export default function ChurchScreen({ churchId }: Props) {
 
   const handleOpenPlan = (planId: string) => {
     router.push({
-      pathname: '/devotional_detail/[id]',
-      params: { id: planId },
+      pathname: '/devotional_detail/[planId]',
+      params: { planId },
     });
   };
 

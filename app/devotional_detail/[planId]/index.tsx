@@ -11,8 +11,7 @@ import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { Platform, useColorScheme } from 'react-native';
 
 export default function DevotionalDetail() {
-  const { id } = useLocalSearchParams();
-  const planId = id as string;
+  const { planId } = useLocalSearchParams<{ planId: string }>();
   const reportSheetRef = useRef<BottomSheet>(null);
   const { isGuest, session } = useAuth();
   const savedPlansQuery = useSavedPlans(session?.user?.id);

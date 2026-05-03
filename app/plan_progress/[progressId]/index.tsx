@@ -164,10 +164,10 @@ export default function PlanProgress() {
 
   function handleItemPress(item: DayItemsProgress) {
     router.push({
-      pathname: `/devotional_detail/[id]/[dayId]/[itemId]`,
+      pathname: `/devotional_detail/[planId]/[dayId]/[itemId]`,
       params: {
         progressId: progressId,
-        id: plan?.id || '',
+        planId: plan?.id || '',
         dayId: selectedDay?.id || '',
         itemId: item.id || '',
         groupId: planProgress?.group_id as string,
@@ -307,9 +307,9 @@ export default function PlanProgress() {
         }}
         onParticipants={() =>
           router.push({
-            pathname: `/devotional_detail/[id]/participants`,
+            pathname: `/devotional_detail/[planId]/participants`,
             params: {
-              id: plan.id ?? '',
+              planId: plan.id ?? '',
               groupId: planProgress.group_id,
               totalDays: planTotalDays,
               progressId: planProgress.id,

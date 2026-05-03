@@ -20,8 +20,8 @@ const getInviterName = (firstName?: string | null, lastName?: string | null) => 
 
 export default function InviteFriends() {
   const { session } = useAuth();
-  const { id, startDate, groupId, progressId } = useLocalSearchParams<{
-    id: string;
+  const { planId, startDate, groupId, progressId } = useLocalSearchParams<{
+    planId: string;
     startDate?: string;
     groupId?: string;
     progressId?: string;
@@ -32,7 +32,7 @@ export default function InviteFriends() {
   const [isSharing, setIsSharing] = useState(false);
 
   const friendsQuery = useFriends(session!.user.id);
-  const planQuery = useFetchDevotionalPlanById(id as string);
+  const planQuery = useFetchDevotionalPlanById(planId);
   const viewerProfileQuery = useProfile(session?.user?.id);
   const inviteFriendsToExistingGroup = useInviteFriends(currentGroupId ?? '');
   const planGroupMembersQuery = usePlanGroupMembers(currentGroupId ?? '');
@@ -69,7 +69,7 @@ export default function InviteFriends() {
       pathname: '/plan_progress/[progressId]',
       params: {
         progressId: progressIdToOpen,
-        ...(nextGroupId ? { groupId: nextGroupId, planId: id as string } : {}),
+        ...(nextGroupId ? { groupId: nextGroupId, planId } : {}),
       },
     });
   };
@@ -79,12 +79,12 @@ export default function InviteFriends() {
       return currentGroupId;
     }
 
-    if (!startDate || !session?.user?.id || !id) {
+    if (!startDate || !session?.user?.id || !planId) {
       throw new Error('Missing plan group details');
     }
 
     const progress = await createPlanGroupMutation.mutateAsync({
-      plan_id: id,
+      plan_id: planId,
       invited_user_ids: [],
       user_id: session.user.id,
       start_date: startDate,
@@ -111,7 +111,7 @@ export default function InviteFriends() {
 
       await Share.share({
         message: buildPlanInvitationMessage({
-          planId: id,
+          planId,
           groupId: shareGroupId,
           invitedBy: session?.user?.id,
           inviterName,
@@ -151,14 +151,14 @@ export default function InviteFriends() {
       return;
     }
 
-    if (!startDate || !session?.user?.id || !id) {
+    if (!startDate || !session?.user?.id || !planId) {
       Alert.alert('Unable to create group plan', 'Please try again.');
       return;
     }
 
     createPlanGroupMutation.mutate(
       {
-        plan_id: id as string,
+        plan_id: planId,
         invited_user_ids: selected,
         user_id: session.user.id,
         start_date: startDate,

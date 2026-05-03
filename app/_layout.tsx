@@ -143,8 +143,8 @@ function RootLayoutContent() {
         <Stack.Screen name="bible/[book]/index" />
         <Stack.Screen name="scripture_notes/index" options={{ headerShown: false }} />
         <Stack.Screen name="search/devotionals/index" options={{ title: 'search devotionals' }} />
-        <Stack.Screen name="devotional_detail/[id]/index" options={{ title: '' }} />
-        <Stack.Screen name="devotional_detail/[id]/invite" options={{ title: 'Invitation' }} />
+        <Stack.Screen name="devotional_detail/[planId]/index" options={{ title: '' }} />
+        <Stack.Screen name="devotional_detail/[planId]/invite" options={{ title: 'Invitation' }} />
         <Stack.Protected guard={session == null}>
           <Stack.Screen name="(auth)" options={{ presentation: 'modal', headerShown: false }} />
           <Stack.Screen name="confirm-email" options={{ title: 'Confirm Email' }} />
@@ -160,22 +160,25 @@ function RootLayoutContent() {
             options={{ headerShown: false }}
           />
           <Stack.Screen
-            name="devotional_detail/[id]/[dayId]/[itemId]"
+            name="devotional_detail/[planId]/[dayId]/[itemId]"
             options={{ headerShown: false }}
           />
-          <Stack.Screen name="devotional_detail/[id]/start-date" options={{ title: 'plan info' }} />
           <Stack.Screen
-            name="devotional_detail/[id]/invite-friends"
+            name="devotional_detail/[planId]/start-date"
+            options={{ title: 'plan info' }}
+          />
+          <Stack.Screen
+            name="devotional_detail/[planId]/invite-friends"
             options={{ title: 'Select Friends To Invite' }}
           />
           <Stack.Screen
-            name="devotional_detail/[id]/participants"
+            name="devotional_detail/[planId]/participants"
             options={{ title: 'Participants' }}
           />
           <Stack.Screen name="church/[churchId]/index" options={{ title: 'My Church' }} />
           <Stack.Screen name="church/[churchId]/members" options={{ title: 'Members' }} />
           <Stack.Screen
-            name="devotional_detail/[id]/invitation"
+            name="devotional_detail/[planId]/invitation"
             options={{ title: 'Invitation' }}
           />
 

@@ -12,16 +12,16 @@ import React from 'react';
 import { Text, TouchableOpacity, View, useColorScheme } from 'react-native';
 
 export default function PlanInvitation() {
-  const { groupId, id } = useLocalSearchParams<{
+  const { groupId, planId } = useLocalSearchParams<{
     groupId: string;
     invitedBy?: string;
-    id: string;
+    planId: string;
   }>();
   const { session, isGuest, loading: authLoading } = useAuth();
   const router = useRouter();
   const colorScheme = useColorScheme();
 
-  const acceptMutation = useAcceptPlanInvite(groupId, id, session?.user?.id);
+  const acceptMutation = useAcceptPlanInvite(groupId, planId, session?.user?.id);
   const declineMutation = useDeclinePlanInvite(groupId, session?.user?.id);
   const myPlanProgressPlansQuery = useMyPlanProgressPlans(session?.user?.id);
 
@@ -29,11 +29,11 @@ export default function PlanInvitation() {
   const planGroupMembersQuery = usePlanGroupInvitationMembers(groupId);
   const members = planGroupMembersQuery.data ?? [];
   const group = planGroupQuery.data;
-  const planQuery = useFetchDevotionalPlanById(id as string);
+  const planQuery = useFetchDevotionalPlanById(planId);
   const plan = planQuery.data;
   const currentUser = members?.find((member) => member.user_id === session?.user?.id);
   const existingProgress = myPlanProgressPlansQuery.data?.find(
-    (progress) => progress.group_id === groupId && progress.id === id,
+    (progress) => progress.group_id === groupId && progress.id === planId,
   );
   const handleLeaveInvitation = () => {
     if (router.canGoBack()) {
