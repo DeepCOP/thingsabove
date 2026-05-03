@@ -1,6 +1,6 @@
 import BottomSheet from '@gorhom/bottom-sheet';
 import { useRef } from 'react';
-import { ScrollView, Text, View } from 'react-native';
+import { RefreshControl, ScrollView, Text, View } from 'react-native';
 
 import DayCommentsSection from '@/src/components/DayComment';
 import LoadingSpinner from '@/src/components/LoadingSpinner';
@@ -14,7 +14,6 @@ import { DayItemsProgress, DevotionalDays, PlanProgress } from '@/src/types/type
 
 type Props = {
   insetsBottom: number;
-  insetsTop: number;
   title: string;
   coverImage?: string;
   completions?: number;
@@ -28,8 +27,10 @@ type Props = {
   items?: DayItemsProgress[];
   selectedDayData: DevotionalDays | undefined;
   itemsLoading: boolean;
+  refreshing: boolean;
   toggleLoading: boolean;
   onSelectDay: (day: number) => void;
+  onRefresh: () => void;
   onMissedDays: () => void;
   onParticipants: () => void;
   onPressItem: (item: DayItemsProgress) => void;
@@ -39,7 +40,6 @@ type Props = {
 
 export default function PlanProgressScreen({
   insetsBottom,
-  insetsTop,
   title,
   coverImage,
   completions,
@@ -53,8 +53,10 @@ export default function PlanProgressScreen({
   members,
   items,
   itemsLoading,
+  refreshing,
   toggleLoading,
   onSelectDay,
+  onRefresh,
   onMissedDays,
   onParticipants,
   onPressItem,
@@ -68,7 +70,12 @@ export default function PlanProgressScreen({
     <>
       <ScrollView
         className="flex-1 bg-white dark:bg-black"
-        style={{ marginBottom: insetsBottom + 70, paddingTop: 70 + insetsTop }}>
+        style={{ marginBottom: insetsBottom + 70 }}
+        contentContainerStyle={{ paddingTop: 16 }}
+        alwaysBounceVertical
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#2563eb" />
+        }>
         <PlanHeader
           title={title}
           coverImage={coverImage}
