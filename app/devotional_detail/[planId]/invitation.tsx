@@ -33,7 +33,7 @@ export default function PlanInvitation() {
   const plan = planQuery.data;
   const currentUser = members?.find((member) => member.user_id === session?.user?.id);
   const existingProgress = myPlanProgressPlansQuery.data?.find(
-    (progress) => progress.group_id === groupId && progress.id === planId,
+    (progress) => progress.group_id === groupId && progress.plan_id === planId,
   );
   const handleLeaveInvitation = () => {
     if (router.canGoBack()) {

@@ -1,6 +1,6 @@
 create or replace function public.get_my_plan_progress_plans()
 returns table (
-  id uuid,
+  plan_id uuid,
   title text,
   total_days int,
   description text,
@@ -26,7 +26,7 @@ security invoker
 stable
 as $$
   select
-    dpv.id,
+    dpv.id as plan_id,
     dpv.title,
     dpv.total_days,
     dpv.description,

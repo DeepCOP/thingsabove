@@ -38,7 +38,7 @@ export default function DevotionalDetail() {
         const totalDays = typeof userPlan.total_days === 'number' ? userPlan.total_days : 0;
         const completedDays = userPlan.completed_days ?? 0;
 
-        return userPlan.id === planId && !userPlan.group_id && completedDays < totalDays;
+        return userPlan.plan_id === planId && !userPlan.group_id && completedDays < totalDays;
       }),
     [myPlanProgressPlansQuery.data, planId],
   );
