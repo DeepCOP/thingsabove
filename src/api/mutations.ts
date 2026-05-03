@@ -84,7 +84,7 @@ export const startPlanProgress = async ({
   plan_id: string;
   group_id?: string;
 }) => {
-  const { data, error } = await supabase.rpc('start_private_plan_progess', {
+  const { data, error } = await supabase.rpc('start_private_plan_progress', {
     p_user_id: user_id,
     p_plan_id: plan_id,
     p_group_id: group_id,

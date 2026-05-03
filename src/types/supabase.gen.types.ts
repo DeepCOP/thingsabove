@@ -2459,7 +2459,7 @@ export type Database = {
       };
       show_limit: { Args: never; Returns: number };
       show_trgm: { Args: { '': string }; Returns: string[] };
-      start_private_plan_progess: {
+      start_private_plan_progress: {
         Args: {
           p_group_id?: string;
           p_plan_id: string;
