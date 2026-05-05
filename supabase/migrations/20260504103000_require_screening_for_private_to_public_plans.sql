@@ -1,0 +1,373 @@
+alter table public.plan_submissions
+  add column if not exists submitted_visibility text;
+
+update public.plan_submissions ps
+set submitted_visibility = coalesce(dp.visibility, 'public')
+from public.devotional_plans dp
+where ps.plan_id = dp.id
+  and ps.submitted_visibility is null;
+
+alter table public.plan_submissions
+  alter column submitted_visibility set default 'public',
+  alter column submitted_visibility set not null;
+
+alter table public.plan_submissions
+  drop constraint if exists plan_submissions_submitted_visibility_check;
+
+alter table public.plan_submissions
+  add constraint plan_submissions_submitted_visibility_check
+  check (submitted_visibility in ('public', 'private'));
+
+create or replace function public.prevent_unscreened_private_plan_publication()
+returns trigger
+language plpgsql
+security definer
+set search_path = pg_catalog, public
+as $$
+begin
+  if coalesce(new.visibility, 'public') is distinct from coalesce(old.visibility, 'public')
+     and coalesce(auth.jwt() ->> 'role', '') <> 'service_role'
+     and exists (
+       select 1
+       from public.plan_submissions ps
+       where ps.plan_id = old.id
+         and ps.status in ('submitted', 'screening')
+     ) then
+    raise exception 'Plan visibility cannot be changed while a submission is under review';
+  end if;
+
+  if old.status = 'published'
+     and coalesce(old.visibility, 'public') = 'private'
+     and coalesce(new.visibility, 'public') = 'public'
+     and coalesce(auth.jwt() ->> 'role', '') <> 'service_role' then
+    raise exception 'Published private plans must pass screening before becoming public';
+  end if;
+
+  return new;
+end;
+$$;
+
+drop trigger if exists prevent_unscreened_private_plan_publication on public.devotional_plans;
+create trigger prevent_unscreened_private_plan_publication
+  before update of visibility on public.devotional_plans
+  for each row
+  execute function public.prevent_unscreened_private_plan_publication();
+
+drop function if exists public.submit_devotional_plan_for_screening(uuid);
+drop function if exists public.submit_devotional_plan_for_screening(uuid, text);
+
+create or replace function public.submit_devotional_plan_for_screening(
+  p_plan_id uuid,
+  p_visibility text default null
+)
+returns table (
+  submission_id uuid,
+  plan_id uuid,
+  submission_number int,
+  status text,
+  submitted_at timestamptz
+)
+language plpgsql
+security definer
+set search_path = pg_catalog, public
+as $$
+declare
+  v_user_id uuid := auth.uid();
+  v_plan public.devotional_plans%rowtype;
+  v_title text;
+  v_description text;
+  v_requested_visibility text := nullif(lower(btrim(coalesce(p_visibility, ''))), '');
+  v_submitted_visibility text;
+  v_days_payload jsonb;
+  v_submitted_payload jsonb;
+  v_submitted_total_days int;
+  v_content_hash text;
+  v_submission_id uuid;
+  v_submission_number int;
+  v_submitted_at timestamptz;
+begin
+  if v_user_id is null then
+    raise exception 'Authentication required';
+  end if;
+
+  select *
+    into v_plan
+  from public.devotional_plans
+  where id = p_plan_id
+    and author_id = v_user_id
+  for update;
+
+  if not found then
+    raise exception 'Plan not found';
+  end if;
+
+  v_submitted_visibility := coalesce(
+    v_requested_visibility,
+    nullif(lower(btrim(coalesce(v_plan.visibility, ''))), ''),
+    'public'
+  );
+
+  if v_submitted_visibility not in ('public', 'private') then
+    raise exception 'Invalid plan visibility';
+  end if;
+
+  v_title := btrim(coalesce(v_plan.title, ''));
+  v_description := btrim(coalesce(v_plan.description, ''));
+
+  if v_title = '' then
+    raise exception 'Plan title is required';
+  end if;
+
+  if v_description = '' then
+    raise exception 'Plan description is required';
+  end if;
+
+  if exists (
+    select 1
+    from public.plan_submissions ps
+    where ps.plan_id = p_plan_id
+      and ps.status in ('submitted', 'screening')
+  ) then
+    raise exception 'This plan already has an active submission';
+  end if;
+
+  select
+    coalesce(
+      jsonb_agg(draft_days.day_snapshot order by draft_days.day_number),
+      '[]'::jsonb
+    ),
+    count(*)
+    into v_days_payload, v_submitted_total_days
+  from (
+    select
+      d.day_number,
+      jsonb_build_object(
+        'day_id', d.id,
+        'day_number', d.day_number,
+        'title', d.title,
+        'content', d.content,
+        'scriptures', coalesce(to_jsonb(sr.reference), '[]'::jsonb)
+      ) as day_snapshot
+    from public.devotional_days_draft d
+    left join lateral (
+      select s.reference
+      from public.scripture_references_draft s
+      where s.day_id = d.id
+      order by s.created_at desc nulls last, s.id desc
+      limit 1
+    ) sr on true
+    where d.plan_id = p_plan_id
+      and btrim(coalesce(d.content, '')) <> ''
+  ) as draft_days;
+
+  if v_submitted_total_days = 0 then
+    select
+      coalesce(
+        jsonb_agg(published_days.day_snapshot order by published_days.day_number),
+        '[]'::jsonb
+      ),
+      count(*)
+      into v_days_payload, v_submitted_total_days
+    from (
+      select
+        d.day_number,
+        jsonb_build_object(
+          'day_id', d.id,
+          'day_number', d.day_number,
+          'title', d.title,
+          'content', d.content,
+          'scriptures', coalesce(to_jsonb(sr.reference), '[]'::jsonb)
+        ) as day_snapshot
+      from public.devotional_days d
+      left join lateral (
+        select s.reference
+        from public.scripture_references s
+        where s.day_id = d.id
+        order by s.created_at desc nulls last, s.id desc
+        limit 1
+      ) sr on true
+      where d.plan_id = p_plan_id
+        and btrim(coalesce(d.content, '')) <> ''
+    ) as published_days;
+  end if;
+
+  if v_submitted_total_days = 0 then
+    raise exception 'Add at least one completed day before submitting';
+  end if;
+
+  v_submitted_payload := jsonb_build_object(
+    'plan', jsonb_build_object(
+      'title', v_title,
+      'description', v_description,
+      'cover_image', v_plan.cover_image,
+      'tags', coalesce(to_jsonb(v_plan.tags), '[]'::jsonb),
+      'total_days', v_submitted_total_days,
+      'visibility', v_submitted_visibility
+    ),
+    'days', v_days_payload
+  );
+
+  v_content_hash := md5(v_submitted_payload::text);
+
+  select coalesce(max(ps.submission_number), 0) + 1
+    into v_submission_number
+  from public.plan_submissions ps
+  where ps.plan_id = p_plan_id;
+
+  insert into public.plan_submissions (
+    plan_id,
+    author_id,
+    submission_number,
+    status,
+    submitted_payload,
+    submitted_title,
+    submitted_description,
+    submitted_cover_image,
+    submitted_tags,
+    submitted_total_days,
+    submitted_visibility,
+    content_hash
+  )
+  values (
+    p_plan_id,
+    v_user_id,
+    v_submission_number,
+    'submitted',
+    v_submitted_payload,
+    v_title,
+    v_description,
+    v_plan.cover_image,
+    coalesce(v_plan.tags, '{}'::text[]),
+    v_submitted_total_days,
+    v_submitted_visibility,
+    v_content_hash
+  )
+  returning id, plan_submissions.submitted_at
+    into v_submission_id, v_submitted_at;
+
+  return query
+  select
+    v_submission_id,
+    p_plan_id,
+    v_submission_number,
+    'submitted'::text,
+    v_submitted_at;
+end;
+$$;
+
+create or replace function public.publish_submitted_devotional_plan(
+  p_submission_id uuid
+)
+returns void
+language plpgsql
+security definer
+set search_path = pg_catalog, public
+as $$
+declare
+  v_submission public.plan_submissions%rowtype;
+  v_days_payload jsonb;
+  day_item jsonb;
+  upserted_day_id uuid;
+  published_days_count int;
+begin
+  if coalesce(auth.jwt() ->> 'role', '') <> 'service_role' then
+    raise exception 'Not authorized';
+  end if;
+
+  select *
+    into v_submission
+  from public.plan_submissions
+  where id = p_submission_id
+  for update;
+
+  if not found then
+    raise exception 'Submission not found';
+  end if;
+
+  if v_submission.status not in ('submitted', 'screening') then
+    raise exception 'Submission is not ready to publish';
+  end if;
+
+  if v_submission.screening_decision <> 'pass' then
+    raise exception 'Submission did not pass screening';
+  end if;
+
+  v_days_payload := coalesce(v_submission.submitted_payload -> 'days', '[]'::jsonb);
+
+  if jsonb_typeof(v_days_payload) <> 'array' then
+    raise exception 'Submission payload is invalid';
+  end if;
+
+  select count(*)
+    into published_days_count
+  from jsonb_array_elements(v_days_payload) as day_value
+  where btrim(coalesce(day_value ->> 'content', '')) <> '';
+
+  if published_days_count = 0 then
+    raise exception 'Submission has no publishable days';
+  end if;
+
+  delete from public.devotional_days
+  where plan_id = v_submission.plan_id
+    and day_number not in (
+      select (day_value ->> 'day_number')::int
+      from jsonb_array_elements(v_days_payload) as day_value
+      where btrim(coalesce(day_value ->> 'content', '')) <> ''
+    );
+
+  for day_item in
+    select day_value
+    from jsonb_array_elements(v_days_payload) as day_value
+    where btrim(coalesce(day_value ->> 'content', '')) <> ''
+    order by (day_value ->> 'day_number')::int
+  loop
+    insert into public.devotional_days (
+      plan_id,
+      day_number,
+      content,
+      title
+    )
+    values (
+      v_submission.plan_id,
+      (day_item ->> 'day_number')::int,
+      day_item ->> 'content',
+      nullif(day_item ->> 'title', '')
+    )
+    on conflict (plan_id, day_number)
+    do update set
+      content = excluded.content,
+      title = excluded.title,
+      updated_at = now()
+    returning id into upserted_day_id;
+
+    delete from public.scripture_references
+    where day_id = upserted_day_id;
+
+    if jsonb_array_length(coalesce(day_item -> 'scriptures', '[]'::jsonb)) > 0 then
+      insert into public.scripture_references (day_id, reference)
+      select
+        upserted_day_id,
+        array_agg(value)
+      from jsonb_array_elements_text(coalesce(day_item -> 'scriptures', '[]'::jsonb));
+    end if;
+  end loop;
+
+  update public.devotional_plans
+  set
+    title = v_submission.submitted_title,
+    description = v_submission.submitted_description,
+    cover_image = v_submission.submitted_cover_image,
+    tags = v_submission.submitted_tags,
+    status = 'published',
+    total_days = published_days_count,
+    visibility = coalesce(nullif(v_submission.submitted_visibility, ''), 'public'),
+    updated_at = now()
+  where id = v_submission.plan_id;
+
+  update public.plan_submissions
+  set
+    status = 'published',
+    published_at = coalesce(published_at, now())
+  where id = p_submission_id;
+end;
+$$;

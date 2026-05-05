@@ -482,7 +482,7 @@ serve(async (req) => {
     const { data: submission, error: submissionError } = await supabase
       .from('plan_submissions')
       .select(
-        'id, plan_id, submission_number, status, submitted_title, submitted_description, submitted_tags, submitted_total_days, submitted_payload',
+        'id, plan_id, submission_number, status, submitted_title, submitted_description, submitted_tags, submitted_total_days, submitted_visibility, submitted_payload',
       )
       .eq('id', submissionId)
       .single();
@@ -527,7 +527,7 @@ serve(async (req) => {
       .eq('id', submissionId)
       .in('status', ['submitted', 'failed'])
       .select(
-        'id, plan_id, submission_number, status, submitted_title, submitted_description, submitted_tags, submitted_total_days, submitted_payload',
+        'id, plan_id, submission_number, status, submitted_title, submitted_description, submitted_tags, submitted_total_days, submitted_visibility, submitted_payload',
       )
       .maybeSingle();
 
@@ -551,34 +551,8 @@ serve(async (req) => {
       total_days: transitionedSubmission.submitted_total_days,
     });
 
-    const { data: planRecord, error: planError } = await supabase
-      .from('devotional_plans')
-      .select('visibility')
-      .eq('id', transitionedSubmission.plan_id)
-      .single();
-
-    if (planError || !planRecord) {
-      logError('plan_visibility_lookup_failed', planError ?? new Error('Plan not found'), {
-        request_id: requestId,
-        submission_id: submissionId,
-        plan_id: transitionedSubmission.plan_id,
-      });
-      await markFailed(
-        supabase,
-        submissionId,
-        'Could not load plan visibility for screening.',
-        {
-          error: planError?.message ?? 'Plan visibility not found',
-        },
-        {
-          request_id: requestId,
-        },
-      );
-      return new Response('Could not load plan visibility', { status: 500 });
-    }
-
     const planVisibility: PlanVisibility =
-      planRecord.visibility === 'private' ? 'private' : 'public';
+      transitionedSubmission.submitted_visibility === 'private' ? 'private' : 'public';
 
     logInfo('plan_visibility_loaded', {
       request_id: requestId,
@@ -731,6 +705,7 @@ ${prompt}
     const { error: passUpdateError } = await supabase
       .from('plan_submissions')
       .update({
+        status: 'approved',
         screening_decision: 'pass',
         screening_summary: parsedDecision.summary,
         screening_reason_codes: [],
@@ -765,41 +740,14 @@ ${prompt}
       submission_id: submissionId,
     });
 
-    logInfo('publish_started', {
-      request_id: requestId,
-      submission_id: submissionId,
-    });
-    const { error: publishError } = await supabase.rpc('publish_submitted_devotional_plan', {
-      p_submission_id: submissionId,
-    });
-
-    if (publishError) {
-      logError('publish_failed', publishError, {
-        request_id: requestId,
-        submission_id: submissionId,
-      });
-      await supabase
-        .from('plan_submissions')
-        .update({
-          status: 'failed',
-          screening_summary: parsedDecision.summary,
-          screening_reason_codes: [],
-          screening_confidence: parsedDecision.confidence,
-          screening_completed_at: completedAt,
-        })
-        .eq('id', submissionId);
-
-      return new Response(`Publish failed: ${publishError.message}`, { status: 500 });
-    }
-
-    logInfo('publish_succeeded', {
+    logInfo('submission_approved_for_manual_publish', {
       request_id: requestId,
       submission_id: submissionId,
     });
 
     return Response.json({
       submission_id: submissionId,
-      status: 'published',
+      status: 'approved',
       decision: parsedDecision,
     });
   } catch (error) {
