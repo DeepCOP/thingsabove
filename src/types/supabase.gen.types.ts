@@ -2042,6 +2042,10 @@ export type Database = {
       get_my_notifications: {
         Args: never;
         Returns: {
+          actor_avatar_url: string | null;
+          actor_first_name: string | null;
+          actor_id: string | null;
+          actor_last_name: string | null;
           body: string;
           created_at: string;
           data: Json;
