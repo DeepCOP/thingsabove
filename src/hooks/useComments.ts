@@ -3,6 +3,17 @@ import { PlanDayComment } from '@/src/types/types';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { fetchPlanDayComments } from '../api/groupQueries';
 
+function sortCommentsNewestFirst(comments: PlanDayComment[]) {
+  return [...comments].sort((a, b) => {
+    const createdAtDiff = Date.parse(b.created_at) - Date.parse(a.created_at);
+    if (createdAtDiff !== 0) {
+      return createdAtDiff;
+    }
+
+    return b.id.localeCompare(a.id);
+  });
+}
+
 export function useComments(planId: string, dayId: string, group_id?: string) {
   const queryClient = useQueryClient();
   const queryKey = ['day_comments', planId, dayId, group_id] as const;
@@ -13,6 +24,7 @@ export function useComments(planId: string, dayId: string, group_id?: string) {
     staleTime: 0,
     queryFn: async () =>
       (await fetchPlanDayComments({ planId, dayId, group_id })) as PlanDayComment[],
+    select: (comments) => sortCommentsNewestFirst(comments),
   });
 
   const addComment = useMutation({
