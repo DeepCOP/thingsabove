@@ -705,6 +705,7 @@ ${prompt}
     const { error: passUpdateError } = await supabase
       .from('plan_submissions')
       .update({
+        status: 'approved',
         screening_decision: 'pass',
         screening_summary: parsedDecision.summary,
         screening_reason_codes: [],
@@ -739,41 +740,14 @@ ${prompt}
       submission_id: submissionId,
     });
 
-    logInfo('publish_started', {
-      request_id: requestId,
-      submission_id: submissionId,
-    });
-    const { error: publishError } = await supabase.rpc('publish_submitted_devotional_plan', {
-      p_submission_id: submissionId,
-    });
-
-    if (publishError) {
-      logError('publish_failed', publishError, {
-        request_id: requestId,
-        submission_id: submissionId,
-      });
-      await supabase
-        .from('plan_submissions')
-        .update({
-          status: 'failed',
-          screening_summary: parsedDecision.summary,
-          screening_reason_codes: [],
-          screening_confidence: parsedDecision.confidence,
-          screening_completed_at: completedAt,
-        })
-        .eq('id', submissionId);
-
-      return new Response(`Publish failed: ${publishError.message}`, { status: 500 });
-    }
-
-    logInfo('publish_succeeded', {
+    logInfo('submission_approved_for_manual_publish', {
       request_id: requestId,
       submission_id: submissionId,
     });
 
     return Response.json({
       submission_id: submissionId,
-      status: 'published',
+      status: 'approved',
       decision: parsedDecision,
     });
   } catch (error) {
