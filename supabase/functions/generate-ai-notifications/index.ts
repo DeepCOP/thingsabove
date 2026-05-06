@@ -6,6 +6,7 @@ const MODEL_NAME = 'gemini-2.5-flash';
 const PLANNER_LIMIT = 12;
 const PLANNER_REQUEST_DELAY_MS = 1200;
 const DEFAULT_NOTIFICATION_WINDOW_HOURS = 36;
+const MAX_NOTIFICATION_MESSAGE_LENGTH = 240;
 const NOTIFICATION_WINDOW_HOURS = (() => {
   const rawValue = Deno.env.get('AI_NOTIFICATION_WINDOW_HOURS');
   const parsedValue = rawValue ? Number.parseInt(rawValue, 10) : Number.NaN;
@@ -86,6 +87,7 @@ Message rules:
 - never guilt-based, shaming, or corrective
 - never mention analytics, tracking, app usage, or data collection
 - keep it concise enough for a push notification
+- maximum ${MAX_NOTIFICATION_MESSAGE_LENGTH} characters total, including spaces and line breaks
 - stay rooted in Scripture, prayer, fellowship, church life, generosity, witness, or faithful daily obedience
 - Every message must first speak directly to the user, then include a related Bible verse excerpt or faithful paraphrase with its reference
 - Format the message as: main message first, then an empty line, then the verse on its own line in quotes with the reference
@@ -237,6 +239,16 @@ function extractJsonObject(text: string) {
   return null;
 }
 
+function normalizePlannerMessage(value: string) {
+  return value
+    .replace(/\r\n/g, '\n')
+    .replace(/[ \t]+\n/g, '\n')
+    .replace(/\n[ \t]+/g, '\n')
+    .replace(/[ \t]{2,}/g, ' ')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+}
+
 function normalizePlannerDecision(value: unknown): PlannerDecision | null {
   if (!value || typeof value !== 'object') return null;
 
@@ -257,8 +269,7 @@ function normalizePlannerDecision(value: unknown): PlannerDecision | null {
   }
 
   const title = typeof record.title === 'string' ? record.title.replace(/\s+/g, ' ').trim() : '';
-  const message =
-    typeof record.message === 'string' ? record.message.replace(/\s+/g, ' ').trim() : '';
+  const message = typeof record.message === 'string' ? normalizePlannerMessage(record.message) : '';
   const category =
     typeof record.category === 'string' &&
     ALLOWED_CATEGORIES.includes(record.category as PlannerCategory)
@@ -277,7 +288,8 @@ function normalizePlannerDecision(value: unknown): PlannerDecision | null {
 
   if (!category) return null;
   if (!title || title.length < 4 || title.length > 60) return null;
-  if (!message || message.length < 12 || message.length > 320) return null;
+  if (!message || message.length < 12 || message.length > MAX_NOTIFICATION_MESSAGE_LENGTH)
+    return null;
   if (!Number.isInteger(dayOffset) || dayOffset < 0 || dayOffset > 1) return null;
   if (!Number.isInteger(localHour) || localHour < 8 || localHour > 20) return null;
 
