@@ -119,7 +119,7 @@ const DayCommentsBottomSheet = forwardRef<BottomSheet, Props>(
     const isSubmitting = addComment.isPending || updateComment.isPending;
     const deletingCommentId = deleteComment.isPending ? deleteComment.variables?.commentId : null;
     const insets = useSafeAreaInsets();
-    const composerInset = editingCommentId ? 160 : 116;
+    const COMPOSERINSET = editingCommentId ? 160 : 116;
     useRealtimeComments(group_id as string, commentsQuery.refetch);
 
     const resetComposer = () => {
@@ -204,7 +204,7 @@ const DayCommentsBottomSheet = forwardRef<BottomSheet, Props>(
             keyExtractor={(item: PlanDayComment) => item.id}
             contentContainerStyle={{
               flexGrow: 1,
-              paddingBottom: composerInset + insets.bottom,
+              paddingBottom: COMPOSERINSET + insets.bottom,
             }}
             showsVerticalScrollIndicator={false}
             ListHeaderComponent={
@@ -216,7 +216,7 @@ const DayCommentsBottomSheet = forwardRef<BottomSheet, Props>(
               <View className="flex-1 items-center justify-center px-6">
                 <Ionicons name="book" size={60} color="#808080" />
                 <Text className="text-gray-800 dark:text-gray-200">
-                  Share your thoughts based on today's reading.
+                  Share your thoughts based on today&apos;s reading.
                 </Text>
               </View>
             }
