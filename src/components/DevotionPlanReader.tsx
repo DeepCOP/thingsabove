@@ -14,6 +14,7 @@ import {
   ActivityIndicator,
   Animated,
   ScrollView,
+  Linking,
   Share,
   Text,
   TouchableOpacity,
@@ -21,11 +22,19 @@ import {
   useWindowDimensions,
   View,
 } from 'react-native';
-import RenderHTML from 'react-native-render-html';
+import { WebView } from 'react-native-webview';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useBible } from '../state/BibleContext';
 import { DayItemsProgress, DayItemType } from '../types/types';
 import { parseVerseRef } from '../utils';
+
+const escapeHtml = (value: string) =>
+  value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
 
 export default function DevotionalPlanReader({
   headerTranslateY,
@@ -73,6 +82,147 @@ export default function DevotionalPlanReader({
   const devotionalTitle =
     item?.title?.trim() || (item?.day_number ? `Day ${item.day_number}` : 'Devotional');
   const devotionalHtml = item?.devotional_content ?? '';
+  const devotionalDocument = useMemo(() => {
+    const isDark = colorScheme === 'dark';
+
+    return `<!doctype html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+    <style>
+      :root {
+        color-scheme: ${isDark ? 'dark' : 'light'};
+      }
+
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        background: ${isDark ? '#000000' : '#ffffff'};
+        color: ${isDark ? '#F3F4F6' : '#111827'};
+        font-family: MerriWeather400Regular, Georgia, serif;
+        font-size: 19px;
+        line-height: 34px;
+        -webkit-touch-callout: default;
+        -webkit-user-select: text;
+        user-select: text;
+      }
+
+      body {
+        box-sizing: border-box;
+        min-height: 100vh;
+        padding: 112px 20px ${insets.bottom + 110}px;
+      }
+
+      * {
+        box-sizing: border-box;
+        -webkit-user-select: text;
+        user-select: text;
+      }
+
+      .devotional-title {
+        margin: 0 0 24px;
+        text-align: center;
+        color: ${isDark ? '#9CA3AF' : '#6B7280'};
+        font-family: OpenSansSemiBold, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        font-size: 20px;
+        font-weight: 600;
+        line-height: 30px;
+      }
+
+      p { margin: 0 0 12px; }
+      a {
+        color: ${isDark ? '#93C5FD' : '#2563EB'};
+        text-decoration: underline;
+      }
+      strong, b {
+        font-family: MerriWeather700Bold, Georgia, serif;
+        font-weight: 700;
+      }
+      em, i { font-style: italic; }
+      u { text-decoration: underline; }
+      s, del { text-decoration: line-through; }
+      blockquote {
+        border-left: 3px solid ${isDark ? '#334155' : '#E5E7EB'};
+        margin: 10px 0;
+        padding-left: 12px;
+        color: ${isDark ? '#CBD5F5' : '#4B5563'};
+      }
+      mark {
+        background: ${isDark ? '#374151' : '#FDE68A'};
+        border-radius: 4px;
+        padding: 0 4px;
+      }
+      ul, ol {
+        margin: 0 0 10px;
+        padding-left: 18px;
+      }
+      li { margin-bottom: 6px; }
+      h1, h2, h3, h4, h5, h6 {
+        font-family: MerriWeather700Bold, Georgia, serif;
+        font-weight: 900;
+      }
+      h1 {
+        font-size: 32px;
+        line-height: 36px;
+        margin: 0 0 12px;
+      }
+      h2 {
+        font-size: 28px;
+        line-height: 30px;
+        margin: 0 0 10px;
+      }
+      h3 {
+        font-size: 24px;
+        line-height: 30px;
+        margin: 0 0 10px;
+      }
+      h4 {
+        font-size: 20px;
+        line-height: 30px;
+        margin: 0 0 10px;
+      }
+      h5 {
+        font-size: 16px;
+        line-height: 30px;
+        margin: 0 0 10px;
+      }
+      h6 {
+        font-size: 12px;
+        line-height: 30px;
+        margin: 0 0 10px;
+      }
+      pre {
+        background: ${isDark ? '#0F172A' : '#F8FAFC'};
+        border-radius: 8px;
+        margin: 0 0 12px;
+        padding: 12px;
+        white-space: pre-wrap;
+      }
+      code {
+        background: ${isDark ? '#0F172A' : '#F8FAFC'};
+        border-radius: 6px;
+        font-family: Courier, monospace;
+        font-size: 16px;
+        padding: 2px 6px;
+      }
+
+      .text-left,
+      .align-left { text-align: left; }
+      .text-center,
+      .align-center { text-align: center; }
+      .text-right,
+      .align-right { text-align: right; }
+      .text-justify,
+      .align-justify { text-align: justify; }
+    </style>
+  </head>
+  <body>
+    <h1 class="devotional-title">${escapeHtml(devotionalTitle)}</h1>
+    ${devotionalHtml}
+  </body>
+</html>`;
+  }, [colorScheme, devotionalHtml, devotionalTitle, insets.bottom]);
   const isDevotionalItem = item?.item_type === 'devotional' && item?.item_key === 'main';
   const parsedReference = useMemo(() => {
     if (item?.item_type !== 'scripture' || !item?.item_key) {
@@ -307,125 +457,24 @@ export default function DevotionalPlanReader({
 
       <View className="flex-1 bg-white dark:bg-black" style={{ paddingBottom: insets.bottom }}>
         {isDevotionalItem ? (
-          <Animated.ScrollView className="px-5 pt-28 pb-32">
-            <View className="items-center mb-6">
-              <Text className="text-center text-gray-500 dark:text-gray-400 text-xl font-OpenSansSemiBold">
-                {devotionalTitle}
-              </Text>
-            </View>
-            <RenderHTML
-              contentWidth={Math.max(width - 40, 0)}
-              source={{ html: devotionalHtml }}
-              systemFonts={[
-                'MerriWeather400Regular',
-                'MerriWeather700Bold',
-                'MerriWeather900Black',
-                'OpenSansSemiBold',
-              ]}
-              enableCSSInlineProcessing
-              classesStyles={{
-                'text-left': { textAlign: 'left' },
-                'text-center': { textAlign: 'center' },
-                'text-right': { textAlign: 'right' },
-                'text-justify': { textAlign: 'justify' },
-                'align-left': { textAlign: 'left' },
-                'align-center': { textAlign: 'center' },
-                'align-right': { textAlign: 'right' },
-                'align-justify': { textAlign: 'justify' },
-              }}
-              baseStyle={{
-                color: colorScheme === 'dark' ? '#F3F4F6' : '#111827',
-                fontSize: 19,
-                lineHeight: 34,
-                fontFamily: 'MerriWeather400Regular',
-                paddingBottom: insets.bottom + 90,
-              }}
-              tagsStyles={{
-                p: { marginBottom: 12 },
-                a: {
-                  color: colorScheme === 'dark' ? '#93C5FD' : '#2563EB',
-                  textDecorationLine: 'underline',
-                },
-                strong: { fontFamily: 'MerriWeather700Bold', fontWeight: '700' },
-                b: { fontFamily: 'MerriWeather700Bold', fontWeight: '700' },
-                em: { fontStyle: 'italic' },
-                i: { fontStyle: 'italic' },
-                u: { textDecorationLine: 'underline' },
-                s: { textDecorationLine: 'line-through' },
-                del: { textDecorationLine: 'line-through' },
-                blockquote: {
-                  borderLeftWidth: 3,
-                  borderLeftColor: colorScheme === 'dark' ? '#334155' : '#E5E7EB',
-                  paddingLeft: 12,
-                  marginVertical: 10,
-                  color: colorScheme === 'dark' ? '#CBD5F5' : '#4B5563',
-                },
-                mark: {
-                  backgroundColor: colorScheme === 'dark' ? '#374151' : '#FDE68A',
-                  paddingHorizontal: 4,
-                  borderRadius: 4,
-                },
-                ul: { paddingLeft: 18, marginBottom: 10 },
-                ol: { paddingLeft: 18, marginBottom: 10 },
-                h1: {
-                  fontSize: 32,
-                  lineHeight: 36,
-                  marginBottom: 12,
-                  fontFamily: 'MerriWeather900Black',
-                  fontWeight: '900',
-                },
-                h2: {
-                  fontSize: 28,
-                  lineHeight: 30,
-                  marginBottom: 10,
-                  fontFamily: 'MerriWeather700Bold',
-                },
-                h3: {
-                  fontSize: 24,
-                  lineHeight: 30,
-                  marginBottom: 10,
-                  fontFamily: 'MerriWeather700Bold',
-                  fontWeight: '900',
-                },
-                h4: {
-                  fontSize: 20,
-                  lineHeight: 30,
-                  marginBottom: 10,
-                  fontFamily: 'MerriWeather700Bold',
-                  fontWeight: '900',
-                },
-                h5: {
-                  fontSize: 16,
-                  lineHeight: 30,
-                  marginBottom: 10,
-                  fontFamily: 'MerriWeather700Bold',
-                  fontWeight: '900',
-                },
-                h6: {
-                  fontSize: 12,
-                  lineHeight: 30,
-                  marginBottom: 10,
-                  fontFamily: 'MerriWeather700Bold',
-                  fontWeight: '900',
-                },
-                pre: {
-                  backgroundColor: colorScheme === 'dark' ? '#0F172A' : '#F8FAFC',
-                  padding: 12,
-                  borderRadius: 8,
-                  marginBottom: 12,
-                },
-                code: {
-                  backgroundColor: colorScheme === 'dark' ? '#0F172A' : '#F8FAFC',
-                  paddingHorizontal: 6,
-                  paddingVertical: 2,
-                  borderRadius: 6,
-                  fontFamily: 'Courier',
-                  fontSize: 16,
-                },
-                li: { marginBottom: 6 },
-              }}
-            />
-          </Animated.ScrollView>
+          <WebView
+            originWhitelist={['*']}
+            source={{ html: devotionalDocument }}
+            style={{ flex: 1, backgroundColor: colorScheme === 'dark' ? '#000' : '#fff' }}
+            textZoom={100}
+            setSupportMultipleWindows={false}
+            onShouldStartLoadWithRequest={(request) => {
+              const url = request.url;
+              const isInlineDocument = !url || url === 'about:blank' || url.startsWith('about:');
+
+              if (isInlineDocument) {
+                return true;
+              }
+
+              Linking.openURL(url).catch(() => undefined);
+              return false;
+            }}
+          />
         ) : showScriptureUnavailableFallback ? (
           <View className="flex-1 items-center justify-center px-6">
             <Text className="text-center text-xl font-semibold text-gray-900 dark:text-white">
@@ -494,7 +543,9 @@ export default function DevotionalPlanReader({
                     }`}>
                     <Text className="text-verseNumber mr-1 -mt-1 dark:text-gray-400">{verse}</Text>
 
-                    <Text className="flex-1 text-[17px] leading-7 text-primary dark:text-gray-100 indent-5">
+                    <Text
+                      selectable
+                      className="flex-1 text-[17px] leading-7 text-primary dark:text-gray-100 indent-5">
                       {text as string}
                     </Text>
                   </TouchableOpacity>
