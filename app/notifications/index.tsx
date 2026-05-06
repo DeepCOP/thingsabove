@@ -1,8 +1,8 @@
 import { useNotifications } from '@/src/hooks/useNotifications';
 import NotificationsScreen from '@/src/screens/NotificationsScreen';
 import { useAuth } from '@/src/state/AuthContext';
-import { Json } from '@/src/types/supabase.gen.types';
 import { AppNotification, isNotificationType, NOTIFICATION_TYPES } from '@/src/types/notifications';
+import { Json } from '@/src/types/supabase.gen.types';
 import { useRouter } from 'expo-router';
 import { Alert } from 'react-native';
 
@@ -70,8 +70,7 @@ export default function NotificationsTab() {
   const router = useRouter();
   const { session } = useAuth();
   const { notificationsQuery, markRead } = useNotifications(session?.user?.id);
-  const isLoading =
-    notificationsQuery.isLoading || (notificationsQuery.isRefetching && !notificationsQuery.data);
+  const isLoading = notificationsQuery.isFetching && !notificationsQuery.data;
 
   function markNotificationAsRead(item: AppNotification) {
     if (!item.is_read) {
