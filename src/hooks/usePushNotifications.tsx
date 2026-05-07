@@ -1,6 +1,7 @@
 import { useAuth } from '@/src/state/AuthContext';
 import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
+import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Alert, Platform } from 'react-native';
 import { pushNotificationSetup } from '../api/mutations';
@@ -14,6 +15,13 @@ Notifications.setNotificationHandler({
     shouldShowList: true,
   }),
 });
+
+function openNotificationsFromResponse(response: Notifications.NotificationResponse | null) {
+  if (!response || response.actionIdentifier !== Notifications.DEFAULT_ACTION_IDENTIFIER) return;
+
+  router.push('/notifications');
+  Notifications.clearLastNotificationResponse();
+}
 
 export async function registerForPushNotificationsAsync(): Promise<string | null> {
   // 1️⃣ Physical device check
@@ -80,15 +88,18 @@ export function usePushNotifications() {
       return;
     }
 
+    const notificationListener = Notifications.addNotificationReceivedListener(setNotification);
+    const responseListener = Notifications.addNotificationResponseReceivedListener(
+      openNotificationsFromResponse,
+    );
+
+    openNotificationsFromResponse(Notifications.getLastNotificationResponse());
+
     registerForPushNotificationsAsync().then(async (token) => {
       if (!token) return;
 
       setExpoPushToken(token);
     });
-
-    const notificationListener = Notifications.addNotificationReceivedListener(setNotification);
-
-    const responseListener = Notifications.addNotificationResponseReceivedListener(() => {});
 
     return () => {
       notificationListener.remove();
