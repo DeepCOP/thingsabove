@@ -1,80 +1,156 @@
-import LoadingSpinner from '@/src/components/LoadingSpinner';
 import { useNotifications } from '@/src/hooks/useNotifications';
 import NotificationsScreen from '@/src/screens/NotificationsScreen';
 import { useAuth } from '@/src/state/AuthContext';
+import { AppNotification, isNotificationType, NOTIFICATION_TYPES } from '@/src/types/notifications';
 import { Json } from '@/src/types/supabase.gen.types';
 import { useRouter } from 'expo-router';
+import { Alert } from 'react-native';
 
-type planInviteNotificationData = {
-  plan_id: string;
+type PlanInviteNotificationData = {
   group_id: string;
-  invited_by: string;
+  invited_by?: string;
+  plan_id: string;
 };
 
-type friendRequestNotificationData = {
-  requester_id: string;
-};
-
-type prayerEncouragementNotificationData = {
-  request_id: string;
+type PrayerEncouragementNotificationData = {
   encouraged_by: string;
+  request_id: string;
 };
+
+function isJsonObject(value: Json): value is Record<string, Json> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function getRequiredStringValue(data: Record<string, Json>, key: string) {
+  const value = data[key];
+  return typeof value === 'string' && value.length > 0 ? value : null;
+}
+
+function parsePlanInviteNotificationData(data: Json): PlanInviteNotificationData | null {
+  if (!isJsonObject(data)) {
+    return null;
+  }
+
+  const planId = getRequiredStringValue(data, 'plan_id');
+  const groupId = getRequiredStringValue(data, 'group_id');
+  const invitedBy = getRequiredStringValue(data, 'invited_by');
+
+  if (!planId || !groupId) {
+    return null;
+  }
+
+  return {
+    plan_id: planId,
+    group_id: groupId,
+    ...(invitedBy ? { invited_by: invitedBy } : {}),
+  };
+}
+
+function parsePrayerEncouragementNotificationData(
+  data: Json,
+): PrayerEncouragementNotificationData | null {
+  if (!isJsonObject(data)) {
+    return null;
+  }
+
+  const requestId = getRequiredStringValue(data, 'request_id');
+  const encouragedBy = getRequiredStringValue(data, 'encouraged_by');
+
+  if (!requestId || !encouragedBy) {
+    return null;
+  }
+
+  return {
+    request_id: requestId,
+    encouraged_by: encouragedBy,
+  };
+}
 
 export default function NotificationsTab() {
   const router = useRouter();
   const { session } = useAuth();
   const { notificationsQuery, markRead } = useNotifications(session?.user?.id);
+  const isLoading = notificationsQuery.isFetching && !notificationsQuery.data;
 
-  if (notificationsQuery.isLoading) {
-    return <LoadingSpinner />;
+  function markNotificationAsRead(item: AppNotification) {
+    if (!item.is_read) {
+      markRead.mutate(item.id);
+    }
   }
 
-  function handleNotificationPress(item: {
-    body: string;
-    created_at: string;
-    data: Json;
-    id: string;
-    is_read: boolean;
-    title: string;
-    type: string;
-  }) {
-    markRead.mutate(item.id);
+  function showUnsupportedNotificationAlert() {
+    Alert.alert(
+      'Notification not supported',
+      'This notification type is not supported in this app version yet.',
+    );
+  }
 
-    const data = item.data as planInviteNotificationData &
-      friendRequestNotificationData &
-      prayerEncouragementNotificationData;
+  function handleNotificationPress(item: AppNotification) {
+    if (!isNotificationType(item.type)) {
+      showUnsupportedNotificationAlert();
+      return;
+    }
 
     switch (item.type) {
-      case 'plan_invite':
+      case NOTIFICATION_TYPES.PLAN_INVITE: {
+        const data = parsePlanInviteNotificationData(item.data);
+
+        if (!data) {
+          Alert.alert(
+            'Notification unavailable',
+            'This invitation is missing details and cannot be opened right now.',
+          );
+          return;
+        }
+
         router.push({
           pathname: '/devotional_detail/[planId]/invitation',
           params: {
             groupId: data.group_id,
-            invitedBy: data.invited_by,
             planId: data.plan_id,
+            ...(data.invited_by ? { invitedBy: data.invited_by } : {}),
           },
         });
-        break;
-      case 'friend_request':
+        markNotificationAsRead(item);
+        return;
+      }
+      case NOTIFICATION_TYPES.FRIEND_REQUEST:
         router.push('/accept_friend');
-        break;
-      case 'prayer_encouragement':
+        markNotificationAsRead(item);
+        return;
+      case NOTIFICATION_TYPES.PRAYER_ENCOURAGEMENT: {
+        const data = parsePrayerEncouragementNotificationData(item.data);
+
+        if (!data) {
+          Alert.alert(
+            'Notification unavailable',
+            'This prayer encouragement is missing details and cannot be opened right now.',
+          );
+          return;
+        }
+
         router.push({
           pathname: '/prayer/[requestId]',
           params: {
             requestId: data.request_id,
           },
         });
-        break;
+        markNotificationAsRead(item);
+        return;
+      }
       default:
-        break;
+        showUnsupportedNotificationAlert();
+        return;
     }
   }
+
   return (
     <NotificationsScreen
-      notifications={notificationsQuery.data || []}
-      isLoading={notificationsQuery.isLoading}
+      notifications={notificationsQuery.data}
+      isLoading={isLoading}
+      hasError={notificationsQuery.isError && !notificationsQuery.data}
       onPress={handleNotificationPress}
+      onRetry={() => notificationsQuery.refetch()}
     />
   );
 }
