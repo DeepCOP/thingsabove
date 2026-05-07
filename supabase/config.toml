@@ -404,6 +404,12 @@ entrypoint = "./functions/send-occasional-notifications/index.ts"
 # For example, if you want to serve static HTML pages in your function:
 # static_files = [ "./functions/send-occasional-notifications/*.html" ]
 
+[functions.send-notification-push]
+enabled = true
+verify_jwt = true
+import_map = "./functions/send-notification-push/deno.json"
+entrypoint = "./functions/send-notification-push/index.ts"
+
 [functions.screen-plan-submission]
 enabled = true
 verify_jwt = true

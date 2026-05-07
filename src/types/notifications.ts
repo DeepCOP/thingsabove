@@ -4,6 +4,7 @@ export const NOTIFICATION_TYPES = {
   PLAN_INVITE: 'plan_invite',
   FRIEND_REQUEST: 'friend_request',
   PRAYER_ENCOURAGEMENT: 'prayer_encouragement',
+  GROUP_DAY_COMPLETED: 'group_day_completed',
 } as const;
 
 export type NotificationType = (typeof NOTIFICATION_TYPES)[keyof typeof NOTIFICATION_TYPES];
