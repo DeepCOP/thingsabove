@@ -104,6 +104,8 @@ const DayCommentsFooter = memo(function DayCommentsFooter({
 const DayCommentsBottomSheet = forwardRef<BottomSheet, Props>(
   ({ planId, dayId, group_id }, ref) => {
     const snapPoints = useMemo(() => ['80%'], []);
+    const EditingComposerInset = 160;
+    const DefaultComposerInset = 116;
     const colorScheme = useColorScheme();
     const [text, setText] = useState('');
     const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
@@ -119,7 +121,7 @@ const DayCommentsBottomSheet = forwardRef<BottomSheet, Props>(
     const isSubmitting = addComment.isPending || updateComment.isPending;
     const deletingCommentId = deleteComment.isPending ? deleteComment.variables?.commentId : null;
     const insets = useSafeAreaInsets();
-    const COMPOSERINSET = editingCommentId ? 160 : 116;
+    const composerInset = editingCommentId ? EditingComposerInset : DefaultComposerInset;
     useRealtimeComments(group_id as string, commentsQuery.refetch);
 
     const resetComposer = () => {
@@ -204,7 +206,7 @@ const DayCommentsBottomSheet = forwardRef<BottomSheet, Props>(
             keyExtractor={(item: PlanDayComment) => item.id}
             contentContainerStyle={{
               flexGrow: 1,
-              paddingBottom: COMPOSERINSET + insets.bottom,
+              paddingBottom: composerInset + insets.bottom,
             }}
             showsVerticalScrollIndicator={false}
             ListHeaderComponent={
