@@ -40,7 +40,7 @@ export default function PlansTab() {
     if (hasActivePlanProgress) {
       setActiveTab('my-plans');
     }
-  }, [activeTab, myPlanProgressPlansQuery.data, myPlanProgressPlansQuery.isSuccess, userId]);
+  }, [activeTab, myPlanProgressPlansQuery.data, userId]);
 
   const handleChangeTab = (tab: PlansTabKey) => {
     hasUserSelectedTabRef.current = true;
