@@ -2,9 +2,19 @@ import { useAuth } from '@/src/state/AuthContext';
 import * as Application from 'expo-application';
 import Constants from 'expo-constants';
 import * as Device from 'expo-device';
+import { getLocales } from 'expo-localization';
 import { useEffect, useRef } from 'react';
 import { AppState, AppStateStatus, Platform } from 'react-native';
 import { syncProfilePresence } from '../api/queries';
+
+const getPrimaryDeviceLocale = () => {
+  const locale = getLocales()[0];
+
+  return {
+    deviceLanguageCode: locale?.languageCode ?? null,
+    deviceLanguageTag: locale?.languageTag ?? null,
+  };
+};
 
 export function useLastSeenTracker() {
   const { session } = useAuth();
@@ -24,6 +34,7 @@ export function useLastSeenTracker() {
         appVersion: Application.nativeApplicationVersion ?? Constants.expoConfig?.version ?? null,
         deviceOs: Device.osName ?? Platform.OS,
         deviceOsVersion: Device.osVersion ?? null,
+        ...getPrimaryDeviceLocale(),
       });
     };
 

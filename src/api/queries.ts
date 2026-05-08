@@ -1,5 +1,5 @@
 import { supabase } from '../lib/supabaseClient';
-import { ProfileLocation, ProfileWithChurch } from '../types/types';
+import { ProfileLocation, ProfilesUpdate, ProfileWithChurch } from '../types/types';
 
 export const searchRelatedPlans = async (currentPlanId: string, tags: string[]) => {
   if (!tags.length) return [];
@@ -359,17 +359,23 @@ export const syncProfilePresence = async ({
   deviceOs,
   deviceOsVersion,
   appVersion,
+  deviceLanguageTag,
+  deviceLanguageCode,
 }: {
   userId: string;
   deviceOs?: string | null;
   deviceOsVersion?: string | null;
   appVersion?: string | null;
+  deviceLanguageTag?: string | null;
+  deviceLanguageCode?: string | null;
 }) => {
-  const updates = {
+  const updates: ProfilesUpdate = {
     last_seen: new Date().toISOString(),
     ...(appVersion != null ? { app_version: appVersion } : {}),
     ...(deviceOs != null ? { device_os: deviceOs } : {}),
     ...(deviceOsVersion != null ? { device_os_version: deviceOsVersion } : {}),
+    ...(deviceLanguageTag != null ? { device_language_tag: deviceLanguageTag } : {}),
+    ...(deviceLanguageCode != null ? { device_language_code: deviceLanguageCode } : {}),
   };
 
   await supabase.from('profiles').update(updates).eq('id', userId);

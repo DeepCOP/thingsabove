@@ -81,6 +81,10 @@ Title rules:
 - keep it concise enough for a push title
 
 Message rules:
+- Write both the title and message in notification_language.language_tag from the planning context
+- If notification_language.source is "fallback" or no notification_language is present, write in English
+- Keep JSON keys in English even when title and message are in another language
+- Do not mention the target language or that the message was translated
 - 2-3 short sentences only
 - warm, friendly, positive, invitational, and action-oriented
 - never guilt-based, shaming, or corrective
@@ -90,6 +94,7 @@ Message rules:
 - Every message must first speak directly to the user, then include a related Bible verse excerpt or faithful paraphrase with its reference
 - Format the message as: main message first, then an empty line, then the verse on its own line in quotes with the reference
 - Use short-form Bible book names in references when possible, such as Ps., Prov., and Matt.
+- For non-English notifications, use a natural Bible reference style for that language when confident; otherwise keep a short standard reference
 - The main message should lead, and the verse should support or reinforce that message
 - Keep the verse connected to the invitation, encouragement, or challenge you are giving
 - Example shape only: "Take a few quiet minutes with God today and let Him steady your heart.\n\n\"Be still, and know that I am God\" (Ps. 46:10)."
@@ -132,6 +137,17 @@ type PlannerDecision = {
 };
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+function normalizePlannerMessage(value: string) {
+  return value
+    .replace(/\r\n/g, '\n')
+    .replace(/[ \t]+/g, ' ')
+    .replace(/\n{3,}/g, '\n\n')
+    .split('\n')
+    .map((line) => line.trim())
+    .join('\n')
+    .trim();
+}
 
 function buildPlannerPrompt(firstName: string, timezone: string, context: unknown) {
   const name = firstName.trim() || 'Friend';
@@ -257,8 +273,7 @@ function normalizePlannerDecision(value: unknown): PlannerDecision | null {
   }
 
   const title = typeof record.title === 'string' ? record.title.replace(/\s+/g, ' ').trim() : '';
-  const message =
-    typeof record.message === 'string' ? record.message.replace(/\s+/g, ' ').trim() : '';
+  const message = typeof record.message === 'string' ? normalizePlannerMessage(record.message) : '';
   const category =
     typeof record.category === 'string' &&
     ALLOWED_CATEGORIES.includes(record.category as PlannerCategory)
