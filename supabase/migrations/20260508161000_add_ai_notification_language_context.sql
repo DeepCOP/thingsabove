@@ -96,7 +96,6 @@ as $$
         'notification_timing', jsonb_strip_nulls(
           jsonb_build_object(
             'last_sent_at', ns.last_sent_at,
-            'next_notification_due_at', ns.last_sent_at + interval '36 hours',
             'latest_send_at', ns.last_sent_at + interval '36 hours'
           )
         ),
