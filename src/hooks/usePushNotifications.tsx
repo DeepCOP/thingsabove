@@ -1,11 +1,12 @@
 import { useAuth } from '@/src/state/AuthContext';
 import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
-import { router } from 'expo-router';
+import { router, type Href } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Alert, Platform } from 'react-native';
 import { pushNotificationSetup } from '../api/mutations';
 import { getCurrentDeviceExpoPushToken, getExpoProjectId } from '../lib/pushToken';
+import { getRouteFromNotificationResponse } from '../utils';
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -16,10 +17,10 @@ Notifications.setNotificationHandler({
   }),
 });
 
-function openNotificationsFromResponse(response: Notifications.NotificationResponse | null) {
+function openRouteFromResponse(response: Notifications.NotificationResponse | null) {
   if (!response || response.actionIdentifier !== Notifications.DEFAULT_ACTION_IDENTIFIER) return;
 
-  router.push('/notifications');
+  router.push(getRouteFromNotificationResponse(response) as Href);
   Notifications.clearLastNotificationResponse();
 }
 
@@ -89,11 +90,10 @@ export function usePushNotifications() {
     }
 
     const notificationListener = Notifications.addNotificationReceivedListener(setNotification);
-    const responseListener = Notifications.addNotificationResponseReceivedListener(
-      openNotificationsFromResponse,
-    );
+    const responseListener =
+      Notifications.addNotificationResponseReceivedListener(openRouteFromResponse);
 
-    openNotificationsFromResponse(Notifications.getLastNotificationResponse());
+    openRouteFromResponse(Notifications.getLastNotificationResponse());
 
     registerForPushNotificationsAsync().then(async (token) => {
       if (!token) return;

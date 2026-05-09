@@ -1,4 +1,5 @@
 import type { DayItemsProgress, ParsedVerse } from '@/src/types/types';
+import * as Notifications from 'expo-notifications';
 import { useEffect, useState } from 'react';
 import { Linking } from 'react-native';
 
@@ -259,4 +260,21 @@ export async function openExternalUrl(url?: string | null) {
 
   await Linking.openURL(url);
   return true;
+}
+
+export function getRouteFromNotificationResponse(response: Notifications.NotificationResponse) {
+  const DEFAULT_NOTIFICATION_ROUTE = '/notifications';
+
+  const route = response.notification.request.content.data?.route;
+
+  if (typeof route !== 'string') {
+    return DEFAULT_NOTIFICATION_ROUTE;
+  }
+
+  const trimmedRoute = route.trim();
+  if (!trimmedRoute || !trimmedRoute.startsWith('/') || trimmedRoute.startsWith('//')) {
+    return DEFAULT_NOTIFICATION_ROUTE;
+  }
+
+  return trimmedRoute;
 }
