@@ -1,3 +1,10 @@
+alter table public.notification_preferences
+add column if not exists group_day_completed boolean default true;
+
+update public.notification_preferences
+set group_day_completed = true
+where group_day_completed is null;
+
 create or replace function public.notify_group_plan_day_completed()
 returns trigger
 language plpgsql
@@ -79,6 +86,7 @@ begin
         from public.notifications existing_notification
         where existing_notification.user_id = pgm.user_id
           and existing_notification.type = 'group_day_completed'
+          and existing_notification.data ->> 'group_id' = new.group_id::text
           and existing_notification.created_at >= (
             date_trunc(
               'day',
@@ -91,10 +99,3 @@ begin
   return new;
 end;
 $$;
-
-drop trigger if exists notify_group_plan_day_completed_on_progress on public.plan_progress;
-create trigger notify_group_plan_day_completed_on_progress
-  after update of completed_days on public.plan_progress
-  for each row
-  when (new.group_id is not null)
-  execute function public.notify_group_plan_day_completed();

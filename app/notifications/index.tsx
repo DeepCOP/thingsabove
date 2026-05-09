@@ -173,6 +173,8 @@ export default function NotificationsTab() {
             progressId: data.progress_id,
             ...(data.group_id ? { groupId: data.group_id } : {}),
             ...(data.plan_id ? { planId: data.plan_id } : {}),
+            ...(data.day_id ? { dayId: data.day_id } : {}),
+            ...(data.day_number ? { dayNumber: String(data.day_number) } : {}),
           },
         });
         markNotificationAsRead(item);

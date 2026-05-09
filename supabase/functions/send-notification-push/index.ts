@@ -90,6 +90,32 @@ Deno.serve(async (req) => {
       return new Response('Notification type ignored', { status: 200 });
     }
 
+    const { data: preferenceData, error: preferenceError } = await supabase
+      .from('notification_preferences')
+      .select('group_day_completed')
+      .eq('user_id', notification.user_id)
+      .maybeSingle();
+    const preference = preferenceData as { group_day_completed: boolean | null } | null;
+
+    if (preferenceError) {
+      logError('preference_lookup_failed', preferenceError, {
+        request_id: requestId,
+        notification_id: notification.id,
+        user_id: notification.user_id,
+      });
+      return new Response('Preference lookup failed', { status: 500 });
+    }
+
+    if (notification.type === 'group_day_completed' && preference?.group_day_completed === false) {
+      logInfo('push_preference_disabled', {
+        request_id: requestId,
+        notification_id: notification.id,
+        user_id: notification.user_id,
+        type: notification.type,
+      });
+      return new Response('Push disabled by preference', { status: 200 });
+    }
+
     const { data: profileData, error: profileError } = await supabase
       .from('profiles')
       .select('expo_push_token')

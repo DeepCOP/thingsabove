@@ -7,7 +7,13 @@ import Constants from 'expo-constants';
 import { Switch, Text, TouchableOpacity, View } from 'react-native';
 
 export default function NotificationSettingsScreen() {
-  const { aiNotificationsEnabled, toggleAiNotifications, loading } = useNotificationSettings();
+  const {
+    aiNotificationsEnabled,
+    groupDayCompletedPushNotificationsEnabled,
+    toggleAiNotifications,
+    toggleGroupDayCompletedPushNotifications,
+    loading,
+  } = useNotificationSettings();
 
   const { theme, setTheme } = useAppStore();
   const appVersion =
@@ -37,6 +43,14 @@ export default function NotificationSettingsScreen() {
     toggleAiNotifications(nextValue);
   };
 
+  const handleToggleGroupDayCompleted = async (nextValue: boolean) => {
+    if (nextValue) {
+      const token = await registerForPushNotificationsAsync();
+      if (!token) return;
+    }
+    toggleGroupDayCompletedPushNotifications(nextValue);
+  };
+
   return (
     <View className="flex-1 bg-white dark:bg-black px-4 pt-6">
       <Text className="text-xl font-bold dark:text-white mb-6">Notifications</Text>
@@ -51,6 +65,20 @@ export default function NotificationSettingsScreen() {
         </View>
 
         <Switch value={aiNotificationsEnabled} onValueChange={handleToggleDailyEncouragement} />
+      </View>
+
+      <View className="flex-row items-center justify-between py-4 border-b border-gray-200 dark:border-neutral-800">
+        <View className="flex-1 pr-4">
+          <Text className="font-semibold dark:text-white">Group Progress Notifications</Text>
+          <Text className="text-xs text-gray-500 mt-1">
+            Receive updates when group members complete plan days
+          </Text>
+        </View>
+
+        <Switch
+          value={groupDayCompletedPushNotificationsEnabled}
+          onValueChange={handleToggleGroupDayCompleted}
+        />
       </View>
 
       {/* THEME */}
