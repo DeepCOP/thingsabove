@@ -3,7 +3,11 @@ import { GoogleGenerativeAI } from 'https://esm.sh/@google/generative-ai';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const MODEL_NAME = 'gemini-2.5-flash';
-const PROMPT_VERSION = 'plan-screening-v2';
+const PROMPT_VERSION = 'plan-screening-v3-images';
+const MAX_COVER_IMAGE_MB = 1;
+const MAX_COVER_IMAGE_BYTES = MAX_COVER_IMAGE_MB * 1024 * 1024;
+const MAX_COVER_IMAGE_SIZE_LABEL = `${MAX_COVER_IMAGE_MB} MB`;
+const COVER_IMAGE_FETCH_TIMEOUT_MS = 15 * 1000;
 const REASON_CODES = [
   'incomplete',
   'irrelevant',
@@ -14,6 +18,20 @@ const REASON_CODES = [
 
 type ReasonCode = (typeof REASON_CODES)[number];
 type PlanVisibility = 'public' | 'private';
+type CoverImageReviewMetadata = {
+  status: 'absent' | 'attached' | 'failed';
+  url?: string;
+  mime_type?: string;
+  size_bytes?: number;
+  reason?: string;
+  used_service_role?: boolean;
+};
+type CoverImagePart = {
+  inlineData: {
+    mimeType: string;
+    data: string;
+  };
+};
 
 type ScreeningDecision = {
   decision: 'pass' | 'reject';
@@ -38,6 +56,20 @@ type DecisionParseResult =
       decision: null;
       parseError: string;
     };
+
+class CoverImageFetchError extends Error {
+  metadata: CoverImageReviewMetadata;
+
+  constructor(message: string, metadata: Omit<CoverImageReviewMetadata, 'status'> = {}) {
+    super(message);
+    this.name = 'CoverImageFetchError';
+    this.metadata = {
+      status: 'failed',
+      ...metadata,
+      reason: metadata.reason ?? message,
+    };
+  }
+}
 
 function logInfo(event: string, details: Record<string, unknown> = {}) {
   console.log(
@@ -75,6 +107,249 @@ function logError(event: string, error: unknown, details: Record<string, unknown
 
 function previewText(text: string, maxLength = 280) {
   return text.length > maxLength ? `${text.slice(0, maxLength)}...` : text;
+}
+
+function bytesToBase64(bytes: Uint8Array) {
+  let binary = '';
+  const chunkSize = 0x8000;
+
+  for (let index = 0; index < bytes.length; index += chunkSize) {
+    binary += String.fromCharCode(...bytes.subarray(index, index + chunkSize));
+  }
+
+  return btoa(binary);
+}
+
+function normalizeMimeType(contentType: string | null) {
+  return contentType?.split(';')[0]?.trim().toLowerCase() || null;
+}
+
+function getCoverImageUrl(rawUrl: unknown) {
+  return typeof rawUrl === 'string' && rawUrl.trim() ? rawUrl.trim() : null;
+}
+
+function isSameOrigin(url: URL, baseUrl: string) {
+  try {
+    return url.origin === new URL(baseUrl).origin;
+  } catch {
+    return false;
+  }
+}
+
+async function readResponseBytesWithLimit(response: Response, maxBytes: number) {
+  const contentLength = response.headers.get('content-length');
+  const declaredSize = contentLength ? Number(contentLength) : null;
+
+  if (declaredSize !== null && Number.isFinite(declaredSize) && declaredSize > maxBytes) {
+    throw new CoverImageFetchError(`Cover image is larger than ${MAX_COVER_IMAGE_SIZE_LABEL}.`, {
+      size_bytes: declaredSize,
+      reason: 'size_limit_exceeded',
+    });
+  }
+
+  if (!response.body) {
+    const buffer = await response.arrayBuffer();
+    if (buffer.byteLength > maxBytes) {
+      throw new CoverImageFetchError(`Cover image is larger than ${MAX_COVER_IMAGE_SIZE_LABEL}.`, {
+        size_bytes: buffer.byteLength,
+        reason: 'size_limit_exceeded',
+      });
+    }
+
+    return new Uint8Array(buffer);
+  }
+
+  const reader = response.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let receivedBytes = 0;
+
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      receivedBytes += value.byteLength;
+      if (receivedBytes > maxBytes) {
+        await reader.cancel();
+        throw new CoverImageFetchError(
+          `Cover image is larger than ${MAX_COVER_IMAGE_SIZE_LABEL}.`,
+          {
+            size_bytes: receivedBytes,
+            reason: 'size_limit_exceeded',
+          },
+        );
+      }
+
+      chunks.push(value);
+    }
+  } finally {
+    reader.releaseLock();
+  }
+
+  const bytes = new Uint8Array(receivedBytes);
+  let offset = 0;
+
+  for (const chunk of chunks) {
+    bytes.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+
+  return bytes;
+}
+
+async function buildCoverImagePart(
+  rawCoverImageUrl: unknown,
+  supabaseUrl: string,
+  serviceRoleKey: string,
+): Promise<{ part: CoverImagePart | null; metadata: CoverImageReviewMetadata }> {
+  const coverImageUrl = getCoverImageUrl(rawCoverImageUrl);
+
+  if (!coverImageUrl) {
+    return {
+      part: null,
+      metadata: {
+        status: 'absent',
+      },
+    };
+  }
+
+  let parsedUrl: URL;
+  try {
+    parsedUrl = new URL(coverImageUrl);
+  } catch {
+    throw new CoverImageFetchError('Cover image must be a valid HTTPS URL.', {
+      url: coverImageUrl,
+      reason: 'invalid_url',
+    });
+  }
+
+  if (parsedUrl.protocol !== 'https:') {
+    throw new CoverImageFetchError('Cover image must use HTTPS.', {
+      url: coverImageUrl,
+      reason: 'non_https_url',
+    });
+  }
+
+  const usedServiceRole = isSameOrigin(parsedUrl, supabaseUrl);
+  const headers = new Headers({
+    Accept: 'image/*',
+  });
+
+  if (usedServiceRole) {
+    headers.set('apikey', serviceRoleKey);
+    headers.set('Authorization', `Bearer ${serviceRoleKey}`);
+  }
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), COVER_IMAGE_FETCH_TIMEOUT_MS);
+  let response: Response | null = null;
+  let finalUrl = coverImageUrl;
+  let mimeType: string | null = null;
+
+  try {
+    try {
+      response = await fetch(parsedUrl, {
+        headers,
+        redirect: 'follow',
+        signal: controller.signal,
+      });
+    } catch (error) {
+      const didTimeout = error instanceof DOMException && error.name === 'AbortError';
+      throw new CoverImageFetchError(
+        didTimeout ? 'Cover image fetch timed out.' : 'Cover image could not be fetched.',
+        {
+          url: coverImageUrl,
+          reason: didTimeout ? 'fetch_timeout' : 'fetch_failed',
+          used_service_role: usedServiceRole,
+        },
+      );
+    }
+
+    if (!response) {
+      throw new CoverImageFetchError('Cover image could not be fetched.', {
+        url: coverImageUrl,
+        reason: 'empty_response',
+        used_service_role: usedServiceRole,
+      });
+    }
+
+    finalUrl = response.url || coverImageUrl;
+
+    if (!response.ok) {
+      throw new CoverImageFetchError('Cover image could not be fetched.', {
+        url: finalUrl,
+        reason: `http_${response.status}`,
+        used_service_role: usedServiceRole,
+      });
+    }
+
+    try {
+      const responseUrl = new URL(finalUrl);
+      if (responseUrl.protocol !== 'https:') {
+        throw new CoverImageFetchError('Cover image redirects must stay on HTTPS.', {
+          url: finalUrl,
+          reason: 'non_https_redirect',
+          used_service_role: usedServiceRole,
+        });
+      }
+    } catch (error) {
+      if (error instanceof CoverImageFetchError) throw error;
+
+      throw new CoverImageFetchError('Cover image returned an invalid final URL.', {
+        url: finalUrl,
+        reason: 'invalid_final_url',
+        used_service_role: usedServiceRole,
+      });
+    }
+
+    mimeType = normalizeMimeType(response.headers.get('content-type'));
+
+    if (!mimeType || !mimeType.startsWith('image/')) {
+      throw new CoverImageFetchError('Cover image must be an image file.', {
+        url: finalUrl,
+        mime_type: mimeType ?? undefined,
+        reason: 'invalid_content_type',
+        used_service_role: usedServiceRole,
+      });
+    }
+
+    const bytes = await readResponseBytesWithLimit(response, MAX_COVER_IMAGE_BYTES);
+
+    return {
+      part: {
+        inlineData: {
+          mimeType,
+          data: bytesToBase64(bytes),
+        },
+      },
+      metadata: {
+        status: 'attached',
+        url: finalUrl,
+        mime_type: mimeType,
+        size_bytes: bytes.byteLength,
+        used_service_role: usedServiceRole,
+      },
+    };
+  } catch (error) {
+    if (error instanceof CoverImageFetchError) {
+      error.metadata = {
+        ...error.metadata,
+        url: error.metadata.url ?? finalUrl,
+        mime_type: error.metadata.mime_type ?? mimeType,
+        used_service_role: error.metadata.used_service_role ?? usedServiceRole,
+      };
+      throw error;
+    }
+
+    throw new CoverImageFetchError('Cover image could not be read.', {
+      url: finalUrl,
+      mime_type: mimeType ?? undefined,
+      reason: 'read_failed',
+      used_service_role: usedServiceRole,
+    });
+  } finally {
+    clearTimeout(timeoutId);
+  }
 }
 
 const BASE_SYSTEM_PROMPT = `
@@ -119,6 +394,14 @@ Completeness guidance:
 
 Safety guidance:
 - Reject hateful, abusive, sexually explicit, exploitative, or dangerous content.
+
+Cover image guidance:
+- If a cover image is attached, inspect the image itself as part of the screening decision.
+- Reject cover images that are sexually explicit, hateful, violent, occult/shock imagery, exploitative, dangerous, or otherwise unsafe.
+- Reject spammy advertisement graphics, promotional banners, or images dominated by unrelated marketing copy.
+- Reject if the cover image materially mismatches the plan title, description, or devotional content in a way that undermines Christian devotional relevance.
+- Do not reject merely because the cover image is simple, abstract, minimally designed, low-polish, or not professionally produced.
+- Use unsafe_content for unsafe image issues, spam for spammy ad graphics, and irrelevant when the image/content mismatch is the main problem.
 
 Spam guidance:
 - Reject obvious keyword stuffing, repetitive filler, promotional copy, or generated nonsense.
@@ -168,6 +451,7 @@ Private plan guidance:
 - Do not reject a private plan only because it is brief, simple, repetitive in a non-spammy way, narrowly tailored to a small group, or less polished than a public devotional.
 - Do not reject a private plan for light theological detail, secondary doctrinal differences, or reflective writing that assumes shared context among invited readers.
 - For private plans, completeness and relevance should be judged more leniently. Reject on those dimensions only if the content is obviously unfinished, placeholder-heavy, incoherent, or clearly not functioning as Christian devotional or Bible study content at all.
+- The private-plan relaxation does not apply to cover image safety: still reject sexually explicit, hateful, violent, occult/shock, exploitative, dangerous, or spammy cover images.
 - Continue to reject private plans for unsafe content, obvious spam, or clear contradictions to core Nicene beliefs.
 `;
   }
@@ -342,7 +626,11 @@ function parseDecision(rawText: string): DecisionParseResult {
   }
 }
 
-function buildPrompt(submission: Record<string, unknown>, planVisibility: PlanVisibility) {
+function buildPrompt(
+  submission: Record<string, unknown>,
+  planVisibility: PlanVisibility,
+  coverImageReview: CoverImageReviewMetadata,
+) {
   return `
 Screen this devotional plan submission.
 
@@ -357,6 +645,13 @@ ${JSON.stringify(
     description: submission.submitted_description,
     total_days: submission.submitted_total_days,
     tags: submission.submitted_tags ?? [],
+    cover_image: {
+      url: submission.submitted_cover_image,
+      visual_review_status: coverImageReview.status,
+      attached_for_visual_review: coverImageReview.status === 'attached',
+      mime_type: coverImageReview.mime_type,
+      size_bytes: coverImageReview.size_bytes,
+    },
     payload: submission.submitted_payload,
   },
   null,
@@ -450,10 +745,9 @@ serve(async (req) => {
   }
 
   try {
-    supabase = createClient(
-      Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
-    );
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    supabase = createClient(supabaseUrl, serviceRoleKey);
 
     const googleApiKey = Deno.env.get('GOOGLE_API_KEY');
     if (!googleApiKey) {
@@ -482,7 +776,7 @@ serve(async (req) => {
     const { data: submission, error: submissionError } = await supabase
       .from('plan_submissions')
       .select(
-        'id, plan_id, submission_number, status, submitted_title, submitted_description, submitted_tags, submitted_total_days, submitted_visibility, submitted_payload',
+        'id, plan_id, submission_number, status, submitted_title, submitted_description, submitted_cover_image, submitted_tags, submitted_total_days, submitted_visibility, submitted_payload',
       )
       .eq('id', submissionId)
       .single();
@@ -527,7 +821,7 @@ serve(async (req) => {
       .eq('id', submissionId)
       .in('status', ['submitted', 'failed'])
       .select(
-        'id, plan_id, submission_number, status, submitted_title, submitted_description, submitted_tags, submitted_total_days, submitted_visibility, submitted_payload',
+        'id, plan_id, submission_number, status, submitted_title, submitted_description, submitted_cover_image, submitted_tags, submitted_total_days, submitted_visibility, submitted_payload',
       )
       .maybeSingle();
 
@@ -561,27 +855,91 @@ serve(async (req) => {
       plan_visibility: planVisibility,
     });
 
+    let coverImagePart: CoverImagePart | null = null;
+    let coverImageReview: CoverImageReviewMetadata = {
+      status: 'absent',
+    };
+
+    try {
+      const coverImageResult = await buildCoverImagePart(
+        transitionedSubmission.submitted_cover_image,
+        supabaseUrl,
+        serviceRoleKey,
+      );
+      coverImagePart = coverImageResult.part;
+      coverImageReview = coverImageResult.metadata;
+
+      logInfo('cover_image_review_prepared', {
+        request_id: requestId,
+        submission_id: submissionId,
+        cover_image_status: coverImageReview.status,
+        cover_image_mime_type: coverImageReview.mime_type ?? null,
+        cover_image_size_bytes: coverImageReview.size_bytes ?? null,
+        cover_image_used_service_role: coverImageReview.used_service_role ?? false,
+      });
+    } catch (error) {
+      if (error instanceof CoverImageFetchError) {
+        logError('cover_image_review_prepare_failed', error, {
+          request_id: requestId,
+          submission_id: submissionId,
+          cover_image: error.metadata,
+        });
+
+        await markFailed(
+          supabase,
+          submissionId,
+          `Cover image could not be reviewed. Please use a valid HTTPS image under ${MAX_COVER_IMAGE_SIZE_LABEL} and try again.`,
+          {
+            cover_image: error.metadata,
+          },
+          {
+            request_id: requestId,
+          },
+        );
+
+        return new Response('Cover image could not be reviewed', { status: 422 });
+      }
+
+      throw error;
+    }
+
     const genAI = new GoogleGenerativeAI(googleApiKey);
     const model = genAI.getGenerativeModel({ model: MODEL_NAME });
 
     const systemPrompt = buildSystemPrompt(planVisibility);
-    const prompt = buildPrompt(transitionedSubmission, planVisibility);
+    const prompt = buildPrompt(transitionedSubmission, planVisibility, coverImageReview);
     logInfo('model_request_started', {
       request_id: requestId,
       submission_id: submissionId,
       model: MODEL_NAME,
       prompt_version: PROMPT_VERSION,
       plan_visibility: planVisibility,
+      cover_image_status: coverImageReview.status,
+      cover_image_mime_type: coverImageReview.mime_type ?? null,
+      cover_image_size_bytes: coverImageReview.size_bytes ?? null,
       prompt_length: prompt.length,
     });
 
-    const result = await model.generateContent(`
+    const textPart = {
+      text: `
 SYSTEM:
 ${systemPrompt}
 
 USER:
 ${prompt}
-`);
+`,
+    };
+    const result = await model.generateContent(
+      coverImagePart
+        ? [
+            textPart,
+            {
+              text: 'Attached cover image: inspect this image according to the cover image guidance.',
+            },
+            coverImagePart,
+          ]
+        : [textPart],
+    );
 
     const rawText = result.response.text()?.trim() ?? '';
     const { decision: parsedDecision, parseError } = rawText
@@ -605,6 +963,7 @@ ${prompt}
         {
           raw_text: rawText,
           parse_error: parseError,
+          cover_image: coverImageReview,
         },
         {
           request_id: requestId,
@@ -637,6 +996,7 @@ ${prompt}
       raw_response: {
         raw_text: rawText,
         parsed_decision: parsedDecision,
+        cover_image: coverImageReview,
       },
       completed_at: completedAt,
     });
@@ -653,6 +1013,7 @@ ${prompt}
         {
           raw_text: rawText,
           error: runInsertError.message,
+          cover_image: coverImageReview,
         },
         {
           request_id: requestId,
@@ -727,6 +1088,7 @@ ${prompt}
         {
           raw_text: rawText,
           error: passUpdateError.message,
+          cover_image: coverImageReview,
         },
         {
           request_id: requestId,
