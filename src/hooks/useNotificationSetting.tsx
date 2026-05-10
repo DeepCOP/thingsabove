@@ -1,6 +1,9 @@
 import { useAuth } from '@/src/state/AuthContext';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { toggleDailyEncouragement } from '../api/mutations';
+import {
+  toggleDailyEncouragement,
+  toggleGroupDayCompletedPushNotifications,
+} from '../api/mutations';
 import { getNotificationsPreferences } from '../api/queries';
 import { NotificationPreferences } from '../types/types';
 
@@ -18,6 +21,7 @@ export function useNotificationSettings() {
   });
 
   const aiNotificationsEnabled = data?.daily ?? true;
+  const groupDayCompletedPushNotificationsEnabled = data?.group_day_completed ?? true;
 
   // 2️⃣ Update preference
   const { mutate: toggleAiNotifications, isPending } = useMutation({
@@ -60,10 +64,52 @@ export function useNotificationSettings() {
     },
   });
 
+  const { mutate: toggleGroupDayCompletedPushNotificationsSetting, isPending: isGroupUpdating } =
+    useMutation({
+      mutationFn: async (value: boolean) => toggleGroupDayCompletedPushNotifications(value, userId),
+
+      onMutate: async (value) => {
+        await queryClient.cancelQueries({
+          queryKey: ['notification_preferences', userId],
+        });
+
+        const previous = queryClient.getQueryData<NotificationPreferences>([
+          'notification_preferences',
+          userId,
+        ]);
+
+        queryClient.setQueryData(
+          ['notification_preferences', userId],
+          (old: NotificationPreferences | undefined) => {
+            return {
+              ...old,
+              user_id: userId,
+              group_day_completed: value,
+            };
+          },
+        );
+        return { previous };
+      },
+
+      onError: (_err, _value, context) => {
+        if (context?.previous) {
+          queryClient.setQueryData(['notification_preferences', userId], context.previous);
+        }
+      },
+
+      onSettled: () => {
+        queryClient.invalidateQueries({
+          queryKey: ['notification_preferences', userId],
+        });
+      },
+    });
+
   return {
     loading,
     aiNotificationsEnabled,
+    groupDayCompletedPushNotificationsEnabled,
     toggleAiNotifications,
-    isUpdating: isPending,
+    toggleGroupDayCompletedPushNotifications: toggleGroupDayCompletedPushNotificationsSetting,
+    isUpdating: isPending || isGroupUpdating,
   };
 }

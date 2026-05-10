@@ -40,7 +40,7 @@ export default function PlanProgress() {
   const colorScheme = useColorScheme();
 
   const insets = useSafeAreaInsets();
-  const { progressId } = useLocalSearchParams();
+  const { progressId, dayId, dayNumber } = useLocalSearchParams();
   const router = useRouter();
   const qc = useQueryClient();
   const { setMissedDays } = useAppStore();
@@ -70,6 +70,21 @@ export default function PlanProgress() {
   const currentDayData = planStartDate
     ? days?.find((d) => planStartDate.add(d.day_number - 1, 'day').isSame(today, 'day'))
     : undefined;
+  const targetDayNumber = useMemo(() => {
+    const rawDayNumber = Array.isArray(dayNumber) ? dayNumber[0] : dayNumber;
+    const parsedDayNumber = Number(rawDayNumber);
+
+    if (Number.isFinite(parsedDayNumber) && parsedDayNumber > 0) {
+      return parsedDayNumber;
+    }
+
+    const rawDayId = Array.isArray(dayId) ? dayId[0] : dayId;
+    if (!rawDayId || !days) {
+      return null;
+    }
+
+    return days.find((day) => day.id === rawDayId)?.day_number ?? null;
+  }, [dayId, dayNumber, days]);
 
   const selectedDay = days?.find((d) => d.day_number === selectedDayNumber);
 
@@ -142,8 +157,13 @@ export default function PlanProgress() {
   ]);
 
   useEffect(() => {
+    if (targetDayNumber && days?.some((day) => day.day_number === targetDayNumber)) {
+      setSelectedDay(targetDayNumber);
+      return;
+    }
+
     setSelectedDay(currentDayData?.day_number || 1);
-  }, [currentDayData]);
+  }, [currentDayData, days, targetDayNumber]);
 
   const missedDays = useMemo(() => {
     if (!planProgress || !plan || !planStartDate) return null;
