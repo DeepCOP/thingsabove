@@ -1310,6 +1310,8 @@ export type Database = {
           church_id: string | null;
           church_joined_at: string | null;
           created_at: string | null;
+          device_language_code: string | null;
+          device_language_tag: string | null;
           device_os: string | null;
           device_os_version: string | null;
           email: string;
@@ -1331,6 +1333,8 @@ export type Database = {
           church_id?: string | null;
           church_joined_at?: string | null;
           created_at?: string | null;
+          device_language_code?: string | null;
+          device_language_tag?: string | null;
           device_os?: string | null;
           device_os_version?: string | null;
           email: string;
@@ -1352,6 +1356,8 @@ export type Database = {
           church_id?: string | null;
           church_joined_at?: string | null;
           created_at?: string | null;
+          device_language_code?: string | null;
+          device_language_tag?: string | null;
           device_os?: string | null;
           device_os_version?: string | null;
           email?: string;

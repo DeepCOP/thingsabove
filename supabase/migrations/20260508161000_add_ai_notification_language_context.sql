@@ -77,6 +77,15 @@ as $$
           - 'score_seen_recency'
           - 'score_light_engagement'
         ),
+        'notification_language', jsonb_build_object(
+          'language_tag', coalesce(nullif(trim(p.device_language_tag), ''), 'en'),
+          'language_code', coalesce(nullif(trim(p.device_language_code), ''), 'en'),
+          'source', case
+            when nullif(trim(p.device_language_tag), '') is not null
+              or nullif(trim(p.device_language_code), '') is not null then 'device'
+            else 'fallback'
+          end
+        ),
         'notification_score', u.notification_score,
         'notification_score_breakdown', coalesce(u.notification_score_breakdown, '{}'::jsonb),
         'recent_notifications', coalesce(rh.items, '[]'::jsonb),
@@ -99,12 +108,13 @@ as $$
     ) as planning_context
   from public.user_behavior_scored u
   join public.profiles p on p.id = u.user_id
+  left join public.notification_preferences np on np.user_id = u.user_id
   left join recent_history rh on rh.user_id = u.user_id
   left join notification_state ns on ns.user_id = u.user_id
   where
     public.user_has_active_auth_session(u.user_id)
     and nullif(trim(coalesce(p.expo_push_token, '')), '') is not null
-    and u.notification_score >= 5
+    and coalesce(np.daily, true)
     and not coalesce(ns.has_pending_trigger, false)
     and coalesce(ns.last_sent_at + interval '36 hours', now()) <= now() + interval '24 hours'
   order by
