@@ -1,6 +1,8 @@
 import type { DayItemsProgress, ParsedVerse } from '@/src/types/types';
+import * as Notifications from 'expo-notifications';
 import { useEffect, useState } from 'react';
 import { Linking } from 'react-native';
+import { NOTIFICATION_TYPES } from './types/notifications';
 
 const normalizeScriptureBook = (value: string) =>
   value.replace(/_/g, ' ').replace(/\s+/g, ' ').trim();
@@ -259,4 +261,81 @@ export async function openExternalUrl(url?: string | null) {
 
   await Linking.openURL(url);
   return true;
+}
+
+type NotificationRoute =
+  | string
+  | {
+      pathname: string;
+      params: Record<string, string>;
+    };
+
+const DEFAULT_NOTIFICATION_ROUTE = '/notifications';
+
+function getNotificationDataString(data: Record<string, unknown>, key: string) {
+  const value = data[key];
+  if (typeof value !== 'string') return null;
+
+  const trimmedValue = value.trim();
+  return trimmedValue.length > 0 ? trimmedValue : null;
+}
+
+function getNotificationDataNumberParam(data: Record<string, unknown>, key: string) {
+  const value = data[key];
+
+  if (typeof value === 'number') {
+    return Number.isFinite(value) && value > 0 ? String(value) : null;
+  }
+
+  if (typeof value === 'string') {
+    const trimmedValue = value.trim();
+    const parsedValue = Number(trimmedValue);
+    return Number.isFinite(parsedValue) && parsedValue > 0 ? trimmedValue : null;
+  }
+
+  return null;
+}
+
+function getGroupDayCompletedRoute(data: Record<string, unknown>): NotificationRoute {
+  const progressId = getNotificationDataString(data, 'progress_id');
+  if (!progressId) return DEFAULT_NOTIFICATION_ROUTE;
+
+  const groupId = getNotificationDataString(data, 'group_id');
+  const planId = getNotificationDataString(data, 'plan_id');
+  const dayId = getNotificationDataString(data, 'day_id');
+  const dayNumber = getNotificationDataNumberParam(data, 'day_number');
+
+  return {
+    pathname: '/plan_progress/[progressId]',
+    params: {
+      progressId,
+      ...(groupId ? { groupId } : {}),
+      ...(planId ? { planId } : {}),
+      ...(dayId ? { dayId } : {}),
+      ...(dayNumber ? { dayNumber } : {}),
+    },
+  };
+}
+
+export function getRouteFromNotificationResponse(
+  response: Notifications.NotificationResponse,
+): NotificationRoute {
+  const data = response.notification.request.content.data;
+  const type = getNotificationDataString(data, 'type');
+
+  if (type === NOTIFICATION_TYPES.GROUP_DAY_COMPLETED) {
+    return getGroupDayCompletedRoute(data);
+  }
+
+  const route = getNotificationDataString(data, 'route');
+
+  if (!route) {
+    return DEFAULT_NOTIFICATION_ROUTE;
+  }
+
+  if (!route.startsWith('/') || route.startsWith('//')) {
+    return DEFAULT_NOTIFICATION_ROUTE;
+  }
+
+  return route;
 }

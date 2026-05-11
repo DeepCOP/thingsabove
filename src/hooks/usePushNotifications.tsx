@@ -1,10 +1,12 @@
 import { useAuth } from '@/src/state/AuthContext';
 import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
+import { router, type Href } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Alert, Platform } from 'react-native';
 import { pushNotificationSetup } from '../api/mutations';
 import { getCurrentDeviceExpoPushToken, getExpoProjectId } from '../lib/pushToken';
+import { getRouteFromNotificationResponse } from '../utils';
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -14,6 +16,13 @@ Notifications.setNotificationHandler({
     shouldShowList: true,
   }),
 });
+
+function openRouteFromResponse(response: Notifications.NotificationResponse | null) {
+  if (!response || response.actionIdentifier !== Notifications.DEFAULT_ACTION_IDENTIFIER) return;
+
+  router.push(getRouteFromNotificationResponse(response) as Href);
+  Notifications.clearLastNotificationResponse();
+}
 
 export async function registerForPushNotificationsAsync(): Promise<string | null> {
   // 1️⃣ Physical device check
@@ -80,15 +89,17 @@ export function usePushNotifications() {
       return;
     }
 
+    const notificationListener = Notifications.addNotificationReceivedListener(setNotification);
+    const responseListener =
+      Notifications.addNotificationResponseReceivedListener(openRouteFromResponse);
+
+    openRouteFromResponse(Notifications.getLastNotificationResponse());
+
     registerForPushNotificationsAsync().then(async (token) => {
       if (!token) return;
 
       setExpoPushToken(token);
     });
-
-    const notificationListener = Notifications.addNotificationReceivedListener(setNotification);
-
-    const responseListener = Notifications.addNotificationResponseReceivedListener(() => {});
 
     return () => {
       notificationListener.remove();

@@ -7,8 +7,63 @@ const supabase = createClient(
 
 const EXPO_ACCESS_TOKEN = Deno.env.get('EXPO_ACCESS_TOKEN');
 const NOTIFICATION_TITLE = 'A moment with God';
+const AI_NOTIFICATION_TYPE = 'ai_notification';
+const NOTIFICATIONS_ROUTE = '/notifications';
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+async function createInAppNotificationsForTriggers(
+  triggersById: Map<string, any>,
+  triggerIds: string[],
+  createdAt: string,
+) {
+  if (triggerIds.length === 0) return;
+
+  const existingTriggerIds = new Set<string>();
+  const { data: existingNotifications, error: existingNotificationsError } = await supabase
+    .from('notifications')
+    .select('data')
+    .eq('type', AI_NOTIFICATION_TYPE)
+    .in('data->>ai_trigger_id', triggerIds);
+
+  if (existingNotificationsError) {
+    console.error('Failed to check existing AI notifications', existingNotificationsError);
+  } else {
+    existingNotifications?.forEach((notification: any) => {
+      const triggerId = notification?.data?.ai_trigger_id;
+      if (typeof triggerId === 'string') {
+        existingTriggerIds.add(triggerId);
+      }
+    });
+  }
+
+  const rows = triggerIds
+    .map((id) => triggersById.get(id))
+    .filter((trigger) => trigger && !existingTriggerIds.has(trigger.id))
+    .map((trigger) => ({
+      user_id: trigger.user_id,
+      type: AI_NOTIFICATION_TYPE,
+      title:
+        typeof trigger.generated_title === 'string' && trigger.generated_title.trim()
+          ? trigger.generated_title.trim()
+          : NOTIFICATION_TITLE,
+      body: trigger.generated_message,
+      data: {
+        ai_trigger_id: trigger.id,
+        planner_category: trigger.planner_category,
+        route: NOTIFICATIONS_ROUTE,
+        scheduled_for: trigger.scheduled_for,
+      },
+      created_at: createdAt,
+    }));
+
+  if (rows.length === 0) return;
+
+  const { error } = await supabase.from('notifications').insert(rows);
+  if (error) {
+    console.error('Failed to create in-app AI notifications', error);
+  }
+}
 
 Deno.serve(async () => {
   const { data: triggers, error } = await supabase
@@ -19,6 +74,7 @@ Deno.serve(async () => {
       user_id,
       generated_title,
       generated_message,
+      planner_category,
       scheduled_for,
       created_at,
       profiles ( expo_push_token )
@@ -70,6 +126,7 @@ Deno.serve(async () => {
     (trigger) =>
       trigger.profiles?.expo_push_token && preferenceByUserId.get(trigger.user_id) !== false,
   );
+  const triggersById = new Map(eligible.map((trigger) => [trigger.id, trigger]));
   const messages = eligible.map((trigger) => ({
     id: trigger.id,
     to: trigger.profiles!.expo_push_token!,
@@ -79,6 +136,11 @@ Deno.serve(async () => {
         ? trigger.generated_title.trim()
         : NOTIFICATION_TITLE,
     body: trigger.generated_message,
+    data: {
+      ai_trigger_id: trigger.id,
+      route: NOTIFICATIONS_ROUTE,
+      type: AI_NOTIFICATION_TYPE,
+    },
   }));
 
   const chunk = <T>(arr: T[], size: number) =>
@@ -102,20 +164,32 @@ Deno.serve(async () => {
     console.log('Expo batch:', result);
 
     const data = result?.data ?? [];
+    const successfulBatchIds: string[] = [];
+
     data.forEach((ticket: any, index: number) => {
       if (ticket.status === 'ok') {
-        successfulIds.push(batch[index].id);
+        successfulBatchIds.push(batch[index].id);
       }
     });
 
-    await sleep(200);
-  }
+    if (successfulBatchIds.length > 0) {
+      const sentAt = new Date().toISOString();
 
-  if (successfulIds.length > 0) {
-    await supabase
-      .from('ai_triggers')
-      .update({ sent: true, sent_at: new Date().toISOString() })
-      .in('id', successfulIds);
+      await createInAppNotificationsForTriggers(triggersById, successfulBatchIds, sentAt);
+
+      const { error: updateError } = await supabase
+        .from('ai_triggers')
+        .update({ sent: true, sent_at: sentAt })
+        .in('id', successfulBatchIds);
+
+      if (updateError) {
+        console.error('Failed to mark AI triggers sent', updateError);
+      }
+
+      successfulIds.push(...successfulBatchIds);
+    }
+
+    await sleep(200);
   }
 
   return new Response(`Push sent ${successfulIds.length}/${messages.length}`, {
