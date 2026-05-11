@@ -20,7 +20,8 @@ as $$
     'Fellowship',
     'Obedience',
     'Walking',
-    'Covenants'
+    'Covenants',
+    'Reading'
   ]::text[];
 $$;
 

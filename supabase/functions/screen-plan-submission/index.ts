@@ -3,7 +3,7 @@ import { GoogleGenerativeAI } from 'https://esm.sh/@google/generative-ai';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const MODEL_NAME = 'gemini-2.5-flash';
-const PROMPT_VERSION = 'plan-screening-v3-images';
+const PROMPT_VERSION = 'plan-screening-v4-images-reading-tag';
 const MAX_COVER_IMAGE_MB = 1;
 const MAX_COVER_IMAGE_BYTES = MAX_COVER_IMAGE_MB * 1024 * 1024;
 const MAX_COVER_IMAGE_SIZE_LABEL = `${MAX_COVER_IMAGE_MB} MB`;
@@ -352,6 +352,12 @@ async function buildCoverImagePart(
   }
 }
 
+function hasReadingTag(tags: unknown) {
+  if (!Array.isArray(tags)) return false;
+
+  return tags.some((tag) => typeof tag === 'string' && tag.trim().toLowerCase() === 'reading');
+}
+
 const BASE_SYSTEM_PROMPT = `
 You are screening a devotional plan submission for a Christian devotional app.
 
@@ -391,6 +397,12 @@ Nicene Creed guidance:
 Completeness guidance:
 - Look for a usable title, description, and day content that feels intentionally written.
 - Reject if the content is obviously unfinished, placeholder-heavy, incoherent, or too thin to function as a devotional plan.
+
+Reading tag guidance:
+- The submission metadata includes is_reading_plan, which is true when the plan is tagged "Reading".
+- If is_reading_plan is true, the plan is primarily a scripture reading plan. Do not reject it only because devotional day content is empty, brief, or absent.
+- Reading-tagged plans must include non-empty scripture references for submitted days. Reject as incomplete if submitted days do not include scripture references or if references are obvious placeholders.
+- For reading-tagged plans, evaluate the plan title, description, tags, and scripture references for Christian devotional or Bible study relevance.
 
 Safety guidance:
 - Reject hateful, abusive, sexually explicit, exploitative, or dangerous content.
@@ -451,6 +463,7 @@ Private plan guidance:
 - Do not reject a private plan only because it is brief, simple, repetitive in a non-spammy way, narrowly tailored to a small group, or less polished than a public devotional.
 - Do not reject a private plan for light theological detail, secondary doctrinal differences, or reflective writing that assumes shared context among invited readers.
 - For private plans, completeness and relevance should be judged more leniently. Reject on those dimensions only if the content is obviously unfinished, placeholder-heavy, incoherent, or clearly not functioning as Christian devotional or Bible study content at all.
+- For private plans tagged "Reading", still require non-empty scripture references for submitted days.
 - The private-plan relaxation does not apply to cover image safety: still reject sexually explicit, hateful, violent, occult/shock, exploitative, dangerous, or spammy cover images.
 - Continue to reject private plans for unsafe content, obvious spam, or clear contradictions to core Nicene beliefs.
 `;
@@ -631,6 +644,8 @@ function buildPrompt(
   planVisibility: PlanVisibility,
   coverImageReview: CoverImageReviewMetadata,
 ) {
+  const isReadingPlan = hasReadingTag(submission.submitted_tags);
+
   return `
 Screen this devotional plan submission.
 
@@ -645,6 +660,7 @@ ${JSON.stringify(
     description: submission.submitted_description,
     total_days: submission.submitted_total_days,
     tags: submission.submitted_tags ?? [],
+    is_reading_plan: isReadingPlan,
     cover_image: {
       url: submission.submitted_cover_image,
       visual_review_status: coverImageReview.status,
@@ -855,6 +871,15 @@ serve(async (req) => {
       plan_visibility: planVisibility,
     });
 
+    const isReadingPlan = hasReadingTag(transitionedSubmission.submitted_tags);
+
+    logInfo('plan_reading_tag_loaded', {
+      request_id: requestId,
+      submission_id: submissionId,
+      plan_id: transitionedSubmission.plan_id,
+      is_reading_plan: isReadingPlan,
+    });
+
     let coverImagePart: CoverImagePart | null = null;
     let coverImageReview: CoverImageReviewMetadata = {
       status: 'absent',
@@ -914,6 +939,7 @@ serve(async (req) => {
       model: MODEL_NAME,
       prompt_version: PROMPT_VERSION,
       plan_visibility: planVisibility,
+      is_reading_plan: isReadingPlan,
       cover_image_status: coverImageReview.status,
       cover_image_mime_type: coverImageReview.mime_type ?? null,
       cover_image_size_bytes: coverImageReview.size_bytes ?? null,
