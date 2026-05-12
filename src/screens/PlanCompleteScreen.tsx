@@ -11,6 +11,7 @@ type Props = {
   ratingLoading: boolean;
   ratingSaving: boolean;
   onBack: () => void;
+  onFindMorePlans: () => void;
   onShare: () => void;
   onRate: (rating: number) => void;
 };
@@ -23,6 +24,7 @@ export default function PlanCompleteScreen({
   ratingLoading,
   ratingSaving,
   onBack,
+  onFindMorePlans,
   onShare,
   onRate,
 }: Props) {
@@ -92,6 +94,16 @@ export default function PlanCompleteScreen({
           />
         </View>
       )}
+
+      <View className="px-4 mt-5">
+        <TouchableOpacity
+          onPress={onFindMorePlans}
+          className="bg-black dark:bg-white py-4 rounded-full">
+          <Text className="text-white dark:text-black text-center font-semibold">
+            Find More Plans
+          </Text>
+        </TouchableOpacity>
+      </View>
 
       {/* RELATED */}
       <RelatedPlansSection plan={plan} />

@@ -40,6 +40,12 @@ export default function PlanComplete() {
       ratingLoading={ratingLoading}
       ratingSaving={ratingSaving}
       onBack={() => router.back()}
+      onFindMorePlans={() =>
+        router.replace({
+          pathname: '/(tabs)/PlansTab',
+          params: { section: 'find-plans' },
+        })
+      }
       onRate={ratePlan}
       onShare={async () => {
         const content = `Completed reading ${plan?.title}\n\n ${process.env.EXPO_PUBLIC_BASE_URL}/devotional_detail/${plan?.id}`;
