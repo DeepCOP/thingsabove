@@ -228,6 +228,21 @@ export default function PlanProgress() {
     );
   }
 
+  function handleInvitePress() {
+    if (!plan?.id) return;
+
+    setMenuVisible(false);
+    router.push({
+      pathname: '/devotional_detail/[planId]/invite-friends',
+      params: {
+        planId: plan.id,
+        startDate: normalizedStartDate ?? '',
+        groupId: planProgress?.group_id ?? '',
+        progressId: planProgress?.id ?? '',
+      },
+    });
+  }
+
   const handleRefresh = async () => {
     setRefreshing(true);
     const refreshStartedAt = Date.now();
@@ -357,6 +372,16 @@ export default function PlanProgress() {
 
         <View style={{ position: 'absolute', top: insets.top + 8, right: 16 }}>
           <View className="min-w-44 overflow-hidden rounded-2xl border border-neutral-200 bg-white dark:border-neutral-700 dark:bg-neutral-900">
+            <View className="px-3 pt-3">
+              <TouchableOpacity
+                onPress={handleInvitePress}
+                className="bg-black dark:bg-white py-4 rounded-full mt-4 mb-6">
+                <Text className="text-white dark:text-black text-center font-semibold">
+                  Invite others
+                </Text>
+              </TouchableOpacity>
+            </View>
+
             <TouchableOpacity
               disabled={stopPlanProgressMutation.isPending}
               className={`flex-row items-center px-4 py-3 ${
