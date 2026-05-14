@@ -24,6 +24,7 @@ type Props = {
   planProgress: PlanProgress;
   missedCount?: number;
   members?: any[];
+  memberProgresses?: PlanProgress[];
   items?: DayItemsProgress[];
   selectedDayData: DevotionalDays | undefined;
   itemsLoading: boolean;
@@ -51,6 +52,7 @@ export default function PlanProgressScreen({
   totalDays,
   missedCount,
   members,
+  memberProgresses,
   items,
   itemsLoading,
   refreshing,
@@ -99,7 +101,14 @@ export default function PlanProgressScreen({
           onMissedDays={onMissedDays}
         />
 
-        {!!members?.length && <GroupAvatarsRow members={members} onPress={onParticipants} />}
+        {!!members?.length && (
+          <GroupAvatarsRow
+            members={members}
+            progresses={memberProgresses}
+            completedDay={selectedDay}
+            onPress={onParticipants}
+          />
+        )}
 
         {itemsLoading ? (
           <LoadingSpinner />
