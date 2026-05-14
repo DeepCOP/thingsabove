@@ -2,6 +2,7 @@ import DevotionalPlanReader from '@/src/components/DevotionPlanReader';
 import LoadingSpinner from '@/src/components/LoadingSpinner';
 import { useDayItemsProgress } from '@/src/hooks/useDayItemsProgress';
 import { useAuth } from '@/src/state/AuthContext';
+import { useAppStore } from '@/src/state/useAppStore';
 import { sortDayItems } from '@/src/utils';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
@@ -9,14 +10,17 @@ import { Text, View } from 'react-native';
 
 export default function DevotionalDayScreen() {
   const { dayId, planId, progressId, groupId, itemId: routeItemId } = useLocalSearchParams();
+  const dayIdParam = Array.isArray(dayId) ? dayId[0] : dayId;
+  const progressIdParam = Array.isArray(progressId) ? progressId[0] : progressId;
   const { session } = useAuth();
   const router = useRouter();
+  const setReflectAndShareRequest = useAppStore((state) => state.setReflectAndShareRequest);
   const [activeItemId, setActiveItemId] = useState((routeItemId as string) || '');
 
   const { dayItemsProgressQuery, toggleMutation } = useDayItemsProgress({
-    progress_id: progressId as string,
+    progress_id: progressIdParam as string,
     plan_id: planId as string,
-    day_id: dayId as string,
+    day_id: dayIdParam as string,
     user_id: session?.user?.id!,
     group_id: groupId as string,
   });
@@ -85,14 +89,12 @@ export default function DevotionalDayScreen() {
           last={last}
           toggleItem={toggleMutation}
           onReflectAndShare={() => {
-            router.replace({
-              pathname: '/plan_progress/[progressId]',
-              params: {
-                progressId: progressId as string,
-                dayId: dayId as string,
-                openComments: '1',
-              },
+            setReflectAndShareRequest({
+              progressId: progressIdParam as string,
+              dayId: dayIdParam as string,
+              token: String(Date.now()),
             });
+            router.back();
           }}
         />
       )}

@@ -1,5 +1,6 @@
 import BottomSheet from '@gorhom/bottom-sheet';
-import { useEffect, useRef } from 'react';
+import { useIsFocused } from '@react-navigation/native';
+import { useCallback, useEffect, useRef } from 'react';
 import { RefreshControl, ScrollView, Text, View } from 'react-native';
 
 import DayCommentsSection from '@/src/components/DayComment';
@@ -38,6 +39,7 @@ type Props = {
   onToggleItem: (item: DayItemsProgress) => void;
   devotionalItem?: DayItemsProgress;
   openCommentsKey?: string;
+  onOpenCommentsConsumed?: () => void;
 };
 
 export default function PlanProgressScreen({
@@ -66,10 +68,18 @@ export default function PlanProgressScreen({
   onToggleItem,
   devotionalItem,
   openCommentsKey,
+  onOpenCommentsConsumed,
 }: Props) {
   const commentsSheetRef = useRef<BottomSheet>(null);
   const openedCommentsKeyRef = useRef<string | undefined>(undefined);
-  const openComments = () => commentsSheetRef.current?.expand();
+  const isFocused = useIsFocused();
+  const openComments = useCallback(() => {
+    const commentsSheet = commentsSheetRef.current;
+    if (!commentsSheet) return false;
+
+    commentsSheet.expand();
+    return true;
+  }, []);
   const commentItem = items?.find((item) => item.item_type === 'comment');
 
   const handleCommentsDone = () => {
@@ -83,13 +93,39 @@ export default function PlanProgressScreen({
   };
 
   useEffect(() => {
-    if (!openCommentsKey || openedCommentsKeyRef.current === openCommentsKey) return;
+    if (!isFocused || !openCommentsKey || openedCommentsKeyRef.current === openCommentsKey) {
+      return;
+    }
 
-    openedCommentsKeyRef.current = openCommentsKey;
-    const timeout = setTimeout(openComments, 250);
+    let cancelled = false;
+    let animationFrame: number | null = null;
+    let attempts = 0;
+    const maxAttempts = 10;
 
-    return () => clearTimeout(timeout);
-  }, [openCommentsKey]);
+    const tryOpenComments = () => {
+      if (cancelled) return;
+
+      if (openComments()) {
+        openedCommentsKeyRef.current = openCommentsKey;
+        onOpenCommentsConsumed?.();
+        return;
+      }
+
+      if (attempts < maxAttempts) {
+        attempts += 1;
+        animationFrame = requestAnimationFrame(tryOpenComments);
+      }
+    };
+
+    animationFrame = requestAnimationFrame(tryOpenComments);
+
+    return () => {
+      cancelled = true;
+      if (animationFrame !== null) {
+        cancelAnimationFrame(animationFrame);
+      }
+    };
+  }, [isFocused, onOpenCommentsConsumed, openComments, openCommentsKey]);
 
   return (
     <>
