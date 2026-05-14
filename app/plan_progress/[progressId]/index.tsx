@@ -41,7 +41,7 @@ export default function PlanProgress() {
   const colorScheme = useColorScheme();
 
   const insets = useSafeAreaInsets();
-  const { progressId, dayId, dayNumber } = useLocalSearchParams();
+  const { progressId, dayId, dayNumber, openComments } = useLocalSearchParams();
   const router = useRouter();
   const qc = useQueryClient();
   const { setMissedDays } = useAppStore();
@@ -364,6 +364,11 @@ export default function PlanProgress() {
         items={dayItemsProgress?.items}
         itemsLoading={dayItemsProgressQuery.isLoading}
         toggleLoading={toggleMutation.isPending}
+        openCommentsKey={
+          openComments && selectedDay?.id
+            ? `${selectedDay.id}:${Array.isArray(openComments) ? openComments[0] : openComments}`
+            : undefined
+        }
         refreshing={refreshing}
         planProgress={{
           ...planProgress,

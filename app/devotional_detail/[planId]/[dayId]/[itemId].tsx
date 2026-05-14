@@ -3,13 +3,14 @@ import LoadingSpinner from '@/src/components/LoadingSpinner';
 import { useDayItemsProgress } from '@/src/hooks/useDayItemsProgress';
 import { useAuth } from '@/src/state/AuthContext';
 import { sortDayItems } from '@/src/utils';
-import { useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
 import { Text, View } from 'react-native';
 
 export default function DevotionalDayScreen() {
   const { dayId, planId, progressId, groupId, itemId: routeItemId } = useLocalSearchParams();
   const { session } = useAuth();
+  const router = useRouter();
   const [activeItemId, setActiveItemId] = useState((routeItemId as string) || '');
 
   const { dayItemsProgressQuery, toggleMutation } = useDayItemsProgress({
@@ -83,6 +84,16 @@ export default function DevotionalDayScreen() {
           first={first}
           last={last}
           toggleItem={toggleMutation}
+          onReflectAndShare={() => {
+            router.replace({
+              pathname: '/plan_progress/[progressId]',
+              params: {
+                progressId: progressId as string,
+                dayId: dayId as string,
+                openComments: '1',
+              },
+            });
+          }}
         />
       )}
     </>

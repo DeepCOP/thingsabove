@@ -1,5 +1,5 @@
 import BottomSheet from '@gorhom/bottom-sheet';
-import { useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { RefreshControl, ScrollView, Text, View } from 'react-native';
 
 import DayCommentsSection from '@/src/components/DayComment';
@@ -37,6 +37,7 @@ type Props = {
   onPressItem: (item: DayItemsProgress) => void;
   onToggleItem: (item: DayItemsProgress) => void;
   devotionalItem?: DayItemsProgress;
+  openCommentsKey?: string;
 };
 
 export default function PlanProgressScreen({
@@ -64,8 +65,10 @@ export default function PlanProgressScreen({
   onPressItem,
   onToggleItem,
   devotionalItem,
+  openCommentsKey,
 }: Props) {
   const commentsSheetRef = useRef<BottomSheet>(null);
+  const openedCommentsKeyRef = useRef<string | undefined>(undefined);
   const openComments = () => commentsSheetRef.current?.expand();
   const commentItem = items?.find((item) => item.item_type === 'comment');
 
@@ -78,6 +81,15 @@ export default function PlanProgressScreen({
 
     commentsSheetRef.current?.close();
   };
+
+  useEffect(() => {
+    if (!openCommentsKey || openedCommentsKeyRef.current === openCommentsKey) return;
+
+    openedCommentsKeyRef.current = openCommentsKey;
+    const timeout = setTimeout(openComments, 250);
+
+    return () => clearTimeout(timeout);
+  }, [openCommentsKey]);
 
   return (
     <>
