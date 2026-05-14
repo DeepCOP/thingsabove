@@ -65,6 +65,17 @@ export default function PlanProgressScreen({
 }: Props) {
   const commentsSheetRef = useRef<BottomSheet>(null);
   const openComments = () => commentsSheetRef.current?.expand();
+  const commentItem = items?.find((item) => item.item_type === 'comment');
+
+  const handleCommentsDone = () => {
+    if (!commentItem || toggleLoading) return;
+
+    if (!commentItem.completed) {
+      onToggleItem(commentItem);
+    }
+
+    commentsSheetRef.current?.close();
+  };
 
   return (
     <>
@@ -135,6 +146,9 @@ export default function PlanProgressScreen({
         planId={planProgress.plan_id || ''}
         dayId={selectedDayData?.id || ''}
         group_id={planProgress.group_id || ''}
+        isDone={!!commentItem?.completed}
+        isDoneLoading={toggleLoading}
+        onDone={handleCommentsDone}
       />
     </>
   );
