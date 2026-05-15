@@ -20,6 +20,9 @@ type SortOption = 'Recent' | 'Trending';
 type ThemeMode = 'light' | 'dark' | 'system';
 
 type AppState = {
+  hasCompletedOnboarding: boolean;
+  completeOnboarding: () => void;
+
   missedDays: DevotionalDays[] | null;
   setMissedDays: (days: DevotionalDays[]) => void;
   version: BibleVersionId;
@@ -53,6 +56,7 @@ type AppState = {
 type PersistedAppState = Pick<
   AppState,
   | 'user'
+  | 'hasCompletedOnboarding'
   | 'isGrid'
   | 'sort'
   | 'version'
@@ -69,6 +73,7 @@ const DEFAULT_SELECTED_BOOK: SelectedBibleBook = {
 
 const DEFAULT_PERSISTED_STATE: PersistedAppState = {
   user: null,
+  hasCompletedOnboarding: false,
   isGrid: false,
   sort: 'Recent',
   version: 'KJV',
@@ -172,6 +177,7 @@ const normalizeBibleVersionStates = (
 
 const partializeAppState = (state: AppState): PersistedAppState => ({
   user: state.user,
+  hasCompletedOnboarding: state.hasCompletedOnboarding,
   isGrid: state.isGrid,
   sort: state.sort,
   version: state.version,
@@ -188,6 +194,10 @@ const migrateAppState = (persistedState: unknown): PersistedAppState => {
 
   return {
     user: hasOwn(persistedState, 'user') ? persistedState.user : DEFAULT_PERSISTED_STATE.user,
+    hasCompletedOnboarding:
+      typeof persistedState.hasCompletedOnboarding === 'boolean'
+        ? persistedState.hasCompletedOnboarding
+        : DEFAULT_PERSISTED_STATE.hasCompletedOnboarding,
     isGrid:
       typeof persistedState.isGrid === 'boolean'
         ? persistedState.isGrid
@@ -206,6 +216,9 @@ const migrateAppState = (persistedState: unknown): PersistedAppState => {
 export const useAppStore = create<AppState>()(
   persist(
     (set) => ({
+      hasCompletedOnboarding: DEFAULT_PERSISTED_STATE.hasCompletedOnboarding,
+      completeOnboarding: () => set({ hasCompletedOnboarding: true }),
+
       missedDays: null,
       setMissedDays: (days) => set({ missedDays: days }),
       sort: DEFAULT_PERSISTED_STATE.sort,
@@ -248,7 +261,7 @@ export const useAppStore = create<AppState>()(
     }),
     {
       name: 'app-storage',
-      version: 2,
+      version: 3,
       storage: createJSONStorage(() => AsyncStorage),
       migrate: (persistedState) => migrateAppState(persistedState),
       merge: (persistedState, currentState) => ({

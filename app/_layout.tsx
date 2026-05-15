@@ -14,7 +14,7 @@ import {
   useFonts,
 } from '@expo-google-fonts/open-sans';
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { Stack } from 'expo-router';
+import { Href, Redirect, Stack, usePathname } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { BibleProvider } from '../src/state/BibleContext';
@@ -33,9 +33,10 @@ import { supabase } from '@/src/lib/supabaseClient';
 import { AuthProvider, useAuth } from '@/src/state/AuthContext';
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import * as SplashScreen from 'expo-splash-screen';
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import '../global.css';
+import { useAppStore } from '@/src/state/useAppStore';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -63,6 +64,11 @@ export default function RootLayout() {
 
 function RootLayoutContent() {
   const { session, loading } = useAuth();
+  const pathname = usePathname();
+  const hasCompletedOnboarding = useAppStore((state) => state.hasCompletedOnboarding);
+  const [hasHydratedAppStore, setHasHydratedAppStore] = useState(() =>
+    useAppStore.persist.hasHydrated(),
+  );
   const { notificationsQuery, notificationsCountQuery } = useNotifications(session?.user?.id);
 
   const friendsQuery = useFriends(session?.user.id);
@@ -98,6 +104,22 @@ function RootLayoutContent() {
   });
 
   useEffect(() => {
+    const unsubscribeHydrate = useAppStore.persist.onHydrate(() => {
+      setHasHydratedAppStore(false);
+    });
+    const unsubscribeFinishHydration = useAppStore.persist.onFinishHydration(() => {
+      setHasHydratedAppStore(true);
+    });
+
+    setHasHydratedAppStore(useAppStore.persist.hasHydrated());
+
+    return () => {
+      unsubscribeHydrate();
+      unsubscribeFinishHydration();
+    };
+  }, []);
+
+  useEffect(() => {
     mutationQueue.setExecutor(async (item) => {
       const { key, payload } = item;
       if (key === 'start_plan') {
@@ -123,12 +145,21 @@ function RootLayoutContent() {
     });
   }, []);
   useEffect(() => {
-    if (loaded && !loading) {
+    if (loaded && !loading && hasHydratedAppStore) {
       SplashScreen.hideAsync();
     }
-  }, [loaded, loading]);
+  }, [hasHydratedAppStore, loaded, loading]);
 
-  if (!loaded || loading) return null;
+  if (!loaded || loading || !hasHydratedAppStore) return null;
+
+  if (!hasCompletedOnboarding && pathname !== '/onboarding') {
+    return <Redirect href={'/onboarding' as Href} />;
+  }
+
+  if (hasCompletedOnboarding && pathname === '/onboarding') {
+    return <Redirect href="/(tabs)/PlansTab" />;
+  }
+
   return (
     <>
       <StatusBar style="auto" />
@@ -138,6 +169,7 @@ function RootLayoutContent() {
           headerBackButtonDisplayMode: 'minimal',
         }}>
         <Stack.Screen name="index" options={{ headerShown: false }} />
+        <Stack.Screen name="onboarding" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="about-details" options={{ headerShown: false }} />
         <Stack.Screen name="bible/[book]/index" />
