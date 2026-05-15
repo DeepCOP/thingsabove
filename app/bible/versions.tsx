@@ -60,9 +60,10 @@ export default function BibleVersionsRoute() {
             </View>
 
             <Text className="mt-3 text-sm leading-6 text-gray-600 dark:text-gray-300">
-              Different versions present the original text in different ways. Some stay closer to
-              the wording, while others focus more on making the meaning clear and easy to read.
-              Feel free to choose the version that helps you understand the text best.
+              Different Bible versions present the original text in different ways. Some stay closer
+              to the original wording, while others focus more on making the meaning clear and easy
+              to read. Feel free to choose the version that helps you understand the text best. If
+              you’re unsure which version to use, consider consulting the leaders at your church
             </Text>
           </Pressable>
         </Pressable>
