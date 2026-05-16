@@ -1,21 +1,11 @@
 import { ProgressBar } from '@/src/components/ProgressBar';
 import ProfileIdentityRow from '@/src/components/ProfileIdentityRow';
-import { PlanProgress } from '@/src/types/types';
+import { PlanGroupMember, PlanProgress } from '@/src/types/types';
 import { FlatList, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-type Member = {
-  id: string;
-  user_id: string;
-  profiles: {
-    first_name: string;
-    last_name: string;
-    avatar_url: string | null;
-  };
-};
-
 type Props = {
-  members: Member[];
+  members: PlanGroupMember[];
   totalDays: number;
   progresses: PlanProgress[];
   refreshing: boolean;

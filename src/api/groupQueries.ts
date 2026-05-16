@@ -1,4 +1,5 @@
 import { supabase } from '../lib/supabaseClient';
+import type { PlanGroupMember } from '../types/types';
 
 export const fetchPlanGroupByGroupId = async ({ groupId }: { groupId: string }) => {
   const { data, error } = await supabase
@@ -110,28 +111,27 @@ export const fetchPlanGroupInvitationMembers = async ({ groupId }: { groupId: st
 };
 
 export const fetchPlanGroupMembers = async ({ groupId }: { groupId: string }) => {
-  const { data, error } = await supabase
-    .from('plan_group_members')
-    .select(
-      `
-          id,
-          status,
-          joined_at,
-          user_id,
-          profiles!user_id (
-            id,
-            first_name,
-            last_name,
-            avatar_url
-          )
-        `,
-    )
-    .eq('group_id', groupId!)
-    .eq('status', 'accepted')
-    .order('joined_at', { ascending: true });
+  const { data, error } = await supabase.rpc('get_plan_group_members', {
+    p_group_id: groupId,
+  });
 
   if (error) throw error;
-  return data;
+
+  return (data ?? []).map(
+    (member) =>
+      ({
+        id: member.id,
+        status: member.status,
+        joined_at: member.joined_at,
+        user_id: member.user_id,
+        profiles: {
+          id: member.profile_id,
+          first_name: member.first_name,
+          last_name: member.last_name,
+          avatar_url: member.avatar_url,
+        },
+      }) satisfies PlanGroupMember,
+  );
 };
 
 export const fetchPlanDayComments = async ({

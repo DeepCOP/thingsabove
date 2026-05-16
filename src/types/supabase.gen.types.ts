@@ -2261,6 +2261,19 @@ export type Database = {
           user_id: string;
         }[];
       };
+      get_plan_group_members: {
+        Args: { p_group_id: string };
+        Returns: {
+          avatar_url: string;
+          first_name: string;
+          id: string;
+          joined_at: string;
+          last_name: string;
+          profile_id: string;
+          status: string;
+          user_id: string;
+        }[];
+      };
       get_plan_reaction_summary: {
         Args: { p_plan_id: string };
         Returns: {

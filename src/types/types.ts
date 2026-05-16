@@ -169,6 +169,13 @@ export type GetMyNotifications = Database['public']['Functions']['get_my_notific
 export type PlanGroupMembers = Database['public']['Tables']['plan_group_members']['Row'];
 export type PlanGroupMembersInsert = Database['public']['Tables']['plan_group_members']['Insert'];
 export type PlanGroupMembersUpdate = Database['public']['Tables']['plan_group_members']['Update'];
+export type PlanGroupMember = {
+  id: string;
+  status: string | null;
+  joined_at: string | null;
+  user_id: string;
+  profiles: Pick<Profiles, 'id' | 'first_name' | 'last_name' | 'avatar_url'>;
+};
 
 export type DayItemType = 'devotional' | 'scripture' | 'comment';
 

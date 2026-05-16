@@ -1,22 +1,13 @@
-import type { PlanProgress } from '@/src/types/types';
+import type { PlanGroupMember, PlanProgress } from '@/src/types/types';
 import { Text, TouchableOpacity, View } from 'react-native';
 
+import { useMemo } from 'react';
 import UserAvatar from '../UserAvatar';
 
-type Member = {
-  id: string;
-  user_id: string;
-  profiles?: {
-    first_name?: string | null;
-    last_name?: string | null;
-    avatar_url?: string | null;
-  } | null;
-};
-
 type Props = {
-  members: Member[];
+  members: PlanGroupMember[];
   progresses?: PlanProgress[];
-  completedDay?: number;
+  completedDay: number;
   onPress: () => void;
 };
 
@@ -24,18 +15,15 @@ export function GroupAvatarsRow({ members, progresses, completedDay, onPress }: 
   const max = 6;
   const size = 32;
   const overlap = 10;
+  const completedUsers = useMemo(() => {
+    return new Set(
+      progresses?.filter((p) => p.completed_days?.includes(completedDay)).map((p) => p.user_id),
+    );
+  }, [progresses, completedDay]);
 
   return (
     <View className="mt-4 flex-row items-center px-4">
       {members.slice(0, max).map((m, i) => {
-        const completedSelectedDay = !!(
-          completedDay &&
-          progresses?.some(
-            (progress) =>
-              progress.user_id === m.user_id && progress.completed_days?.includes(completedDay),
-          )
-        );
-
         return (
           <TouchableOpacity
             key={m.id}
@@ -46,7 +34,7 @@ export function GroupAvatarsRow({ members, progresses, completedDay, onPress }: 
                 padding: 2,
                 borderRadius: (size + 8) / 2,
                 borderWidth: 2,
-                borderColor: completedSelectedDay ? '#86efac' : 'transparent',
+                borderColor: completedUsers.has(m.user_id) ? '#86efac' : 'transparent',
               }}>
               <UserAvatar
                 uri={m.profiles?.avatar_url}
