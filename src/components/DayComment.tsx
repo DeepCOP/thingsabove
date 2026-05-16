@@ -10,16 +10,7 @@ import BottomSheet, {
   BottomSheetFooterProps,
   BottomSheetTextInput,
 } from '@gorhom/bottom-sheet';
-import {
-  createContext,
-  forwardRef,
-  memo,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-} from 'react';
+import { createContext, forwardRef, memo, useCallback, useContext, useMemo, useState } from 'react';
 import { Alert, Text, TouchableOpacity, useColorScheme, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRealtimeComments } from '../hooks/useRealtimeComments';
@@ -30,7 +21,6 @@ type Props = {
   planId: string;
   dayId: string;
   group_id?: string;
-  isDone?: boolean;
   isDoneLoading?: boolean;
   onDone?: () => void;
 };
@@ -114,14 +104,13 @@ const DayCommentsFooter = memo(function DayCommentsFooter({
 });
 
 const DayCommentsBottomSheet = forwardRef<BottomSheet, Props>(
-  ({ planId, dayId, group_id, isDone = false, isDoneLoading = false, onDone }, ref) => {
+  ({ planId, dayId, group_id, isDoneLoading = false, onDone }, ref) => {
     const snapPoints = useMemo(() => ['80%'], []);
     const EditingComposerInset = 160;
     const DefaultComposerInset = 116;
     const colorScheme = useColorScheme();
     const [text, setText] = useState('');
     const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
-    const [hasSubmittedComment, setHasSubmittedComment] = useState(false);
     const { session } = useAuth();
     const currentUserId = session?.user?.id;
 
@@ -142,14 +131,7 @@ const DayCommentsBottomSheet = forwardRef<BottomSheet, Props>(
       setEditingCommentId(null);
     }, []);
 
-    useEffect(() => {
-      setHasSubmittedComment(false);
-      resetComposer();
-    }, [dayId, group_id, planId, resetComposer]);
-
-    const hasSharedComment =
-      hasSubmittedComment || comments.some((comment) => comment.user_id === currentUserId);
-    const canMarkDone = !!onDone && (isDone || hasSharedComment);
+    const canMarkDone = !!onDone;
 
     const handleSubmit = useCallback(() => {
       const trimmedText = text.trim();
@@ -164,10 +146,7 @@ const DayCommentsBottomSheet = forwardRef<BottomSheet, Props>(
       }
 
       addComment.mutate(trimmedText, {
-        onSuccess: () => {
-          resetComposer();
-          setHasSubmittedComment(true);
-        },
+        onSuccess: resetComposer,
       });
     }, [addComment, editingCommentId, isSubmitting, resetComposer, text, updateComment]);
 

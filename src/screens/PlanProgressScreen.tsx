@@ -146,7 +146,6 @@ export default function PlanProgressScreen({
         planId={planProgress.plan_id || ''}
         dayId={selectedDayData?.id || ''}
         group_id={planProgress.group_id || ''}
-        isDone={!!commentItem?.completed}
         isDoneLoading={toggleLoading}
         onDone={handleCommentsDone}
       />
