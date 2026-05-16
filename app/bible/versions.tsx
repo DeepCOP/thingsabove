@@ -63,7 +63,7 @@ export default function BibleVersionsRoute() {
               Different Bible versions present the original text in different ways. Some stay closer
               to the original wording, while others focus more on making the meaning clear and easy
               to read. Feel free to choose the version that helps you understand the text best. If
-              you’re unsure which version to use, consider consulting the leaders at your church
+              you’re unsure which version to use, consider consulting the leaders at your church.
             </Text>
           </Pressable>
         </Pressable>
