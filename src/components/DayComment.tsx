@@ -10,7 +10,7 @@ import BottomSheet, {
   BottomSheetFooterProps,
   BottomSheetTextInput,
 } from '@gorhom/bottom-sheet';
-import { createContext, forwardRef, memo, useContext, useMemo, useState } from 'react';
+import { createContext, forwardRef, memo, useCallback, useContext, useMemo, useState } from 'react';
 import { Alert, Text, TouchableOpacity, useColorScheme, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRealtimeComments } from '../hooks/useRealtimeComments';
@@ -21,6 +21,8 @@ type Props = {
   planId: string;
   dayId: string;
   group_id?: string;
+  isDoneLoading?: boolean;
+  onDone?: () => void;
 };
 
 type DayCommentsFooterContextValue = {
@@ -102,7 +104,7 @@ const DayCommentsFooter = memo(function DayCommentsFooter({
 });
 
 const DayCommentsBottomSheet = forwardRef<BottomSheet, Props>(
-  ({ planId, dayId, group_id }, ref) => {
+  ({ planId, dayId, group_id, isDoneLoading = false, onDone }, ref) => {
     const snapPoints = useMemo(() => ['80%'], []);
     const EditingComposerInset = 160;
     const DefaultComposerInset = 116;
@@ -124,12 +126,14 @@ const DayCommentsBottomSheet = forwardRef<BottomSheet, Props>(
     const composerInset = editingCommentId ? EditingComposerInset : DefaultComposerInset;
     useRealtimeComments(group_id as string, commentsQuery.refetch);
 
-    const resetComposer = () => {
+    const resetComposer = useCallback(() => {
       setText('');
       setEditingCommentId(null);
-    };
+    }, []);
 
-    const handleSubmit = () => {
+    const canMarkDone = !!onDone;
+
+    const handleSubmit = useCallback(() => {
       const trimmedText = text.trim();
       if (!trimmedText || isSubmitting) return;
 
@@ -144,7 +148,7 @@ const DayCommentsBottomSheet = forwardRef<BottomSheet, Props>(
       addComment.mutate(trimmedText, {
         onSuccess: resetComposer,
       });
-    };
+    }, [addComment, editingCommentId, isSubmitting, resetComposer, text, updateComment]);
 
     const handleDelete = (comment: PlanDayComment) => {
       Alert.alert('Delete comment?', 'This will permanently remove your comment.', [
@@ -162,6 +166,13 @@ const DayCommentsBottomSheet = forwardRef<BottomSheet, Props>(
         },
       ]);
     };
+
+    const handleDone = () => {
+      if (!canMarkDone || isDoneLoading || isSubmitting) return;
+
+      onDone?.();
+    };
+
     const footerContextValue = useMemo(
       () => ({
         colorScheme,
@@ -173,7 +184,15 @@ const DayCommentsBottomSheet = forwardRef<BottomSheet, Props>(
         setText,
         text,
       }),
-      [colorScheme, editingCommentId, insets.bottom, isSubmitting, text],
+      [
+        colorScheme,
+        editingCommentId,
+        handleSubmit,
+        insets.bottom,
+        isSubmitting,
+        resetComposer,
+        text,
+      ],
     );
 
     return (
@@ -210,9 +229,33 @@ const DayCommentsBottomSheet = forwardRef<BottomSheet, Props>(
             }}
             showsVerticalScrollIndicator={false}
             ListHeaderComponent={
-              <Text className="mb-3 text-center text-xl font-bold text-gray-800 dark:text-gray-200">
-                Share your thoughts...
-              </Text>
+              <View className="mb-3 flex-row items-center justify-between px-4">
+                <View className="w-16" />
+
+                <Text className="flex-1 text-center text-xl font-bold text-gray-800 dark:text-gray-200">
+                  Share your thoughts...
+                </Text>
+
+                <TouchableOpacity
+                  accessibilityRole="button"
+                  accessibilityLabel="Mark Reflect and Share complete"
+                  disabled={!canMarkDone || isDoneLoading || isSubmitting}
+                  onPress={handleDone}
+                  className={`min-w-16 rounded-full px-3 py-2 ${
+                    canMarkDone && !isDoneLoading && !isSubmitting
+                      ? 'bg-black dark:bg-white'
+                      : 'bg-gray-200 dark:bg-neutral-800'
+                  }`}>
+                  <Text
+                    className={`text-center text-sm font-semibold ${
+                      canMarkDone && !isDoneLoading && !isSubmitting
+                        ? 'text-white dark:text-black'
+                        : 'text-gray-400 dark:text-gray-500'
+                    }`}>
+                    Done
+                  </Text>
+                </TouchableOpacity>
+              </View>
             }
             ListEmptyComponent={
               <View className="flex-1 items-center justify-center px-6">
