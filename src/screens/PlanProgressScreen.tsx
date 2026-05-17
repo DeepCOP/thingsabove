@@ -10,20 +10,21 @@ import { GroupAvatarsRow } from '@/src/components/planProgress/GroupAvatarRow';
 import { PlanHeader } from '@/src/components/planProgress/PlanHeader';
 import { PlanMetaRow } from '@/src/components/planProgress/PlanMetaRow';
 import { StartReadingCTA } from '@/src/components/planProgress/StartReadingCTA';
-import { DayItemsProgress, DevotionalDays, PlanProgress } from '@/src/types/types';
+import { DayItemsProgress, DevotionalDays, PlanGroupMember, PlanProgress } from '@/src/types/types';
 
 type Props = {
   insetsBottom: number;
   coverImage?: string;
   completions?: number;
   visibility?: string | null;
-  days: any[];
+  days: DevotionalDays[];
   selectedDay: number;
   currentDayId?: string;
   totalDays: number;
   planProgress: PlanProgress;
   missedCount?: number;
-  members?: any[];
+  members?: PlanGroupMember[];
+  memberProgresses?: PlanProgress[];
   items?: DayItemsProgress[];
   selectedDayData: DevotionalDays | undefined;
   itemsLoading: boolean;
@@ -51,6 +52,7 @@ export default function PlanProgressScreen({
   totalDays,
   missedCount,
   members,
+  memberProgresses,
   items,
   itemsLoading,
   refreshing,
@@ -110,7 +112,14 @@ export default function PlanProgressScreen({
           onMissedDays={onMissedDays}
         />
 
-        {!!members?.length && <GroupAvatarsRow members={members} onPress={onParticipants} />}
+        {!!members?.length && (
+          <GroupAvatarsRow
+            members={members}
+            progresses={memberProgresses}
+            completedDay={selectedDay}
+            onPress={onParticipants}
+          />
+        )}
 
         {itemsLoading ? (
           <LoadingSpinner />

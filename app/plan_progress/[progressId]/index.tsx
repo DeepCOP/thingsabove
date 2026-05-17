@@ -6,6 +6,7 @@ import { useDayItemsProgress } from '@/src/hooks/useDayItemsProgress';
 import { useFetchDevotionalPlanById } from '@/src/hooks/useDevotionalPlans';
 import {
   useDevotionalDays,
+  useGroupPlanProgressList,
   usePlanProgress,
   useStopPlanProgress,
 } from '@/src/hooks/usePlanProgress';
@@ -53,6 +54,14 @@ export default function PlanProgress() {
   const planGroupMembersQuery = usePlanGroupMembers(planProgressQuery.data?.group_id as string);
   const planProgress = planProgressQuery.data;
   const days = daysQuery.data;
+  const groupMemberIds = useMemo(
+    () => planGroupMembersQuery.data?.map((member) => member.user_id).filter(Boolean) ?? [],
+    [planGroupMembersQuery.data],
+  );
+  const groupPlanProgressesQuery = useGroupPlanProgressList(
+    groupMemberIds,
+    planProgress?.group_id as string,
+  );
   const planQuery = useFetchDevotionalPlanById(planProgress?.plan_id as string);
   const plan = planQuery.data;
   const [selectedDayNumber, setSelectedDay] = useState<number>(1);
@@ -110,6 +119,27 @@ export default function PlanProgress() {
   const devotional = dayItemsProgress?.items.find((item) => item.item_type === 'devotional');
   const planTitle = plan?.title ?? 'Plan Progress';
   const planTotalDays = plan?.total_days ?? days?.length ?? 0;
+  const groupPlanProgresses = useMemo(() => {
+    const progresses = groupPlanProgressesQuery.data ?? [];
+
+    if (!planProgress?.group_id || !planProgress.user_id) {
+      return progresses;
+    }
+
+    const hasCurrentProgress = progresses.some((progress) => progress.id === planProgress.id);
+
+    if (hasCurrentProgress) {
+      return progresses.map((progress) =>
+        progress.id === planProgress.id ? planProgress : progress,
+      );
+    }
+
+    if (groupMemberIds.includes(planProgress.user_id)) {
+      return [planProgress, ...progresses];
+    }
+
+    return progresses;
+  }, [groupMemberIds, groupPlanProgressesQuery.data, planProgress]);
 
   useEffect(() => {
     if (!planProgress || !plan) return;
@@ -257,6 +287,10 @@ export default function PlanProgress() {
 
       if (planProgress?.group_id) {
         refreshTasks.push(planGroupMembersQuery.refetch());
+
+        if (groupMemberIds.length) {
+          refreshTasks.push(groupPlanProgressesQuery.refetch());
+        }
       }
 
       await Promise.allSettled(refreshTasks);
@@ -326,6 +360,7 @@ export default function PlanProgress() {
         totalDays={planTotalDays}
         missedCount={missedDays?.length || 0}
         members={planGroupMembersQuery.data}
+        memberProgresses={groupPlanProgresses}
         items={dayItemsProgress?.items}
         itemsLoading={dayItemsProgressQuery.isLoading}
         toggleLoading={toggleMutation.isPending}

@@ -42,8 +42,10 @@ export default function DaysPicker({
           : 'border-gray-300 dark:border-gray-700'
       }`}>
       {completed && (
-        <View className="absolute top-1 right-1 bg-green-900 rounded-full p-1 z-10">
-          <Ionicons name="checkmark" size={12} color="white" />
+        <View
+          className="absolute top-1 right-1 rounded-full p-1 z-10"
+          style={{ backgroundColor: '#86efac' }}>
+          <Ionicons name="checkmark" size={12} color="#14532d" />
         </View>
       )}
 
