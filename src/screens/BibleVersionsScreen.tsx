@@ -19,7 +19,6 @@ export default function BibleVersionsScreen() {
     loadingVersionId,
     removeVersion,
     setVersion,
-    version,
     versions,
     versionsCatalogError,
     versionsCatalogLoading,
