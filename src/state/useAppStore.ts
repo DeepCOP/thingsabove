@@ -19,12 +19,21 @@ export type SelectedBibleBook = {
 type SortOption = 'Recent' | 'Trending';
 type ThemeMode = 'light' | 'dark' | 'system';
 
+type ReflectAndShareRequest = {
+  progressId: string;
+  dayId: string;
+  token: string;
+};
+
 type AppState = {
   hasCompletedOnboarding: boolean;
   completeOnboarding: () => void;
 
   missedDays: DevotionalDays[] | null;
   setMissedDays: (days: DevotionalDays[]) => void;
+  reflectAndShareRequest: ReflectAndShareRequest | null;
+  setReflectAndShareRequest: (request: ReflectAndShareRequest) => void;
+  clearReflectAndShareRequest: () => void;
   version: BibleVersionId;
   setVersion: (v: BibleVersionId) => void;
   bibleVersionStates: Partial<Record<BibleVersionId, BibleVersionInstallState>>;
@@ -221,6 +230,9 @@ export const useAppStore = create<AppState>()(
 
       missedDays: null,
       setMissedDays: (days) => set({ missedDays: days }),
+      reflectAndShareRequest: null,
+      setReflectAndShareRequest: (reflectAndShareRequest) => set({ reflectAndShareRequest }),
+      clearReflectAndShareRequest: () => set({ reflectAndShareRequest: null }),
       sort: DEFAULT_PERSISTED_STATE.sort,
       setSort: (sort) => set({ sort }),
 

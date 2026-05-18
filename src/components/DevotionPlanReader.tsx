@@ -44,6 +44,7 @@ export default function DevotionalPlanReader({
   last,
   HandlePrevious,
   toggleItem,
+  onReflectAndShare,
 }: {
   first: boolean;
   last: boolean;
@@ -51,6 +52,7 @@ export default function DevotionalPlanReader({
   item: DayItemsProgress;
   HandleNext: (itemId: string) => void;
   HandlePrevious: (itemId: string) => void;
+  onReflectAndShare?: () => void;
   toggleItem: UseMutationResult<
     void,
     Error,
@@ -610,8 +612,8 @@ export default function DevotionalPlanReader({
                 }
               : last
                 ? {
-                    icon: 'checkmark',
-                    variant: 'complete',
+                    icon: onReflectAndShare ? 'chevron-forward' : 'checkmark',
+                    variant: onReflectAndShare ? 'default' : 'complete',
                     onPress: () => {
                       toggleItem.mutate({
                         item_id: item?.id || '',
@@ -619,6 +621,11 @@ export default function DevotionalPlanReader({
                         item_key: item?.item_key || '',
                         completed: true,
                       });
+                      if (onReflectAndShare) {
+                        onReflectAndShare();
+                        return;
+                      }
+
                       router.back();
                     },
                   }

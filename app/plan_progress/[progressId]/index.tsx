@@ -25,7 +25,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import LoadingSpinner from '@/src/components/LoadingSpinner';
 import { usePlanGroupMembers } from '@/src/hooks/usePlanGroup';
 import PlanProgressScreen from '@/src/screens/PlanProgressScreen';
-import { DayItemType, DayItemsProgress } from '@/src/types/types';
+import { DayItemsProgress, DayItemType } from '@/src/types/types';
 import {
   ActivityIndicator,
   Alert,
@@ -42,11 +42,15 @@ export default function PlanProgress() {
 
   const insets = useSafeAreaInsets();
   const { progressId, dayId, dayNumber } = useLocalSearchParams();
+  const progressIdParam = Array.isArray(progressId) ? progressId[0] : progressId;
   const router = useRouter();
   const qc = useQueryClient();
-  const { setMissedDays } = useAppStore();
+  const { clearReflectAndShareRequest, reflectAndShareRequest, setMissedDays } = useAppStore();
   const { session, loading: sessionLoading } = useAuth();
-  const { planProgressQuery } = usePlanProgress(progressId as string, session?.user?.id as string);
+  const { planProgressQuery } = usePlanProgress(
+    progressIdParam as string,
+    session?.user?.id as string,
+  );
   const daysQuery = useDevotionalDays(
     planProgressQuery.data?.plan_id as string,
     session?.user?.id as string,
@@ -100,7 +104,7 @@ export default function PlanProgress() {
   const { dayItemsProgressQuery, toggleMutation } = useDayItemsProgress({
     user_id: session?.user?.id!,
     plan_id: planProgress?.plan_id as string,
-    progress_id: progressId as string,
+    progress_id: progressIdParam as string,
     day_id: selectedDay?.id || '',
     group_id: planProgress?.group_id as string,
   });
@@ -216,7 +220,7 @@ export default function PlanProgress() {
     router.push({
       pathname: `/devotional_detail/[planId]/[dayId]/[itemId]`,
       params: {
-        progressId: progressId,
+        progressId: progressIdParam,
         planId: plan?.id || '',
         dayId: selectedDay?.id || '',
         itemId: item.id || '',
@@ -364,6 +368,13 @@ export default function PlanProgress() {
         items={dayItemsProgress?.items}
         itemsLoading={dayItemsProgressQuery.isLoading}
         toggleLoading={toggleMutation.isPending}
+        openCommentsKey={
+          reflectAndShareRequest?.progressId === progressIdParam &&
+          reflectAndShareRequest.dayId === selectedDay?.id
+            ? reflectAndShareRequest.token
+            : undefined
+        }
+        onOpenCommentsConsumed={clearReflectAndShareRequest}
         refreshing={refreshing}
         planProgress={{
           ...planProgress,
@@ -373,7 +384,7 @@ export default function PlanProgress() {
         onRefresh={handleRefresh}
         onMissedDays={() => {
           setMissedDays(missedDays || []);
-          router.push(`/plan_progress/${progressId}/missedDays`);
+          router.push(`/plan_progress/${progressIdParam}/missedDays`);
         }}
         onParticipants={() =>
           router.push({
@@ -407,15 +418,18 @@ export default function PlanProgress() {
 
         <View style={{ position: 'absolute', top: insets.top + 8, right: 16 }}>
           <View className="min-w-44 overflow-hidden rounded-2xl border border-neutral-200 bg-white dark:border-neutral-700 dark:bg-neutral-900">
-            <View className="px-3 pt-3">
-              <TouchableOpacity
-                onPress={handleInvitePress}
-                className="bg-black dark:bg-white py-4 rounded-full mt-4 mb-6">
-                <Text className="text-white dark:text-black text-center font-semibold">
-                  Invite others
-                </Text>
-              </TouchableOpacity>
-            </View>
+            <TouchableOpacity
+              onPress={handleInvitePress}
+              className="flex-row items-center justify-center rounded-full py-3 px-4">
+              <Ionicons
+                name="person-add-outline"
+                size={22}
+                color={colorScheme === 'dark' ? '#fff' : '#000'}
+              />
+              <Text className="ml-3 text-base font-semibold text-black dark:text-white">
+                Invite others
+              </Text>
+            </TouchableOpacity>
 
             <TouchableOpacity
               disabled={stopPlanProgressMutation.isPending}
