@@ -1,18 +1,10 @@
 import { formatBibleVersionSize } from '@/src/lib/bibleVersionService';
 import { useBible } from '@/src/state/BibleContext';
-import NetInfo from '@react-native-community/netinfo';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import NetInfo from '@react-native-community/netinfo';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import {
-  ActivityIndicator,
-  Alert,
-  FlatList,
-  Text,
-  TouchableOpacity,
-  useColorScheme,
-  View,
-} from 'react-native';
+import { Alert, FlatList, Text, TouchableOpacity, useColorScheme, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 type BibleVersionListEntry = ReturnType<typeof useBible>['versions'][number];
@@ -27,7 +19,6 @@ export default function BibleVersionsScreen() {
     loadingVersionId,
     removeVersion,
     setVersion,
-    version,
     versions,
     versionsCatalogError,
     versionsCatalogLoading,
@@ -88,22 +79,6 @@ export default function BibleVersionsScreen() {
               Installed versions can be opened right away. Other translations can be downloaded to
               this device first.
             </Text>
-
-            <View className="mt-4 flex-row items-center rounded-2xl bg-blue-50 px-3 py-3 dark:bg-blue-950/30">
-              <Ionicons name="book-outline" size={18} color="#2563eb" />
-              <View className="ml-3 flex-1">
-                <Text className="text-xs font-semibold uppercase tracking-wide text-blue-700 dark:text-blue-300">
-                  Current version
-                </Text>
-                {loadingVersionId ? (
-                  <ActivityIndicator size="small" className="mt-2 self-start" />
-                ) : (
-                  <Text className="mt-1 text-base font-semibold text-gray-900 dark:text-white">
-                    {version}
-                  </Text>
-                )}
-              </View>
-            </View>
 
             {versionsCatalogLoading ? (
               <Text className="mt-4 text-xs text-gray-500 dark:text-gray-400">
