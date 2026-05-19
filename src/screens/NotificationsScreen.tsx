@@ -2,13 +2,15 @@ import LoadingSpinner from '@/src/components/LoadingSpinner';
 import dayjs from '@/src/lib/dayjs';
 import { AppNotification } from '@/src/types/notifications';
 import { Ionicons } from '@expo/vector-icons';
-import { FlatList, Text, TouchableOpacity, View } from 'react-native';
+import { FlatList, Modal, Pressable, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 type Props = {
   notifications?: AppNotification[];
   hasError?: boolean;
   isLoading: boolean;
+  messageNotification?: AppNotification | null;
+  onCloseMessage?: () => void;
   onPress: (item: AppNotification) => void;
   onRetry?: () => void;
 };
@@ -17,6 +19,8 @@ export default function NotificationsScreen({
   notifications,
   hasError,
   isLoading,
+  messageNotification,
+  onCloseMessage,
   onPress,
   onRetry,
 }: Props) {
@@ -78,6 +82,43 @@ export default function NotificationsScreen({
           </TouchableOpacity>
         )}
       />
+
+      <Modal
+        animationType="fade"
+        transparent
+        visible={!!messageNotification}
+        onRequestClose={onCloseMessage}>
+        <Pressable className="flex-1 justify-center bg-black/60 px-5" onPress={onCloseMessage}>
+          <Pressable className="max-h-[80%] rounded-2xl bg-white p-5 dark:bg-neutral-900">
+            <View className="mb-4 flex-row items-start justify-between gap-3">
+              <View className="flex-1">
+                <Text className="text-lg font-semibold text-gray-950 dark:text-white">
+                  {messageNotification?.title || 'Notification'}
+                </Text>
+                {messageNotification?.created_at ? (
+                  <Text className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                    {dayjs(messageNotification.created_at).format('DD/MM/YYYY')}
+                  </Text>
+                ) : null}
+              </View>
+
+              <TouchableOpacity
+                accessibilityRole="button"
+                accessibilityLabel="Close"
+                className="rounded-full bg-gray-100 p-2 dark:bg-neutral-800"
+                onPress={onCloseMessage}>
+                <Ionicons name="close" size={18} color="#9ca3af" />
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView>
+              <Text className="text-base leading-6 text-gray-700 dark:text-gray-200">
+                {messageNotification?.body || 'No message available.'}
+              </Text>
+            </ScrollView>
+          </Pressable>
+        </Pressable>
+      </Modal>
     </View>
   );
 }
