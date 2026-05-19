@@ -74,7 +74,6 @@ export default function PlanProgressScreen({
   const openedCommentsKeyRef = useRef<string | undefined>(undefined);
   const isFocused = useIsFocused();
   const isGroupPlan = Boolean(planProgress.group_id);
-  console.log(planProgress.group_id);
   const openComments = useCallback(() => {
     if (!isGroupPlan) return false;
 
@@ -135,7 +134,6 @@ export default function PlanProgressScreen({
       }
     };
   }, [isFocused, isGroupPlan, onOpenCommentsConsumed, openComments, openCommentsKey]);
-  console.log(members, isGroupPlan);
 
   return (
     <>
