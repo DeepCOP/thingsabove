@@ -73,13 +73,17 @@ export default function PlanProgressScreen({
   const commentsSheetRef = useRef<BottomSheet>(null);
   const openedCommentsKeyRef = useRef<string | undefined>(undefined);
   const isFocused = useIsFocused();
+  const isGroupPlan = Boolean(planProgress.group_id);
+  console.log(planProgress.group_id);
   const openComments = useCallback(() => {
+    if (!isGroupPlan) return false;
+
     const commentsSheet = commentsSheetRef.current;
     if (!commentsSheet) return false;
 
     commentsSheet.expand();
     return true;
-  }, []);
+  }, [isGroupPlan]);
   const commentItem = items?.find((item) => item.item_type === 'comment');
 
   const handleCommentsDone = () => {
@@ -93,7 +97,12 @@ export default function PlanProgressScreen({
   };
 
   useEffect(() => {
-    if (!isFocused || !openCommentsKey || openedCommentsKeyRef.current === openCommentsKey) {
+    if (
+      !isGroupPlan ||
+      !isFocused ||
+      !openCommentsKey ||
+      openedCommentsKeyRef.current === openCommentsKey
+    ) {
       return;
     }
 
@@ -125,7 +134,8 @@ export default function PlanProgressScreen({
         cancelAnimationFrame(animationFrame);
       }
     };
-  }, [isFocused, onOpenCommentsConsumed, openComments, openCommentsKey]);
+  }, [isFocused, isGroupPlan, onOpenCommentsConsumed, openComments, openCommentsKey]);
+  console.log(members, isGroupPlan);
 
   return (
     <>
@@ -176,7 +186,9 @@ export default function PlanProgressScreen({
             items={items}
             onPressItem={(item) => {
               if (item.item_type === 'comment') {
-                openComments();
+                if (isGroupPlan) {
+                  openComments();
+                }
                 return;
               }
 
@@ -198,14 +210,16 @@ export default function PlanProgressScreen({
         onPress={() => devotionalItem && onPressItem(devotionalItem)}
       />
 
-      <DayCommentsSection
-        ref={commentsSheetRef}
-        planId={planProgress.plan_id || ''}
-        dayId={selectedDayData?.id || ''}
-        group_id={planProgress.group_id || ''}
-        isDoneLoading={toggleLoading}
-        onDone={handleCommentsDone}
-      />
+      {isGroupPlan && (
+        <DayCommentsSection
+          ref={commentsSheetRef}
+          planId={planProgress.plan_id || ''}
+          dayId={selectedDayData?.id || ''}
+          group_id={planProgress.group_id || ''}
+          isDoneLoading={toggleLoading}
+          onDone={handleCommentsDone}
+        />
+      )}
     </>
   );
 }

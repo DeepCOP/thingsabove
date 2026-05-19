@@ -12,6 +12,9 @@ export default function DevotionalDayScreen() {
   const { dayId, planId, progressId, groupId, itemId: routeItemId } = useLocalSearchParams();
   const dayIdParam = Array.isArray(dayId) ? dayId[0] : dayId;
   const progressIdParam = Array.isArray(progressId) ? progressId[0] : progressId;
+  const groupIdParam = Array.isArray(groupId) ? groupId[0] : groupId;
+  const isGroupPlan =
+    Boolean(groupIdParam) && groupIdParam !== 'null' && groupIdParam !== 'undefined';
   const { session } = useAuth();
   const router = useRouter();
   const setReflectAndShareRequest = useAppStore((state) => state.setReflectAndShareRequest);
@@ -22,7 +25,7 @@ export default function DevotionalDayScreen() {
     plan_id: planId as string,
     day_id: dayIdParam as string,
     user_id: session?.user?.id!,
-    group_id: groupId as string,
+    group_id: groupIdParam as string,
   });
 
   const dayItemsProgress = useMemo(() => {
@@ -88,14 +91,18 @@ export default function DevotionalDayScreen() {
           first={first}
           last={last}
           toggleItem={toggleMutation}
-          onReflectAndShare={() => {
-            setReflectAndShareRequest({
-              progressId: progressIdParam as string,
-              dayId: dayIdParam as string,
-              token: String(Date.now()),
-            });
-            router.back();
-          }}
+          onReflectAndShare={
+            isGroupPlan
+              ? () => {
+                  setReflectAndShareRequest({
+                    progressId: progressIdParam as string,
+                    dayId: dayIdParam as string,
+                    token: String(Date.now()),
+                  });
+                  router.back();
+                }
+              : undefined
+          }
         />
       )}
     </>
