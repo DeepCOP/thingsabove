@@ -4,6 +4,7 @@ import { useAuth } from '@/src/state/AuthContext';
 import { AppNotification, isNotificationType, NOTIFICATION_TYPES } from '@/src/types/notifications';
 import { Json } from '@/src/types/supabase.gen.types';
 import { useRouter } from 'expo-router';
+import { useState } from 'react';
 import { Alert } from 'react-native';
 
 type PlanInviteNotificationData = {
@@ -112,6 +113,8 @@ export default function NotificationsTab() {
   const router = useRouter();
   const { session } = useAuth();
   const { notificationsQuery, markRead } = useNotifications(session?.user?.id);
+  const [selectedMessageNotification, setSelectedMessageNotification] =
+    useState<AppNotification | null>(null);
   const isLoading = notificationsQuery.isFetching && !notificationsQuery.data;
 
   function markNotificationAsRead(item: AppNotification) {
@@ -204,6 +207,10 @@ export default function NotificationsTab() {
         markNotificationAsRead(item);
         return;
       }
+      case NOTIFICATION_TYPES.AI_NOTIFICATION:
+        setSelectedMessageNotification(item);
+        markNotificationAsRead(item);
+        return;
       default:
         showUnsupportedNotificationAlert();
         return;
@@ -217,6 +224,8 @@ export default function NotificationsTab() {
       hasError={notificationsQuery.isError && !notificationsQuery.data}
       onPress={handleNotificationPress}
       onRetry={() => notificationsQuery.refetch()}
+      messageNotification={selectedMessageNotification}
+      onCloseMessage={() => setSelectedMessageNotification(null)}
     />
   );
 }

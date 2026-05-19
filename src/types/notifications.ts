@@ -1,6 +1,7 @@
 import { GetMyNotifications } from './types';
 
 export const NOTIFICATION_TYPES = {
+  AI_NOTIFICATION: 'ai_notification',
   PLAN_INVITE: 'plan_invite',
   FRIEND_REQUEST: 'friend_request',
   PRAYER_ENCOURAGEMENT: 'prayer_encouragement',
