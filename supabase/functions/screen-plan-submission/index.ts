@@ -4,7 +4,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const MODEL_NAME = 'gemini-2.5-flash';
 const PROMPT_VERSION = 'plan-screening-v4-images-reading-tag';
-const MAX_COVER_IMAGE_MB = 1;
+const MAX_COVER_IMAGE_MB = 5;
 const MAX_COVER_IMAGE_BYTES = MAX_COVER_IMAGE_MB * 1024 * 1024;
 const MAX_COVER_IMAGE_SIZE_LABEL = `${MAX_COVER_IMAGE_MB} MB`;
 const COVER_IMAGE_FETCH_TIMEOUT_MS = 15 * 1000;
