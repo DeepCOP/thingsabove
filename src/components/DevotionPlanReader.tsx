@@ -244,9 +244,24 @@ export default function DevotionalPlanReader({
       return null;
     }
 
+    const chapter = parsedReference.chapter ?? 1;
+    if (parsedReference.scope === 'chapter') {
+      const chapterVerses =
+        matchedBook.chapters.find((entry) => entry.chapter === chapter)?.verses ?? [];
+      const firstVerse = chapterVerses[0]?.verse;
+      const lastVerse = chapterVerses[chapterVerses.length - 1]?.verse;
+
+      return {
+        bookId: matchedBook.id,
+        chapter,
+        verseStart: firstVerse,
+        verseEnd: lastVerse,
+      };
+    }
+
     return {
       bookId: matchedBook.id,
-      chapter: parsedReference.chapter ?? 1,
+      chapter,
       verseStart: parsedReference.verseStart,
       verseEnd: parsedReference.verseEnd,
     };
