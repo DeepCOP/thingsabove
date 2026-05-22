@@ -280,6 +280,10 @@ export function BibleProvider({ children }: { children: ReactNode }) {
           };
         })
         .sort((a, b) => {
+          if (a.isActive !== b.isActive) {
+            return a.isActive ? -1 : 1;
+          }
+
           const aIsInstalled = a.isInstalled;
           const bIsInstalled = b.isInstalled;
 
