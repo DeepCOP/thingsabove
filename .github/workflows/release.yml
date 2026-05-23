@@ -1,4 +1,4 @@
-name: EAS Build and Upload Mobile Release Assets
+name: EASBuild and Submit Android
 
 on:
   push:
@@ -6,10 +6,10 @@ on:
       - '*'
 
 jobs:
-  build_mobile_release:
+  build_android:
     runs-on: ubuntu-latest
     env:
-      EAS_PROFILE: preview
+      EAS_PROFILE: beta
 
     steps:
       - name: 🏗️ Checkout repo
@@ -37,39 +37,13 @@ jobs:
           eas-version: latest
           token: ${{ secrets.EXPO_TOKEN }}
 
-      - name: 📦 Build Android (APK)
-        run: |
-          eas build --platform android --profile $EAS_PROFILE --non-interactive --wait --json > android-build.json
+      - name: Build Android AAB
+        run: eas build --platform android --profile $EAS_PROFILE --non-interactive --wait
 
-      - name: ⬇️ Download Android artifact
-        run: |
-          node - <<'NODE'
-          const fs = require('fs');
-          const data = JSON.parse(fs.readFileSync('android-build.json', 'utf8'));
-          const build = Array.isArray(data) ? data[0] : data;
-          const url =
-            build?.artifacts?.applicationArchiveUrl ||
-            build?.artifacts?.buildUrl ||
-            build?.artifacts?.downloadUrl ||
-            build?.buildUrl;
-          if (!url) {
-            console.error('No artifact URL found in android-build.json');
-            process.exit(1);
-          }
-          fs.writeFileSync('android-build-url.txt', url);
-          NODE
-          mkdir -p build
-          curl -L "$(cat android-build-url.txt)" -o build/thingsabove-${{ env.APP_VERSION }}.apk
+      - name: Submit to Google Play
+        run: eas submit --platform android --latest --non-interactive
 
-      - name: 🔍 Verify APK exists
-        run: |
-          if [ ! -f build/thingsabove-${{ env.APP_VERSION }}.apk ]; then
-            echo "❌ APK not found"
-            exit 1
-          fi
-          echo "✅ APK ready"
-
-      - name: Upload to GitHub Release
+      - name: GitHub Release Description
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.ref_name }}
@@ -79,10 +53,8 @@ jobs:
             - [Install via TestFlight](https://testflight.apple.com/join/j6Qs882p)
 
             Android Beta Build
-            - [thingsabove-${{ env.APP_VERSION }}.apk](https://github.com/DeepCOP/thingsabove/releases/download/${{ env.APP_VERSION }}/thingsabove-${{ env.APP_VERSION }}.apk)
+            - [Install via Google Play Testing](https://play.google.com/apps/testing/life.thingsabove.app)
 
           generate_release_notes: true
           draft: false
           prerelease: false
-          files: |
-            build/thingsabove-${{ env.APP_VERSION }}.apk
