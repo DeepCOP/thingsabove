@@ -44,6 +44,7 @@ export default function PlansScreen({
 }: Props) {
   const colorScheme = useColorScheme();
   const insets = useSafeAreaInsets();
+  const notificationLabel = notificationCount > 99 ? '99+' : String(notificationCount);
 
   return (
     <View className="flex-1 bg-gray-100 dark:bg-black px-4">
@@ -70,21 +71,42 @@ export default function PlansScreen({
             </TouchableOpacity>
           )}
           {isAuthenticated && (
-            <TouchableOpacity onPress={onNotifications} className="relative">
-              {notificationCount > 0 && (
-                <View
-                  className="absolute -right-2 -top-2 h-4 min-w-[16px] items-center justify-center rounded-full px-1"
-                  style={{ backgroundColor: '#ef4444' }}>
-                  <Text className="text-[10px] font-bold leading-none text-white">
-                    {notificationCount > 99 ? '99+' : notificationCount}
-                  </Text>
-                </View>
-              )}
+            <TouchableOpacity
+              onPress={onNotifications}
+              style={{ overflow: 'visible' }}
+              className="relative h-8 w-8 items-center justify-center"
+              hitSlop={10}>
               <Ionicons
                 name="notifications-outline"
                 size={22}
                 color={colorScheme === 'dark' ? '#fff' : '#222'}
               />
+
+              {notificationCount > 0 && (
+                <View
+                  className="absolute -right-2 -top-2 items-center justify-center  p-1"
+                  style={{
+                    backgroundColor: '#ef4444',
+                    maxHeight: 28,
+                    borderRadius: 14,
+                    maxWidth: 28,
+                    minHeight: 18,
+                    minWidth: 18,
+                    zIndex: 10,
+                    overflow: 'visible',
+                  }}>
+                  <Text
+                    allowFontScaling={false}
+                    numberOfLines={1}
+                    className="text-center text-[10px] font-bold text-white"
+                    style={{
+                      includeFontPadding: false,
+                      lineHeight: 12,
+                    }}>
+                    {notificationLabel}
+                  </Text>
+                </View>
+              )}
             </TouchableOpacity>
           )}
           <Ionicons
