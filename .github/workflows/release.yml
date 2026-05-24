@@ -56,7 +56,7 @@ jobs:
             - [Install via TestFlight](https://testflight.apple.com/join/j6Qs882p)
 
             Android Beta Build
-            - [Install via Google Play Testing](https://play.google.com/apps/testing/life.thingsabove.app)
+            - [Install via Google Play Testing](https://play.google.com/apps/testing/life.thingsabove)
 
           generate_release_notes: true
           draft: false
