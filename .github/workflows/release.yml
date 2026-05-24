@@ -13,6 +13,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
       - uses: ./.github/actions/build-setup
         with:
           expo-token: ${{ secrets.EXPO_TOKEN }}
@@ -24,6 +27,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
       - uses: ./.github/actions/build-setup
         with:
           expo-token: ${{ secrets.EXPO_TOKEN }}
