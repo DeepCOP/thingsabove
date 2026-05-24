@@ -5,9 +5,6 @@ on:
     tags:
       - '*'
 
-env:
-  EAS_PROFILE: beta
-
 jobs:
   build_android:
     runs-on: ubuntu-latest
@@ -16,12 +13,11 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v3
 
-      - uses: ./.github/actions/build-setup
+      - uses: ./.github/actions/build-and-submit
         with:
           expo-token: ${{ secrets.EXPO_TOKEN }}
-
-      - name: Build & Submit to Google Play
-        run: eas build --platform android --profile $EAS_PROFILE --auto-submit --non-interactive --wait
+          platform: android
+          eas-profile: beta
 
   build_ios:
     runs-on: ubuntu-latest
@@ -30,12 +26,11 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v3
 
-      - uses: ./.github/actions/build-setup
+      - uses: ./.github/actions/build-and-submit
         with:
           expo-token: ${{ secrets.EXPO_TOKEN }}
-
-      - name: Build & Submit iOS
-        run: eas build --platform ios --profile $EAS_PROFILE --auto-submit --non-interactive --wait
+          platform: ios
+          eas-profile: beta
 
   create_release:
     runs-on: ubuntu-latest

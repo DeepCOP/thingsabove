@@ -1,9 +1,15 @@
 name: Build Setup
-description: Setup Node/PNPM/EAS and install dependencies
+description: Setup, build, and submit to app stores
 
 inputs:
   expo-token:
     description: Expo token for EAS authentication
+    required: true
+  platform:
+    description: Platform to build for (android or ios)
+    required: true
+  eas-profile:
+    description: EAS build profile name
     required: true
 
 runs:
@@ -28,3 +34,7 @@ runs:
       with:
         eas-version: latest
         token: ${{ inputs.expo-token }}
+
+    - name: Build & Submit
+      shell: bash
+      run: eas build --platform ${{ inputs.platform }} --profile ${{ inputs.eas-profile }} --auto-submit --non-interactive --wait
