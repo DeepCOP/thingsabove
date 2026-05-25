@@ -8,7 +8,7 @@ import { useMemo, useRef } from 'react';
 
 import { useTogglePlanReaction } from '@/src/hooks/usePlanReactions';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
-import { Platform, useColorScheme } from 'react-native';
+import { Alert, Platform, useColorScheme } from 'react-native';
 
 export default function DevotionalDetail() {
   const { planId } = useLocalSearchParams<{ planId: string }>();
@@ -99,6 +99,7 @@ export default function DevotionalDetail() {
         hasActivePlanProgress={!!currentActivePlanProgress?.progress_id}
         canStartPlan={!!canStartPlan}
         isPrivatePlan={!!isPrivatePlan}
+        isStartingSoloPlan={startPlanProgressMutation.isPending}
         onContinuePress={() => {
           if (!currentActivePlanProgress?.progress_id) return;
 
@@ -112,7 +113,9 @@ export default function DevotionalDetail() {
           }
           toggleSavedPlan(planId, isSaved, plan ?? undefined);
         }}
-        onStartPress={(mode: string) => {
+        onStartPress={(mode: 'solo' | 'group') => {
+          if (startPlanProgressMutation.isPending) return;
+
           if (isGuest) {
             router.push('/(auth)/signin');
             return;
@@ -134,6 +137,12 @@ export default function DevotionalDetail() {
             { plan_id: planId, user_id: session?.user.id! },
             {
               onSuccess: (progress) => router.push(`/plan_progress/${progress.id}`),
+              onError: (error) => {
+                Alert.alert(
+                  'Could not start plan',
+                  error instanceof Error ? error.message : 'Please try again.',
+                );
+              },
             },
           );
         }}
