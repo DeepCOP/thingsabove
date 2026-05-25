@@ -2037,6 +2037,7 @@ export type Database = {
           total_days: number;
           updated_at: string;
           user_reaction: string;
+          visibility: string;
         }[];
       };
       get_my_plan_rating: { Args: { p_plan_id: string }; Returns: number };

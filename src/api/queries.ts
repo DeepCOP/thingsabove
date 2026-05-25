@@ -1,6 +1,11 @@
 import { supabase } from '../lib/supabaseClient';
 import { ProfileLocation, ProfilesUpdate, ProfileWithChurch } from '../types/types';
 
+export type PlanCursor = {
+  created_at: string;
+  id: string;
+};
+
 export const searchRelatedPlans = async (currentPlanId: string, tags: string[]) => {
   if (!tags.length) return [];
   const { data, error } = await supabase.rpc('get_related_public_plans', {
@@ -17,7 +22,7 @@ export const searchPlans = async ({
   pageParam,
   query,
 }: {
-  pageParam: { created_at: string | null; id: string | null };
+  pageParam: PlanCursor | null;
   query: string;
 }) => {
   const PAGE_SIZE = 10;
@@ -30,19 +35,16 @@ export const searchPlans = async ({
   });
 
   if (error) throw error;
-  const last = data?.[data.length - 1] ?? null;
+  const items = data ?? [];
+  const last = items[items.length - 1];
 
   return {
-    items: data,
-    nextCursor: last ? { created_at: last.created_at, id: last.id } : null,
+    items,
+    nextCursor: last?.created_at && last.id ? { created_at: last.created_at, id: last.id } : null,
   };
 };
 
-export const fetchPlans = async ({
-  pageParam,
-}: {
-  pageParam: { created_at: string | null; id: string | null };
-}) => {
+export const fetchPlans = async ({ pageParam }: { pageParam: PlanCursor | null }) => {
   const PAGE_SIZE = 10;
   const { created_at, id } = pageParam ?? {};
 

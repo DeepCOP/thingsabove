@@ -3,6 +3,7 @@ import {
   fetchPlanById,
   fetchPlans,
   fetchUserPlans,
+  type PlanCursor,
   searchPlans,
   searchRelatedPlans,
 } from '@/src/api/queries';
@@ -22,13 +23,9 @@ export const useSearchPlans = (query: string) => {
     queryKey: ['search_plans', query],
     staleTime: 1000 * 60 * 60 * 24,
 
-    queryFn: async ({
-      pageParam,
-    }: {
-      pageParam: { created_at: string | null; id: string | null };
-    }) => searchPlans({ pageParam, query }),
+    queryFn: async ({ pageParam }) => searchPlans({ pageParam, query }),
 
-    initialPageParam: { created_at: null, id: null },
+    initialPageParam: null as PlanCursor | null,
     getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
   });
 };
@@ -44,12 +41,8 @@ export const usePlans = () => {
   const plansQuery = useInfiniteQuery({
     queryKey: ['discover_plans'],
     staleTime: 1000 * 60 * 60 * 24,
-    queryFn: async ({
-      pageParam,
-    }: {
-      pageParam: { created_at: string | null; id: string | null };
-    }) => fetchPlans({ pageParam }),
-    initialPageParam: { created_at: null, id: null },
+    queryFn: async ({ pageParam }) => fetchPlans({ pageParam }),
+    initialPageParam: null as PlanCursor | null,
     getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
   });
 
