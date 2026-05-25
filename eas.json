@@ -12,7 +12,7 @@
       }
     },
     "beta": {
-      "channel": "internal",
+      "channel": "beta",
       "autoIncrement": true,
       "distribution": "store",
       "android": {
@@ -37,7 +37,7 @@
   "submit": {
     "beta": {
       "android": {
-        "track": "beta"
+        "track": "internal"
       },
       "ios": {
         "ascAppId": "6759932294"
