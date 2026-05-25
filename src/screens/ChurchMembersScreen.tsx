@@ -2,12 +2,16 @@ import LoadingSpinner from '@/src/components/LoadingSpinner';
 import ProfileIdentityRow from '@/src/components/ProfileIdentityRow';
 import { useChurch } from '@/src/hooks/useChurch';
 import { useChurchAnalytics } from '@/src/hooks/useChurchAnalytics';
+import { useAcceptChurchInvite } from '@/src/hooks/useChurchInvitation';
 import { useChurchMembers } from '@/src/hooks/useChurchMembers';
-import { useDebounce } from '@/src/utils';
+import { useProfile } from '@/src/hooks/useProfile';
+import { buildChurchInvitationMessage, buildChurchShareMessage } from '@/src/lib/churchShare';
+import { useAuth } from '@/src/state/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
-import { FlatList, Share, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Alert, FlatList, Share, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useDebounce } from '../utils';
 
 type Props = {
   churchId: string;
@@ -25,8 +29,14 @@ const formatJoinedLabel = (value: string | null) => {
   })}`;
 };
 
+const getInviterName = (firstName?: string | null, lastName?: string | null) => {
+  const value = [firstName, lastName].filter(Boolean).join(' ').trim();
+  return value || undefined;
+};
+
 export default function ChurchMembersScreen({ churchId }: Props) {
   const insets = useSafeAreaInsets();
+  const { session } = useAuth();
   const [query, setQuery] = useState('');
   const [isRefreshing, setIsRefreshing] = useState(false);
   const debouncedQuery = useDebounce(query.trim(), 300);
@@ -34,6 +44,8 @@ export default function ChurchMembersScreen({ churchId }: Props) {
   const churchQuery = useChurch(churchId);
   const { membersQuery, members } = useChurchMembers(churchId, debouncedQuery);
   const analyticsQuery = useChurchAnalytics(churchId);
+  const viewerProfileQuery = useProfile(session?.user?.id);
+  const acceptChurchMutation = useAcceptChurchInvite(churchId, session?.user?.id);
 
   const isLoading =
     churchQuery.isLoading ||
@@ -45,12 +57,62 @@ export default function ChurchMembersScreen({ churchId }: Props) {
   const church = churchQuery.data;
   const stats = analyticsQuery.data?.stats;
   const hasSearch = Boolean(debouncedQuery);
+  const viewerChurchId = viewerProfileQuery.data?.church?.id ?? null;
+  const isChurchMember = viewerChurchId === churchId;
+  const canShowMembershipAction =
+    Boolean(viewerProfileQuery.data && churchId) && !viewerProfileQuery.error;
 
   const handleShareChurch = async () => {
     if (!church) return;
+    await Share.share({ message: buildChurchShareMessage(church) });
+  };
+
+  const handleInviteMembers = async () => {
+    if (!isChurchMember || !church) return;
+
     await Share.share({
-      message: `Join ${church.name} on ThingsAbove.`,
+      message: buildChurchInvitationMessage({
+        church,
+        invitedBy: session?.user?.id,
+        inviterName: getInviterName(
+          viewerProfileQuery.data?.first_name,
+          viewerProfileQuery.data?.last_name,
+        ),
+      }),
     });
+  };
+
+  const joinChurch = () => {
+    acceptChurchMutation.mutate(undefined, {
+      onSuccess: () => {
+        viewerProfileQuery.refetch();
+        analyticsQuery.refetch();
+        membersQuery.refetch();
+      },
+      onError: () => {
+        Alert.alert('Unable to join church', 'Please try again.');
+      },
+    });
+  };
+
+  const handleJoinChurch = () => {
+    if (!church || acceptChurchMutation.isPending) return;
+
+    const currentChurchName = viewerProfileQuery.data?.church?.name;
+
+    if (currentChurchName && viewerChurchId !== churchId) {
+      Alert.alert(
+        'Join this church?',
+        `Joining ${church.name} will update the church on your profile from ${currentChurchName}.`,
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { text: 'Join Church', onPress: joinChurch },
+        ],
+      );
+      return;
+    }
+
+    joinChurch();
   };
 
   const handleRefresh = async () => {
@@ -162,7 +224,9 @@ export default function ChurchMembersScreen({ churchId }: Props) {
             <Text className="mt-1 text-center text-sm text-gray-600 dark:text-gray-400">
               {hasSearch
                 ? 'Try a different name or clear the search.'
-                : 'Invite members to grow this church community.'}
+                : isChurchMember
+                  ? 'Share the invitation link to grow this church community.'
+                  : 'Join this church to share its invitation link and connect with members.'}
             </Text>
           </View>
         }
@@ -196,13 +260,26 @@ export default function ChurchMembersScreen({ churchId }: Props) {
               </View>
             ) : null}
 
-            <TouchableOpacity
-              className="rounded-full bg-black py-4 dark:bg-white"
-              onPress={handleShareChurch}>
-              <Text className="text-center text-base font-semibold text-white dark:text-black">
-                Invite Members
-              </Text>
-            </TouchableOpacity>
+            {canShowMembershipAction ? (
+              isChurchMember ? (
+                <TouchableOpacity
+                  className="rounded-full bg-black py-4 dark:bg-white"
+                  onPress={handleInviteMembers}>
+                  <Text className="text-center text-base font-semibold text-white dark:text-black">
+                    Share Invite Link
+                  </Text>
+                </TouchableOpacity>
+              ) : (
+                <TouchableOpacity
+                  className="rounded-full bg-black py-4 dark:bg-white"
+                  disabled={acceptChurchMutation.isPending}
+                  onPress={handleJoinChurch}>
+                  <Text className="text-center text-base font-semibold text-white dark:text-black">
+                    {acceptChurchMutation.isPending ? 'Joining...' : 'Join Church'}
+                  </Text>
+                </TouchableOpacity>
+              )
+            ) : null}
 
             <TouchableOpacity
               className="mt-3 rounded-full border border-gray-300 py-4 dark:border-neutral-700"

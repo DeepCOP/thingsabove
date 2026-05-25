@@ -12,19 +12,26 @@ import {
 import ChurchSnapshotCard from '@/src/components/church/ChurchSnapshotCard';
 import ChurchStatGrid from '@/src/components/church/ChurchStatGrid';
 import ChurchTopPlansList from '@/src/components/church/ChurchTopPlansList';
-import { useChurchAnalytics } from '@/src/hooks/useChurchAnalytics';
 import { useChurch } from '@/src/hooks/useChurch';
+import { useChurchAnalytics } from '@/src/hooks/useChurchAnalytics';
+import { useAcceptChurchInvite } from '@/src/hooks/useChurchInvitation';
 import { useChurchMembers } from '@/src/hooks/useChurchMembers';
 import { useProfile } from '@/src/hooks/useProfile';
+import { buildChurchInvitationMessage, buildChurchShareMessage } from '@/src/lib/churchShare';
 import { useAuth } from '@/src/state/AuthContext';
 import { Href, useRouter } from 'expo-router';
-import { ScrollView, Share, View } from 'react-native';
+import { Alert, ScrollView, Share, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import ChurchRecentActivityCard from '../components/church/ChurchRecentActivityCard';
 import { openExternalUrl } from '../utils';
 
 type Props = {
   churchId: string;
+};
+
+const getInviterName = (firstName?: string | null, lastName?: string | null) => {
+  const value = [firstName, lastName].filter(Boolean).join(' ').trim();
+  return value || undefined;
 };
 
 export default function ChurchScreen({ churchId }: Props) {
@@ -35,9 +42,12 @@ export default function ChurchScreen({ churchId }: Props) {
   const viewerProfileQuery = useProfile(session?.user?.id);
   const viewerChurchId = viewerProfileQuery.data?.church?.id ?? null;
   const canInviteMembers = viewerChurchId === churchId;
+  const canShowMembershipAction =
+    Boolean(viewerProfileQuery.data && churchId) && !viewerProfileQuery.error;
   const churchQuery = useChurch(churchId);
   const analyticsQuery = useChurchAnalytics(churchId);
   const { membersQuery, members } = useChurchMembers(churchId);
+  const acceptChurchMutation = useAcceptChurchInvite(churchId, session?.user?.id);
 
   const church = churchQuery.data;
   const stats = analyticsQuery.data?.stats;
@@ -46,16 +56,60 @@ export default function ChurchScreen({ churchId }: Props) {
 
   const handleShareChurch = async () => {
     if (!church) return;
-
-    const websiteLine = church.website_url ? `\n${church.website_url}` : '';
-    await Share.share({
-      message: `Join ${church.name} on ThingsAbove.${websiteLine}`,
-    });
+    await Share.share({ message: buildChurchShareMessage(church) });
   };
 
   const handleOpenWebsite = async () => {
     if (!church?.website_url) return;
     await openExternalUrl(church.website_url);
+  };
+
+  const handleInviteMembers = async () => {
+    if (!canInviteMembers || !church) return;
+
+    await Share.share({
+      message: buildChurchInvitationMessage({
+        church,
+        invitedBy: session?.user?.id,
+        inviterName: getInviterName(
+          viewerProfileQuery.data?.first_name,
+          viewerProfileQuery.data?.last_name,
+        ),
+      }),
+    });
+  };
+
+  const joinChurch = () => {
+    acceptChurchMutation.mutate(undefined, {
+      onSuccess: () => {
+        viewerProfileQuery.refetch();
+        analyticsQuery.refetch();
+        membersQuery.refetch();
+      },
+      onError: () => {
+        Alert.alert('Unable to join church', 'Please try again.');
+      },
+    });
+  };
+
+  const handleJoinChurch = () => {
+    if (!church || acceptChurchMutation.isPending) return;
+
+    const currentChurchName = viewerProfileQuery.data?.church?.name;
+
+    if (currentChurchName && viewerChurchId !== churchId) {
+      Alert.alert(
+        'Join this church?',
+        `Joining ${church.name} will update the church on your profile from ${currentChurchName}.`,
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { text: 'Join Church', onPress: joinChurch },
+        ],
+      );
+      return;
+    }
+
+    joinChurch();
   };
 
   const handleOpenMembers = () => {
@@ -190,7 +244,13 @@ export default function ChurchScreen({ churchId }: Props) {
         ) : church ? (
           <ChurchActionsCard
             canOpenWebsite={Boolean(church.website_url)}
-            onInvitePress={canInviteMembers ? handleShareChurch : undefined}
+            isJoining={acceptChurchMutation.isPending}
+            onInvitePress={
+              canShowMembershipAction && canInviteMembers ? handleInviteMembers : undefined
+            }
+            onJoinPress={
+              canShowMembershipAction && !canInviteMembers ? handleJoinChurch : undefined
+            }
             onSharePress={handleShareChurch}
             onOpenWebsitePress={handleOpenWebsite}
           />

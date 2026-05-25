@@ -2,14 +2,18 @@ import { Text, TouchableOpacity, View } from 'react-native';
 
 type Props = {
   canOpenWebsite: boolean;
+  isJoining?: boolean;
   onInvitePress?: () => void;
+  onJoinPress?: () => void;
   onSharePress?: () => void;
   onOpenWebsitePress?: () => void;
 };
 
 export default function ChurchActionsCard({
   canOpenWebsite,
+  isJoining,
   onInvitePress,
+  onJoinPress,
   onSharePress,
   onOpenWebsitePress,
 }: Props) {
@@ -20,7 +24,16 @@ export default function ChurchActionsCard({
           className="rounded-full bg-black py-4 dark:bg-white"
           onPress={onInvitePress}>
           <Text className="text-center text-lg font-semibold text-white dark:text-black">
-            Invite Members
+            Share Invite Link
+          </Text>
+        </TouchableOpacity>
+      ) : onJoinPress ? (
+        <TouchableOpacity
+          className="rounded-full bg-black py-4 dark:bg-white"
+          disabled={isJoining}
+          onPress={onJoinPress}>
+          <Text className="text-center text-lg font-semibold text-white dark:text-black">
+            {isJoining ? 'Joining...' : 'Join Church'}
           </Text>
         </TouchableOpacity>
       ) : null}
