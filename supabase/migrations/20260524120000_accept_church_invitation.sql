@@ -1,6 +1,3 @@
-drop function if exists public.invite_users_to_church(uuid, uuid[]);
-drop function if exists public.decline_church_invite(uuid);
-
 create or replace function public.accept_church_invite(
   p_church_id uuid
 )
@@ -33,5 +30,3 @@ begin
   end if;
 end;
 $$;
-
-drop table if exists public.church_invitations;
