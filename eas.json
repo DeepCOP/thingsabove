@@ -12,7 +12,7 @@
       }
     },
     "beta": {
-      "channel": "beta",
+      "channel": "internal",
       "autoIncrement": true,
       "distribution": "store",
       "android": {
