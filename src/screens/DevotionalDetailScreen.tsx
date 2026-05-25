@@ -5,7 +5,14 @@ import { RelatedPlansSection } from '@/src/components/RelatedPlans';
 import { Ionicons } from '@expo/vector-icons';
 import BottomSheet from '@gorhom/bottom-sheet';
 import { useRef } from 'react';
-import { ScrollView, Text, TouchableOpacity, View, useColorScheme } from 'react-native';
+import {
+  ActivityIndicator,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+  useColorScheme,
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import ReportPlanSheet from '../components/ReportPlanModal';
 import StartPlanBottomSheet from '../components/StartPlanBottomSheet';
@@ -27,6 +34,7 @@ type Props = {
   hasActivePlanProgress: boolean;
   canStartPlan: boolean;
   isPrivatePlan: boolean;
+  isStartingSoloPlan: boolean;
   onStartPress: (mode: 'solo' | 'group') => void;
   onContinuePress: () => void;
   isSaved: boolean;
@@ -44,6 +52,7 @@ export default function DevotionalDetailScreen({
   hasActivePlanProgress,
   canStartPlan,
   isPrivatePlan,
+  isStartingSoloPlan,
   onStartPress,
   onContinuePress,
   isSaved,
@@ -57,6 +66,8 @@ export default function DevotionalDetailScreen({
   const resolvedTopInset = insets.top;
   const startButtonLabel =
     isPrivatePlan && !canStartPlan && hasActivePlanProgress ? 'Continue Plan' : 'Start Plan';
+  const isStartButtonDisabled =
+    isStartingSoloPlan || (isPrivatePlan && !canStartPlan && !hasActivePlanProgress);
 
   if (isLoading) {
     return <LoadingSpinner style={{ marginTop: 30 }} />;
@@ -154,11 +165,11 @@ export default function DevotionalDetailScreen({
 
         <TouchableOpacity
           className={`mt-6 mx-4 rounded-full py-4 ${
-            isPrivatePlan && !canStartPlan && !hasActivePlanProgress
-              ? 'bg-gray-400 dark:bg-neutral-700'
-              : 'bg-black dark:bg-white'
+            isStartButtonDisabled ? 'bg-gray-400 dark:bg-neutral-700' : 'bg-black dark:bg-white'
           }`}
           onPress={() => {
+            if (isStartingSoloPlan) return;
+
             if (isPrivatePlan && !canStartPlan && hasActivePlanProgress) {
               onContinuePress();
               return;
@@ -166,10 +177,17 @@ export default function DevotionalDetailScreen({
 
             bottomSheetRef.current?.expand();
           }}
-          disabled={isPrivatePlan && !canStartPlan && !hasActivePlanProgress}>
-          <Text className="text-center text-white dark:text-black font-semibold text-lg">
-            {startButtonLabel}
-          </Text>
+          disabled={isStartButtonDisabled}>
+          {isStartingSoloPlan ? (
+            <ActivityIndicator
+              size="small"
+              color={colorScheme === 'dark' ? '#111827' : '#ffffff'}
+            />
+          ) : (
+            <Text className="text-center text-white dark:text-black font-semibold text-lg">
+              {startButtonLabel}
+            </Text>
+          )}
         </TouchableOpacity>
 
         <View className="px-4 mt-6">
@@ -185,6 +203,7 @@ export default function DevotionalDetailScreen({
         ref={bottomSheetRef}
         plan={plan}
         hasActiveSoloPlanProgress={hasActiveSoloPlanProgress}
+        isStartingSoloPlan={isStartingSoloPlan}
         onContinuePress={onContinuePress}
         onStartPress={onStartPress}
       />

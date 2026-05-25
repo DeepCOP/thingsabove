@@ -1,22 +1,33 @@
 import BottomSheet, { BottomSheetBackdrop, BottomSheetView } from '@gorhom/bottom-sheet';
 import { forwardRef, useState } from 'react';
 import PlanCoverImage from '@/src/components/PlanCoverImage';
-import { Text, TouchableOpacity, View, useColorScheme } from 'react-native';
+import { ActivityIndicator, Text, TouchableOpacity, View, useColorScheme } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 type Props = {
   plan: any;
   hasActiveSoloPlanProgress?: boolean;
+  isStartingSoloPlan?: boolean;
   onStartPress: (mode: 'solo' | 'group') => void;
   onContinuePress?: () => void;
 };
 
 const StartPlanBottomSheet = forwardRef<BottomSheet, Props>(
-  ({ plan, hasActiveSoloPlanProgress = false, onStartPress, onContinuePress }, ref) => {
+  (
+    {
+      plan,
+      hasActiveSoloPlanProgress = false,
+      isStartingSoloPlan = false,
+      onStartPress,
+      onContinuePress,
+    },
+    ref,
+  ) => {
     const colorScheme = useColorScheme();
     const insets = useSafeAreaInsets();
     const [showSoloOptions, setShowSoloOptions] = useState(false);
     const isShowingSoloOptions = hasActiveSoloPlanProgress && showSoloOptions;
+    const soloSpinnerColor = colorScheme === 'dark' ? '#ffffff' : '#111827';
 
     return (
       <BottomSheet
@@ -56,6 +67,7 @@ const StartPlanBottomSheet = forwardRef<BottomSheet, Props>(
                 {onContinuePress && (
                   <TouchableOpacity
                     onPress={onContinuePress}
+                    disabled={isStartingSoloPlan}
                     className="py-4 rounded-full bg-black dark:bg-white items-center">
                     <Text className="text-lg font-bold text-white dark:text-black">
                       Continue Current Plan
@@ -65,12 +77,18 @@ const StartPlanBottomSheet = forwardRef<BottomSheet, Props>(
 
                 <TouchableOpacity
                   onPress={() => onStartPress('solo')}
+                  disabled={isStartingSoloPlan}
                   className="py-4 rounded-full bg-gray-300 dark:bg-neutral-600 items-center">
-                  <Text className="text-lg font-bold dark:text-white">Start New Solo Plan</Text>
+                  {isStartingSoloPlan ? (
+                    <ActivityIndicator size="small" color={soloSpinnerColor} />
+                  ) : (
+                    <Text className="text-lg font-bold dark:text-white">Start New Solo Plan</Text>
+                  )}
                 </TouchableOpacity>
 
                 <TouchableOpacity
                   onPress={() => setShowSoloOptions(false)}
+                  disabled={isStartingSoloPlan}
                   className="py-4 rounded-full border border-gray-300 dark:border-neutral-600 items-center">
                   <Text className="text-lg font-semibold text-gray-800 dark:text-gray-200">
                     Back
@@ -88,12 +106,18 @@ const StartPlanBottomSheet = forwardRef<BottomSheet, Props>(
 
                     onStartPress('solo');
                   }}
+                  disabled={isStartingSoloPlan}
                   className="py-4 rounded-full bg-gray-300 dark:bg-neutral-600 items-center">
-                  <Text className="text-lg font-bold dark:text-white">By Yourself</Text>
+                  {isStartingSoloPlan ? (
+                    <ActivityIndicator size="small" color={soloSpinnerColor} />
+                  ) : (
+                    <Text className="text-lg font-bold dark:text-white">By Yourself</Text>
+                  )}
                 </TouchableOpacity>
 
                 <TouchableOpacity
                   onPress={() => onStartPress('group')}
+                  disabled={isStartingSoloPlan}
                   className="py-4 rounded-full bg-gray-300 dark:bg-neutral-600 items-center">
                   <Text className="text-lg font-bold dark:text-white">With Friends</Text>
                 </TouchableOpacity>
