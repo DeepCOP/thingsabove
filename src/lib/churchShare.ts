@@ -38,7 +38,7 @@ export const buildChurchInvitationUrl = ({
 };
 
 export const buildChurchShareMessage = (church: Church) => {
-  const lines = [`Join ${church.name} on ThingsAbove.`, buildChurchShareUrl(church.id)];
+  const lines = [`Come join us at ${church.name} on ThingsAbove.`, buildChurchShareUrl(church.id)];
 
   if (church.address) {
     lines.splice(1, 0, church.address);
