@@ -11,24 +11,44 @@
         "simulator": false
       }
     },
-    "preview": {
-      "distribution": "internal"
+    "beta": {
+      "channel": "beta",
+      "autoIncrement": true,
+      "distribution": "store",
+      "android": {
+        "buildType": "app-bundle"
+      },
+      "env": {
+        "APP_ENV": "beta"
+      }
     },
     "production": {
+      "channel": "production",
       "autoIncrement": true,
+      "distribution": "store",
       "android": {
-        "buildType": "apk"
+        "buildType": "app-bundle"
       },
-      "ios": {
-        "distribution": "store"
+      "env": {
+        "APP_ENV": "production"
       }
     }
   },
   "submit": {
-    "production": {
+    "beta": {
+      "android": {
+        "track": "alpha"
+      },
       "ios": {
-        "ascAppId": "6759932294",
-        "groups": ["Beta Testers"]
+        "ascAppId": "6759932294"
+      }
+    },
+    "production": {
+      "android": {
+        "track": "production"
+      },
+      "ios": {
+        "ascAppId": "6759932294"
       }
     }
   }

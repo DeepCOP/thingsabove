@@ -85,7 +85,7 @@ pnpm start
 
 ## EAS Environment Variables (per build profile)
 
-Set these in EAS for each environment you build (e.g. development, preview, production). You can do this in the Expo dashboard or via CLI.
+Set these in EAS for each environment you build (e.g. development, beta, production). You can do this in the Expo dashboard or via CLI.
 
 Required app variables:
 ```
