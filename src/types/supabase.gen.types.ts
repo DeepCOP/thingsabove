@@ -4,7 +4,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: '14.1';
+    PostgrestVersion: '13.0.5';
   };
   public: {
     Tables: {
@@ -123,86 +123,6 @@ export type Database = {
         };
         Relationships: [];
       };
-      church_invitations: {
-        Row: {
-          church_id: string;
-          created_at: string;
-          id: string;
-          invited_by: string;
-          invited_user_id: string;
-          responded_at: string | null;
-          status: string;
-        };
-        Insert: {
-          church_id: string;
-          created_at?: string;
-          id?: string;
-          invited_by: string;
-          invited_user_id: string;
-          responded_at?: string | null;
-          status?: string;
-        };
-        Update: {
-          church_id?: string;
-          created_at?: string;
-          id?: string;
-          invited_by?: string;
-          invited_user_id?: string;
-          responded_at?: string | null;
-          status?: string;
-        };
-        Relationships: [
-          {
-            foreignKeyName: 'church_invitations_church_id_fkey';
-            columns: ['church_id'];
-            isOneToOne: false;
-            referencedRelation: 'churches';
-            referencedColumns: ['id'];
-          },
-          {
-            foreignKeyName: 'church_invitations_invited_by_fkey';
-            columns: ['invited_by'];
-            isOneToOne: false;
-            referencedRelation: 'profiles';
-            referencedColumns: ['id'];
-          },
-          {
-            foreignKeyName: 'church_invitations_invited_by_fkey';
-            columns: ['invited_by'];
-            isOneToOne: false;
-            referencedRelation: 'user_behavior_scored';
-            referencedColumns: ['user_id'];
-          },
-          {
-            foreignKeyName: 'church_invitations_invited_by_fkey';
-            columns: ['invited_by'];
-            isOneToOne: false;
-            referencedRelation: 'user_behavior_snapshot';
-            referencedColumns: ['user_id'];
-          },
-          {
-            foreignKeyName: 'church_invitations_invited_user_id_fkey';
-            columns: ['invited_user_id'];
-            isOneToOne: false;
-            referencedRelation: 'profiles';
-            referencedColumns: ['id'];
-          },
-          {
-            foreignKeyName: 'church_invitations_invited_user_id_fkey';
-            columns: ['invited_user_id'];
-            isOneToOne: false;
-            referencedRelation: 'user_behavior_scored';
-            referencedColumns: ['user_id'];
-          },
-          {
-            foreignKeyName: 'church_invitations_invited_user_id_fkey';
-            columns: ['invited_user_id'];
-            isOneToOne: false;
-            referencedRelation: 'user_behavior_snapshot';
-            referencedColumns: ['user_id'];
-          },
-        ];
-      };
       churches: {
         Row: {
           address: string | null;
@@ -305,15 +225,15 @@ export type Database = {
         Row: {
           completed: boolean | null;
           created_at: string | null;
-          day_id: string | null;
+          day_id: string;
           day_number: number | null;
           devotional_content: string | null;
           group_id: string | null;
           id: string;
-          item_key: string | null;
-          item_type: string | null;
+          item_key: string;
+          item_type: string;
           plan_id: string | null;
-          progress_id: string | null;
+          progress_id: string;
           title: string | null;
           updated_at: string | null;
           user_id: string | null;
@@ -321,15 +241,15 @@ export type Database = {
         Insert: {
           completed?: boolean | null;
           created_at?: string | null;
-          day_id?: string | null;
+          day_id: string;
           day_number?: number | null;
           devotional_content?: string | null;
           group_id?: string | null;
           id?: string;
-          item_key?: string | null;
-          item_type?: string | null;
+          item_key: string;
+          item_type: string;
           plan_id?: string | null;
-          progress_id?: string | null;
+          progress_id: string;
           title?: string | null;
           updated_at?: string | null;
           user_id?: string | null;
@@ -337,15 +257,15 @@ export type Database = {
         Update: {
           completed?: boolean | null;
           created_at?: string | null;
-          day_id?: string | null;
+          day_id?: string;
           day_number?: number | null;
           devotional_content?: string | null;
           group_id?: string | null;
           id?: string;
-          item_key?: string | null;
-          item_type?: string | null;
+          item_key?: string;
+          item_type?: string;
           plan_id?: string | null;
-          progress_id?: string | null;
+          progress_id?: string;
           title?: string | null;
           updated_at?: string | null;
           user_id?: string | null;
@@ -482,6 +402,7 @@ export type Database = {
         Row: {
           author_id: string | null;
           completions: number | null;
+          content_mode: string;
           cover_image: string | null;
           created_at: string | null;
           description: string;
@@ -496,6 +417,7 @@ export type Database = {
         Insert: {
           author_id?: string | null;
           completions?: number | null;
+          content_mode?: string;
           cover_image?: string | null;
           created_at?: string | null;
           description: string;
@@ -510,6 +432,7 @@ export type Database = {
         Update: {
           author_id?: string | null;
           completions?: number | null;
+          content_mode?: string;
           cover_image?: string | null;
           created_at?: string | null;
           description?: string;
@@ -1580,8 +1503,6 @@ export type Database = {
       };
       scripture_references: {
         Row: {
-          book_reference: string[] | null;
-          chapter_reference: string[] | null;
           created_at: string | null;
           day_id: string | null;
           id: string;
@@ -1590,8 +1511,6 @@ export type Database = {
           user_id: string | null;
         };
         Insert: {
-          book_reference?: string[] | null;
-          chapter_reference?: string[] | null;
           created_at?: string | null;
           day_id?: string | null;
           id?: string;
@@ -1600,8 +1519,6 @@ export type Database = {
           user_id?: string | null;
         };
         Update: {
-          book_reference?: string[] | null;
-          chapter_reference?: string[] | null;
           created_at?: string | null;
           day_id?: string | null;
           id?: string;
@@ -1621,8 +1538,6 @@ export type Database = {
       };
       scripture_references_draft: {
         Row: {
-          book_reference: string[] | null;
-          chapter_reference: string[] | null;
           created_at: string | null;
           day_id: string | null;
           id: string;
@@ -1631,8 +1546,6 @@ export type Database = {
           user_id: string | null;
         };
         Insert: {
-          book_reference?: string[] | null;
-          chapter_reference?: string[] | null;
           created_at?: string | null;
           day_id?: string | null;
           id?: string;
@@ -1641,8 +1554,6 @@ export type Database = {
           user_id?: string | null;
         };
         Update: {
-          book_reference?: string[] | null;
-          chapter_reference?: string[] | null;
           created_at?: string | null;
           day_id?: string | null;
           id?: string;
@@ -1891,6 +1802,7 @@ export type Database = {
         };
         Returns: undefined;
       };
+      can_access_plan: { Args: { p_plan_id: string }; Returns: boolean };
       can_access_prayer_scope: {
         Args: { p_church_id: string; p_scope: string };
         Returns: boolean;
@@ -1943,15 +1855,19 @@ export type Database = {
         Returns: string;
       };
       current_user_church_id: { Args: never; Returns: string };
-      decline_church_invite: {
-        Args: { p_church_id: string };
-        Returns: undefined;
+      day_item_stable_id: {
+        Args: {
+          p_day_id: string;
+          p_item_key: string;
+          p_item_type: string;
+          p_progress_id: string;
+        };
+        Returns: string;
       };
       decline_friend_request: {
         Args: { p_requester_id: string };
         Returns: undefined;
       };
-      devotional_plan_allowed_tags: { Args: never; Returns: string[] };
       ensure_day_items_exist: {
         Args: {
           p_day_id: string;
@@ -1982,6 +1898,16 @@ export type Database = {
           last_name: string;
         }[];
       };
+      get_day_item_templates: {
+        Args: { p_day_id: string; p_group_id?: string; p_plan_id: string };
+        Returns: {
+          day_number: number;
+          devotional_content: string;
+          item_key: string;
+          item_type: string;
+          title: string;
+        }[];
+      };
       get_day_items_progress: {
         Args: {
           p_day_id: string;
@@ -1993,15 +1919,15 @@ export type Database = {
         Returns: {
           completed: boolean | null;
           created_at: string | null;
-          day_id: string | null;
+          day_id: string;
           day_number: number | null;
           devotional_content: string | null;
           group_id: string | null;
           id: string;
-          item_key: string | null;
-          item_type: string | null;
+          item_key: string;
+          item_type: string;
           plan_id: string | null;
-          progress_id: string | null;
+          progress_id: string;
           title: string | null;
           updated_at: string | null;
           user_id: string | null;
@@ -2016,8 +1942,6 @@ export type Database = {
       get_devotional_days_with_scriptures: {
         Args: { p_plan_id: string };
         Returns: {
-          book_reference: string[];
-          chapter_reference: string[];
           content: string;
           day_id: string;
           day_number: number;
@@ -2028,13 +1952,36 @@ export type Database = {
       get_devotional_drafts: {
         Args: { _plan_id: string };
         Returns: {
-          book_reference: string[];
-          chapter_reference: string[];
           content: string;
           day_id: string;
           day_number: number;
           scriptures: string[];
           title: string;
+        }[];
+      };
+      get_discover_plans: {
+        Args: {
+          p_cursor_created_at?: string;
+          p_cursor_id?: string;
+          p_limit_count?: number;
+        };
+        Returns: {
+          author_id: string;
+          completions: number;
+          cover_image: string;
+          created_at: string;
+          description: string;
+          helpful_count: number;
+          id: string;
+          rating_avg: number;
+          rating_count: number;
+          status: string;
+          tags: string[];
+          title: string;
+          total_days: number;
+          updated_at: string;
+          user_reaction: string;
+          visibility: string;
         }[];
       };
       get_my_devotional_plans: {
@@ -2054,6 +2001,10 @@ export type Database = {
       get_my_notifications: {
         Args: never;
         Returns: {
+          actor_avatar_url: string;
+          actor_first_name: string;
+          actor_id: string;
+          actor_last_name: string;
           body: string;
           created_at: string;
           data: Json;
@@ -2110,98 +2061,6 @@ export type Database = {
           updated_at: string;
           user_reaction: string;
           visibility: string;
-        }[];
-      };
-      get_discover_plans: {
-        Args: {
-          p_cursor_created_at?: string;
-          p_cursor_id?: string;
-          p_limit_count?: number;
-        };
-        Returns: {
-          author_id: string | null;
-          completions: number | null;
-          cover_image: string | null;
-          created_at: string | null;
-          description: string | null;
-          helpful_count: number | null;
-          id: string | null;
-          rating_avg: number | null;
-          rating_count: number | null;
-          status: string | null;
-          tags: string[] | null;
-          title: string | null;
-          total_days: number | null;
-          updated_at: string | null;
-          user_reaction: string | null;
-          visibility: string | null;
-        }[];
-      };
-      get_published_plan_by_id: {
-        Args: { p_plan_id: string };
-        Returns: {
-          author_id: string | null;
-          completions: number | null;
-          cover_image: string | null;
-          created_at: string | null;
-          description: string | null;
-          helpful_count: number | null;
-          id: string | null;
-          rating_avg: number | null;
-          rating_count: number | null;
-          status: string | null;
-          tags: string[] | null;
-          title: string | null;
-          total_days: number | null;
-          updated_at: string | null;
-          user_reaction: string | null;
-          visibility: string | null;
-        }[];
-      };
-      get_published_plans_by_ids: {
-        Args: { p_plan_ids: string[] };
-        Returns: {
-          author_id: string | null;
-          completions: number | null;
-          cover_image: string | null;
-          created_at: string | null;
-          description: string | null;
-          helpful_count: number | null;
-          id: string | null;
-          rating_avg: number | null;
-          rating_count: number | null;
-          status: string | null;
-          tags: string[] | null;
-          title: string | null;
-          total_days: number | null;
-          updated_at: string | null;
-          user_reaction: string | null;
-          visibility: string | null;
-        }[];
-      };
-      get_related_public_plans: {
-        Args: {
-          p_current_plan_id: string;
-          p_limit_count?: number;
-          p_tags: string[];
-        };
-        Returns: {
-          author_id: string | null;
-          completions: number | null;
-          cover_image: string | null;
-          created_at: string | null;
-          description: string | null;
-          helpful_count: number | null;
-          id: string | null;
-          rating_avg: number | null;
-          rating_count: number | null;
-          status: string | null;
-          tags: string[] | null;
-          title: string | null;
-          total_days: number | null;
-          updated_at: string | null;
-          user_reaction: string | null;
-          visibility: string | null;
         }[];
       };
       get_pending_friend_requests: {
@@ -2341,6 +2200,73 @@ export type Database = {
         }[];
       };
       get_profile: { Args: { p_user_id: string }; Returns: Json };
+      get_published_plan_by_id: {
+        Args: { p_plan_id: string };
+        Returns: {
+          author_id: string;
+          completions: number;
+          cover_image: string;
+          created_at: string;
+          description: string;
+          helpful_count: number;
+          id: string;
+          rating_avg: number;
+          rating_count: number;
+          status: string;
+          tags: string[];
+          title: string;
+          total_days: number;
+          updated_at: string;
+          user_reaction: string;
+          visibility: string;
+        }[];
+      };
+      get_published_plans_by_ids: {
+        Args: { p_plan_ids: string[] };
+        Returns: {
+          author_id: string;
+          completions: number;
+          cover_image: string;
+          created_at: string;
+          description: string;
+          helpful_count: number;
+          id: string;
+          rating_avg: number;
+          rating_count: number;
+          status: string;
+          tags: string[];
+          title: string;
+          total_days: number;
+          updated_at: string;
+          user_reaction: string;
+          visibility: string;
+        }[];
+      };
+      get_related_public_plans: {
+        Args: {
+          p_current_plan_id: string;
+          p_limit_count?: number;
+          p_tags: string[];
+        };
+        Returns: {
+          author_id: string;
+          completions: number;
+          cover_image: string;
+          created_at: string;
+          description: string;
+          helpful_count: number;
+          id: string;
+          rating_avg: number;
+          rating_count: number;
+          status: string;
+          tags: string[];
+          title: string;
+          total_days: number;
+          updated_at: string;
+          user_reaction: string;
+          visibility: string;
+        }[];
+      };
       get_scripture_notes: {
         Args: {
           p_limit?: number;
@@ -2381,11 +2307,15 @@ export type Database = {
           requester_id: string;
         }[];
       };
-      invite_users_to_church: {
-        Args: { p_church_id: string; p_user_ids: string[] };
-        Returns: undefined;
+      is_accepted_group_member: {
+        Args: { p_group_id: string };
+        Returns: boolean;
       };
       is_group_member: { Args: { p_group_id: string }; Returns: boolean };
+      jsonb_has_nonempty_text_array: {
+        Args: { p_value: Json };
+        Returns: boolean;
+      };
       list_ai_notification_planning_candidates: {
         Args: { p_limit?: number };
         Returns: {
@@ -2411,6 +2341,10 @@ export type Database = {
         Args: { p_value: string };
         Returns: string;
       };
+      plan_submission_days_have_scripture_references: {
+        Args: { p_payload: Json };
+        Returns: boolean;
+      };
       plan_tags: { Args: never; Returns: string[] };
       publish_devotional_plan: {
         Args: { p_days: Json; p_plan_id: string };
@@ -2419,6 +2353,10 @@ export type Database = {
       publish_submitted_devotional_plan: {
         Args: { p_submission_id: string };
         Returns: undefined;
+      };
+      published_plan_days_have_scripture_references: {
+        Args: { p_plan_id: string };
+        Returns: boolean;
       };
       report_plan: {
         Args: { p_plan_id: string; p_reason: string };
@@ -2524,6 +2462,7 @@ export type Database = {
           submitted_at: string;
         }[];
       };
+      tags_include_reading: { Args: { tags: string[] }; Returns: boolean };
       tags_to_text: { Args: { tags: string[] }; Returns: string };
       toggle_day_completion: {
         Args: {

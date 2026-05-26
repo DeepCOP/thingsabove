@@ -254,6 +254,14 @@ export const declinePlanGroupInvite = async ({
   if (error) throw error;
 };
 
+export const acceptChurchInvite = async ({ churchId }: { churchId: string }) => {
+  const { error } = await supabase.rpc('accept_church_invite', {
+    p_church_id: churchId,
+  });
+
+  if (error) throw error;
+};
+
 export const markNotificationRead = async (p_notification_id: string) => {
   const { error } = await supabase.rpc('mark_notification_read', {
     p_notification_id,
