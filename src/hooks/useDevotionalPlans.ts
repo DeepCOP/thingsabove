@@ -1,5 +1,6 @@
 import {
   fetchMyDevotionalPlans,
+  fetchPlanTags,
   fetchPlanById,
   fetchPlans,
   fetchUserPlans,
@@ -8,6 +9,7 @@ import {
   searchRelatedPlans,
 } from '@/src/api/queries';
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
+import { useMemo } from 'react';
 export const useRelatedPlans = (tags: string[], currentPlanId: string) => {
   return useQuery({
     queryKey: ['related_plans', currentPlanId],
@@ -37,11 +39,28 @@ export const useFetchDevotionalPlanById = (id: string) => {
     queryFn: async () => fetchPlanById(id),
   });
 };
-export const usePlans = () => {
-  const plansQuery = useInfiniteQuery({
-    queryKey: ['discover_plans'],
+
+export const usePlanTags = () => {
+  return useQuery({
+    queryKey: ['plan_tags'],
     staleTime: 1000 * 60 * 60 * 24,
-    queryFn: async ({ pageParam }) => fetchPlans({ pageParam }),
+    queryFn: fetchPlanTags,
+  });
+};
+
+export const usePlans = (selectedTags: string[] = []) => {
+  const normalizedSelectedTags = useMemo(
+    () =>
+      Array.from(new Set(selectedTags.map((tag) => tag.trim()).filter(Boolean))).sort((a, b) =>
+        a.localeCompare(b),
+      ),
+    [selectedTags],
+  );
+
+  const plansQuery = useInfiniteQuery({
+    queryKey: ['discover_plans', normalizedSelectedTags],
+    staleTime: 1000 * 60 * 60 * 24,
+    queryFn: async ({ pageParam }) => fetchPlans({ pageParam, tags: normalizedSelectedTags }),
     initialPageParam: null as PlanCursor | null,
     getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
   });

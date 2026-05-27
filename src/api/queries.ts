@@ -44,14 +44,29 @@ export const searchPlans = async ({
   };
 };
 
-export const fetchPlans = async ({ pageParam }: { pageParam: PlanCursor | null }) => {
+export const fetchPlanTags = async () => {
+  const { data, error } = await supabase.rpc('plan_tags');
+
+  if (error) throw error;
+
+  return data ?? [];
+};
+
+export const fetchPlans = async ({
+  pageParam,
+  tags = [],
+}: {
+  pageParam: PlanCursor | null;
+  tags?: string[];
+}) => {
   const PAGE_SIZE = 10;
   const { created_at, id } = pageParam ?? {};
-
+  console.log(tags);
   const { data, error } = await supabase.rpc('get_discover_plans', {
     p_limit_count: PAGE_SIZE,
     p_cursor_created_at: created_at ?? undefined,
     p_cursor_id: id ?? undefined,
+    p_tags: tags.length ? tags : undefined,
   });
   if (error) throw error;
 

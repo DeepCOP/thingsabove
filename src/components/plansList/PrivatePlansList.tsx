@@ -4,6 +4,7 @@ import { useMyDevotionalPlans } from '@/src/hooks/useDevotionalPlans';
 import { useAuth } from '@/src/state/AuthContext';
 import { useAppStore } from '@/src/state/useAppStore';
 import { GetMyDevotionalPlans } from '@/src/types/types';
+import { planMatchesSelectedTags } from '@/src/utils/planTags';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useMemo, useState } from 'react';
@@ -39,7 +40,7 @@ const toPrivatePlanCardItem = (plan: GetMyDevotionalPlans[number]): PrivatePlanC
   rating_avg: 0,
   rating_count: 0,
   status: plan.status ?? null,
-  tags: [],
+  tags: plan.tags ?? [],
   title: plan.title ?? null,
   total_days: plan.total_days ?? 0,
   updated_at: plan.created_at ?? null,
@@ -47,10 +48,11 @@ const toPrivatePlanCardItem = (plan: GetMyDevotionalPlans[number]): PrivatePlanC
   visibility: plan.visibility ?? 'private',
 });
 
-export default function PrivatePlansList() {
+export default function PrivatePlansList({ selectedTags = [] }: { selectedTags?: string[] }) {
   const colorScheme = useColorScheme();
   const { sort, isGrid } = useAppStore();
   const { session } = useAuth();
+  const hasSelectedTags = !!session?.user?.id && selectedTags.length > 0;
   const myDevotionalPlansQuery = useMyDevotionalPlans(session?.user?.id);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -59,8 +61,9 @@ export default function PrivatePlansList() {
 
     return authoredPlans
       .filter((plan) => plan.visibility === 'private' && plan.status === 'published')
-      .map(toPrivatePlanCardItem);
-  }, [myDevotionalPlansQuery.data]);
+      .map(toPrivatePlanCardItem)
+      .filter((plan) => planMatchesSelectedTags(plan, selectedTags));
+  }, [myDevotionalPlansQuery.data, selectedTags]);
 
   const sortedPlans = useMemo(() => {
     if (sort === 'Trending') {
@@ -93,12 +96,18 @@ export default function PrivatePlansList() {
           />
         </View>
         <Text className="mb-2 text-center text-lg font-semibold text-gray-900 dark:text-white">
-          {session?.user?.id ? 'No invite-only plans yet' : 'Sign in to view invite-only plans'}
+          {hasSelectedTags
+            ? 'No invite-only plans match these tags'
+            : session?.user?.id
+              ? 'No invite-only plans yet'
+              : 'Sign in to view invite-only plans'}
         </Text>
         <Text className="text-center text-gray-600 dark:text-gray-400">
-          {session?.user?.id
-            ? 'Invite-only plans you publish will show up here so you can open and share them.'
-            : 'Your authored invite-only plans will appear here after you sign in.'}
+          {hasSelectedTags
+            ? 'Try another tag or clear the filter.'
+            : session?.user?.id
+              ? 'Invite-only plans you publish will show up here so you can open and share them.'
+              : 'Your authored invite-only plans will appear here after you sign in.'}
         </Text>
         {!session?.user?.id && (
           <TouchableOpacity

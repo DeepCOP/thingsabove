@@ -123,6 +123,62 @@ export type Database = {
         };
         Relationships: [];
       };
+      church_invite_links: {
+        Row: {
+          church_id: string;
+          created_at: string;
+          id: string;
+          invite_code: string;
+          invited_by: string;
+          updated_at: string;
+        };
+        Insert: {
+          church_id: string;
+          created_at?: string;
+          id?: string;
+          invite_code: string;
+          invited_by: string;
+          updated_at?: string;
+        };
+        Update: {
+          church_id?: string;
+          created_at?: string;
+          id?: string;
+          invite_code?: string;
+          invited_by?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'church_invite_links_church_id_fkey';
+            columns: ['church_id'];
+            isOneToOne: false;
+            referencedRelation: 'churches';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'church_invite_links_invited_by_fkey';
+            columns: ['invited_by'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'church_invite_links_invited_by_fkey';
+            columns: ['invited_by'];
+            isOneToOne: false;
+            referencedRelation: 'user_behavior_scored';
+            referencedColumns: ['user_id'];
+          },
+          {
+            foreignKeyName: 'church_invite_links_invited_by_fkey';
+            columns: ['invited_by'];
+            isOneToOne: false;
+            referencedRelation: 'user_behavior_snapshot';
+            referencedColumns: ['user_id'];
+          },
+        ];
+      };
       churches: {
         Row: {
           address: string | null;
@@ -673,6 +729,7 @@ export type Database = {
           created_at: string | null;
           created_by: string;
           id: string;
+          invite_code: string;
           max_members: number | null;
           plan_id: string;
           start_date: string;
@@ -682,6 +739,7 @@ export type Database = {
           created_at?: string | null;
           created_by: string;
           id?: string;
+          invite_code: string;
           max_members?: number | null;
           plan_id: string;
           start_date: string;
@@ -691,6 +749,7 @@ export type Database = {
           created_at?: string | null;
           created_by?: string;
           id?: string;
+          invite_code?: string;
           max_members?: number | null;
           plan_id?: string;
           start_date?: string;
@@ -1882,6 +1941,10 @@ export type Database = {
         Args: { p_address?: string; p_name?: string; p_website_url?: string };
         Returns: string;
       };
+      generate_plan_invite_code: {
+        Args: { p_length?: number };
+        Returns: string;
+      };
       get_church_analytics: { Args: { p_church_id: string }; Returns: Json };
       get_church_members: {
         Args: {
@@ -1964,6 +2027,7 @@ export type Database = {
           p_cursor_created_at?: string;
           p_cursor_id?: string;
           p_limit_count?: number;
+          p_tags?: string[];
         };
         Returns: {
           author_id: string;
@@ -1993,6 +2057,7 @@ export type Database = {
           helpful_count: number;
           id: string;
           status: string;
+          tags: string[];
           title: string;
           total_days: number;
           visibility: string;
@@ -2063,6 +2128,10 @@ export type Database = {
           visibility: string;
         }[];
       };
+      get_or_create_church_invite_code: {
+        Args: { p_church_id: string };
+        Returns: string;
+      };
       get_pending_friend_requests: {
         Args: never;
         Returns: {
@@ -2119,6 +2188,10 @@ export type Database = {
           status: string;
           user_id: string;
         }[];
+      };
+      get_plan_group_invite_code: {
+        Args: { p_group_id: string };
+        Returns: string;
       };
       get_plan_group_members: {
         Args: { p_group_id: string };
@@ -2307,6 +2380,7 @@ export type Database = {
           requester_id: string;
         }[];
       };
+      invite_code_exists: { Args: { p_invite_code: string }; Returns: boolean };
       is_accepted_group_member: {
         Args: { p_group_id: string };
         Returns: boolean;
@@ -2365,6 +2439,35 @@ export type Database = {
       resolve_ai_trigger_schedule: {
         Args: { p_day_offset: number; p_local_hour: number; p_timezone: string };
         Returns: string;
+      };
+      resolve_church_invite_code: {
+        Args: { p_invite_code: string };
+        Returns: {
+          church_id: string;
+          invite_code: string;
+          invited_by: string;
+        }[];
+      };
+      resolve_plan_group_invite_code: {
+        Args: { p_invite_code: string };
+        Returns: {
+          group_id: string;
+          invite_code: string;
+          invited_by: string;
+          plan_id: string;
+        }[];
+      };
+      resolve_plan_progress_day_number: {
+        Args: {
+          p_day_id: string;
+          p_group_id: string;
+          p_item_key?: string;
+          p_item_type?: string;
+          p_plan_id: string;
+          p_progress_id: string;
+          p_user_id: string;
+        };
+        Returns: number;
       };
       save_devotional_draft: {
         Args: { _days: Json; _plan_id: string };
@@ -2461,6 +2564,17 @@ export type Database = {
           submission_number: number;
           submitted_at: string;
         }[];
+      };
+      sync_plan_completion: {
+        Args: {
+          p_day_completed: boolean;
+          p_day_number: number;
+          p_group_id: string;
+          p_plan_id: string;
+          p_progress_id: string;
+          p_user_id: string;
+        };
+        Returns: undefined;
       };
       tags_include_reading: { Args: { tags: string[] }; Returns: boolean };
       tags_to_text: { Args: { tags: string[] }; Returns: string };

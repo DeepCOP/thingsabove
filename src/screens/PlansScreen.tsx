@@ -1,5 +1,6 @@
 import Dropdown from '@/src/components/DropDown';
 import { MyPlansToggle } from '@/src/components/MyPlansToggle';
+import PlanTagFilterChips from '@/src/components/PlanTagFilterChips';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { Text, TouchableOpacity, useColorScheme, View } from 'react-native';
@@ -14,12 +15,17 @@ type Props = {
   sort: 'Recent' | 'Trending';
   activeTab: 'my-plans' | 'private-plans' | 'saved-plans' | 'completed-plans' | 'find-plans';
   isAuthenticated: boolean;
+  tags: string[];
+  selectedTags: string[];
+  areTagsLoading?: boolean;
   notificationCount?: number;
   onToggleGrid: () => void;
   onChangeTab: (
     tab: 'my-plans' | 'private-plans' | 'saved-plans' | 'completed-plans' | 'find-plans',
   ) => void;
   onChangeSort: (sort: 'Recent' | 'Trending') => void;
+  onToggleTag: (tag: string) => void;
+  onClearTags: () => void;
   onSearch: () => void;
   onNotifications: () => void;
   onPrayerBoard: () => void;
@@ -32,10 +38,15 @@ export default function PlansScreen({
   sort,
   activeTab,
   isAuthenticated,
+  tags,
+  selectedTags,
+  areTagsLoading = false,
   notificationCount = 0,
   onToggleGrid,
   onChangeTab,
   onChangeSort,
+  onToggleTag,
+  onClearTags,
   onSearch,
   onNotifications,
   onPrayerBoard,
@@ -138,16 +149,25 @@ export default function PlansScreen({
         />
       </View>
 
+      <PlanTagFilterChips
+        tags={tags}
+        selectedTags={selectedTags}
+        isLoading={areTagsLoading}
+        onToggleTag={onToggleTag}
+        onClear={onClearTags}
+      />
+
       {activeTab === 'find-plans' ? (
-        <FindPlansList />
+        <FindPlansList selectedTags={selectedTags} />
       ) : activeTab === 'private-plans' ? (
-        <PrivatePlansList />
+        <PrivatePlansList selectedTags={selectedTags} />
       ) : activeTab === 'saved-plans' ? (
-        <SavedPlansList />
+        <SavedPlansList selectedTags={selectedTags} />
       ) : (
         <MyPlansList
           mode={activeTab === 'completed-plans' ? 'completed' : 'all'}
           showSaveButton={activeTab !== 'my-plans'}
+          selectedTags={selectedTags}
         />
       )}
 
