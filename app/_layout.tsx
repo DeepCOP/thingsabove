@@ -181,6 +181,7 @@ function RootLayoutContent() {
           name="church/[churchId]/invitation"
           options={{ title: 'Church Invitation' }}
         />
+        <Stack.Screen name="invite/[code]" options={{ title: 'Invitation' }} />
         <Stack.Protected guard={session == null}>
           <Stack.Screen name="(auth)" options={{ presentation: 'modal', headerShown: false }} />
           <Stack.Screen name="confirm-email" options={{ title: 'Confirm Email' }} />

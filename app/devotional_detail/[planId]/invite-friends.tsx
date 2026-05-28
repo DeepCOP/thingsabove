@@ -1,4 +1,5 @@
 import LoadingSpinner from '@/src/components/LoadingSpinner';
+import { fetchPlanGroupInviteCode } from '@/src/api/groupQueries';
 import { useCreatePlanGroup } from '@/src/hooks/useCreatePlanGroup';
 import { useFetchDevotionalPlanById } from '@/src/hooks/useDevotionalPlans';
 import { useFriends } from '@/src/hooks/useFriends';
@@ -29,6 +30,7 @@ export default function InviteFriends() {
   const router = useRouter();
   const [currentGroupId, setCurrentGroupId] = useState(groupId);
   const [currentProgressId, setCurrentProgressId] = useState(progressId);
+  const [currentInviteCode, setCurrentInviteCode] = useState<string>();
   const [isSharing, setIsSharing] = useState(false);
 
   const friendsQuery = useFriends(session!.user.id);
@@ -96,14 +98,27 @@ export default function InviteFriends() {
 
     setCurrentGroupId(progress.group_id);
     setCurrentProgressId(progress.id);
+    setCurrentInviteCode(undefined);
 
     return progress.group_id;
+  };
+
+  const ensureInviteCodeForShare = async (shareGroupId: string) => {
+    if (currentInviteCode) {
+      return currentInviteCode;
+    }
+
+    const inviteCode = await fetchPlanGroupInviteCode({ groupId: shareGroupId });
+    setCurrentInviteCode(inviteCode);
+
+    return inviteCode;
   };
 
   const handleShareInviteLink = async () => {
     try {
       setIsSharing(true);
       const shareGroupId = await ensureGroupForShare();
+      const inviteCode = await ensureInviteCodeForShare(shareGroupId);
       const inviterName = getInviterName(
         viewerProfileQuery.data?.first_name,
         viewerProfileQuery.data?.last_name,
@@ -114,6 +129,7 @@ export default function InviteFriends() {
           planId,
           groupId: shareGroupId,
           invitedBy: session?.user?.id,
+          inviteCode,
           inviterName,
           planTitle: planQuery.data?.title,
         }),

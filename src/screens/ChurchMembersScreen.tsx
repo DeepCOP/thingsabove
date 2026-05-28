@@ -1,5 +1,6 @@
 import LoadingSpinner from '@/src/components/LoadingSpinner';
 import ProfileIdentityRow from '@/src/components/ProfileIdentityRow';
+import { getOrCreateChurchInviteCode } from '@/src/api/churchQueries';
 import { useChurch } from '@/src/hooks/useChurch';
 import { useChurchAnalytics } from '@/src/hooks/useChurchAnalytics';
 import { useAcceptChurchInvite } from '@/src/hooks/useChurchInvitation';
@@ -39,6 +40,7 @@ export default function ChurchMembersScreen({ churchId }: Props) {
   const { session } = useAuth();
   const [query, setQuery] = useState('');
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isSharingInvite, setIsSharingInvite] = useState(false);
   const debouncedQuery = useDebounce(query.trim(), 300);
 
   const churchQuery = useChurch(churchId);
@@ -70,16 +72,27 @@ export default function ChurchMembersScreen({ churchId }: Props) {
   const handleInviteMembers = async () => {
     if (!isChurchMember || !church) return;
 
-    await Share.share({
-      message: buildChurchInvitationMessage({
-        church,
-        invitedBy: session?.user?.id,
-        inviterName: getInviterName(
-          viewerProfileQuery.data?.first_name,
-          viewerProfileQuery.data?.last_name,
-        ),
-      }),
-    });
+    try {
+      setIsSharingInvite(true);
+      const inviteCode = await getOrCreateChurchInviteCode({ churchId });
+
+      await Share.share({
+        message: buildChurchInvitationMessage({
+          church,
+          invitedBy: session?.user?.id,
+          inviteCode,
+          inviterName: getInviterName(
+            viewerProfileQuery.data?.first_name,
+            viewerProfileQuery.data?.last_name,
+          ),
+        }),
+      });
+    } catch (error) {
+      console.error('Error sharing church invitation:', error);
+      Alert.alert('Unable to share invite link', 'Please try again.');
+    } finally {
+      setIsSharingInvite(false);
+    }
   };
 
   const joinChurch = () => {
@@ -264,9 +277,10 @@ export default function ChurchMembersScreen({ churchId }: Props) {
               isChurchMember ? (
                 <TouchableOpacity
                   className="rounded-full bg-black py-4 dark:bg-white"
+                  disabled={isSharingInvite}
                   onPress={handleInviteMembers}>
                   <Text className="text-center text-base font-semibold text-white dark:text-black">
-                    Share Invite Link
+                    {isSharingInvite ? 'Preparing invite...' : 'Share Invite Link'}
                   </Text>
                 </TouchableOpacity>
               ) : (

@@ -12,6 +12,7 @@ const androidAppLinkPaths = [
   '/church',
   '/confirm-email',
   '/devotional_detail',
+  '/invite',
   '/notifications',
   '/plan_progress',
   '/prayer',

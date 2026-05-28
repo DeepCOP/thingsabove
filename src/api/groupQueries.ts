@@ -48,6 +48,52 @@ export type PlanGroupInvitationMember = {
   };
 };
 
+export type PlanGroupInviteRedirect = {
+  invite_code: string;
+  group_id: string;
+  plan_id: string;
+  invited_by: string;
+};
+
+export const fetchPlanGroupInviteCode = async ({ groupId }: { groupId: string }) => {
+  const { data, error } = await (supabase as any).rpc('get_plan_group_invite_code', {
+    p_group_id: groupId,
+  });
+
+  if (error) {
+    throw error;
+  }
+
+  if (!data) {
+    throw new Error('Invite code not found');
+  }
+
+  return data as string;
+};
+
+export const resolvePlanGroupInviteCode = async ({ code }: { code: string }) => {
+  const { data, error } = await (supabase as any)
+    .rpc('resolve_plan_group_invite_code', {
+      p_invite_code: code,
+    })
+    .maybeSingle();
+
+  if (error) {
+    throw error;
+  }
+
+  if (!data) {
+    return null;
+  }
+
+  return {
+    invite_code: data.invite_code,
+    group_id: data.group_id,
+    plan_id: data.plan_id,
+    invited_by: data.invited_by,
+  } satisfies PlanGroupInviteRedirect;
+};
+
 export const fetchPlanGroupInvitation = async ({ groupId }: { groupId: string }) => {
   const { data, error } = await (supabase as any)
     .rpc('get_plan_group_invitation', {

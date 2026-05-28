@@ -28,10 +28,16 @@ export const buildChurchShareUrl = (churchId: string) => {
 export const buildChurchInvitationUrl = ({
   churchId,
   invitedBy,
+  inviteCode,
 }: {
   churchId: string;
   invitedBy?: string;
+  inviteCode?: string;
 }) => {
+  if (inviteCode?.trim()) {
+    return buildUrl(`/invite/${encodeURIComponent(inviteCode.trim())}`);
+  }
+
   return buildUrl(`/church/${churchId}/invitation`, {
     invitedBy,
   });
@@ -55,14 +61,17 @@ export const buildChurchInvitationMessage = ({
   church,
   invitedBy,
   inviterName,
+  inviteCode,
 }: {
   church: Church;
   invitedBy?: string;
   inviterName?: string;
+  inviteCode?: string;
 }) => {
   const invitationUrl = buildChurchInvitationUrl({
     churchId: church.id,
     invitedBy,
+    inviteCode,
   });
 
   const lines = [
