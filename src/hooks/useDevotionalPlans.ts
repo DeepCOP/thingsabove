@@ -51,8 +51,8 @@ export const usePlanTags = () => {
 export const usePlans = (selectedTags: string[] = []) => {
   const normalizedSelectedTags = useMemo(
     () =>
-      Array.from(new Set(selectedTags.map((tag) => tag.trim()).filter(Boolean))).sort((a, b) =>
-        a.localeCompare(b),
+      Array.from(new Set(selectedTags.map((tag) => tag.trim().toLowerCase()).filter(Boolean))).sort(
+        (a, b) => a.localeCompare(b),
       ),
     [selectedTags],
   );

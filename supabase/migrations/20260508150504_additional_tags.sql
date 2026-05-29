@@ -5,23 +5,23 @@ immutable
 set search_path = pg_catalog, public
 as $$
   select array[
-    'Prayer',
-    'Faith',
-    'Hope',
-    'Healing',
-    'Gratitude',
-    'Peace',
-    'Wisdom',
-    'Discipleship',
-    'Family',
-    'Leadership',
-    'Knowledge',
-    'Virtue',
-    'Fellowship',
-    'Obedience',
-    'Walking',
-    'Covenants',
-    'Reading'
+    'prayer',
+    'faith',
+    'hope',
+    'healing',
+    'gratitude',
+    'peace',
+    'wisdom',
+    'discipleship',
+    'family',
+    'leadership',
+    'knowledge',
+    'virtue',
+    'fellowship',
+    'obedience',
+    'walking',
+    'covenants',
+    'reading'
   ]::text[];
 $$;
 
