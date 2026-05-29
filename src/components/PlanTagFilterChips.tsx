@@ -1,4 +1,3 @@
-import { Ionicons } from '@expo/vector-icons';
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
 type Props = {
@@ -54,20 +53,16 @@ export default function PlanTagFilterChips({
                   key={tag}
                   onPress={() => onToggleTag(tag)}
                   className={`mr-2 h-9 flex-row items-center rounded-full px-4 ${
-                    isSelected ? 'bg-black dark:bg-white' : 'bg-white dark:bg-neutral-900'
+                    isSelected
+                      ? 'bg-emerald-600 dark:bg-emerald-400'
+                      : 'bg-white dark:bg-neutral-900'
                   }`}>
-                  {isSelected && (
-                    <Ionicons
-                      name="checkmark"
-                      size={14}
-                      color="#16a34a"
-                      style={{ marginRight: 5 }}
-                    />
-                  )}
                   <Text
                     numberOfLines={1}
                     className={`text-sm font-semibold ${
-                      isSelected ? 'text-white dark:text-black' : 'text-gray-700 dark:text-gray-200'
+                      isSelected
+                        ? 'text-white dark:text-emerald-950'
+                        : 'text-gray-700 dark:text-gray-200'
                     }`}>
                     {tag}
                   </Text>

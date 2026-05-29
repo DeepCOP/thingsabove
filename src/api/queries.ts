@@ -61,7 +61,6 @@ export const fetchPlans = async ({
 }) => {
   const PAGE_SIZE = 10;
   const { created_at, id } = pageParam ?? {};
-  console.log(tags);
   const { data, error } = await supabase.rpc('get_discover_plans', {
     p_limit_count: PAGE_SIZE,
     p_cursor_created_at: created_at ?? undefined,
