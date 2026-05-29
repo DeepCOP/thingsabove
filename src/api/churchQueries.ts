@@ -65,14 +65,8 @@ export const fetchChurchAnalytics = async (churchId: string): Promise<ChurchAnal
   return (data ?? emptyAnalytics) as ChurchAnalytics;
 };
 
-export type ChurchInviteRedirect = {
-  invite_code: string;
-  church_id: string;
-  invited_by: string;
-};
-
 export const getOrCreateChurchInviteCode = async ({ churchId }: { churchId: string }) => {
-  const { data, error } = await (supabase as any).rpc('get_or_create_church_invite_code', {
+  const { data, error } = await supabase.rpc('get_or_create_church_invite_code', {
     p_church_id: churchId,
   });
 
@@ -85,26 +79,4 @@ export const getOrCreateChurchInviteCode = async ({ churchId }: { churchId: stri
   }
 
   return data as string;
-};
-
-export const resolveChurchInviteCode = async ({ code }: { code: string }) => {
-  const { data, error } = await (supabase as any)
-    .rpc('resolve_church_invite_code', {
-      p_invite_code: code,
-    })
-    .maybeSingle();
-
-  if (error) {
-    throw error;
-  }
-
-  if (!data) {
-    return null;
-  }
-
-  return {
-    invite_code: data.invite_code,
-    church_id: data.church_id,
-    invited_by: data.invited_by,
-  } satisfies ChurchInviteRedirect;
 };

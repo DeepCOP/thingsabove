@@ -1,7 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import {
   fetchPlanGroupByGroupId,
-  resolvePlanGroupInviteCode,
   fetchPlanGroupInvitation,
   fetchPlanGroupInvitationMembers,
   fetchPlanGroupMembers,
@@ -38,13 +37,5 @@ export function usePlanGroupInvitationMembers(groupId: string) {
     enabled: !!groupId,
     staleTime: 1000 * 60 * 30,
     queryFn: async () => await fetchPlanGroupInvitationMembers({ groupId }),
-  });
-}
-
-export function usePlanGroupInviteRedirect(code: string) {
-  return useQuery({
-    queryKey: ['plan_group_invite_redirect', code],
-    enabled: !!code,
-    queryFn: async () => await resolvePlanGroupInviteCode({ code }),
   });
 }

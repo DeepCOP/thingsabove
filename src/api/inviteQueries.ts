@@ -1,5 +1,4 @@
-import { resolveChurchInviteCode } from './churchQueries';
-import { resolvePlanGroupInviteCode } from './groupQueries';
+import { supabase } from '../lib/supabaseClient';
 
 export type InviteRedirect =
   | {
@@ -21,23 +20,38 @@ export const resolveInviteCode = async ({
 }: {
   code: string;
 }): Promise<InviteRedirect | null> => {
-  const planGroupInvite = await resolvePlanGroupInviteCode({ code });
+  const { data, error } = await supabase
+    .rpc('resolve_invite_code', {
+      p_invite_code: code,
+    })
+    .maybeSingle();
 
-  if (planGroupInvite) {
+  if (error) {
+    throw error;
+  }
+
+  if (!data) {
+    return null;
+  }
+
+  if (data.invite_type === 'plan_group' && data.group_id && data.plan_id) {
     return {
       type: 'plan_group',
-      ...planGroupInvite,
+      invite_code: data.invite_code,
+      group_id: data.group_id,
+      plan_id: data.plan_id,
+      invited_by: data.invited_by,
     };
   }
 
-  const churchInvite = await resolveChurchInviteCode({ code });
-
-  if (churchInvite) {
+  if (data.invite_type === 'church' && data.church_id) {
     return {
       type: 'church',
-      ...churchInvite,
+      invite_code: data.invite_code,
+      church_id: data.church_id,
+      invited_by: data.invited_by,
     };
   }
 
-  return null;
+  throw new Error('Resolved invite is missing details');
 };
