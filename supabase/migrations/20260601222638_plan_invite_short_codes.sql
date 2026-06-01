@@ -46,6 +46,14 @@ begin
       raise exception 'Invite code must be 6-32 lowercase letters or numbers';
     end if;
 
+    if exists (
+      select 1
+      from public.church_invite_links cil
+      where cil.invite_code = new.invite_code
+    ) then
+      raise exception 'Invite code already exists';
+    end if;
+
     return new;
   end if;
 
@@ -57,6 +65,11 @@ begin
       from public.plan_groups pg
       where pg.invite_code = new.invite_code
         and pg.id is distinct from new.id
+    )
+    and not exists (
+      select 1
+      from public.church_invite_links cil
+      where cil.invite_code = new.invite_code
     );
   end loop;
 
@@ -65,6 +78,11 @@ begin
     from public.plan_groups pg
     where pg.invite_code = new.invite_code
       and pg.id is distinct from new.id
+  )
+  or exists (
+    select 1
+    from public.church_invite_links cil
+    where cil.invite_code = new.invite_code
   ) then
     raise exception 'Unable to generate a unique invite code';
   end if;
@@ -72,6 +90,7 @@ begin
   return new;
 end;
 $$;
+
 
 drop trigger if exists set_plan_group_invite_code on public.plan_groups;
 create trigger set_plan_group_invite_code
@@ -117,28 +136,7 @@ as $$
   limit 1;
 $$;
 
-create or replace function public.resolve_plan_group_invite_code(p_invite_code text)
-returns table(
-  invite_code text,
-  group_id uuid,
-  plan_id uuid,
-  invited_by uuid
-)
-language sql
-security definer
-set search_path = pg_catalog, public
-as $$
-  select
-    pg.invite_code,
-    pg.id as group_id,
-    pg.plan_id,
-    pg.created_by as invited_by
-  from public.plan_groups pg
-  join public.devotional_plans dp
-    on dp.id = pg.plan_id
-  where pg.invite_code = lower(btrim(p_invite_code))
-    and dp.status = 'published';
-$$;
+
 
 create or replace function public.create_plan_group(
   p_user_id uuid,
@@ -183,6 +181,8 @@ begin
 
   for v_attempt in 1..12 loop
     v_invite_code := public.generate_plan_invite_code();
+
+    continue when public.invite_code_exists(v_invite_code);
 
     begin
       insert into public.plan_groups (
