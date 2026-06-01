@@ -58,7 +58,7 @@ export default function PlanTagFilterChips({
 
   return (
     <View
-      className={`${containerClassName} rounded-full bg-gray-800 p-1 `}
+      className={`${containerClassName} rounded-full  p-1 `}
       onLayout={(event) => setContainerWidth(event.nativeEvent.layout.width)}>
       <ScrollView
         ref={scrollViewRef}
