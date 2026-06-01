@@ -141,21 +141,22 @@ export default function PlansScreen({
       <MyPlansToggle activeTab={activeTab} onChange={onChangeTab} />
 
       <View className="mb-3 flex-row items-center">
-        <Text className="mr-2 text-gray-700 dark:text-gray-200">Sort by:</Text>
-        <Dropdown
-          value={sort}
-          onChange={(v) => onChangeSort(v as 'Recent' | 'Trending')}
-          options={['Recent', 'Trending']}
+        <View className="mr-2 shrink-0 flex-row items-center">
+          <Dropdown
+            onChange={(v) => onChangeSort(v as 'Recent' | 'Trending')}
+            options={['Recent', 'Trending']}
+          />
+        </View>
+
+        <PlanTagFilterChips
+          tags={tags}
+          selectedTags={selectedTags}
+          isLoading={areTagsLoading}
+          containerClassName="flex-1"
+          onToggleTag={onToggleTag}
+          onClear={onClearTags}
         />
       </View>
-
-      <PlanTagFilterChips
-        tags={tags}
-        selectedTags={selectedTags}
-        isLoading={areTagsLoading}
-        onToggleTag={onToggleTag}
-        onClear={onClearTags}
-      />
 
       {activeTab === 'find-plans' ? (
         <FindPlansList selectedTags={selectedTags} />

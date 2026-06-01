@@ -130,6 +130,7 @@ export default function PrivatePlansList({ selectedTags = [] }: { selectedTags?:
 
   return (
     <FlatList
+      className="flex-1"
       showsVerticalScrollIndicator={false}
       data={sortedPlans}
       keyExtractor={(item, index) => item.id ?? `private-plan-${index}`}
@@ -138,7 +139,11 @@ export default function PrivatePlansList({ selectedTags = [] }: { selectedTags?:
       key={isGrid ? 'grid' : 'list'}
       numColumns={isGrid ? 2 : 1}
       columnWrapperStyle={isGrid ? { gap: 12 } : undefined}
-      contentContainerStyle={{ paddingBottom: 40 }}
+      contentContainerStyle={{
+        flexGrow: 1,
+        justifyContent: sortedPlans.length === 0 ? 'center' : undefined,
+        paddingBottom: 40,
+      }}
       renderItem={({ item }) =>
         isGrid ? (
           <GridCard
