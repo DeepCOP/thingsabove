@@ -1,13 +1,11 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
-import { Modal, TouchableOpacity, View, Text } from 'react-native';
+import { Modal, Text, TouchableOpacity, View } from 'react-native';
 
 export default function Dropdown({
-  value,
   onChange,
   options,
 }: {
-  value: string;
   onChange: (v: string) => void;
   options: string[];
 }) {
@@ -19,8 +17,8 @@ export default function Dropdown({
       <TouchableOpacity
         onPress={() => setOpen(true)}
         className="flex-row items-center bg-white dark:bg-neutral-900 px-3 py-2 rounded-full shadow">
-        <Text className="text-gray-800 dark:text-gray-200 mr-2">{value}</Text>
-        <Ionicons name="chevron-down" size={16} color="#555" />
+        <Text className="text-gray-800 dark:text-gray-200 mr-2">Sort</Text>
+        <Ionicons name="swap-vertical" size={18} color="#555" />
       </TouchableOpacity>
 
       {/* Dropdown Menu */}

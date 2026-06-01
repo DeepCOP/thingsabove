@@ -9,8 +9,8 @@ import { router } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { FlatList, Text, useColorScheme, View } from 'react-native';
 
-export default function FindPlansList() {
-  const { plansQuery } = usePlans();
+export default function FindPlansList({ selectedTags = [] }: { selectedTags?: string[] }) {
+  const { plansQuery } = usePlans(selectedTags);
   const colorScheme = useColorScheme();
   const { session } = useAuth();
   const { sort, isGrid } = useAppStore();
@@ -82,10 +82,12 @@ export default function FindPlansList() {
             />
           </View>
           <Text className="text-lg font-semibold text-gray-900 dark:text-white mb-2 text-center">
-            No plans found
+            {selectedTags.length ? 'No plans match these tags' : 'No plans found'}
           </Text>
           <Text className="text-center text-gray-600 dark:text-gray-400">
-            Try searching for a topic or check back later.
+            {selectedTags.length
+              ? 'Try another tag or clear the filter.'
+              : 'Try searching for a topic or check back later.'}
           </Text>
         </View>
       </View>
@@ -93,6 +95,7 @@ export default function FindPlansList() {
   };
   return (
     <FlatList
+      className="flex-1"
       showsVerticalScrollIndicator={false}
       data={sortedPlans}
       keyExtractor={(item) => item.id!}
@@ -101,7 +104,11 @@ export default function FindPlansList() {
       key={isGrid ? 'grid' : 'list'}
       numColumns={isGrid ? 2 : 1}
       columnWrapperStyle={isGrid ? { gap: 12 } : undefined}
-      contentContainerStyle={{ paddingBottom: 40 }}
+      contentContainerStyle={{
+        flexGrow: 1,
+        justifyContent: sortedPlans.length === 0 ? 'center' : undefined,
+        paddingBottom: 40,
+      }}
       renderItem={({ item }) => {
         const planId = item.id as string | null;
         const isSaved = !!planId && savedPlanIds.includes(planId);

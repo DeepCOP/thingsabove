@@ -17,8 +17,8 @@ export function useThemePreference() {
   const resolvedTheme: 'light' | 'dark' =
     theme === 'system' ? (systemColorScheme === 'dark' ? 'dark' : 'light') : theme;
   useEffect(() => {
-    colorScheme.setColorScheme(theme);
-  }, [theme, colorScheme]);
+    colorScheme.setColorScheme(resolvedTheme);
+  }, [resolvedTheme, colorScheme]);
 
   return {
     resolvedTheme,

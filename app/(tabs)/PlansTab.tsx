@@ -1,4 +1,5 @@
 import { useNotifications } from '@/src/hooks/useNotifications';
+import { usePlanTags } from '@/src/hooks/useDevotionalPlans';
 import { useMyPlanProgressPlans } from '@/src/hooks/usePlanProgress';
 import PlansScreen from '@/src/screens/PlansScreen';
 import { useAuth } from '@/src/state/AuthContext';
@@ -25,9 +26,11 @@ export default function PlansTab() {
   const requestedSection = Array.isArray(section) ? section[0] : section;
   const userId = session?.user?.id;
   const [activeTab, setActiveTab] = useState<PlansTabKey>('find-plans');
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const hasUserSelectedTabRef = useRef(false);
   const previousUserIdRef = useRef<string | undefined>(undefined);
   const { notificationsCountQuery } = useNotifications(userId);
+  const planTagsQuery = usePlanTags();
   const myPlanProgressPlansQuery = useMyPlanProgressPlans(userId);
 
   const { sort, setSort, isGrid, setIsGrid } = useAppStore();
@@ -59,11 +62,19 @@ export default function PlansTab() {
     if (hasActivePlanProgress) {
       setActiveTab('my-plans');
     }
-  }, [activeTab, myPlanProgressPlansQuery.data, userId]);
+  }, [activeTab, myPlanProgressPlansQuery.data, myPlanProgressPlansQuery.isSuccess, userId]);
 
   const handleChangeTab = (tab: PlansTabKey) => {
     hasUserSelectedTabRef.current = true;
     setActiveTab(tab);
+  };
+
+  const handleToggleTag = (tag: string) => {
+    setSelectedTags((currentTags) =>
+      currentTags.includes(tag)
+        ? currentTags.filter((currentTag) => currentTag !== tag)
+        : [...currentTags, tag],
+    );
   };
 
   return (
@@ -72,9 +83,14 @@ export default function PlansTab() {
       sort={sort}
       activeTab={activeTab}
       isAuthenticated={!!session}
+      tags={planTagsQuery.data ?? []}
+      selectedTags={selectedTags}
+      areTagsLoading={planTagsQuery.isLoading}
       onToggleGrid={() => setIsGrid(!isGrid)}
       onChangeTab={handleChangeTab}
       onChangeSort={setSort}
+      onToggleTag={handleToggleTag}
+      onClearTags={() => setSelectedTags([])}
       onSearch={() => router.push('/search/devotionals')}
       onNotifications={() => router.push('/notifications')}
       onPrayerBoard={() =>
