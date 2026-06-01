@@ -74,15 +74,14 @@ export default function PlanProgressScreen({
   const openedCommentsKeyRef = useRef<string | undefined>(undefined);
   const isFocused = useIsFocused();
   const isGroupPlan = Boolean(planProgress.group_id);
+  const commentLabel = isGroupPlan ? 'Reflect & Share' : 'Notes';
   const openComments = useCallback(() => {
-    if (!isGroupPlan) return false;
-
     const commentsSheet = commentsSheetRef.current;
     if (!commentsSheet) return false;
 
     commentsSheet.expand();
     return true;
-  }, [isGroupPlan]);
+  }, []);
   const commentItem = items?.find((item) => item.item_type === 'comment');
 
   const handleCommentsDone = () => {
@@ -96,12 +95,7 @@ export default function PlanProgressScreen({
   };
 
   useEffect(() => {
-    if (
-      !isGroupPlan ||
-      !isFocused ||
-      !openCommentsKey ||
-      openedCommentsKeyRef.current === openCommentsKey
-    ) {
+    if (!isFocused || !openCommentsKey || openedCommentsKeyRef.current === openCommentsKey) {
       return;
     }
 
@@ -133,7 +127,7 @@ export default function PlanProgressScreen({
         cancelAnimationFrame(animationFrame);
       }
     };
-  }, [isFocused, isGroupPlan, onOpenCommentsConsumed, openComments, openCommentsKey]);
+  }, [isFocused, onOpenCommentsConsumed, openComments, openCommentsKey]);
 
   return (
     <>
@@ -182,11 +176,10 @@ export default function PlanProgressScreen({
         ) : items ? (
           <DayItemsList
             items={items}
+            commentLabel={commentLabel}
             onPressItem={(item) => {
               if (item.item_type === 'comment') {
-                if (isGroupPlan) {
-                  openComments();
-                }
+                openComments();
                 return;
               }
 
@@ -208,16 +201,22 @@ export default function PlanProgressScreen({
         onPress={() => devotionalItem && onPressItem(devotionalItem)}
       />
 
-      {isGroupPlan && (
-        <DayCommentsSection
-          ref={commentsSheetRef}
-          planId={planProgress.plan_id || ''}
-          dayId={selectedDayData?.id || ''}
-          group_id={planProgress.group_id || ''}
-          isDoneLoading={toggleLoading}
-          onDone={handleCommentsDone}
-        />
-      )}
+      <DayCommentsSection
+        ref={commentsSheetRef}
+        planId={planProgress.plan_id || ''}
+        dayId={selectedDayData?.id || ''}
+        group_id={planProgress.group_id || undefined}
+        isDoneLoading={toggleLoading}
+        title={commentLabel}
+        entryLabel={isGroupPlan ? 'comment' : 'note'}
+        inputPlaceholder={isGroupPlan ? 'Share your thoughts...' : 'Write a note...'}
+        emptyMessage={
+          isGroupPlan
+            ? "Share your thoughts based on today's reading."
+            : "Add a note based on today's reading."
+        }
+        onDone={handleCommentsDone}
+      />
     </>
   );
 }
