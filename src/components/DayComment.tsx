@@ -22,6 +22,11 @@ type Props = {
   dayId: string;
   group_id?: string;
   isDoneLoading?: boolean;
+  title?: string;
+  entryLabel?: string;
+  inputPlaceholder?: string;
+  emptyMessage?: string;
+  doneAccessibilityLabel?: string;
   onDone?: () => void;
 };
 
@@ -34,6 +39,8 @@ type DayCommentsFooterContextValue = {
   onSubmit: () => void;
   setText: (value: string) => void;
   text: string;
+  inputPlaceholder: string;
+  entryLabel: string;
 };
 
 const DayCommentsFooterContext = createContext<DayCommentsFooterContextValue | null>(null);
@@ -56,6 +63,8 @@ const DayCommentsFooter = memo(function DayCommentsFooter({
     onSubmit,
     setText,
     text,
+    inputPlaceholder,
+    entryLabel,
   } = context;
 
   return (
@@ -68,7 +77,7 @@ const DayCommentsFooter = memo(function DayCommentsFooter({
       <View className="border-t border-gray-200 px-4 pt-2 dark:border-neutral-800 dark:bg-black">
         {editingCommentId && (
           <View className="mb-3 flex-row items-center justify-between">
-            <Text className="text-sm text-gray-600 dark:text-gray-300">Editing comment</Text>
+            <Text className="text-sm text-gray-600 dark:text-gray-300">Editing {entryLabel}</Text>
 
             <TouchableOpacity onPress={onCancel}>
               <Text className="text-sm font-medium text-gray-800 dark:text-gray-200">Cancel</Text>
@@ -80,7 +89,7 @@ const DayCommentsFooter = memo(function DayCommentsFooter({
           <BottomSheetTextInput
             value={text}
             onChangeText={setText}
-            placeholder="Share your thoughts..."
+            placeholder={inputPlaceholder}
             placeholderTextColor="#999"
             className="flex-1 rounded-full bg-gray-200 px-4 py-3 dark:bg-neutral-800 dark:text-white"
           />
@@ -104,7 +113,21 @@ const DayCommentsFooter = memo(function DayCommentsFooter({
 });
 
 const DayCommentsBottomSheet = forwardRef<BottomSheet, Props>(
-  ({ planId, dayId, group_id, isDoneLoading = false, onDone }, ref) => {
+  (
+    {
+      planId,
+      dayId,
+      group_id,
+      isDoneLoading = false,
+      title = 'Reflect & Share',
+      entryLabel = 'comment',
+      inputPlaceholder = 'Share your thoughts...',
+      emptyMessage = "Share your thoughts based on today's reading.",
+      doneAccessibilityLabel,
+      onDone,
+    },
+    ref,
+  ) => {
     const snapPoints = useMemo(() => ['80%'], []);
     const EditingComposerInset = 160;
     const DefaultComposerInset = 116;
@@ -151,7 +174,7 @@ const DayCommentsBottomSheet = forwardRef<BottomSheet, Props>(
     }, [addComment, editingCommentId, isSubmitting, resetComposer, text, updateComment]);
 
     const handleDelete = (comment: PlanDayComment) => {
-      Alert.alert('Delete comment?', 'This will permanently remove your comment.', [
+      Alert.alert(`Delete ${entryLabel}?`, `This will permanently remove your ${entryLabel}.`, [
         { text: 'Cancel', style: 'cancel' },
         {
           text: 'Delete',
@@ -183,11 +206,15 @@ const DayCommentsBottomSheet = forwardRef<BottomSheet, Props>(
         onSubmit: handleSubmit,
         setText,
         text,
+        inputPlaceholder,
+        entryLabel,
       }),
       [
         colorScheme,
         editingCommentId,
+        entryLabel,
         handleSubmit,
+        inputPlaceholder,
         insets.bottom,
         isSubmitting,
         resetComposer,
@@ -233,12 +260,12 @@ const DayCommentsBottomSheet = forwardRef<BottomSheet, Props>(
                 <View className="w-16" />
 
                 <Text className="flex-1 text-center text-xl font-bold text-gray-800 dark:text-gray-200">
-                  Share your thoughts...
+                  {title}
                 </Text>
 
                 <TouchableOpacity
                   accessibilityRole="button"
-                  accessibilityLabel="Mark Reflect and Share complete"
+                  accessibilityLabel={doneAccessibilityLabel ?? `Mark ${title} complete`}
                   disabled={!canMarkDone || isDoneLoading || isSubmitting}
                   onPress={handleDone}
                   className={`min-w-16 rounded-full px-3 py-2 ${
@@ -260,9 +287,7 @@ const DayCommentsBottomSheet = forwardRef<BottomSheet, Props>(
             ListEmptyComponent={
               <View className="flex-1 items-center justify-center px-6">
                 <Ionicons name="book" size={60} color="#808080" />
-                <Text className="text-gray-800 dark:text-gray-200">
-                  Share your thoughts based on today&apos;s reading.
-                </Text>
+                <Text className="text-gray-800 dark:text-gray-200">{emptyMessage}</Text>
               </View>
             }
             renderItem={({ item }: { item: PlanDayComment }) => {
