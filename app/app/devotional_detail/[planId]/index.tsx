@@ -1,5 +1,5 @@
 import { useFetchDevotionalPlanById } from '@/src/hooks/useDevotionalPlans';
-import { useMyPlanProgressPlans, useStartPlanProgress } from '@/src/hooks/usePlanProgress';
+import { useMyPlanProgressPlans } from '@/src/hooks/usePlanProgress';
 import { useSavedPlans, useToggleSavedPlan } from '@/src/hooks/useSavedPlans';
 import DevotionalDetailScreen from '@/src/screens/DevotionalDetailScreen';
 import { useAuth } from '@/src/state/AuthContext';
@@ -8,7 +8,7 @@ import { useMemo, useRef } from 'react';
 
 import { useTogglePlanReaction } from '@/src/hooks/usePlanReactions';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
-import { Alert, Platform, useColorScheme } from 'react-native';
+import { Platform, useColorScheme } from 'react-native';
 
 export default function DevotionalDetail() {
   const { planId } = useLocalSearchParams<{ planId: string }>();
@@ -28,7 +28,6 @@ export default function DevotionalDetail() {
 
   const router = useRouter();
   const colorScheme = useColorScheme();
-  const startPlanProgressMutation = useStartPlanProgress();
   const myPlanProgressPlansQuery = useMyPlanProgressPlans(session?.user.id);
   const planQuery = useFetchDevotionalPlanById(planId);
   const plan = planQuery.data;
@@ -95,11 +94,9 @@ export default function DevotionalDetail() {
         plan={planQuery.data}
         reportSheetRef={reportSheetRef}
         isLoading={planQuery.isLoading || myPlanProgressPlansQuery.isLoading}
-        hasActiveSoloPlanProgress={!!currentSoloPlanProgress?.progress_id}
         hasActivePlanProgress={!!currentActivePlanProgress?.progress_id}
         canStartPlan={!!canStartPlan}
         isPrivatePlan={!!isPrivatePlan}
-        isStartingSoloPlan={startPlanProgressMutation.isPending}
         onContinuePress={() => {
           if (!currentActivePlanProgress?.progress_id) return;
 
