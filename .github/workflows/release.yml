@@ -5,6 +5,9 @@ on:
     tags:
       - '*'
 
+env:
+  IS_BETA: ${{ contains(github.ref_name, 'beta') }}
+
 jobs:
   build_android:
     runs-on: ubuntu-latest
@@ -17,7 +20,7 @@ jobs:
         with:
           expo-token: ${{ secrets.EXPO_TOKEN }}
           platform: android
-          eas-profile: beta
+          eas-profile: ${{ env.IS_BETA == 'true' && 'beta' || 'production' }}
 
   build_ios:
     runs-on: ubuntu-latest
@@ -30,7 +33,7 @@ jobs:
         with:
           expo-token: ${{ secrets.EXPO_TOKEN }}
           platform: ios
-          eas-profile: beta
+          eas-profile: ${{ env.IS_BETA == 'true' && 'beta' || 'production' }}
 
   create_release:
     runs-on: ubuntu-latest
@@ -47,12 +50,11 @@ jobs:
           tag_name: ${{ github.ref_name }}
           name: Release ${{ env.APP_VERSION }}
           body: |
-            iOS Beta Build (TestFlight)
-            - [Install via TestFlight](https://testflight.apple.com/join/j6Qs882p)
+            ${{ env.IS_BETA == 'true' && 'iOS Beta Build (TestFlight)' || 'iOS Production Build (App Store)' }}
+            ${{ env.IS_BETA == 'true' && '- [Install via TestFlight](https://testflight.apple.com/join/j6Qs882p)' || '- [Download on the App Store](https://apps.apple.com/app/id6759932294)' }}
 
-            Android Beta Build
-            - [Install via Google Play Testing](https://play.google.com/apps/testing/life.thingsabove)
-
+            ${{ env.IS_BETA == 'true' && 'Android Beta Build' || 'Android Production Build' }}
+            ${{ env.IS_BETA == 'true' && '- [Install via Google Play Testing](https://play.google.com/apps/testing/life.thingsabove)' || '- [Get it on Google Play](https://play.google.com/store/apps/details?id=life.thingsabove)' }}
           generate_release_notes: true
           draft: false
-          prerelease: false
+          prerelease: ${{ env.IS_BETA == 'true' && 'true' || 'false' }}
