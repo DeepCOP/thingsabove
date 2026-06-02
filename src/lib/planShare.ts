@@ -24,11 +24,17 @@ export const buildPlanInvitationUrl = ({
   planId,
   groupId,
   invitedBy,
+  inviteCode,
 }: {
   planId: string;
   groupId: string;
   invitedBy?: string;
+  inviteCode?: string;
 }) => {
+  if (inviteCode?.trim()) {
+    return buildUrl(`/invite/${encodeURIComponent(inviteCode.trim())}`);
+  }
+
   return buildUrl(`/devotional_detail/${planId}/invite`, {
     groupId,
     invitedBy,
@@ -40,18 +46,21 @@ export const buildPlanInvitationMessage = ({
   groupId,
   invitedBy,
   inviterName,
+  inviteCode,
   planTitle,
 }: {
   planId: string;
   groupId: string;
   invitedBy?: string;
   inviterName?: string;
+  inviteCode?: string;
   planTitle?: string | null;
 }) => {
   const invitationUrl = buildPlanInvitationUrl({
     planId,
     groupId,
     invitedBy,
+    inviteCode,
   });
   const formattedPlanTitle = planTitle?.trim() ? `"${planTitle.trim()}"` : 'this devotional plan';
 

@@ -48,8 +48,24 @@ export type PlanGroupInvitationMember = {
   };
 };
 
+export const fetchPlanGroupInviteCode = async ({ groupId }: { groupId: string }) => {
+  const { data, error } = await supabase.rpc('get_plan_group_invite_code', {
+    p_group_id: groupId,
+  });
+
+  if (error) {
+    throw error;
+  }
+
+  if (!data) {
+    throw new Error('Invite code not found');
+  }
+
+  return data as string;
+};
+
 export const fetchPlanGroupInvitation = async ({ groupId }: { groupId: string }) => {
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .rpc('get_plan_group_invitation', {
       p_group_id: groupId,
     })
@@ -85,7 +101,7 @@ export const fetchPlanGroupInvitation = async ({ groupId }: { groupId: string })
 };
 
 export const fetchPlanGroupInvitationMembers = async ({ groupId }: { groupId: string }) => {
-  const { data, error } = await (supabase as any).rpc('get_plan_group_invitation_members', {
+  const { data, error } = await supabase.rpc('get_plan_group_invitation_members', {
     p_group_id: groupId,
   });
 

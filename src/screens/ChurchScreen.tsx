@@ -12,6 +12,7 @@ import {
 import ChurchSnapshotCard from '@/src/components/church/ChurchSnapshotCard';
 import ChurchStatGrid from '@/src/components/church/ChurchStatGrid';
 import ChurchTopPlansList from '@/src/components/church/ChurchTopPlansList';
+import { getOrCreateChurchInviteCode } from '@/src/api/churchQueries';
 import { useChurch } from '@/src/hooks/useChurch';
 import { useChurchAnalytics } from '@/src/hooks/useChurchAnalytics';
 import { useAcceptChurchInvite } from '@/src/hooks/useChurchInvitation';
@@ -20,6 +21,7 @@ import { useProfile } from '@/src/hooks/useProfile';
 import { buildChurchInvitationMessage, buildChurchShareMessage } from '@/src/lib/churchShare';
 import { useAuth } from '@/src/state/AuthContext';
 import { Href, useRouter } from 'expo-router';
+import { useState } from 'react';
 import { Alert, ScrollView, Share, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import ChurchRecentActivityCard from '../components/church/ChurchRecentActivityCard';
@@ -38,6 +40,7 @@ export default function ChurchScreen({ churchId }: Props) {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { session } = useAuth();
+  const [isSharingInvite, setIsSharingInvite] = useState(false);
 
   const viewerProfileQuery = useProfile(session?.user?.id);
   const viewerChurchId = viewerProfileQuery.data?.church?.id ?? null;
@@ -67,16 +70,27 @@ export default function ChurchScreen({ churchId }: Props) {
   const handleInviteMembers = async () => {
     if (!canInviteMembers || !church) return;
 
-    await Share.share({
-      message: buildChurchInvitationMessage({
-        church,
-        invitedBy: session?.user?.id,
-        inviterName: getInviterName(
-          viewerProfileQuery.data?.first_name,
-          viewerProfileQuery.data?.last_name,
-        ),
-      }),
-    });
+    try {
+      setIsSharingInvite(true);
+      const inviteCode = await getOrCreateChurchInviteCode({ churchId });
+
+      await Share.share({
+        message: buildChurchInvitationMessage({
+          church,
+          invitedBy: session?.user?.id,
+          inviteCode,
+          inviterName: getInviterName(
+            viewerProfileQuery.data?.first_name,
+            viewerProfileQuery.data?.last_name,
+          ),
+        }),
+      });
+    } catch (error) {
+      console.error('Error sharing church invitation:', error);
+      Alert.alert('Unable to share invite link', 'Please try again.');
+    } finally {
+      setIsSharingInvite(false);
+    }
   };
 
   const joinChurch = () => {
@@ -244,6 +258,7 @@ export default function ChurchScreen({ churchId }: Props) {
         ) : church ? (
           <ChurchActionsCard
             canOpenWebsite={Boolean(church.website_url)}
+            isInviting={isSharingInvite}
             isJoining={acceptChurchMutation.isPending}
             onInvitePress={
               canShowMembershipAction && canInviteMembers ? handleInviteMembers : undefined

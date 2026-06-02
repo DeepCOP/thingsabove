@@ -64,3 +64,19 @@ export const fetchChurchAnalytics = async (churchId: string): Promise<ChurchAnal
   if (error) throw error;
   return (data ?? emptyAnalytics) as ChurchAnalytics;
 };
+
+export const getOrCreateChurchInviteCode = async ({ churchId }: { churchId: string }) => {
+  const { data, error } = await supabase.rpc('get_or_create_church_invite_code', {
+    p_church_id: churchId,
+  });
+
+  if (error) {
+    throw error;
+  }
+
+  if (!data) {
+    throw new Error('Church invite code not found');
+  }
+
+  return data as string;
+};

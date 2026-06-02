@@ -1815,7 +1815,7 @@ export type Database = {
         Args: {
           p_content: string;
           p_day_id: string;
-          p_group_id?: string | null;
+          p_group_id?: string;
           p_plan_id: string;
         };
         Returns: undefined;
@@ -1962,7 +1962,7 @@ export type Database = {
         }[];
       };
       get_day_item_templates: {
-        Args: { p_day_id: string; p_group_id?: string | null; p_plan_id: string };
+        Args: { p_day_id: string; p_group_id?: string; p_plan_id: string };
         Returns: {
           day_number: number;
           devotional_content: string;
@@ -1974,7 +1974,7 @@ export type Database = {
       get_day_items_progress: {
         Args: {
           p_day_id: string;
-          p_group_id?: string | null;
+          p_group_id?: string;
           p_plan_id: string;
           p_progress_id: string;
           p_user_id: string;
@@ -2144,13 +2144,13 @@ export type Database = {
         }[];
       };
       get_plan_day_comments: {
-        Args: { p_day_id: string; p_group_id?: string | null; p_plan_id: string };
+        Args: { p_day_id: string; p_group_id?: string; p_plan_id: string };
         Returns: {
           avatar_url: string;
           content: string;
           created_at: string;
           first_name: string;
-          group_id: string | null;
+          group_id: string;
           id: string;
           last_name: string;
           user_id: string;
@@ -2446,6 +2446,17 @@ export type Database = {
           church_id: string;
           invite_code: string;
           invited_by: string;
+        }[];
+      };
+      resolve_invite_code: {
+        Args: { p_invite_code: string };
+        Returns: {
+          church_id: string;
+          group_id: string;
+          invite_code: string;
+          invite_type: string;
+          invited_by: string;
+          plan_id: string;
         }[];
       };
       resolve_plan_group_invite_code: {
