@@ -13,6 +13,7 @@
     },
     "preview": {
       "channel": "preview",
+      "environment": "preview",
       "autoIncrement": true,
       "distribution": "store",
       "android": {
@@ -24,6 +25,7 @@
     },
     "production": {
       "channel": "production",
+      "environment": "production",
       "autoIncrement": true,
       "distribution": "store",
       "android": {
