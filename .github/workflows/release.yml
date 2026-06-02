@@ -9,19 +9,6 @@ env:
   IS_BETA: ${{ contains(github.ref_name, 'beta') }}
 
 jobs:
-  build_android:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v3
-
-      - uses: ./.github/actions/build-and-submit
-        with:
-          expo-token: ${{ secrets.EXPO_TOKEN }}
-          platform: android
-          eas-profile: ${{ env.IS_BETA == 'true' && 'preview' || 'production' }}
-
   build_ios:
     runs-on: ubuntu-latest
 
@@ -33,6 +20,19 @@ jobs:
         with:
           expo-token: ${{ secrets.EXPO_TOKEN }}
           platform: ios
+          eas-profile: ${{ env.IS_BETA == 'true' && 'preview' || 'production' }}
+
+  build_android:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - uses: ./.github/actions/build-and-submit
+        with:
+          expo-token: ${{ secrets.EXPO_TOKEN }}
+          platform: android
           eas-profile: ${{ env.IS_BETA == 'true' && 'preview' || 'production' }}
 
   create_release:
