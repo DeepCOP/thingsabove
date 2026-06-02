@@ -2448,6 +2448,17 @@ export type Database = {
           invited_by: string;
         }[];
       };
+      resolve_invite_code: {
+        Args: { p_invite_code: string };
+        Returns: {
+          church_id: string;
+          group_id: string;
+          invite_code: string;
+          invite_type: string;
+          invited_by: string;
+          plan_id: string;
+        }[];
+      };
       resolve_plan_group_invite_code: {
         Args: { p_invite_code: string };
         Returns: {
