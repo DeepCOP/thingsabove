@@ -137,7 +137,7 @@ export default function PrayerBoardScreen() {
             title="Join your church prayer board"
             description="Add your church in Profile to unlock church-only prayer requests and support your local community."
             ctaLabel="Open Profile"
-            onCta={() => router.navigate('/(tabs)/ProfileTab')}
+            onCta={() => router.navigate('/app/(tabs)/ProfileTab')}
           />
         </View>
       ) : (
@@ -164,14 +164,14 @@ export default function PrayerBoardScreen() {
                   item={item}
                   onPress={() =>
                     router.push({
-                      pathname: '/prayer/[requestId]',
+                      pathname: '/app/prayer/[requestId]',
                       params: { requestId: item.id },
                     })
                   }
                   onTogglePraying={() => togglePrayerMutation.mutate(item.id)}
                   onEncourage={() =>
                     router.push({
-                      pathname: '/prayer/[requestId]',
+                      pathname: '/app/prayer/[requestId]',
                       params: { requestId: item.id },
                     })
                   }
@@ -195,7 +195,7 @@ export default function PrayerBoardScreen() {
                 title={emptyCopy.title}
                 description={emptyCopy.description}
                 ctaLabel="New Prayer Request"
-                onCta={() => router.push('/prayer/new')}
+                onCta={() => router.push('/app/prayer/new')}
               />
             )}
 
@@ -220,7 +220,7 @@ export default function PrayerBoardScreen() {
 
       <TouchableOpacity
         className="mt-6 rounded-full bg-black px-6 py-4 dark:bg-white"
-        onPress={() => router.push('/prayer/new')}>
+        onPress={() => router.push('/app/prayer/new')}>
         <Text className="text-center font-semibold text-white dark:text-black">
           New Prayer Request
         </Text>

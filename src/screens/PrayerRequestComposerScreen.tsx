@@ -109,7 +109,7 @@ export default function PrayerRequestComposerScreen({ requestId }: Props) {
       {
         onSuccess: (nextRequestId) => {
           router.replace({
-            pathname: '/prayer/[requestId]',
+            pathname: '/app/prayer/[requestId]',
             params: { requestId: nextRequestId },
           });
         },
@@ -166,7 +166,7 @@ export default function PrayerRequestComposerScreen({ requestId }: Props) {
             </Text>
             <TouchableOpacity
               className="mt-4 self-start rounded-full bg-black px-4 py-2 dark:bg-white"
-              onPress={() => router.navigate('/(tabs)/ProfileTab')}>
+              onPress={() => router.navigate('/app/(tabs)/ProfileTab')}>
               <Text className="font-semibold text-white dark:text-black">Open Profile</Text>
             </TouchableOpacity>
           </View>

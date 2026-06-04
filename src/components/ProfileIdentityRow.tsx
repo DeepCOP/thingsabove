@@ -62,7 +62,7 @@ export default function ProfileIdentityRow({
     onPress ??
     (userId
       ? () => {
-          router.push(`/profile/${userId}`);
+          router.push(`/app/profile/${userId}`);
         }
       : undefined);
 

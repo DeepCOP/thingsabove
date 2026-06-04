@@ -1,6 +1,6 @@
 const { version } = require('./package.json');
 
-const androidAppLinkPaths = [
+const androidAppRoutes = [
   '/PlansTab',
   '/CommunityTab',
   '/BibleTab',
@@ -23,6 +23,7 @@ const androidAppLinkPaths = [
   '/signup',
   '/profile',
 ];
+const androidAppLinkPaths = ['/app', ...androidAppRoutes.map((pathPrefix) => `/app${pathPrefix}`)];
 
 export default ({ config }) => ({
   expo: {

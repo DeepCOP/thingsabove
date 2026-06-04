@@ -32,10 +32,10 @@ export const buildPlanInvitationUrl = ({
   inviteCode?: string;
 }) => {
   if (inviteCode?.trim()) {
-    return buildUrl(`/invite/${encodeURIComponent(inviteCode.trim())}`);
+    return buildUrl(`/app/invite/${encodeURIComponent(inviteCode.trim())}`);
   }
 
-  return buildUrl(`/devotional_detail/${planId}/invite`, {
+  return buildUrl(`/app/devotional_detail/${planId}/invite`, {
     groupId,
     invitedBy,
   });
@@ -72,7 +72,7 @@ export const buildPlanInvitationMessage = ({
   ].join('\n\n');
 };
 
-export const buildFriendInviteUrl = () => buildUrl('/signup');
+export const buildFriendInviteUrl = () => buildUrl('/app/signup');
 
 export const buildFriendInviteMessage = () => {
   const invitationUrl = buildFriendInviteUrl();

@@ -111,7 +111,7 @@ export default function PrivatePlansList({ selectedTags = [] }: { selectedTags?:
         </Text>
         {!session?.user?.id && (
           <TouchableOpacity
-            onPress={() => router.push('/(auth)/signin')}
+            onPress={() => router.push('/app/(auth)/signin')}
             className="mt-6 w-full rounded-xl bg-black py-3 dark:bg-white">
             <Text className="text-center font-semibold text-white dark:text-black">Sign In</Text>
           </TouchableOpacity>
@@ -148,12 +148,12 @@ export default function PrivatePlansList({ selectedTags = [] }: { selectedTags?:
         isGrid ? (
           <GridCard
             item={item}
-            onPress={() => item.id && router.push(`/devotional_detail/${item.id}`)}
+            onPress={() => item.id && router.push(`/app/devotional_detail/${item.id}`)}
           />
         ) : (
           <ListCard
             item={item}
-            onPress={() => item.id && router.push(`/devotional_detail/${item.id}`)}
+            onPress={() => item.id && router.push(`/app/devotional_detail/${item.id}`)}
           />
         )
       }

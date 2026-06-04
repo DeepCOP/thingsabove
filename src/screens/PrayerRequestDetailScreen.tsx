@@ -74,7 +74,7 @@ export default function PrayerRequestDetailScreen({ requestId }: Props) {
           ctaLabel="Back to Prayer Board"
           onCta={() =>
             router.replace({
-              pathname: '/(tabs)/CommunityTab',
+              pathname: '/app/(tabs)/CommunityTab',
               params: { section: 'prayer-board' },
             })
           }
@@ -203,7 +203,7 @@ export default function PrayerRequestDetailScreen({ requestId }: Props) {
                 className="rounded-full border border-gray-300 py-4 dark:border-neutral-700"
                 onPress={() =>
                   router.push({
-                    pathname: '/prayer/new',
+                    pathname: '/app/prayer/new',
                     params: { requestId: request.id },
                   })
                 }>

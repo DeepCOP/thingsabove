@@ -155,7 +155,7 @@ export default function ProfileScreen({
                   className="h-12 flex-1 flex-row items-center justify-center rounded-full border border-blue-600 bg-blue-50/70 px-4 dark:border-blue-400 dark:bg-blue-950/30"
                   onPress={() =>
                     router.push({
-                      pathname: '/(tabs)/CommunityTab',
+                      pathname: '/app/(tabs)/CommunityTab',
                       params: { section: 'friends' },
                     })
                   }>
@@ -263,7 +263,7 @@ export default function ProfileScreen({
                           className="mt-1 rounded-2xl bg-gray-50 p-3 dark:bg-neutral-900"
                           onPress={() =>
                             router.navigate({
-                              pathname: '/(tabs)/CommunityTab',
+                              pathname: '/app/(tabs)/CommunityTab',
                               params: { section: 'my-church' },
                             })
                           }>

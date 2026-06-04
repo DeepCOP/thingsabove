@@ -361,7 +361,7 @@ export default function DevotionalPlanReader({
     // Official Bible.com link
     const bookCode = getBibleDotComBookCode(currentBookId);
     const link = bookCode
-      ? `${process.env.EXPO_PUBLIC_BASE_URL}/bible/12/${bookCode}.${selectedBook.chapter}.${range}.${version}`
+      ? `${process.env.EXPO_PUBLIC_BASE_URL}/app/bible/12/${bookCode}.${selectedBook.chapter}.${range}.${version}`
       : '';
 
     return link ? `${header}\n${body}\n${link}` : `${header}\n${body}`;
@@ -438,7 +438,7 @@ export default function DevotionalPlanReader({
           {isDevotionalItem ? (
             <TouchableOpacity
               onPress={async () => {
-                const content = `${plan?.title}: Day ${item?.day_number} · Devotional \n\n ${process.env.EXPO_PUBLIC_BASE_URL}/devotional_detail/${plan?.id}/${item?.day_id}/${item.id}`;
+                const content = `${plan?.title}: Day ${item?.day_number} · Devotional \n\n ${process.env.EXPO_PUBLIC_BASE_URL}/app/devotional_detail/${plan?.id}/${item?.day_id}/${item.id}`;
                 await Share.share({ message: content });
               }}>
               <Ionicons
@@ -449,7 +449,7 @@ export default function DevotionalPlanReader({
             </TouchableOpacity>
           ) : (
             <TouchableOpacity
-              onPress={() => router.push('/bible/versions')}
+              onPress={() => router.push('/app/bible/versions')}
               disabled={Boolean(loadingVersionId)}
               style={{ opacity: loadingVersionId ? 0.7 : 1 }}
               className="flex-row items-center bg-blue-100 px-3 py-1.5 rounded-full mr-1">
@@ -607,7 +607,7 @@ export default function DevotionalPlanReader({
                     label: `${currentBookName} ${selectedBook.chapter}`,
                     onPress: () =>
                       router.push({
-                        pathname: '/bible/[book]',
+                        pathname: '/app/bible/[book]',
                         params: {
                           book: currentBookId,
                         },
@@ -670,7 +670,7 @@ export default function DevotionalPlanReader({
 
             setShowMenu(false);
             router.push({
-              pathname: '/scripture_notes',
+              pathname: '/app/scripture_notes',
               params: {
                 bookId: currentBookId,
                 book: currentBookName,

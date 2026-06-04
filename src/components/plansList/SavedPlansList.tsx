@@ -134,14 +134,14 @@ export default function SavedPlansList({ selectedTags = [] }: { selectedTags?: s
             item={item}
             isSaved={isSaved}
             onToggleSave={() => planId && toggleSavedPlan(planId, isSaved, item)}
-            onPress={() => router.push(`/devotional_detail/${item.id}`)}
+            onPress={() => router.push(`/app/devotional_detail/${item.id}`)}
           />
         ) : (
           <ListCard
             item={item}
             isSaved={isSaved}
             onToggleSave={() => planId && toggleSavedPlan(planId, isSaved, item)}
-            onPress={() => router.push(`/devotional_detail/${item.id}`)}
+            onPress={() => router.push(`/app/devotional_detail/${item.id}`)}
           />
         );
       }}

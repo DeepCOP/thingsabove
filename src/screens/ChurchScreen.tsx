@@ -127,16 +127,16 @@ export default function ChurchScreen({ churchId }: Props) {
   };
 
   const handleOpenMembers = () => {
-    router.push(`/church/${churchId}/members` as Href);
+    router.push(`/app/church/${churchId}/members` as Href);
   };
 
   const handleOpenMemberProfile = (userId: string) => {
-    router.push(`/profile/${userId}` as Href);
+    router.push(`/app/profile/${userId}` as Href);
   };
 
   const handleOpenPlan = (planId: string) => {
     router.push({
-      pathname: '/devotional_detail/[planId]',
+      pathname: '/app/devotional_detail/[planId]',
       params: { planId },
     });
   };
