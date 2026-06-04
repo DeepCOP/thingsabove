@@ -140,17 +140,6 @@ type PlannerDecision = {
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-function normalizePlannerMessage(value: string) {
-  return value
-    .replace(/\r\n/g, '\n')
-    .replace(/[ \t]+/g, ' ')
-    .replace(/\n{3,}/g, '\n\n')
-    .split('\n')
-    .map((line) => line.trim())
-    .join('\n')
-    .trim();
-}
-
 function buildPlannerPrompt(firstName: string, timezone: string, context: unknown) {
   const name = firstName.trim() || 'Friend';
 
