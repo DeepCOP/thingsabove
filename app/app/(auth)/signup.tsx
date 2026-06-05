@@ -1,4 +1,5 @@
 import { useSignUpUser } from '@/src/hooks/useProfile';
+import { getProfileDeviceMetadata } from '@/src/lib/profileDeviceMetadata';
 import { openExternalUrl } from '@/src/utils';
 import { Ionicons } from '@expo/vector-icons';
 import { Input } from '@rneui/themed';
@@ -90,7 +91,13 @@ export default function SignUp() {
       return;
     }
     signUpWithEmail.mutate(
-      { email: trimmedEmail, password, firstName: trimmedFirstName, lastName: trimmedLastName },
+      {
+        email: trimmedEmail,
+        password,
+        firstName: trimmedFirstName,
+        lastName: trimmedLastName,
+        ...getProfileDeviceMetadata(),
+      },
       {
         onSuccess: (data) => {
           const params: Record<string, string> = {

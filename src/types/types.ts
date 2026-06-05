@@ -110,7 +110,15 @@ export type SignUpAboutDetailsInput = {
   clear_church?: boolean;
 };
 
-export type SignUpProfileInput = {
+export type ProfileDeviceMetadataInput = {
+  appVersion?: string | null;
+  deviceOs?: string | null;
+  deviceOsVersion?: string | null;
+  deviceLanguageTag?: string | null;
+  deviceLanguageCode?: string | null;
+};
+
+export type SignUpProfileInput = ProfileDeviceMetadataInput & {
   email: string;
   password: string;
   firstName: string;
