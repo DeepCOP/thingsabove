@@ -136,6 +136,35 @@ export const sortDayItems = (
   return sortByItemKey(a.item_key, b.item_key);
 };
 
+export const decodeHtmlEntities = (value: string) =>
+  value
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'");
+
+export const getHtmlExcerpt = (html?: string | null, maxLength = 220) => {
+  if (!html) return '';
+
+  const text = decodeHtmlEntities(
+    html
+      .replace(/<br\s*\/?>/gi, ' ')
+      .replace(/<\/p>/gi, ' ')
+      .replace(/<[^>]+>/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim(),
+  );
+
+  if (text.length <= maxLength) return text;
+
+  const truncated = text.slice(0, maxLength).trimEnd();
+  const lastSpace = truncated.lastIndexOf(' ');
+
+  return `${truncated.slice(0, lastSpace > 120 ? lastSpace : truncated.length)}...`;
+};
+
 export function useDebounce<T>(value: T, delay = 500) {
   const [debouncedValue, setDebouncedValue] = useState(value);
 
