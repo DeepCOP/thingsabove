@@ -28,6 +28,7 @@ type Props = {
   emptyMessage?: string;
   doneAccessibilityLabel?: string;
   onDone?: () => void;
+  onEntryCreated?: () => void;
 };
 
 type DayCommentsFooterContextValue = {
@@ -125,6 +126,7 @@ const DayCommentsBottomSheet = forwardRef<BottomSheet, Props>(
       emptyMessage = "Share your thoughts based on today's reading.",
       doneAccessibilityLabel,
       onDone,
+      onEntryCreated,
     },
     ref,
   ) => {
@@ -169,9 +171,20 @@ const DayCommentsBottomSheet = forwardRef<BottomSheet, Props>(
       }
 
       addComment.mutate(trimmedText, {
-        onSuccess: resetComposer,
+        onSuccess: () => {
+          resetComposer();
+          onEntryCreated?.();
+        },
       });
-    }, [addComment, editingCommentId, isSubmitting, resetComposer, text, updateComment]);
+    }, [
+      addComment,
+      editingCommentId,
+      isSubmitting,
+      onEntryCreated,
+      resetComposer,
+      text,
+      updateComment,
+    ]);
 
     const handleDelete = (comment: PlanDayComment) => {
       Alert.alert(`Delete ${entryLabel}?`, `This will permanently remove your ${entryLabel}.`, [

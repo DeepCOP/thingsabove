@@ -84,13 +84,16 @@ export default function PlanProgressScreen({
   }, []);
   const commentItem = items?.find((item) => item.item_type === 'comment');
 
+  const markCommentItemComplete = useCallback(() => {
+    if (!commentItem || commentItem.completed) return;
+
+    onToggleItem(commentItem);
+  }, [commentItem, onToggleItem]);
+
   const handleCommentsDone = () => {
     if (!commentItem || toggleLoading) return;
 
-    if (!commentItem.completed) {
-      onToggleItem(commentItem);
-    }
-
+    markCommentItemComplete();
     commentsSheetRef.current?.close();
   };
 
@@ -215,6 +218,7 @@ export default function PlanProgressScreen({
             ? "Share your thoughts based on today's reading."
             : "Add a note based on today's reading."
         }
+        onEntryCreated={markCommentItemComplete}
         onDone={handleCommentsDone}
       />
     </>
