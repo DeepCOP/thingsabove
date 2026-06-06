@@ -12,9 +12,7 @@ import {
   TouchableOpacity,
   View,
   useColorScheme,
-  useWindowDimensions,
 } from 'react-native';
-import RenderHTML from 'react-native-render-html';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import ReportPlanSheet from '../components/ReportPlanModal';
 import StartPlanBottomSheet from '../components/StartPlanBottomSheet';
@@ -82,14 +80,6 @@ const decodeHtmlEntities = (value: string) =>
     .replace(/&quot;/g, '"')
     .replace(/&#39;/g, "'");
 
-const escapeHtml = (value: string) =>
-  value
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
-
 const getHtmlExcerpt = (html?: string | null, maxLength = 220) => {
   if (!html) return '';
 
@@ -126,13 +116,10 @@ function PlanPreviewSection({
   onSelectDay: (dayNumber: number) => void;
 }) {
   const colorScheme = useColorScheme();
-  const { width } = useWindowDimensions();
   const [readingsExpanded, setReadingsExpanded] = useState(false);
   const devotionalItem = items.find((item) => item.item_type === 'devotional');
   const scriptureCount = items.filter((item) => item.item_type === 'scripture').length;
   const devotionalExcerpt = getHtmlExcerpt(devotionalItem?.devotional_content);
-  const devotionalExcerptHtml = devotionalExcerpt ? `<p>${escapeHtml(devotionalExcerpt)}</p>` : '';
-  const contentWidth = Math.max(width - 32, 0);
 
   return (
     <View className="mt-7">
@@ -191,23 +178,10 @@ function PlanPreviewSection({
             </View>
           </View>
 
-          {!!devotionalExcerptHtml && (
-            <View className="mt-4">
-              <RenderHTML
-                contentWidth={contentWidth}
-                source={{ html: devotionalExcerptHtml }}
-                baseStyle={{
-                  color: colorScheme === 'dark' ? '#D1D5DB' : '#374151',
-                  fontSize: 15,
-                  lineHeight: 24,
-                }}
-                tagsStyles={{
-                  p: { marginBottom: 0 },
-                  strong: { fontWeight: '700' },
-                  em: { fontStyle: 'italic' },
-                }}
-              />
-            </View>
+          {!!devotionalExcerpt && (
+            <Text className="mt-4 text-[15px] leading-6 text-gray-700 dark:text-gray-300">
+              {devotionalExcerpt}
+            </Text>
           )}
         </View>
       </View>
