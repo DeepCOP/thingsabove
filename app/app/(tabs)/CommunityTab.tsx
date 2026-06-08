@@ -69,7 +69,7 @@ export default function CommunityTab() {
 
             <TouchableOpacity
               className="mt-3 rounded-full border border-gray-300 px-5 py-3 dark:border-neutral-700"
-              onPress={() => router.push('/app/(auth)/signup')}>
+              onPress={() => router.push('/app/signup')}>
               <Text className="text-center font-semibold text-gray-900 dark:text-white">
                 Create Account
               </Text>

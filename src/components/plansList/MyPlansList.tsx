@@ -162,7 +162,7 @@ export default function MyPlansList({
             <Text className="text-center text-white dark:text-black font-semibold">Sign In</Text>
           </TouchableOpacity>
           <TouchableOpacity
-            onPress={() => router.push('/app/(auth)/signup')}
+            onPress={() => router.push('/app/signup')}
             className="w-full border border-black dark:border-white py-3 rounded-xl">
             <Text className="text-center font-semibold dark:text-white">Create Account</Text>
           </TouchableOpacity>
