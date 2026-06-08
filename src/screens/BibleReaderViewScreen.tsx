@@ -157,7 +157,7 @@ export default function BibleReaderView({ onScroll }: { onScroll: (...args: any[
     // Official Bible.com link
     const bookCode = getBibleDotComBookCode(currentBookId);
     const link = bookCode
-      ? `${process.env.EXPO_PUBLIC_BASE_URL}/bible/12/${bookCode}.${selectedBook.chapter}.${ranges.join(',')}.${version}`
+      ? `${process.env.EXPO_PUBLIC_BASE_URL}/app/bible/12/${bookCode}.${selectedBook.chapter}.${ranges.join(',')}.${version}`
       : '';
 
     return link ? `${header}\n${body}\n${link}` : `${header}\n${body}`;
@@ -296,7 +296,7 @@ export default function BibleReaderView({ onScroll }: { onScroll: (...args: any[
           }}
           centerAction={{
             label: `${currentBookName} ${selectedBook.chapter}`,
-            onPress: () => router.push(`/bible/${currentBookId}`),
+            onPress: () => router.push(`/app/bible/${currentBookId}`),
           }}
           rightAction={{
             icon: 'chevron-forward',
@@ -334,7 +334,7 @@ export default function BibleReaderView({ onScroll }: { onScroll: (...args: any[
 
             setShowMenu(false);
             router.push({
-              pathname: '/scripture_notes',
+              pathname: '/app/scripture_notes',
               params: {
                 bookId: currentBookId,
                 book: currentBookName,

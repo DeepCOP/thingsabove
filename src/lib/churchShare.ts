@@ -22,7 +22,7 @@ const buildUrl = (path: string, params?: Record<string, string | undefined>) => 
 };
 
 export const buildChurchShareUrl = (churchId: string) => {
-  return buildUrl(`/church/${churchId}`);
+  return buildUrl(`/app/church/${churchId}`);
 };
 
 export const buildChurchInvitationUrl = ({
@@ -35,10 +35,10 @@ export const buildChurchInvitationUrl = ({
   inviteCode?: string;
 }) => {
   if (inviteCode?.trim()) {
-    return buildUrl(`/invite/${encodeURIComponent(inviteCode.trim())}`);
+    return buildUrl(`/app/invite/${encodeURIComponent(inviteCode.trim())}`);
   }
 
-  return buildUrl(`/church/${churchId}/invitation`, {
+  return buildUrl(`/app/church/${churchId}/invitation`, {
     invitedBy,
   });
 };

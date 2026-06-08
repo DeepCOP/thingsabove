@@ -14,10 +14,13 @@ import {
   useFonts,
 } from '@expo-google-fonts/open-sans';
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { Href, Redirect, Stack, usePathname } from 'expo-router';
+import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
+import * as SplashScreen from 'expo-splash-screen';
+import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import { useCallback, useEffect, useState } from 'react';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { BibleProvider } from '../src/state/BibleContext';
 
 import { useFriends, usePendingFriendRequests } from '@/src/hooks/useFriends';
 import { useLastSeenTracker } from '@/src/hooks/useLastSeen';
@@ -31,12 +34,9 @@ import { mutationQueue } from '@/src/lib/mutationQueue';
 import { QueryProviderWrapper } from '@/src/lib/queryClient';
 import { supabase } from '@/src/lib/supabaseClient';
 import { AuthProvider, useAuth } from '@/src/state/AuthContext';
-import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
-import * as SplashScreen from 'expo-splash-screen';
-import { useCallback, useEffect, useState } from 'react';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import '../global.css';
+import { BibleProvider } from '@/src/state/BibleContext';
 import { useAppStore } from '@/src/state/useAppStore';
+import '../global.css';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -64,15 +64,13 @@ export default function RootLayout() {
 
 function RootLayoutContent() {
   const { session, loading } = useAuth();
-  const pathname = usePathname();
-  const hasCompletedOnboarding = useAppStore((state) => state.hasCompletedOnboarding);
   const [hasHydratedAppStore, setHasHydratedAppStore] = useState(() =>
     useAppStore.persist.hasHydrated(),
   );
   const { notificationsQuery, notificationsCountQuery } = useNotifications(session?.user?.id);
 
   const friendsQuery = useFriends(session?.user.id);
-  const PandingFriendsQuery = usePendingFriendRequests(session?.user.id);
+  const pendingFriendsQuery = usePendingFriendRequests(session?.user.id);
 
   usePushNotifications();
   useUserLocation();
@@ -83,8 +81,8 @@ function RootLayoutContent() {
 
   const handleFriendsNew = useCallback(() => {
     friendsQuery.refetch();
-    PandingFriendsQuery.refetch();
-  }, [friendsQuery, PandingFriendsQuery]);
+    pendingFriendsQuery.refetch();
+  }, [friendsQuery, pendingFriendsQuery]);
 
   useRealtimeNotifications(session?.user?.id, handleNotificationsNew);
   useRealtimeFriends(session?.user?.id, handleFriendsNew);
@@ -144,6 +142,7 @@ function RootLayoutContent() {
       throw new Error('Unknown queued mutation key: ' + key);
     });
   }, []);
+
   useEffect(() => {
     if (loaded && !loading && hasHydratedAppStore) {
       SplashScreen.hideAsync();
@@ -152,85 +151,16 @@ function RootLayoutContent() {
 
   if (!loaded || loading || !hasHydratedAppStore) return null;
 
-  if (!hasCompletedOnboarding && pathname !== '/onboarding') {
-    return <Redirect href={'/onboarding' as Href} />;
-  }
-
-  if (hasCompletedOnboarding && pathname === '/onboarding') {
-    return <Redirect href="/(tabs)/PlansTab" />;
-  }
-
   return (
     <>
       <StatusBar style="auto" />
       <Stack
-        initialRouteName="(tabs)"
+        initialRouteName="app"
         screenOptions={{
           headerBackButtonDisplayMode: 'minimal',
         }}>
         <Stack.Screen name="index" options={{ headerShown: false }} />
-        <Stack.Screen name="onboarding" options={{ headerShown: false }} />
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="about-details" options={{ headerShown: false }} />
-        <Stack.Screen name="bible/[book]/index" />
-        <Stack.Screen name="scripture_notes/index" options={{ headerShown: false }} />
-        <Stack.Screen name="search/devotionals/index" options={{ title: 'search devotionals' }} />
-        <Stack.Screen name="devotional_detail/[planId]/index" options={{ title: '' }} />
-        <Stack.Screen name="devotional_detail/[planId]/invite" options={{ title: 'Invitation' }} />
-        <Stack.Screen
-          name="church/[churchId]/invitation"
-          options={{ title: 'Church Invitation' }}
-        />
-        <Stack.Screen name="invite/[code]" options={{ title: 'Invitation' }} />
-        <Stack.Protected guard={session == null}>
-          <Stack.Screen name="(auth)" options={{ presentation: 'modal', headerShown: false }} />
-          <Stack.Screen name="confirm-email" options={{ title: 'Confirm Email' }} />
-        </Stack.Protected>
-        {/* 🔒 AUTH-REQUIRED ROUTES */}
-        <Stack.Protected guard={session != null}>
-          <Stack.Screen
-            name="plan_progress/[progressId]/index"
-            options={{ title: 'plan progress' }}
-          />
-          <Stack.Screen
-            name="plan_progress/[progressId]/plan-complete/index"
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name="devotional_detail/[planId]/[dayId]/[itemId]"
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name="devotional_detail/[planId]/start-date"
-            options={{ title: 'plan info' }}
-          />
-          <Stack.Screen
-            name="devotional_detail/[planId]/invite-friends"
-            options={{ title: 'Select Friends To Invite' }}
-          />
-          <Stack.Screen
-            name="devotional_detail/[planId]/participants"
-            options={{ title: 'Participants' }}
-          />
-          <Stack.Screen name="church/[churchId]/index" options={{ title: 'My Church' }} />
-          <Stack.Screen name="church/[churchId]/members" options={{ title: 'Members' }} />
-          <Stack.Screen
-            name="devotional_detail/[planId]/invitation"
-            options={{ title: 'Invitation' }}
-          />
-
-          <Stack.Screen
-            name="plan_progress/[progressId]/missedDays/index"
-            options={{ title: 'Missed Days' }}
-          />
-          <Stack.Screen name="profile/[userId]" options={{ title: 'Profile' }} />
-          <Stack.Screen name="add_friend/index" options={{ title: 'Add Friend' }} />
-          <Stack.Screen name="accept_friend/index" options={{ title: 'Friend Requests' }} />
-          <Stack.Screen name="prayer/new" options={{ title: 'New Prayer Request' }} />
-          <Stack.Screen name="prayer/[requestId]" options={{ title: 'Prayer Request' }} />
-          <Stack.Screen name="settings/index" options={{ title: 'Settings' }} />
-          <Stack.Screen name="notifications/index" options={{ title: 'Notifications' }} />
-        </Stack.Protected>
+        <Stack.Screen name="app" options={{ headerShown: false }} />
       </Stack>
     </>
   );

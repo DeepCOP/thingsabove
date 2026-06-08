@@ -157,12 +157,12 @@ export default function MyPlansList({
             Save progress, track streaks, and pick up right where you left off.
           </Text>
           <TouchableOpacity
-            onPress={() => router.push('/(auth)/signin')}
+            onPress={() => router.push('/app/(auth)/signin')}
             className="w-full bg-black dark:bg-white py-3 rounded-xl mb-3">
             <Text className="text-center text-white dark:text-black font-semibold">Sign In</Text>
           </TouchableOpacity>
           <TouchableOpacity
-            onPress={() => router.push('/(auth)/signup')}
+            onPress={() => router.push('/app/signup')}
             className="w-full border border-black dark:border-white py-3 rounded-xl">
             <Text className="text-center font-semibold dark:text-white">Create Account</Text>
           </TouchableOpacity>
@@ -214,7 +214,7 @@ export default function MyPlansList({
             }
             onPress={() =>
               router.push({
-                pathname: '/plan_progress/[progressId]',
+                pathname: '/app/plan_progress/[progressId]',
                 params: {
                   groupId: item.group_id,
                   planId: item.plan_id,
@@ -234,7 +234,7 @@ export default function MyPlansList({
             }
             onPress={() =>
               router.push({
-                pathname: '/plan_progress/[progressId]',
+                pathname: '/app/plan_progress/[progressId]',
                 params: {
                   groupId: item.group_id,
                   planId: item.plan_id,

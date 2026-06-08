@@ -270,7 +270,48 @@ type NotificationRoute =
       params: Record<string, string>;
     };
 
-const DEFAULT_NOTIFICATION_ROUTE = '/notifications';
+const APP_ROUTE_PREFIX = '/app';
+const DEFAULT_NOTIFICATION_ROUTE = `${APP_ROUTE_PREFIX}/notifications`;
+const LEGACY_APP_ROUTE_PREFIXES = [
+  '/(auth)',
+  '/(tabs)',
+  '/about-details',
+  '/accept_friend',
+  '/add_friend',
+  '/bible',
+  '/church',
+  '/confirm-email',
+  '/devotional_detail',
+  '/friends',
+  '/invite',
+  '/notifications',
+  '/onboarding',
+  '/plan_progress',
+  '/PlansTab',
+  '/prayer',
+  '/profile',
+  '/scripture_notes',
+  '/search',
+  '/settings',
+  '/signin',
+  '/signup',
+];
+
+function normalizeAppRoute(route: string) {
+  if (route === APP_ROUTE_PREFIX || route.startsWith(`${APP_ROUTE_PREFIX}/`)) {
+    return route;
+  }
+
+  if (route === '/') {
+    return APP_ROUTE_PREFIX;
+  }
+
+  const isLegacyAppRoute = LEGACY_APP_ROUTE_PREFIXES.some(
+    (prefix) => route === prefix || route.startsWith(`${prefix}/`),
+  );
+
+  return isLegacyAppRoute ? `${APP_ROUTE_PREFIX}${route}` : DEFAULT_NOTIFICATION_ROUTE;
+}
 
 function getNotificationDataString(data: Record<string, unknown>, key: string) {
   const value = data[key];
@@ -306,7 +347,7 @@ function getGroupDayCompletedRoute(data: Record<string, unknown>): NotificationR
   const dayNumber = getNotificationDataNumberParam(data, 'day_number');
 
   return {
-    pathname: '/plan_progress/[progressId]',
+    pathname: '/app/plan_progress/[progressId]',
     params: {
       progressId,
       ...(groupId ? { groupId } : {}),
@@ -337,5 +378,5 @@ export function getRouteFromNotificationResponse(
     return DEFAULT_NOTIFICATION_ROUTE;
   }
 
-  return route;
+  return normalizeAppRoute(route);
 }

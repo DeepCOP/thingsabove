@@ -39,7 +39,7 @@ export function RelatedPlansSection({ plan }: { plan: DevotionalPlan | undefined
             renderItem={({ item }) => (
               <TouchableOpacity
                 className="mr-4 w-48"
-                onPress={() => router.push(`/devotional_detail/${item?.id}`)}>
+                onPress={() => router.push(`/app/devotional_detail/${item?.id}`)}>
                 <PlanCoverImage uri={item.cover_image} className="h-28 w-full rounded-xl" />
                 <Text className="mt-2 text-gray-700 dark:text-gray-300 font-semibold">
                   {item.total_days} Days

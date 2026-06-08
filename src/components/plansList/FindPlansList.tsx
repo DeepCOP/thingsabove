@@ -120,12 +120,12 @@ export default function FindPlansList({ selectedTags = [] }: { selectedTags?: st
             onToggleSave={() => {
               if (!planId) return;
               if (!session?.user?.id) {
-                router.push('/(auth)/signin');
+                router.push('/app/(auth)/signin');
                 return;
               }
               toggleSavedPlan(planId, isSaved, item);
             }}
-            onPress={() => router.push(`/devotional_detail/${item.id}`)}
+            onPress={() => router.push(`/app/devotional_detail/${item.id}`)}
           />
         ) : (
           <ListCard
@@ -134,12 +134,12 @@ export default function FindPlansList({ selectedTags = [] }: { selectedTags?: st
             onToggleSave={() => {
               if (!planId) return;
               if (!session?.user?.id) {
-                router.push('/(auth)/signin');
+                router.push('/app/(auth)/signin');
                 return;
               }
               toggleSavedPlan(planId, isSaved, item);
             }}
-            onPress={() => router.push(`/devotional_detail/${item.id}`)}
+            onPress={() => router.push(`/app/devotional_detail/${item.id}`)}
           />
         );
       }}

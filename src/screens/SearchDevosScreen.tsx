@@ -96,7 +96,7 @@ export default function SearchDevosScreen({
               onToggleSave={() => {
                 if (!planId) return;
                 if (!session?.user?.id) {
-                  router.push('/(auth)/signin');
+                  router.push('/app/(auth)/signin');
                   return;
                 }
                 toggleSavedPlan(planId, isSaved, item);

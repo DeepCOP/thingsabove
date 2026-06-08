@@ -14,7 +14,7 @@ export default function NotFoundScreen() {
           Oops! The page you’re looking for doesn’t exist.
         </Text>
 
-        <Link href="/PlansTab" asChild>
+        <Link href="/app/(tabs)/PlansTab" asChild>
           <TouchableOpacity className="bg-[#040c1f] px-6 py-3 rounded-full">
             <Text className="text-white font-semibold">Go Home</Text>
           </TouchableOpacity>
