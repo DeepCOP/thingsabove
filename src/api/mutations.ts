@@ -360,6 +360,11 @@ export const signUpUser = async ({
   churchName,
   churchAddress,
   churchWebsiteUrl,
+  appVersion,
+  deviceOs,
+  deviceOsVersion,
+  deviceLanguageTag,
+  deviceLanguageCode,
 }: SignUpProfileInput) => {
   const { data, error } = await supabase.auth.signUp({
     email,
@@ -374,6 +379,11 @@ export const signUpUser = async ({
         church_name: churchName ?? null,
         church_address: churchAddress ?? null,
         church_website_url: churchWebsiteUrl ?? null,
+        app_version: appVersion ?? null,
+        device_os: deviceOs ?? null,
+        device_os_version: deviceOsVersion ?? null,
+        device_language_tag: deviceLanguageTag ?? null,
+        device_language_code: deviceLanguageCode ?? null,
       },
     },
   });
