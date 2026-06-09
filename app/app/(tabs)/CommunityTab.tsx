@@ -63,7 +63,7 @@ export default function CommunityTab() {
 
             <TouchableOpacity
               className="mt-6 rounded-full bg-black px-5 py-3 dark:bg-white"
-              onPress={() => router.push('/app/(auth)/signin')}>
+              onPress={() => router.push('/app/signin')}>
               <Text className="text-center font-semibold text-white dark:text-black">Sign In</Text>
             </TouchableOpacity>
 

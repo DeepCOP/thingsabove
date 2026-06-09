@@ -120,7 +120,7 @@ export default function FindPlansList({ selectedTags = [] }: { selectedTags?: st
             onToggleSave={() => {
               if (!planId) return;
               if (!session?.user?.id) {
-                router.push('/app/(auth)/signin');
+                router.push('/app/signin');
                 return;
               }
               toggleSavedPlan(planId, isSaved, item);
@@ -134,7 +134,7 @@ export default function FindPlansList({ selectedTags = [] }: { selectedTags?: st
             onToggleSave={() => {
               if (!planId) return;
               if (!session?.user?.id) {
-                router.push('/app/(auth)/signin');
+                router.push('/app/signin');
                 return;
               }
               toggleSavedPlan(planId, isSaved, item);

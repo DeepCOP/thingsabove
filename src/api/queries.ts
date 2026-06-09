@@ -1,5 +1,11 @@
 import { supabase } from '../lib/supabaseClient';
-import { ProfileLocation, ProfilesUpdate, ProfileWithChurch } from '../types/types';
+import {
+  DayItemTemplate,
+  DayItemType,
+  ProfileLocation,
+  ProfilesUpdate,
+  ProfileWithChurch,
+} from '../types/types';
 
 export type PlanCursor = {
   created_at: string;
@@ -165,6 +171,40 @@ export const fetchPlanDays = async ({ plan_id }: { plan_id: string }) => {
 
   if (error) throw error;
   return data;
+};
+
+const isDayItemType = (value: string): value is DayItemType =>
+  value === 'devotional' || value === 'scripture' || value === 'comment';
+
+export const fetchDayItemTemplates = async ({
+  plan_id,
+  day_id,
+}: {
+  plan_id: string;
+  day_id: string;
+}) => {
+  const { data, error } = await supabase.rpc('get_day_item_templates', {
+    p_plan_id: plan_id,
+    p_day_id: day_id,
+  });
+
+  if (error) throw error;
+
+  return (data ?? []).flatMap((item): DayItemTemplate[] => {
+    if (!isDayItemType(item.item_type)) {
+      return [];
+    }
+
+    return [
+      {
+        day_number: item.day_number,
+        devotional_content: item.devotional_content ?? null,
+        item_key: item.item_key,
+        item_type: item.item_type,
+        title: item.title ?? null,
+      },
+    ];
+  });
 };
 
 export const fetchUserFriends = async ({ userId }: { userId: string }) => {

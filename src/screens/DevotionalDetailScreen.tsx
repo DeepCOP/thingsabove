@@ -1,4 +1,5 @@
 import LoadingSpinner from '@/src/components/LoadingSpinner';
+import PlanPreviewSection from '@/src/components/PlanPreviewSection';
 import PlanCoverImage from '@/src/components/PlanCoverImage';
 import PlanVisibilityBadge from '@/src/components/PlanVisibilityBadge';
 import { RelatedPlansSection } from '@/src/components/RelatedPlans';
@@ -17,6 +18,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import ReportPlanSheet from '../components/ReportPlanModal';
 import StartPlanBottomSheet from '../components/StartPlanBottomSheet';
 import { useAuth } from '../state/AuthContext';
+import { DayItemTemplate, DevotionalDays } from '../types/types';
 
 type Props = {
   onReportPress: () => void;
@@ -30,11 +32,17 @@ type Props = {
   reportSheetRef: React.RefObject<BottomSheet | null>;
   plan: any;
   isLoading: boolean;
+  previewDays: DevotionalDays[];
+  selectedPreviewDay: number;
+  selectedPreviewDayData?: DevotionalDays;
+  previewItems: DayItemTemplate[];
+  previewItemsLoading: boolean;
   hasActiveSoloPlanProgress: boolean;
   hasActivePlanProgress: boolean;
   canStartPlan: boolean;
   isPrivatePlan: boolean;
   isStartingSoloPlan: boolean;
+  onSelectPreviewDay: (dayNumber: number) => void;
   onStartPress: (mode: 'solo' | 'group') => void;
   onContinuePress: () => void;
   isSaved: boolean;
@@ -48,11 +56,17 @@ export default function DevotionalDetailScreen({
   reportSheetRef,
   plan,
   isLoading,
+  previewDays,
+  selectedPreviewDay,
+  selectedPreviewDayData,
+  previewItems,
+  previewItemsLoading,
   hasActiveSoloPlanProgress,
   hasActivePlanProgress,
   canStartPlan,
   isPrivatePlan,
   isStartingSoloPlan,
+  onSelectPreviewDay,
   onStartPress,
   onContinuePress,
   isSaved,
@@ -68,6 +82,18 @@ export default function DevotionalDetailScreen({
     isPrivatePlan && !canStartPlan && hasActivePlanProgress ? 'Continue Plan' : 'Start Plan';
   const isStartButtonDisabled =
     isStartingSoloPlan || (isPrivatePlan && !canStartPlan && !hasActivePlanProgress);
+  const scrollBottomPadding = insets.bottom + 112;
+
+  const handleStartButtonPress = () => {
+    if (isStartingSoloPlan) return;
+
+    if (isPrivatePlan && !canStartPlan && hasActivePlanProgress) {
+      onContinuePress();
+      return;
+    }
+
+    bottomSheetRef.current?.expand();
+  };
 
   if (isLoading) {
     return <LoadingSpinner style={{ marginTop: 30 }} />;
@@ -89,8 +115,10 @@ export default function DevotionalDetailScreen({
         className="flex-1 bg-white dark:bg-black"
         nestedScrollEnabled={true}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingTop: resolvedTopInset + 70, paddingBottom: insets.bottom }}>
-        {/* Cover Image */}
+        contentContainerStyle={{
+          paddingTop: resolvedTopInset + 70,
+          paddingBottom: scrollBottomPadding,
+        }}>
         <View>
           <PlanCoverImage uri={plan?.cover_image} className="w-full h-60 rounded-2xl" />
 
@@ -121,6 +149,7 @@ export default function DevotionalDetailScreen({
             </Text>
           )}
         </View>
+
         <View className="px-4 mt-4 flex-row items-center gap-6">
           <TouchableOpacity
             className="flex-row items-center gap-1 justify-center"
@@ -138,6 +167,7 @@ export default function DevotionalDetailScreen({
               {currentReaction?.helpful_count ?? 0}
             </Text>
           </TouchableOpacity>
+
           <TouchableOpacity
             className="flex-row items-center gap-1 justify-center"
             onPress={onToggleSave}>
@@ -153,30 +183,41 @@ export default function DevotionalDetailScreen({
               {isSaved ? 'Saved' : 'Save'}
             </Text>
           </TouchableOpacity>
+
           <TouchableOpacity
-            className=" flex-row items-start gap-1 justify-center"
-            onPress={() => {
-              onReportPress();
-            }}>
+            className="flex-row items-start gap-1 justify-center"
+            onPress={onReportPress}>
             <Ionicons name="flag-outline" size={18} color="red" />
             <Text className="text-red-600">Report</Text>
           </TouchableOpacity>
         </View>
 
+        <View className="px-4 mt-6">
+          <Text className="text-[16px] leading-7 text-gray-800 dark:text-gray-200">
+            {plan?.description}
+          </Text>
+        </View>
+
+        <PlanPreviewSection
+          days={previewDays}
+          selectedDay={selectedPreviewDay}
+          selectedDayData={selectedPreviewDayData}
+          items={previewItems}
+          itemsLoading={previewItemsLoading}
+          onSelectDay={onSelectPreviewDay}
+        />
+
+        <RelatedPlansSection plan={plan} />
+      </ScrollView>
+
+      <View
+        className="absolute bottom-0 left-0 right-0 border-t border-gray-200 bg-white px-4 pt-3 dark:border-neutral-800 dark:bg-black"
+        style={{ paddingBottom: insets.bottom + 12 }}>
         <TouchableOpacity
-          className={`mt-6 mx-4 rounded-full py-4 ${
+          className={`rounded-full py-4 ${
             isStartButtonDisabled ? 'bg-gray-400 dark:bg-neutral-700' : 'bg-black dark:bg-white'
           }`}
-          onPress={() => {
-            if (isStartingSoloPlan) return;
-
-            if (isPrivatePlan && !canStartPlan && hasActivePlanProgress) {
-              onContinuePress();
-              return;
-            }
-
-            bottomSheetRef.current?.expand();
-          }}
+          onPress={handleStartButtonPress}
           disabled={isStartButtonDisabled}>
           {isStartingSoloPlan ? (
             <ActivityIndicator
@@ -189,15 +230,7 @@ export default function DevotionalDetailScreen({
             </Text>
           )}
         </TouchableOpacity>
-
-        <View className="px-4 mt-6">
-          <Text className="text-[16px] leading-7 text-gray-800 dark:text-gray-200">
-            {plan?.description}
-          </Text>
-        </View>
-
-        <RelatedPlansSection plan={plan} />
-      </ScrollView>
+      </View>
 
       <StartPlanBottomSheet
         ref={bottomSheetRef}

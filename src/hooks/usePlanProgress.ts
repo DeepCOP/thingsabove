@@ -1,4 +1,5 @@
 import {
+  fetchDayItemTemplates,
   fetchGroupPlanProgressList,
   fetchMyPlanProgressPlans,
   fetchPlanDays,
@@ -82,11 +83,21 @@ export const useGroupPlanProgressList = (userIds: string[], groupId: string) => 
   });
   return usersPlanProgress;
 };
-export const useDevotionalDays = (plan_id: string, userId: string) => {
+export const useDevotionalDays = (plan_id: string, userId?: string) => {
   const daysQuery = useQuery({
     queryKey: ['devotional_days', plan_id, userId],
-    enabled: !!plan_id && !!userId,
+    enabled: !!plan_id,
     queryFn: async () => fetchPlanDays({ plan_id }),
   });
   return daysQuery;
+};
+
+export const useDayItemTemplates = (plan_id: string, day_id: string) => {
+  const dayItemTemplatesQuery = useQuery({
+    queryKey: ['day_item_templates', plan_id, day_id],
+    enabled: !!plan_id && !!day_id,
+    queryFn: async () => fetchDayItemTemplates({ plan_id, day_id }),
+  });
+
+  return dayItemTemplatesQuery;
 };

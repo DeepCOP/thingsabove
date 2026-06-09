@@ -1,5 +1,6 @@
 import type { DayItemsProgress, ParsedVerse } from '@/src/types/types';
 import * as Notifications from 'expo-notifications';
+import { parseDocument } from 'htmlparser2';
 import { useEffect, useState } from 'react';
 import { Linking } from 'react-native';
 import { NOTIFICATION_TYPES } from './types/notifications';
@@ -134,6 +135,115 @@ export const sortDayItems = (
   }
 
   return sortByItemKey(a.item_key, b.item_key);
+};
+
+const HTML_TEXT_SPACING_TAGS = new Set([
+  'address',
+  'article',
+  'aside',
+  'blockquote',
+  'br',
+  'div',
+  'figcaption',
+  'figure',
+  'footer',
+  'h1',
+  'h2',
+  'h3',
+  'h4',
+  'h5',
+  'h6',
+  'header',
+  'hr',
+  'li',
+  'main',
+  'nav',
+  'ol',
+  'p',
+  'pre',
+  'section',
+  'table',
+  'td',
+  'th',
+  'tr',
+  'ul',
+]);
+
+const HTML_TEXT_IGNORED_TAGS = new Set(['script', 'style', 'noscript']);
+
+function getHtmlNodeName(node: { name?: string }) {
+  return node.name?.toLowerCase() ?? '';
+}
+
+function appendTextSpace(chunks: string[]) {
+  const lastChunk = chunks[chunks.length - 1];
+  if (!lastChunk || /\s$/.test(lastChunk)) return;
+
+  chunks.push(' ');
+}
+
+function collectHtmlText(node: any, chunks: string[]) {
+  if (!node) return;
+
+  if (node.type === 'text' || node.type === 'cdata') {
+    chunks.push(node.data || '');
+    return;
+  }
+
+  const nodeName = getHtmlNodeName(node);
+
+  if (HTML_TEXT_IGNORED_TAGS.has(nodeName)) {
+    return;
+  }
+
+  if (nodeName === 'br' || nodeName === 'hr') {
+    appendTextSpace(chunks);
+    return;
+  }
+
+  const shouldSpace = HTML_TEXT_SPACING_TAGS.has(nodeName);
+
+  if (shouldSpace) {
+    appendTextSpace(chunks);
+  }
+
+  for (const child of node.children ?? []) {
+    collectHtmlText(child, chunks);
+  }
+
+  if (shouldSpace) {
+    appendTextSpace(chunks);
+  }
+}
+
+function extractTextFromHtml(html: string) {
+  const document = parseDocument(html, {
+    decodeEntities: true,
+    lowerCaseTags: true,
+    recognizeSelfClosing: true,
+  });
+  const chunks: string[] = [];
+
+  collectHtmlText(document, chunks);
+
+  return chunks
+    .join('')
+    .replace(/\u00a0/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+export const getHtmlExcerpt = (html?: string | null, maxLength = 220) => {
+  if (!html) return '';
+
+  const text = extractTextFromHtml(html);
+
+  if (text.length <= maxLength) return text;
+
+  const truncated = text.slice(0, maxLength).trimEnd();
+  const lastSpace = truncated.lastIndexOf(' ');
+
+  return `${truncated.slice(0, lastSpace > 120 ? lastSpace : truncated.length)}...`;
 };
 
 export function useDebounce<T>(value: T, delay = 500) {

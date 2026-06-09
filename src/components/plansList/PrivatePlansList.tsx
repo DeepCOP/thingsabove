@@ -111,7 +111,7 @@ export default function PrivatePlansList({ selectedTags = [] }: { selectedTags?:
         </Text>
         {!session?.user?.id && (
           <TouchableOpacity
-            onPress={() => router.push('/app/(auth)/signin')}
+            onPress={() => router.push('/app/signin')}
             className="mt-6 w-full rounded-xl bg-black py-3 dark:bg-white">
             <Text className="text-center font-semibold text-white dark:text-black">Sign In</Text>
           </TouchableOpacity>

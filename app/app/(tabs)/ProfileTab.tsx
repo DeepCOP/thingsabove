@@ -46,7 +46,7 @@ export default function App() {
       </Text>
 
       <TouchableOpacity
-        onPress={() => router.push('/app/(auth)/signin')}
+        onPress={() => router.push('/app/signin')}
         className="w-full bg-black dark:bg-white py-3 rounded-xl mb-3">
         <Text className="text-center text-white dark:text-black font-semibold">Sign In</Text>
       </TouchableOpacity>

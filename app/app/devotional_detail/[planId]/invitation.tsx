@@ -116,7 +116,7 @@ export default function PlanInvitation() {
         isContinuing={myPlanProgressPlansQuery.isLoading}
         onAccept={() => {
           if (isGuest) {
-            router.push('/app/(auth)/signin');
+            router.push('/app/signin');
             return;
           }
 

@@ -179,6 +179,14 @@ export type PlanGroupMember = {
 
 export type DayItemType = 'devotional' | 'scripture' | 'comment';
 
+export type DayItemTemplate = {
+  day_number: number;
+  devotional_content: string | null;
+  item_key: string;
+  item_type: DayItemType;
+  title: string | null;
+};
+
 export type DayItemsProgress = Database['public']['Tables']['day_items_progress']['Row'] & {
   title?: string | null;
 };
