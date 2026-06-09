@@ -133,6 +133,9 @@ importers:
       fuse.js:
         specifier: ^7.1.0
         version: 7.1.0
+      htmlparser2:
+        specifier: 7.2.0
+        version: 7.2.0
       nativewind:
         specifier: ^4.2.1
         version: 4.2.1(react-native-reanimated@4.1.6(@babel/core@7.28.6)(react-native-worklets@0.5.1(@babel/core@7.28.6)(react-native@0.81.5(@babel/core@7.28.6)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native@0.81.5(@babel/core@7.28.6)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native-safe-area-context@5.6.2(react-native@0.81.5(@babel/core@7.28.6)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native@0.81.5(@babel/core@7.28.6)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)(tailwindcss@3.4.19(yaml@2.8.2))
@@ -187,9 +190,6 @@ importers:
       uuid:
         specifier: ^13.0.0
         version: 13.0.0
-      xmldom:
-        specifier: ^0.6.0
-        version: 0.6.0
       zustand:
         specifier: ^5.0.8
         version: 5.0.10(@types/react@19.1.17)(react@19.1.0)(use-sync-external-store@1.6.0(react@19.1.0))
@@ -206,9 +206,6 @@ importers:
       '@types/uuid':
         specifier: ^11.0.0
         version: 11.0.0
-      '@types/xmldom':
-        specifier: ^0.1.34
-        version: 0.1.34
       eslint:
         specifier: ^9.25.0
         version: 9.39.2(jiti@1.21.7)
@@ -2376,12 +2373,6 @@ packages:
     resolution:
       {
         integrity: sha512-ThVF6DCVhA8kUGy+aazFQ4kXQ7E1Ty7A3ypFOe0IcJV8O/M511G99AW24irKrW56Wt44yG9+ij8FaqoBGkuBXg==,
-      }
-
-  '@types/xmldom@0.1.34':
-    resolution:
-      {
-        integrity: sha512-7eZFfxI9XHYjJJuugddV6N5YNeXgQE1lArWOcd1eCOKWb/FGs5SIjacSYuEJuwhsGS3gy4RuZ5EUIcqYscuPDA==,
       }
 
   '@types/yargs-parser@21.0.3':
@@ -8509,13 +8500,6 @@ packages:
       }
     engines: { node: '>=8.0' }
 
-  xmldom@0.6.0:
-    resolution:
-      {
-        integrity: sha512-iAcin401y58LckRZ0TkI4k0VSM1Qg0KGSc3i8rU+xrxe19A/BN1zHyVSJY7uoutVlaTSzYyk/v5AmkewAP7jtg==,
-      }
-    engines: { node: '>=10.0.0' }
-
   xtend@4.0.2:
     resolution:
       {
@@ -10387,8 +10371,6 @@ snapshots:
   '@types/ws@8.18.1':
     dependencies:
       '@types/node': 25.0.9
-
-  '@types/xmldom@0.1.34': {}
 
   '@types/yargs-parser@21.0.3': {}
 
@@ -14440,8 +14422,6 @@ snapshots:
   xmlbuilder@11.0.1: {}
 
   xmlbuilder@15.1.1: {}
-
-  xmldom@0.6.0: {}
 
   xtend@4.0.2: {}
 

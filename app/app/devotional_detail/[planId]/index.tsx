@@ -80,14 +80,14 @@ export default function DevotionalDetail() {
 
   const handleToggleReaction = () => {
     if (isGuest) {
-      router.push('/app/(auth)/signin');
+      router.push('/app/signin');
       return;
     }
     toggleReaction.mutate();
   };
   const onReportPress = () => {
     if (isGuest) {
-      router.push('/app/(auth)/signin');
+      router.push('/app/signin');
       return;
     }
     reportSheetRef.current?.expand();
@@ -102,7 +102,7 @@ export default function DevotionalDetail() {
     if (startPlanProgressMutation.isPending) return;
 
     if (isGuest) {
-      router.push('/(auth)/signin');
+      router.push('/app/signin');
       return;
     }
 
@@ -173,7 +173,7 @@ export default function DevotionalDetail() {
         isSaved={isSaved}
         onToggleSave={() => {
           if (isGuest) {
-            router.push('/app/(auth)/signin');
+            router.push('/app/signin');
             return;
           }
           toggleSavedPlan(planId, isSaved, plan ?? undefined);

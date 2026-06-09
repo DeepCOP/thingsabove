@@ -33,7 +33,7 @@ export default function ConfirmEmailScreen() {
 
         <TouchableOpacity
           className="w-full mt-6 p-3 rounded-lg bg-black dark:bg-white"
-          onPress={() => router.replace('/app/(auth)/signin')}>
+          onPress={() => router.replace('/app/signin')}>
           <Text className="text-center font-bold text-white dark:text-black">Go to Sign In</Text>
         </TouchableOpacity>
 

@@ -93,7 +93,7 @@ export default function ChurchInvitationRoute() {
               },
             });
           }}
-          onSignIn={() => router.push('/app/(auth)/signin')}
+          onSignIn={() => router.push('/app/signin')}
           onCreateAccount={() => router.push('/app/signup')}
           onOpenChurch={() => router.replace(`/app/church/${churchId}` as Href)}
           onInviterPress={onInviterPress}

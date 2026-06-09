@@ -28,7 +28,7 @@ export default function PlanInviteHandoff() {
     }
 
     router.replace({
-      pathname: '/app/(auth)/signin',
+      pathname: '/app/signin',
       params: {
         redirectPlanId: planId,
         redirectGroupId: groupId,
