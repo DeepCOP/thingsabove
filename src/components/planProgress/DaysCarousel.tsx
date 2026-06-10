@@ -27,8 +27,8 @@ export function DaysCarousel({
   const scrollViewRef = useRef<ScrollView>(null);
   const itemLayoutsRef = useRef<Record<string, DayLayout>>({});
   const [viewportWidth, setViewportWidth] = useState(0);
-  const [contentWidth, setContentWidth] = useState(0);
-  const [targetLayoutVersion, setTargetLayoutVersion] = useState(0);
+  const [carouselWidth, setCarouselWidth] = useState(0);
+  const [measuredDaysCount, setMeasuredDaysCount] = useState(0);
 
   const selectedDayId = useMemo(
     () => days.find((day) => day.day_number === selectedDay)?.id,
@@ -44,11 +44,17 @@ export function DaysCarousel({
     );
   }, []);
 
-  const handleContentSizeChange = useCallback((width: number) => {
-    setContentWidth((previousWidth) =>
+  const handleCarouselSizeChange = useCallback((width: number) => {
+    setCarouselWidth((previousWidth) =>
       Math.abs(previousWidth - width) < 1 ? previousWidth : width,
     );
   }, []);
+
+  const updateMeasuredDaysCount = useCallback(() => {
+    setMeasuredDaysCount(
+      days.reduce((count, day) => (itemLayoutsRef.current[day.id] ? count + 1 : count), 0),
+    );
+  }, [days]);
 
   const handleDayLayout = useCallback(
     (dayId: string, event: LayoutChangeEvent) => {
@@ -64,16 +70,22 @@ export function DaysCarousel({
       }
 
       itemLayoutsRef.current[dayId] = { width, x };
-
-      if (dayId === targetDayId) {
-        setTargetLayoutVersion((version) => version + 1);
-      }
+      updateMeasuredDaysCount();
     },
-    [targetDayId],
+    [updateMeasuredDaysCount],
   );
 
   useEffect(() => {
-    if (!targetDayId || viewportWidth <= 0) {
+    updateMeasuredDaysCount();
+  }, [updateMeasuredDaysCount]);
+
+  const centerCurrentDay = useCallback(() => {
+    const hasMeasuredAllDays =
+      measuredDaysCount >= days.length &&
+      days.length > 0 &&
+      days.every((day) => itemLayoutsRef.current[day.id]);
+
+    if (!targetDayId || viewportWidth <= 0 || carouselWidth <= 0 || !hasMeasuredAllDays) {
       return;
     }
 
@@ -83,14 +95,16 @@ export function DaysCarousel({
     }
 
     const centeredOffset = targetLayout.x + targetLayout.width / 2 - viewportWidth / 2;
-    const maxOffset = Math.max(contentWidth - viewportWidth, 0);
+    const maxOffset = Math.max(carouselWidth - viewportWidth, 0);
     const x = Math.max(0, Math.min(centeredOffset, maxOffset));
     const animationFrame = requestAnimationFrame(() => {
       scrollViewRef.current?.scrollTo({ x, animated: true });
     });
 
     return () => cancelAnimationFrame(animationFrame);
-  }, [contentWidth, targetDayId, targetLayoutVersion, viewportWidth]);
+  }, [carouselWidth, days, measuredDaysCount, targetDayId, viewportWidth]);
+
+  useEffect(() => centerCurrentDay(), [centerCurrentDay]);
 
   return (
     <ScrollView
@@ -99,7 +113,7 @@ export function DaysCarousel({
       showsHorizontalScrollIndicator={false}
       className="mb-5"
       onLayout={handleViewportLayout}
-      onContentSizeChange={handleContentSizeChange}>
+      onContentSizeChange={handleCarouselSizeChange}>
       <View className="flex-row gap-3 px-4">
         {days.map((d) => (
           <View key={d.id} onLayout={(event) => handleDayLayout(d.id, event)}>
