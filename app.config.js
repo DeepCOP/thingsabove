@@ -43,6 +43,10 @@ export default ({ config }) => ({
       infoPlist: {
         ITSAppUsesNonExemptEncryption: false,
       },
+      usesAppleSignIn: true,
+      entitlements: {
+        'com.apple.developer.applesignin': ['Default'],
+      },
     },
 
     android: {

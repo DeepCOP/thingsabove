@@ -9,6 +9,10 @@
       "distribution": "internal",
       "ios": {
         "simulator": false
+      },
+      "env": {
+        "APP_ENV": "development",
+        "EXPO_NO_CAPABILITY_SYNC": "1"
       }
     },
     "preview": {
@@ -20,7 +24,8 @@
         "buildType": "app-bundle"
       },
       "env": {
-        "APP_ENV": "preview"
+        "APP_ENV": "preview",
+        "EXPO_NO_CAPABILITY_SYNC": "1"
       }
     },
     "production": {
@@ -32,7 +37,8 @@
         "buildType": "app-bundle"
       },
       "env": {
-        "APP_ENV": "production"
+        "APP_ENV": "production",
+        "EXPO_NO_CAPABILITY_SYNC": "1"
       }
     }
   },
