@@ -78,6 +78,8 @@ export function DaysCarousel({
   }, [updateMeasuredDaysCount]);
 
   useEffect(() => {
+    itemLayoutsRef.current = {};
+    setMeasuredDaysCount(0);
     hasCenteredCurrentDayRef.current = false;
   }, [currentDayId, daysLayoutKey]);
 
