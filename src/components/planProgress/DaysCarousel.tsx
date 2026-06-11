@@ -26,15 +26,13 @@ export function DaysCarousel({
 }: Props) {
   const scrollViewRef = useRef<ScrollView>(null);
   const itemLayoutsRef = useRef<Record<string, DayLayout>>({});
+  const hasCenteredCurrentDayRef = useRef(false);
   const [viewportWidth, setViewportWidth] = useState(0);
   const [carouselWidth, setCarouselWidth] = useState(0);
   const [measuredDaysCount, setMeasuredDaysCount] = useState(0);
 
-  const selectedDayId = useMemo(
-    () => days.find((day) => day.day_number === selectedDay)?.id,
-    [days, selectedDay],
-  );
-  const targetDayId = currentDayId || selectedDayId;
+  const daysLayoutKey = useMemo(() => days.map((day) => day.id).join('|'), [days]);
+  const targetDayId = currentDayId;
 
   const handleViewportLayout = useCallback((event: LayoutChangeEvent) => {
     const nextWidth = event.nativeEvent.layout.width;
@@ -79,11 +77,19 @@ export function DaysCarousel({
     updateMeasuredDaysCount();
   }, [updateMeasuredDaysCount]);
 
+  useEffect(() => {
+    hasCenteredCurrentDayRef.current = false;
+  }, [currentDayId, daysLayoutKey]);
+
   const centerCurrentDay = useCallback(() => {
     const hasMeasuredAllDays =
       measuredDaysCount >= days.length &&
       days.length > 0 &&
       days.every((day) => itemLayoutsRef.current[day.id]);
+
+    if (currentDayId && hasCenteredCurrentDayRef.current) {
+      return;
+    }
 
     if (!targetDayId || viewportWidth <= 0 || carouselWidth <= 0 || !hasMeasuredAllDays) {
       return;
@@ -99,10 +105,14 @@ export function DaysCarousel({
     const x = Math.max(0, Math.min(centeredOffset, maxOffset));
     const animationFrame = requestAnimationFrame(() => {
       scrollViewRef.current?.scrollTo({ x, animated: true });
+
+      if (currentDayId) {
+        hasCenteredCurrentDayRef.current = true;
+      }
     });
 
     return () => cancelAnimationFrame(animationFrame);
-  }, [carouselWidth, days, measuredDaysCount, targetDayId, viewportWidth]);
+  }, [carouselWidth, currentDayId, days, measuredDaysCount, targetDayId, viewportWidth]);
 
   useEffect(() => centerCurrentDay(), [centerCurrentDay]);
 
