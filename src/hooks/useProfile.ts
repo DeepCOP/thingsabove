@@ -3,12 +3,16 @@ import { Alert } from 'react-native';
 import {
   deleteAvatarFromStorage,
   saveSignupAboutDetails,
+  signInUserWithAppleIdToken,
+  signInUserWithGoogleIdToken,
+  signInUserWithOAuth,
   signInUserWithPassword,
   signUpUser,
   updateProfile,
   uploadAvatar,
 } from '../api/mutations';
 import { getProfile } from '../api/queries';
+import type { AppleIdentityFullName, NativeIdentityProfile, OAuthProvider } from '../lib/authOAuth';
 import { SignUpAboutDetailsInput, SignUpProfileInput, UpdateProfileInput } from '../types/types';
 
 export const useProfile = (userId: string | undefined) => {
@@ -84,6 +88,45 @@ export const useSignInUserWithPassword = () => {
     },
     onError: (error) => {
       Alert.alert('Sign In Error', error.message);
+    },
+  });
+};
+
+export const useSignInUserWithOAuth = () => {
+  return useMutation({
+    mutationFn: async (params: { provider: OAuthProvider }) => {
+      return signInUserWithOAuth(params.provider);
+    },
+    onError: (error) => {
+      Alert.alert('OAuth Sign In Error', error.message);
+    },
+  });
+};
+
+export const useSignInUserWithAppleIdToken = () => {
+  return useMutation({
+    mutationFn: async (params: {
+      fullName?: AppleIdentityFullName | null;
+      identityToken: string;
+    }) => {
+      return signInUserWithAppleIdToken(params);
+    },
+    onError: (error) => {
+      Alert.alert('Apple Sign In Error', error.message);
+    },
+  });
+};
+
+export const useSignInUserWithGoogleIdToken = () => {
+  return useMutation({
+    mutationFn: async (params: {
+      identityToken: string;
+      profile?: NativeIdentityProfile | null;
+    }) => {
+      return signInUserWithGoogleIdToken(params);
+    },
+    onError: (error) => {
+      Alert.alert('Google Sign In Error', error.message);
     },
   });
 };

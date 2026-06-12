@@ -9,6 +9,11 @@ import {
   SignUpProfileInput,
   UpdateProfileInput,
 } from '../types/types';
+export {
+  signInUserWithAppleIdToken,
+  signInUserWithGoogleIdToken,
+  signInUserWithOAuth,
+} from '../lib/authOAuth';
 
 const normalizePlanStartDate = (value: string) => {
   const parsedValue = dayjs(value);

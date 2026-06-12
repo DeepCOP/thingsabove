@@ -1,3 +1,4 @@
+import AuthProviderButtons from '@/src/components/AuthProviderButtons';
 import { useSignUpUser } from '@/src/hooks/useProfile';
 import { openExternalUrl } from '@/src/utils';
 import { Ionicons } from '@expo/vector-icons';
@@ -270,6 +271,22 @@ export default function SignUp() {
                   Sign Up
                 </Text>
               </TouchableOpacity>
+
+              <AuthProviderButtons
+                dividerLabel="or sign up with"
+                onBeforeStart={() => {
+                  if (acceptedPolicies) return true;
+
+                  Alert.alert(
+                    'Accept policies',
+                    'Please agree to the Terms of Service and Statement of Faith before continuing.',
+                  );
+                  return false;
+                }}
+                onSuccess={() => {
+                  router.replace('/app/about-details');
+                }}
+              />
             </View>
           </View>
         </KeyboardAwareScrollView>
