@@ -2,7 +2,14 @@ import { Ionicons } from '@expo/vector-icons';
 import { UseMutateFunction } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Alert, Text, TouchableOpacity, View, useColorScheme } from 'react-native';
+import {
+  ActivityIndicator,
+  Alert,
+  Text,
+  TouchableOpacity,
+  View,
+  useColorScheme,
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AboutDetailsForm from '../components/AboutDetailsForm';
 import Avatar from '../components/Avatar';
@@ -29,7 +36,7 @@ export default function ProfileScreen({
   onPrayerBoard,
 }: {
   profile: ProfileWithChurch | undefined;
-  onSignOut: () => void;
+  onSignOut: () => Promise<void> | void;
   onSetting: () => void;
   onPrayerBoard: () => void;
   handleUpdateProfile: UseMutateFunction<void, Error, UpdateProfileInput, unknown>;
@@ -58,6 +65,7 @@ export default function ProfileScreen({
   const [detailsForm, setDetailsForm] = useState(() => buildProfileDetailsFormValues(profile));
   const [detailsErrors, setDetailsErrors] = useState<ProfileDetailsFormErrors>({});
   const [showDetailsForm, setShowDetailsForm] = useState(false);
+  const [isSigningOut, setIsSigningOut] = useState(false);
   const actionColor = colorScheme === 'dark' ? '#60a5fa' : '#2563eb';
 
   const churchName = profile?.church?.name ?? '';
@@ -95,6 +103,17 @@ export default function ProfileScreen({
     handleUpdateProfile(toUpdateProfileInput(detailsForm), {
       onSuccess: () => setShowDetailsForm(false),
     });
+  };
+
+  const handleSignOut = async () => {
+    setIsSigningOut(true);
+
+    try {
+      await onSignOut();
+    } catch (error) {
+      setIsSigningOut(false);
+      Alert.alert('Log out failed', error instanceof Error ? error.message : 'Please try again.');
+    }
   };
 
   return (
@@ -338,15 +357,25 @@ export default function ProfileScreen({
       />
 
       <TouchableOpacity
+        disabled={isSigningOut}
         onPress={() => {
+          if (isSigningOut) return;
+
           Alert.alert('Log out', 'Are you sure you want to log out?', [
             { text: 'Cancel', style: 'cancel' },
-            { text: 'Log out', style: 'destructive', onPress: onSignOut },
+            { text: 'Log out', style: 'destructive', onPress: handleSignOut },
           ]);
         }}
-        className="absolute bottom-0 left-0 right-0 flex-row items-center justify-between border-t border-gray-200 bg-white px-4 py-5 dark:border-neutral-800 dark:bg-black">
-        <Text className="text-base text-red-600">Log Out</Text>
-        <Ionicons name="chevron-forward" size={20} color="#9ca3af" />
+        className="absolute bottom-0 left-0 right-0 flex-row items-center justify-between border-t border-gray-200 bg-white px-4 py-5 dark:border-neutral-800 dark:bg-black"
+        style={{ opacity: isSigningOut ? 0.7 : 1 }}>
+        <Text className="text-base text-red-600">
+          {isSigningOut ? 'Logging out...' : 'Log Out'}
+        </Text>
+        {isSigningOut ? (
+          <ActivityIndicator color="#dc2626" />
+        ) : (
+          <Ionicons name="chevron-forward" size={20} color="#9ca3af" />
+        )}
       </TouchableOpacity>
     </View>
   );

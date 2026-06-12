@@ -18,9 +18,11 @@ import {
   ActivityIndicator,
   Alert,
   Platform,
+  StyleSheet,
   Text,
   TouchableOpacity,
   useColorScheme,
+  useWindowDimensions,
   View,
 } from 'react-native';
 
@@ -47,6 +49,7 @@ export default function AuthProviderButtons({
   onSuccess,
 }: AuthProviderButtonsProps) {
   const colorScheme = useColorScheme();
+  const { width: windowWidth } = useWindowDimensions();
   const signInWithOAuth = useSignInUserWithOAuth();
   const signInWithAppleIdToken = useSignInUserWithAppleIdToken();
   const signInWithGoogleIdToken = useSignInUserWithGoogleIdToken();
@@ -58,6 +61,7 @@ export default function AuthProviderButtons({
     signInWithAppleIdToken.isPending ||
     signInWithGoogleIdToken.isPending;
   const foregroundColor = colorScheme === 'dark' ? '#F5F5F5' : '#111827';
+  const authProviderButtonWidth = Math.max(192, Math.min(windowWidth - 48, 312));
   const visibleProviders = PROVIDERS.filter(
     ({ provider }) =>
       !(provider === 'apple' && shouldUseNativeApple) &&
@@ -259,13 +263,33 @@ export default function AuthProviderButtons({
 
       <View className="gap-3">
         {shouldUseNativeGoogle ? (
-          <View className="overflow-hidden rounded-full">
+          <View
+            style={{
+              alignItems: 'center',
+              alignSelf: 'center',
+              backgroundColor: colorScheme === 'dark' ? '#111827' : '#FFFFFF',
+              borderColor: colorScheme === 'dark' ? '#FFFFFF' : '#D1D5DB',
+              borderRadius: 999,
+              borderWidth: 1,
+              height: 48,
+              justifyContent: 'center',
+              overflow: 'hidden',
+              position: 'relative',
+              width: authProviderButtonWidth,
+              opacity: disabled || isBusy ? 0.6 : 1,
+            }}>
             <GoogleSigninButton
               color={GoogleSigninButton.Color.Dark}
               disabled={disabled || isBusy}
               onPress={handleNativeGooglePress}
               size={GoogleSigninButton.Size.Wide}
-              style={{ height: 48, opacity: disabled || isBusy ? 0.6 : 1, width: '100%' }}
+              style={[
+                StyleSheet.absoluteFillObject,
+                {
+                  height: '100%',
+                  width: '100%',
+                },
+              ]}
             />
           </View>
         ) : null}
@@ -281,7 +305,12 @@ export default function AuthProviderButtons({
               className="flex-row items-center justify-center rounded-full border border-gray-300 bg-white p-3 dark:border-gray-700 dark:bg-black"
               disabled={isDisabled}
               onPress={() => handlePress(provider)}
-              style={{ minHeight: 48, opacity: isDisabled ? 0.6 : 1 }}>
+              style={{
+                alignSelf: 'center',
+                minHeight: 48,
+                opacity: isDisabled ? 0.6 : 1,
+                width: authProviderButtonWidth,
+              }}>
               {isProviderBusy ? (
                 <ActivityIndicator color={foregroundColor} />
               ) : (
@@ -297,13 +326,21 @@ export default function AuthProviderButtons({
         })}
 
         {shouldUseNativeApple ? (
-          <AppleAuthentication.AppleAuthenticationButton
-            buttonType={AppleAuthentication.AppleAuthenticationButtonType.SIGN_IN}
-            buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.BLACK}
-            cornerRadius={24}
-            onPress={handleNativeApplePress}
-            style={{ height: 48, opacity: disabled || isBusy ? 0.6 : 1, width: '100%' }}
-          />
+          <View
+            className="overflow-hidden rounded-full border border-white"
+            style={{
+              alignSelf: 'center',
+              borderRadius: 999,
+              width: authProviderButtonWidth,
+            }}>
+            <AppleAuthentication.AppleAuthenticationButton
+              buttonType={AppleAuthentication.AppleAuthenticationButtonType.SIGN_IN}
+              buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.BLACK}
+              cornerRadius={24}
+              onPress={handleNativeApplePress}
+              style={{ height: 48, opacity: disabled || isBusy ? 0.6 : 1, width: '100%' }}
+            />
+          </View>
         ) : null}
       </View>
     </View>
