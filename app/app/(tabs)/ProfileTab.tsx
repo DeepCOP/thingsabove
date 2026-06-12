@@ -1,3 +1,4 @@
+import { deleteAccount } from '@/src/api/mutations';
 import {
   useDeleteAvatar,
   useProfile,
@@ -7,7 +8,7 @@ import {
 import ProfileScreen from '@/src/screens/Profile';
 import { useAuth } from '@/src/state/AuthContext';
 import { useRouter } from 'expo-router';
-import { Text, TouchableOpacity, View } from 'react-native';
+import { Alert, Text, TouchableOpacity, View } from 'react-native';
 
 export default function App() {
   const { session, signOut } = useAuth();
@@ -16,13 +17,24 @@ export default function App() {
   const updateProfile = useUpdateProfile(session?.user?.id);
   const deleteAvatar = useDeleteAvatar(session?.user?.id);
   const uploadAvatar = useUploadAvatar(session?.user?.id);
+
   const onSignOut = async () => {
     await signOut();
   };
+
+  const onDeleteAccount = async () => {
+    try {
+      await deleteAccount(session?.user?.id ?? '');
+    } catch {
+      Alert.alert('Error', 'Failed to delete account. Please try again.');
+    }
+  };
+
   return session && session.user ? (
     <ProfileScreen
       profile={profileQuery.data}
       onSignOut={onSignOut}
+      onDeleteAccount={onDeleteAccount}
       onSetting={() => router.push('/app/settings')}
       onPrayerBoard={() =>
         router.navigate({
