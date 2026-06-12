@@ -25,9 +25,10 @@ Deno.serve(async (req) => {
     );
 
     // Verify the JWT matches the requested user_id
-    const { data: { user }, error: userError } = await supabase.auth.getUser(
-      authHeader.replace('Bearer ', ''),
-    );
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser(authHeader.replace('Bearer ', ''));
 
     if (userError || !user) {
       return new Response('Unauthorized', { status: 401 });
@@ -38,10 +39,7 @@ Deno.serve(async (req) => {
     }
 
     // Clear push notification setup before deleting
-    await supabase
-      .from('profiles')
-      .update({ expo_push_token: null })
-      .eq('id', userId);
+    await supabase.from('profiles').update({ expo_push_token: null }).eq('id', userId);
 
     // Delete the user from auth.users — the profile will cascade-delete
     const { error: deleteError } = await supabase.auth.admin.deleteUser(userId);
