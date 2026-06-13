@@ -16,9 +16,11 @@ export default function App() {
   const updateProfile = useUpdateProfile(session?.user?.id);
   const deleteAvatar = useDeleteAvatar(session?.user?.id);
   const uploadAvatar = useUploadAvatar(session?.user?.id);
+
   const onSignOut = async () => {
     await signOut();
   };
+
   return session && session.user ? (
     <ProfileScreen
       profile={profileQuery.data}

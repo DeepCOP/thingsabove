@@ -1,6 +1,6 @@
+import dayjs from '../lib/dayjs';
 import { getCurrentDeviceExpoPushToken } from '../lib/pushToken';
 import { supabase } from '../lib/supabaseClient';
-import dayjs from '../lib/dayjs';
 import {
   DayItemType,
   PlanProgress,
@@ -484,4 +484,31 @@ export const upsertPlanRating = async ({ planId, rating }: { planId: string; rat
   });
 
   if (error) throw error;
+};
+
+export const deleteAccount = async (userId: string) => {
+  const { data, error: sessionError } = await supabase.auth.getSession();
+  if (sessionError) throw sessionError;
+
+  const accessToken = data.session?.access_token;
+  if (!accessToken) throw new Error('No active session');
+
+  const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_PROJECT_URL;
+  const functionUrl = `${supabaseUrl}/functions/v1/delete-account`;
+
+  const response = await fetch(functionUrl, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${accessToken}`,
+    },
+    body: JSON.stringify({ user_id: userId }),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text().catch(() => 'Unknown error');
+    throw new Error(`Failed to delete account: ${errorText}`);
+  }
+
+  await supabase.auth.signOut();
 };

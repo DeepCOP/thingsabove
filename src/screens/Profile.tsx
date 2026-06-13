@@ -102,7 +102,7 @@ export default function ProfileScreen({
       className="flex-1 bg-white dark:bg-black"
       style={{ paddingTop: insets.top, paddingBottom: insets.bottom }}>
       <MyPlansList
-        containterStyle={{ paddingBottom: 120 }}
+        containterStyle={{ paddingBottom: 80 }}
         listHeaderComponent={
           <>
             <View className="relative h-14 px-4 border-b border-gray-200 dark:border-neutral-800 justify-center">
