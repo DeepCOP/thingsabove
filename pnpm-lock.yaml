@@ -70,6 +70,9 @@ importers:
       expo-application:
         specifier: ~7.0.8
         version: 7.0.8(expo@54.0.33)
+      expo-build-properties:
+        specifier: ^56.0.18
+        version: 56.0.18(expo@54.0.33)
       expo-clipboard:
         specifier: ~8.0.7
         version: 8.0.8(expo@54.0.33)(react-native@0.81.5(@babel/core@7.28.6)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
@@ -1332,6 +1335,12 @@ packages:
     resolution:
       {
         integrity: sha512-9I6ZqvnAvKKDiO+ZF8BpQQFYWXOJvTAL5L/227RUbWG1OVZDInFifzCBiqAZ3b67NRfeAgpgvbA7rejsqhY62A==,
+      }
+
+  '@expo/schema-utils@56.0.1':
+    resolution:
+      {
+        integrity: sha512-CZ/+mYbQmWeOnkCGlWy9K+lFxbJSMFY7+TqBZcKzBSTU5Q7IGRvn/sOG3TdNjIdLPmbA8xe7R/c3UUQ28R9i9w==,
       }
 
   '@expo/sdk-runtime-versions@1.0.0':
@@ -4224,6 +4233,14 @@ packages:
       expo: '*'
       react: '*'
       react-native: '*'
+
+  expo-build-properties@56.0.18:
+    resolution:
+      {
+        integrity: sha512-at03ytur1Vfyl9ddtRMqIdSyR/oV57GM04+NZ5rhFTF0mC7dmKzxS9RBb34KHDPdT8UwUt7KsKbzYD1lnxLAKg==,
+      }
+    peerDependencies:
+      expo: '*'
 
   expo-clipboard@8.0.8:
     resolution:
@@ -9632,6 +9649,8 @@ snapshots:
 
   '@expo/schema-utils@0.1.8': {}
 
+  '@expo/schema-utils@56.0.1': {}
+
   '@expo/sdk-runtime-versions@1.0.0': {}
 
   '@expo/spawn-async@1.7.2':
@@ -11757,6 +11776,13 @@ snapshots:
       react-native: 0.81.5(@babel/core@7.28.6)(@types/react@19.1.17)(react@19.1.0)
     transitivePeerDependencies:
       - supports-color
+
+  expo-build-properties@56.0.18(expo@54.0.33):
+    dependencies:
+      '@expo/schema-utils': 56.0.1
+      expo: 54.0.33(@babel/core@7.28.6)(@expo/metro-runtime@6.1.2)(expo-router@6.0.23)(react-native-webview@13.15.0(react-native@0.81.5(@babel/core@7.28.6)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native@0.81.5(@babel/core@7.28.6)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
+      resolve-from: 5.0.0
+      semver: 7.7.3
 
   expo-clipboard@8.0.8(expo@54.0.33)(react-native@0.81.5(@babel/core@7.28.6)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0):
     dependencies:

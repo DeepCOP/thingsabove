@@ -7,18 +7,17 @@ import type { OAuthProvider } from '@/src/lib/authOAuth';
 import { Ionicons } from '@expo/vector-icons';
 import {
   GoogleSignin,
-  GoogleSigninButton,
   isErrorWithCode,
   isSuccessResponse,
   statusCodes,
 } from '@react-native-google-signin/google-signin';
 import * as AppleAuthentication from 'expo-apple-authentication';
+import { Image } from 'expo-image';
 import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
   Platform,
-  StyleSheet,
   Text,
   TouchableOpacity,
   useColorScheme,
@@ -42,6 +41,8 @@ const PROVIDERS: {
   { provider: 'apple', label: 'Continue with Apple', icon: 'logo-apple' },
 ];
 
+const GOOGLE_G_MARK = require('../../assets/images/google-g.svg');
+
 export default function AuthProviderButtons({
   disabled = false,
   dividerLabel,
@@ -61,6 +62,9 @@ export default function AuthProviderButtons({
     signInWithAppleIdToken.isPending ||
     signInWithGoogleIdToken.isPending;
   const foregroundColor = colorScheme === 'dark' ? '#F5F5F5' : '#111827';
+  const googleButtonBackgroundColor = colorScheme === 'dark' ? '#131314' : '#FFFFFF';
+  const googleButtonBorderColor = colorScheme === 'dark' ? '#8E918F' : '#747775';
+  const googleButtonTextColor = colorScheme === 'dark' ? '#E3E3E3' : '#1F1F1F';
   const authProviderButtonWidth = Math.max(192, Math.min(windowWidth - 48, 312));
   const visibleProviders = PROVIDERS.filter(
     ({ provider }) =>
@@ -263,35 +267,70 @@ export default function AuthProviderButtons({
 
       <View className="gap-3">
         {shouldUseNativeGoogle ? (
-          <View
+          <TouchableOpacity
+            activeOpacity={0.85}
+            accessibilityLabel="Continue with Google"
+            accessibilityRole="button"
+            disabled={disabled || isBusy}
+            onPress={handleNativeGooglePress}
             style={{
               alignItems: 'center',
               alignSelf: 'center',
-              backgroundColor: colorScheme === 'dark' ? '#111827' : '#FFFFFF',
-              borderColor: colorScheme === 'dark' ? '#FFFFFF' : '#D1D5DB',
+              backgroundColor: googleButtonBackgroundColor,
+              borderColor: googleButtonBorderColor,
               borderRadius: 999,
               borderWidth: 1,
               height: 48,
               justifyContent: 'center',
               overflow: 'hidden',
               position: 'relative',
-              width: authProviderButtonWidth,
               opacity: disabled || isBusy ? 0.6 : 1,
+              width: authProviderButtonWidth,
             }}>
-            <GoogleSigninButton
-              color={GoogleSigninButton.Color.Dark}
-              disabled={disabled || isBusy}
-              onPress={handleNativeGooglePress}
-              size={GoogleSigninButton.Size.Wide}
-              style={[
-                StyleSheet.absoluteFillObject,
-                {
-                  height: '100%',
-                  width: '100%',
-                },
-              ]}
-            />
-          </View>
+            <View
+              style={{
+                alignItems: 'center',
+                flexDirection: 'row',
+                height: '100%',
+                justifyContent: 'center',
+                paddingHorizontal: 16,
+                width: '100%',
+              }}>
+              {signInWithGoogleIdToken.isPending ? (
+                <ActivityIndicator color={googleButtonTextColor} />
+              ) : (
+                <>
+                  <View
+                    style={{
+                      alignItems: 'center',
+                      backgroundColor: '#FFFFFF',
+                      borderRadius: 10,
+                      height: 20,
+                      justifyContent: 'center',
+                      marginRight: 12,
+                      width: 20,
+                    }}>
+                    <Image
+                      accessibilityIgnoresInvertColors
+                      alt=""
+                      contentFit="contain"
+                      source={GOOGLE_G_MARK}
+                      style={{ height: 18, width: 18 }}
+                    />
+                  </View>
+                  <Text
+                    style={{
+                      color: googleButtonTextColor,
+                      fontSize: 14,
+                      fontWeight: '600',
+                      lineHeight: 20,
+                    }}>
+                    Continue with Google
+                  </Text>
+                </>
+              )}
+            </View>
+          </TouchableOpacity>
         ) : null}
 
         {visibleProviders.map(({ provider, label, icon }) => {
