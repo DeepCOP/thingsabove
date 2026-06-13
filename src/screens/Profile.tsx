@@ -25,13 +25,11 @@ export default function ProfileScreen({
   uploading,
   deleting,
   handleDeleteAvatar,
-  onDeleteAccount,
   onSetting,
   onPrayerBoard,
 }: {
   profile: ProfileWithChurch | undefined;
   onSignOut: () => void;
-  onDeleteAccount: () => void;
   onSetting: () => void;
   onPrayerBoard: () => void;
   handleUpdateProfile: UseMutateFunction<void, Error, UpdateProfileInput, unknown>;
@@ -104,7 +102,7 @@ export default function ProfileScreen({
       className="flex-1 bg-white dark:bg-black"
       style={{ paddingTop: insets.top, paddingBottom: insets.bottom }}>
       <MyPlansList
-        containterStyle={{ paddingBottom: 120 }}
+        containterStyle={{ paddingBottom: 80 }}
         listHeaderComponent={
           <>
             <View className="relative h-14 px-4 border-b border-gray-200 dark:border-neutral-800 justify-center">
@@ -349,22 +347,6 @@ export default function ProfileScreen({
         className="absolute bottom-0 left-0 right-0 flex-row items-center justify-between border-t border-gray-200 bg-white px-4 py-5 dark:border-neutral-800 dark:bg-black">
         <Text className="text-base text-red-600">Log Out</Text>
         <Ionicons name="chevron-forward" size={20} color="#9ca3af" />
-      </TouchableOpacity>
-
-      <TouchableOpacity
-        onPress={() => {
-          Alert.alert(
-            'Delete Account',
-            'Are you sure you want to permanently delete your account? This action cannot be undone. All your data will be lost.',
-            [
-              { text: 'Cancel', style: 'cancel' },
-              { text: 'Delete', style: 'destructive', onPress: onDeleteAccount },
-            ],
-          );
-        }}
-        className="absolute bottom-16 left-0 right-0 flex-row items-center justify-center border-t border-red-200 bg-red-50 px-4 py-4 dark:border-red-900 dark:bg-red-950/30">
-        <Ionicons name="trash-outline" size={18} color="#dc2626" />
-        <Text className="ml-2 text-base font-semibold text-red-600">Delete Account</Text>
       </TouchableOpacity>
     </View>
   );
