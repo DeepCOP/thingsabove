@@ -1,3 +1,4 @@
+import AuthProviderButtons from '@/src/components/AuthProviderButtons';
 import { useSignInUserWithPassword } from '@/src/hooks/useProfile';
 import { openExternalUrl } from '@/src/utils';
 import { Ionicons } from '@expo/vector-icons';
@@ -112,6 +113,8 @@ export default function SignIn() {
               Sign In
             </Text>
           </TouchableOpacity>
+
+          <AuthProviderButtons dividerLabel="or sign in with" onSuccess={redirectToInvitation} />
         </ScrollView>
       </TouchableWithoutFeedback>
     </KeyboardAvoidingView>

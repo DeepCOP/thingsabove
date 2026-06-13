@@ -9,6 +9,11 @@ import {
   SignUpProfileInput,
   UpdateProfileInput,
 } from '../types/types';
+export {
+  signInUserWithAppleIdToken,
+  signInUserWithGoogleIdToken,
+  signInUserWithOAuth,
+} from '../lib/authOAuth';
 
 const normalizePlanStartDate = (value: string) => {
   const parsedValue = dayjs(value);
@@ -392,7 +397,9 @@ export const signUpUser = async ({
   // Supabase returns an obfuscated/fake user with empty identities for existing confirmed users
   // when email confirmations are enabled. Treat this as "already registered".
   if (data?.user?.identities && data.user.identities.length === 0) {
-    throw new Error('Email already registered. Please sign in or check your inbox.');
+    throw new Error(
+      'This email is already connected to an account. Please sign in instead, or use Google/Apple if that is how you created the account.',
+    );
   }
 
   return data;

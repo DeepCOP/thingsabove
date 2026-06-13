@@ -24,6 +24,10 @@ const androidAppRoutes = [
   '/profile',
 ];
 const androidAppLinkPaths = ['/app', ...androidAppRoutes.map((pathPrefix) => `/app${pathPrefix}`)];
+const googleIosUrlScheme = process.env.EXPO_PUBLIC_GOOGLE_IOS_URL_SCHEME;
+const googleSignInPlugin = googleIosUrlScheme
+  ? [['@react-native-google-signin/google-signin', { iosUrlScheme: googleIosUrlScheme }]]
+  : [];
 
 export default ({ config }) => ({
   expo: {
@@ -116,6 +120,25 @@ export default ({ config }) => ({
       ],
       'expo-font',
       'expo-secure-store',
+      'expo-apple-authentication',
+      ...googleSignInPlugin,
+      [
+        'expo-build-properties',
+        {
+          ios: {
+            extraPods: [
+              {
+                name: 'GoogleUtilities',
+                modular_headers: true,
+              },
+              {
+                name: 'RecaptchaInterop',
+                modular_headers: true,
+              },
+            ],
+          },
+        },
+      ],
       [
         'expo-notifications',
         {
