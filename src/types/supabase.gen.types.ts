@@ -1220,6 +1220,7 @@ export type Database = {
           is_answered: boolean;
           is_urgent: boolean;
           scope: string;
+          testimony: string | null;
           updated_at: string;
           user_id: string;
         };
@@ -1235,6 +1236,7 @@ export type Database = {
           is_answered?: boolean;
           is_urgent?: boolean;
           scope: string;
+          testimony?: string | null;
           updated_at?: string;
           user_id: string;
         };
@@ -1250,6 +1252,7 @@ export type Database = {
           is_answered?: boolean;
           is_urgent?: boolean;
           scope?: string;
+          testimony?: string | null;
           updated_at?: string;
           user_id?: string;
         };
@@ -2233,6 +2236,7 @@ export type Database = {
           is_urgent: boolean;
           prayer_count: number;
           scope: string;
+          testimony: string | null;
           updated_at: string;
           user_id: string;
           viewer_has_prayed: boolean;
@@ -2266,6 +2270,7 @@ export type Database = {
           is_urgent: boolean;
           prayer_count: number;
           scope: string;
+          testimony: string | null;
           updated_at: string;
           user_id: string;
           viewer_has_prayed: boolean;
@@ -2407,7 +2412,7 @@ export type Database = {
         Returns: undefined;
       };
       mark_prayer_request_answered: {
-        Args: { p_is_answered?: boolean; p_request_id: string };
+        Args: { p_is_answered?: boolean; p_request_id: string; p_testimony?: string };
         Returns: undefined;
       };
       normalize_church_text: { Args: { p_value: string }; Returns: string };

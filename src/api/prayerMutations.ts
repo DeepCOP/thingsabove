@@ -71,13 +71,16 @@ export const addPrayerRequestEncouragement = async ({
 export const setPrayerRequestAnswered = async ({
   requestId,
   isAnswered,
+  testimony,
 }: {
   requestId: string;
   isAnswered: boolean;
+  testimony?: string;
 }) => {
   const { error } = await supabase.rpc('mark_prayer_request_answered', {
     p_request_id: requestId,
     p_is_answered: isAnswered,
+    p_testimony: testimony,
   });
 
   if (error) throw error;

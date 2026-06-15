@@ -12,7 +12,7 @@ import { formatRelativeTime } from '@/src/lib/relativeTime';
 import { getAvatarNameParts, getDisplayName } from '@/src/utils';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Alert,
   KeyboardAvoidingView,
@@ -38,8 +38,19 @@ export default function PrayerRequestDetailScreen({ requestId }: Props) {
   const addEncouragementMutation = useAddPrayerRequestEncouragement();
   const markAnsweredMutation = useSetPrayerRequestAnswered();
   const [encouragementText, setEncouragementText] = useState('');
+  const [testimonyText, setTestimonyText] = useState('');
 
   const request = detailQuery.data;
+  const loadedRequestId = request?.id;
+  const loadedTestimony = request?.testimony;
+
+  useEffect(() => {
+    if (!loadedRequestId) {
+      return;
+    }
+
+    setTestimonyText(loadedTestimony ?? '');
+  }, [loadedRequestId, loadedTestimony]);
 
   const handleSubmitEncouragement = () => {
     if (!encouragementText.trim()) {
@@ -55,6 +66,32 @@ export default function PrayerRequestDetailScreen({ requestId }: Props) {
         onSuccess: () => setEncouragementText(''),
         onError: (error) => {
           Alert.alert('Unable to post encouragement', error.message);
+        },
+      },
+    );
+  };
+
+  const handleSetAnswered = (isAnswered: boolean) => {
+    if (!request) {
+      return;
+    }
+
+    const testimony = testimonyText.trim();
+
+    if (testimony.length > 1000) {
+      Alert.alert('Testimony is too long', 'Keep your testimony to 1000 characters or fewer.');
+      return;
+    }
+
+    markAnsweredMutation.mutate(
+      {
+        requestId: request.id,
+        isAnswered,
+        testimony: isAnswered ? testimony : undefined,
+      },
+      {
+        onError: (error) => {
+          Alert.alert('Unable to update prayer request', error.message);
         },
       },
     );
@@ -148,6 +185,17 @@ export default function PrayerRequestDetailScreen({ requestId }: Props) {
             {request.content}
           </Text>
 
+          {request.is_answered && request.testimony ? (
+            <View className="mt-5 rounded-3xl bg-emerald-50 p-4 dark:bg-emerald-950/30">
+              <Text className="text-sm font-semibold uppercase tracking-wide text-emerald-700 dark:text-emerald-300">
+                Testimony
+              </Text>
+              <Text className="mt-2 text-base leading-7 text-emerald-950 dark:text-emerald-100">
+                {request.testimony}
+              </Text>
+            </View>
+          ) : null}
+
           <View className="mt-4 self-start rounded-full bg-blue-50 px-2 py-1 dark:bg-blue-950/40">
             <Text className="text-xs text-blue-700 dark:text-blue-300">{request.category}</Text>
           </View>
@@ -182,22 +230,46 @@ export default function PrayerRequestDetailScreen({ requestId }: Props) {
             </Text>
 
             <View className="mt-4 gap-3">
+              <TextInput
+                multiline
+                placeholder="Share how this prayer was answered..."
+                placeholderTextColor="#9ca3af"
+                maxLength={1000}
+                value={testimonyText}
+                onChangeText={setTestimonyText}
+                className="min-h-28 rounded-3xl border border-gray-200 p-4 text-base text-gray-900 dark:border-neutral-700 dark:text-white"
+                textAlignVertical="top"
+              />
+
+              <Text className="text-right text-xs text-gray-500 dark:text-gray-400">
+                {testimonyText.trim().length}/1000
+              </Text>
+
               <TouchableOpacity
                 className="rounded-full bg-black py-4 dark:bg-white"
-                onPress={() =>
-                  markAnsweredMutation.mutate({
-                    requestId: request.id,
-                    isAnswered: !request.is_answered,
-                  })
-                }>
+                disabled={markAnsweredMutation.isPending}
+                onPress={() => handleSetAnswered(true)}>
                 <Text className="text-center font-semibold text-white dark:text-black">
                   {markAnsweredMutation.isPending
                     ? 'Saving...'
                     : request.is_answered
-                      ? 'Mark as Unanswered'
-                      : 'Mark as Answered'}
+                      ? 'Save Testimony'
+                      : testimonyText.trim()
+                        ? 'Mark Answered & Share'
+                        : 'Mark as Answered'}
                 </Text>
               </TouchableOpacity>
+
+              {request.is_answered ? (
+                <TouchableOpacity
+                  className="rounded-full border border-gray-300 py-4 dark:border-neutral-700"
+                  disabled={markAnsweredMutation.isPending}
+                  onPress={() => handleSetAnswered(false)}>
+                  <Text className="text-center font-semibold text-gray-900 dark:text-white">
+                    Mark as Unanswered
+                  </Text>
+                </TouchableOpacity>
+              ) : null}
 
               <TouchableOpacity
                 className="rounded-full border border-gray-300 py-4 dark:border-neutral-700"

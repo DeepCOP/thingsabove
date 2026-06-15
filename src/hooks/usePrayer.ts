@@ -167,8 +167,8 @@ export function useSetPrayerRequestAnswered() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ requestId, isAnswered }: { requestId: string; isAnswered: boolean }) =>
-      await setPrayerRequestAnswered({ requestId, isAnswered }),
+    mutationFn: async (variables: { requestId: string; isAnswered: boolean; testimony?: string }) =>
+      await setPrayerRequestAnswered(variables),
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['prayer_requests'] });
       queryClient.invalidateQueries({ queryKey: ['prayer_request', variables.requestId] });

@@ -11,16 +11,22 @@ import { useEffect, useMemo, useState } from 'react';
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-type CommunitySection = 'my-church' | 'prayer-board' | 'friends';
+type CommunitySection = 'my-church' | 'prayer-board' | 'praise-item' | 'friends';
 
 const COMMUNITY_SECTIONS: { key: CommunitySection; label: string }[] = [
   { key: 'my-church', label: 'My Church' },
   { key: 'prayer-board', label: 'Prayer Board' },
+  { key: 'praise-item', label: 'Praise Item' },
   { key: 'friends', label: 'Friends' },
 ];
 
 function isCommunitySection(value: string | undefined): value is CommunitySection {
-  return value === 'my-church' || value === 'prayer-board' || value === 'friends';
+  return (
+    value === 'my-church' ||
+    value === 'prayer-board' ||
+    value === 'praise-item' ||
+    value === 'friends'
+  );
 }
 
 export default function CommunityTab() {
@@ -81,6 +87,20 @@ export default function CommunityTab() {
 
     if (activeSection === 'prayer-board') {
       return <PrayerBoardScreen />;
+    }
+
+    if (activeSection === 'praise-item') {
+      return (
+        <PrayerBoardScreen
+          fixedFilter="answered"
+          emptyStateCopy={{
+            title: 'No praise items yet',
+            description:
+              'Answered prayer requests will appear here as people share what God has done.',
+          }}
+          loadMoreLabel="Load More Praise Items"
+        />
+      );
     }
 
     if (activeSection === 'friends') {
@@ -162,12 +182,12 @@ export default function CommunityTab() {
             return (
               <TouchableOpacity
                 key={item.key}
-                className={`flex-1 items-center justify-center rounded-full px-3 py-2 ${
+                className={`flex-1 items-center justify-center rounded-full px-2 py-2 ${
                   isActive ? 'bg-white' : ''
                 }`}
                 onPress={() => setActiveSection(item.key)}>
                 <Text
-                  className={`text-center text-sm font-semibold ${
+                  className={`text-center text-xs font-semibold ${
                     isActive ? 'text-black' : 'text-gray-400'
                   }`}>
                   {item.label}

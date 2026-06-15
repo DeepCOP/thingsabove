@@ -2,11 +2,7 @@ import PrayerEmptyState from '@/src/components/prayer/PrayerEmptyState';
 import PrayerFilterChips from '@/src/components/prayer/PrayerFilterChips';
 import PrayerRequestCard from '@/src/components/prayer/PrayerRequestCard';
 import PrayerScopeSwitch from '@/src/components/prayer/PrayerScopeSwitch';
-import {
-  usePrayerBoard,
-  useSetPrayerRequestAnswered,
-  useTogglePrayerRequestSupport,
-} from '@/src/hooks/usePrayer';
+import { usePrayerBoard, useTogglePrayerRequestSupport } from '@/src/hooks/usePrayer';
 import { useProfile } from '@/src/hooks/useProfile';
 import { useAuth } from '@/src/state/AuthContext';
 import { PrayerFilter, PrayerScope } from '@/src/types/types';
@@ -15,6 +11,17 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { RefreshControl, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import LoadingSpinner from '@/src/components/LoadingSpinner';
+
+type PrayerBoardScreenProps = {
+  fixedFilter?: PrayerFilter;
+  initialFilter?: PrayerFilter;
+  emptyStateCopy?: {
+    title: string;
+    description: string;
+  };
+  newRequestLabel?: string;
+  loadMoreLabel?: string;
+};
 
 function PrayerBoardSkeleton() {
   return (
@@ -36,21 +43,27 @@ function PrayerBoardSkeleton() {
   );
 }
 
-export default function PrayerBoardScreen() {
+export default function PrayerBoardScreen({
+  fixedFilter,
+  initialFilter = 'all',
+  emptyStateCopy,
+  newRequestLabel = 'New Prayer Request',
+  loadMoreLabel = 'Load More Requests',
+}: PrayerBoardScreenProps = {}) {
   const { session } = useAuth();
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const [filter, setFilter] = useState<PrayerFilter>('all');
+  const [filter, setFilter] = useState<PrayerFilter>(fixedFilter ?? initialFilter);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const activeFilter = fixedFilter ?? filter;
 
   const profileQuery = useProfile(session?.user?.id);
   const togglePrayerMutation = useTogglePrayerRequestSupport();
-  const markAnsweredMutation = useSetPrayerRequestAnswered();
 
   const hasChurch = Boolean(profileQuery.data?.church?.id);
   const [scope, setScope] = useState<PrayerScope>('public');
   const hasInitializedScopeRef = useRef(false);
-  const boardQuery = usePrayerBoard(scope, filter);
+  const boardQuery = usePrayerBoard(scope, activeFilter);
 
   const isChurchLocked = scope === 'church' && !hasChurch;
 
@@ -68,13 +81,13 @@ export default function PrayerBoardScreen() {
       return {
         title: 'No church prayer requests yet',
         description:
-          filter === 'mine'
+          activeFilter === 'mine'
             ? 'You have not posted to your church board yet. Share a prayer need with your church community.'
             : 'Your church board is quiet right now. Start the first request and invite others to pray with you.',
       };
     }
 
-    if (filter === 'mine') {
+    if (activeFilter === 'mine') {
       return {
         title: 'No prayer requests from you yet',
         description:
@@ -82,14 +95,14 @@ export default function PrayerBoardScreen() {
       };
     }
 
-    if (filter === 'urgent') {
+    if (activeFilter === 'urgent') {
       return {
         title: 'No urgent requests right now',
         description: 'There are no urgent prayer requests in this view at the moment.',
       };
     }
 
-    if (filter === 'answered') {
+    if (activeFilter === 'answered') {
       return {
         title: 'No answered requests yet',
         description:
@@ -101,7 +114,9 @@ export default function PrayerBoardScreen() {
       title: 'No prayer requests yet',
       description: 'Start the conversation with a prayer request that others can carry with you.',
     };
-  }, [filter, scope]);
+  }, [activeFilter, scope]);
+
+  const resolvedEmptyCopy = emptyStateCopy ?? emptyCopy;
 
   const boardItems = useMemo(
     () => boardQuery.data?.pages.flatMap((page) => page.items) ?? [],
@@ -142,9 +157,11 @@ export default function PrayerBoardScreen() {
         </View>
       ) : (
         <>
-          <View className="mt-4">
-            <PrayerFilterChips filter={filter} onChange={setFilter} />
-          </View>
+          {!fixedFilter ? (
+            <View className="mt-4">
+              <PrayerFilterChips filter={activeFilter} onChange={setFilter} />
+            </View>
+          ) : null}
 
           <View className="mt-6 gap-4">
             {boardQuery.isLoading ? (
@@ -178,23 +195,20 @@ export default function PrayerBoardScreen() {
                   onMarkAnswered={
                     item.viewer_is_owner && !item.is_answered
                       ? () =>
-                          markAnsweredMutation.mutate({
-                            requestId: item.id,
-                            isAnswered: true,
+                          router.push({
+                            pathname: '/app/prayer/[requestId]',
+                            params: { requestId: item.id },
                           })
                       : undefined
                   }
-                  answering={
-                    markAnsweredMutation.isPending &&
-                    markAnsweredMutation.variables?.requestId === item.id
-                  }
+                  markAnsweredLabel="Praise"
                 />
               ))
             ) : (
               <PrayerEmptyState
-                title={emptyCopy.title}
-                description={emptyCopy.description}
-                ctaLabel="New Prayer Request"
+                title={resolvedEmptyCopy.title}
+                description={resolvedEmptyCopy.description}
+                ctaLabel={newRequestLabel}
                 onCta={() => router.push('/app/prayer/new')}
               />
             )}
@@ -208,7 +222,7 @@ export default function PrayerBoardScreen() {
                     className="rounded-full border border-gray-300 px-5 py-3 dark:border-neutral-700"
                     onPress={() => boardQuery.fetchNextPage()}>
                     <Text className="font-medium text-gray-900 dark:text-white">
-                      Load More Requests
+                      {loadMoreLabel}
                     </Text>
                   </TouchableOpacity>
                 )}
@@ -222,7 +236,7 @@ export default function PrayerBoardScreen() {
         className="mt-6 rounded-full bg-black px-6 py-4 dark:bg-white"
         onPress={() => router.push('/app/prayer/new')}>
         <Text className="text-center font-semibold text-white dark:text-black">
-          New Prayer Request
+          {newRequestLabel}
         </Text>
       </TouchableOpacity>
     </ScrollView>
