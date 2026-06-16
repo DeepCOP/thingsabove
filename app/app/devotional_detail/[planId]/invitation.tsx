@@ -6,12 +6,12 @@ import dayjs from '@/src/lib/dayjs';
 import PlanInvitationScreen from '@/src/screens/PlanInvitationScreen';
 import { useAuth } from '@/src/state/AuthContext';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
+import { Href, Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import React from 'react';
 import { Text, TouchableOpacity, View, useColorScheme } from 'react-native';
 
 export default function PlanInvitation() {
-  const { groupId, planId } = useLocalSearchParams<{
+  const { groupId, invitedBy, planId } = useLocalSearchParams<{
     groupId: string;
     invitedBy?: string;
     planId: string;
@@ -116,7 +116,14 @@ export default function PlanInvitation() {
         isContinuing={myPlanProgressPlansQuery.isLoading}
         onAccept={() => {
           if (isGuest) {
-            router.push('/app/signin');
+            router.push({
+              pathname: '/app/signin',
+              params: {
+                redirectPlanId: planId,
+                redirectGroupId: groupId,
+                ...(invitedBy ? { redirectInvitedBy: invitedBy } : {}),
+              },
+            } as Href);
             return;
           }
 

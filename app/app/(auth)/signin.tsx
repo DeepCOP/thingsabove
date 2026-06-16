@@ -1,5 +1,10 @@
 import AuthProviderButtons from '@/src/components/AuthProviderButtons';
 import { useSignInUserWithPassword } from '@/src/hooks/useProfile';
+import {
+  clearPendingOAuthReturnTo,
+  normalizeOAuthReturnTo,
+  setPendingOAuthReturnTo,
+} from '@/src/lib/oauthReturnTo';
 import { openExternalUrl } from '@/src/utils';
 import { Ionicons } from '@expo/vector-icons';
 import { Input } from '@rneui/themed';
@@ -18,10 +23,11 @@ import {
 
 export default function SignIn() {
   const router = useRouter();
-  const { redirectPlanId, redirectGroupId, redirectInvitedBy } = useLocalSearchParams<{
+  const { redirectPlanId, redirectGroupId, redirectInvitedBy, returnTo } = useLocalSearchParams<{
     redirectPlanId?: string;
     redirectGroupId?: string;
     redirectInvitedBy?: string;
+    returnTo?: string;
   }>();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -29,10 +35,23 @@ export default function SignIn() {
   const colorScheme = useColorScheme();
   const signInWithPassword = useSignInUserWithPassword();
 
+  const getPlanInvitationReturnTo = () => {
+    if (!redirectPlanId || !redirectGroupId) return null;
+
+    const params = new URLSearchParams({ groupId: redirectGroupId });
+    if (redirectInvitedBy) {
+      params.set('invitedBy', redirectInvitedBy);
+    }
+
+    return `/app/devotional_detail/${encodeURIComponent(redirectPlanId)}/invitation?${params.toString()}`;
+  };
+
+  const oauthReturnTo = getPlanInvitationReturnTo() ?? normalizeOAuthReturnTo(returnTo);
+
   const redirectToInvitation = () => {
     if (!redirectPlanId || !redirectGroupId) return;
 
-    router.push({
+    router.replace({
       pathname: '/app/devotional_detail/[planId]/invitation',
       params: {
         planId: redirectPlanId,
@@ -42,15 +61,43 @@ export default function SignIn() {
     } as Href);
   };
 
+  const redirectAfterSignIn = () => {
+    if (redirectPlanId && redirectGroupId) {
+      redirectToInvitation();
+      return;
+    }
+
+    if (oauthReturnTo) {
+      router.replace(oauthReturnTo as Href);
+    }
+  };
+
+  const savePendingReturnTarget = async () => {
+    try {
+      await setPendingOAuthReturnTo(oauthReturnTo);
+    } catch (error) {
+      console.error('Unable to save auth return target:', error);
+    }
+  };
+
+  const clearPendingReturnTarget = async () => {
+    try {
+      await clearPendingOAuthReturnTo();
+    } catch (error) {
+      console.error('Unable to clear auth return target:', error);
+    }
+  };
+
   async function signIn() {
-    signInWithPassword.mutate(
-      { email, password },
-      {
-        onSuccess: () => {
-          redirectToInvitation();
-        },
-      },
-    );
+    await savePendingReturnTarget();
+
+    try {
+      await signInWithPassword.mutateAsync({ email, password });
+      redirectAfterSignIn();
+    } catch {
+      await clearPendingReturnTarget();
+      // The mutation hook shows the alert.
+    }
   }
   const isDisabled = !email || !password || signInWithPassword.isPending;
 
@@ -114,7 +161,11 @@ export default function SignIn() {
             </Text>
           </TouchableOpacity>
 
-          <AuthProviderButtons dividerLabel="or sign in with" onSuccess={redirectToInvitation} />
+          <AuthProviderButtons
+            dividerLabel="or sign in with"
+            onSuccess={redirectAfterSignIn}
+            returnTo={oauthReturnTo}
+          />
         </ScrollView>
       </TouchableWithoutFeedback>
     </KeyboardAvoidingView>

@@ -190,7 +190,7 @@ const getCallbackParam = (url: string, key: string) => {
   return hashParams.get(key) ?? searchParams.get(key);
 };
 
-const createSessionFromCallbackUrl = async (url: string) => {
+export const createSessionFromCallbackUrl = async (url: string) => {
   const errorDescription = getCallbackParam(url, 'error_description');
   const error = getCallbackParam(url, 'error');
 
