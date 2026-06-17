@@ -1,10 +1,15 @@
 import AuthProviderButtons from '@/src/components/AuthProviderButtons';
 import { useSignUpUser } from '@/src/hooks/useProfile';
+import {
+  getAboutDetailsPath,
+  getAuthRedirectParams,
+  type AuthRedirectSearchParams,
+} from '@/src/lib/authRedirects';
 import { getProfileDeviceMetadata } from '@/src/lib/profileDeviceMetadata';
 import { openExternalUrl } from '@/src/utils';
 import { Ionicons } from '@expo/vector-icons';
 import { Input } from '@rneui/themed';
-import { useRouter } from 'expo-router';
+import { Href, useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import {
   Alert,
@@ -21,6 +26,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function SignUp() {
   const router = useRouter();
+  const redirectSearchParams = useLocalSearchParams<AuthRedirectSearchParams>();
   const insets = useSafeAreaInsets();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -37,6 +43,8 @@ export default function SignUp() {
 
   const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   const signUpWithEmail = useSignUpUser();
+  const authRedirectParams = getAuthRedirectParams(redirectSearchParams);
+  const aboutDetailsPath = getAboutDetailsPath(redirectSearchParams);
 
   const trimmedEmail = email.trim();
   const trimmedFirstName = firstName.trim();
@@ -105,6 +113,7 @@ export default function SignUp() {
             email: trimmedEmail,
             firstName: trimmedFirstName,
             lastName: trimmedLastName,
+            ...authRedirectParams,
           };
           if (data?.user?.id) {
             params.userId = data.user.id;
@@ -291,9 +300,9 @@ export default function SignUp() {
                   return false;
                 }}
                 onSuccess={() => {
-                  router.replace('/app/about-details');
+                  router.replace(aboutDetailsPath as Href);
                 }}
-                returnTo="/app/about-details"
+                returnTo={aboutDetailsPath}
               />
             </View>
           </View>

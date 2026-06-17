@@ -102,7 +102,15 @@ export default function ChurchInvitationRoute() {
               },
             } as Href)
           }
-          onCreateAccount={() => router.push('/app/signup')}
+          onCreateAccount={() =>
+            router.push({
+              pathname: '/app/signup',
+              params: {
+                redirectChurchId: churchId,
+                ...(invitedBy ? { redirectChurchInvitedBy: invitedBy } : {}),
+              },
+            } as Href)
+          }
           onOpenChurch={() => router.replace(`/app/church/${churchId}` as Href)}
           onInviterPress={onInviterPress}
         />

@@ -1,10 +1,7 @@
 import AuthProviderButtons from '@/src/components/AuthProviderButtons';
 import { useSignInUserWithPassword } from '@/src/hooks/useProfile';
-import {
-  clearPendingOAuthReturnTo,
-  normalizeOAuthReturnTo,
-  setPendingOAuthReturnTo,
-} from '@/src/lib/oauthReturnTo';
+import { AuthRedirectSearchParams, getAuthRedirectReturnTo } from '@/src/lib/authRedirects';
+import { clearPendingOAuthReturnTo, setPendingOAuthReturnTo } from '@/src/lib/oauthReturnTo';
 import { openExternalUrl } from '@/src/utils';
 import { Ionicons } from '@expo/vector-icons';
 import { Input } from '@rneui/themed';
@@ -23,101 +20,23 @@ import {
 
 export default function SignIn() {
   const router = useRouter();
-  const {
-    redirectChurchId,
-    redirectChurchInvitedBy,
-    redirectPlanId,
-    redirectGroupId,
-    redirectInvitedBy,
-    returnTo,
-  } = useLocalSearchParams<{
-    redirectChurchId?: string;
-    redirectChurchInvitedBy?: string;
-    redirectPlanId?: string;
-    redirectGroupId?: string;
-    redirectInvitedBy?: string;
-    returnTo?: string;
-  }>();
+  const searchParams = useLocalSearchParams<AuthRedirectSearchParams>();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const colorScheme = useColorScheme();
   const signInWithPassword = useSignInUserWithPassword();
-
-  const getPlanInvitationReturnTo = () => {
-    if (!redirectPlanId || !redirectGroupId) return null;
-
-    const params = new URLSearchParams({ groupId: redirectGroupId });
-    if (redirectInvitedBy) {
-      params.set('invitedBy', redirectInvitedBy);
-    }
-
-    return `/app/devotional_detail/${encodeURIComponent(redirectPlanId)}/invitation?${params.toString()}`;
-  };
-
-  const getChurchInvitationReturnTo = () => {
-    if (!redirectChurchId) return null;
-
-    const params = new URLSearchParams();
-    if (redirectChurchInvitedBy) {
-      params.set('invitedBy', redirectChurchInvitedBy);
-    }
-
-    const search = params.toString();
-    return `/app/church/${encodeURIComponent(redirectChurchId)}/invitation${
-      search ? `?${search}` : ''
-    }`;
-  };
-
-  const oauthReturnTo =
-    getPlanInvitationReturnTo() ??
-    getChurchInvitationReturnTo() ??
-    normalizeOAuthReturnTo(returnTo);
-
-  const redirectToInvitation = () => {
-    if (!redirectPlanId || !redirectGroupId) return;
-
-    router.replace({
-      pathname: '/app/devotional_detail/[planId]/invitation',
-      params: {
-        planId: redirectPlanId,
-        groupId: redirectGroupId,
-        ...(redirectInvitedBy ? { invitedBy: redirectInvitedBy } : {}),
-      },
-    } as Href);
-  };
-
-  const redirectToChurchInvitation = () => {
-    if (!redirectChurchId) return;
-
-    router.replace({
-      pathname: '/app/church/[churchId]/invitation',
-      params: {
-        churchId: redirectChurchId,
-        ...(redirectChurchInvitedBy ? { invitedBy: redirectChurchInvitedBy } : {}),
-      },
-    } as Href);
-  };
+  const authReturnTo = getAuthRedirectReturnTo(searchParams);
 
   const redirectAfterSignIn = () => {
-    if (redirectPlanId && redirectGroupId) {
-      redirectToInvitation();
-      return;
-    }
-
-    if (redirectChurchId) {
-      redirectToChurchInvitation();
-      return;
-    }
-
-    if (oauthReturnTo) {
-      router.replace(oauthReturnTo as Href);
+    if (authReturnTo) {
+      router.replace(authReturnTo as Href);
     }
   };
 
   const savePendingReturnTarget = async () => {
     try {
-      await setPendingOAuthReturnTo(oauthReturnTo);
+      await setPendingOAuthReturnTo(authReturnTo);
     } catch (error) {
       console.error('Unable to save auth return target:', error);
     }
@@ -207,7 +126,7 @@ export default function SignIn() {
           <AuthProviderButtons
             dividerLabel="or sign in with"
             onSuccess={redirectAfterSignIn}
-            returnTo={oauthReturnTo}
+            returnTo={authReturnTo}
           />
         </ScrollView>
       </TouchableWithoutFeedback>
