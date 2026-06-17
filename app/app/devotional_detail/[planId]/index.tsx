@@ -13,7 +13,7 @@ import BottomSheet from '@gorhom/bottom-sheet';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { useTogglePlanReaction } from '@/src/hooks/usePlanReactions';
-import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
+import { Href, Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { Alert, Platform, useColorScheme } from 'react-native';
 
 export default function DevotionalDetail() {
@@ -68,6 +68,14 @@ export default function DevotionalDetail() {
     helpful_count: plan?.helpful_count ?? 0,
     user_reaction: plan?.user_reaction === 'helpful' ? ('helpful' as const) : null,
   };
+  const signInHref = useMemo(
+    () =>
+      ({
+        pathname: '/app/signin',
+        params: { returnTo: `/app/devotional_detail/${encodeURIComponent(planId)}` },
+      }) as Href,
+    [planId],
+  );
 
   useEffect(() => {
     if (!previewDays.length) return;
@@ -80,14 +88,14 @@ export default function DevotionalDetail() {
 
   const handleToggleReaction = () => {
     if (isGuest) {
-      router.push('/app/signin');
+      router.push(signInHref);
       return;
     }
     toggleReaction.mutate();
   };
   const onReportPress = () => {
     if (isGuest) {
-      router.push('/app/signin');
+      router.push(signInHref);
       return;
     }
     reportSheetRef.current?.expand();
@@ -102,7 +110,7 @@ export default function DevotionalDetail() {
     if (startPlanProgressMutation.isPending) return;
 
     if (isGuest) {
-      router.push('/app/signin');
+      router.push(signInHref);
       return;
     }
 
@@ -173,7 +181,7 @@ export default function DevotionalDetail() {
         isSaved={isSaved}
         onToggleSave={() => {
           if (isGuest) {
-            router.push('/app/signin');
+            router.push(signInHref);
             return;
           }
           toggleSavedPlan(planId, isSaved, plan ?? undefined);

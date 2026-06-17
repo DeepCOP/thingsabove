@@ -1,4 +1,7 @@
-import { Href, Redirect, Stack, usePathname } from 'expo-router';
+import LoadingSpinner from '@/src/components/LoadingSpinner';
+import { consumePendingOAuthReturnTo } from '@/src/lib/oauthReturnTo';
+import { Href, Redirect, Stack, usePathname, useRouter } from 'expo-router';
+import { useEffect, useState } from 'react';
 
 import { useAuth } from '@/src/state/AuthContext';
 import { useAppStore } from '@/src/state/useAppStore';
@@ -6,13 +9,82 @@ import { useAppStore } from '@/src/state/useAppStore';
 const APP_HOME = '/app/(tabs)/PlansTab' as Href;
 const APP_ONBOARDING = '/app/onboarding' as Href;
 
+const getRoutePathname = (href: string) => href.split('?')[0] ?? href;
+
 export default function AppLayout() {
   const { session } = useAuth();
   const pathname = usePathname();
+  const router = useRouter();
   const hasCompletedOnboarding = useAppStore((state) => state.hasCompletedOnboarding);
+  const userId = session?.user?.id ?? null;
+  const [checkedPendingAuthRedirectUserId, setCheckedPendingAuthRedirectUserId] = useState<
+    string | null
+  >(null);
+  const [pendingAuthRedirectPathname, setPendingAuthRedirectPathname] = useState<string | null>(
+    null,
+  );
+  const isCheckingPendingAuthRedirect =
+    Boolean(userId && hasCompletedOnboarding && checkedPendingAuthRedirectUserId !== userId) ||
+    Boolean(pendingAuthRedirectPathname && pendingAuthRedirectPathname !== pathname);
+
+  useEffect(() => {
+    if (!userId) {
+      setCheckedPendingAuthRedirectUserId(null);
+      setPendingAuthRedirectPathname(null);
+      return;
+    }
+
+    if (!hasCompletedOnboarding || checkedPendingAuthRedirectUserId === userId) return;
+
+    let isActive = true;
+
+    const redirectToPendingReturnTarget = async () => {
+      try {
+        const returnTo = await consumePendingOAuthReturnTo();
+
+        if (!isActive) return;
+
+        const returnToPathname = returnTo ? getRoutePathname(returnTo) : null;
+
+        if (returnTo && returnToPathname) {
+          setPendingAuthRedirectPathname(returnToPathname);
+          router.replace(returnTo as Href);
+          return;
+        }
+
+        setPendingAuthRedirectPathname(null);
+      } catch (error) {
+        if (isActive) {
+          setPendingAuthRedirectPathname(null);
+        }
+
+        console.error('Unable to complete auth return redirect:', error);
+      } finally {
+        if (isActive) {
+          setCheckedPendingAuthRedirectUserId(userId);
+        }
+      }
+    };
+
+    redirectToPendingReturnTarget();
+
+    return () => {
+      isActive = false;
+    };
+  }, [checkedPendingAuthRedirectUserId, hasCompletedOnboarding, router, userId]);
+
+  useEffect(() => {
+    if (!pendingAuthRedirectPathname || pendingAuthRedirectPathname !== pathname) return;
+
+    setPendingAuthRedirectPathname(null);
+  }, [pendingAuthRedirectPathname, pathname]);
 
   if (!hasCompletedOnboarding && pathname !== '/app/onboarding') {
     return <Redirect href={APP_ONBOARDING} />;
+  }
+
+  if (isCheckingPendingAuthRedirect) {
+    return <LoadingSpinner />;
   }
 
   if (hasCompletedOnboarding && pathname === '/app/onboarding') {

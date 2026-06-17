@@ -3,6 +3,7 @@ import {
   useSignInUserWithGoogleIdToken,
   useSignInUserWithOAuth,
 } from '@/src/hooks/useProfile';
+import { clearPendingOAuthReturnTo, setPendingOAuthReturnTo } from '@/src/lib/oauthReturnTo';
 import type { OAuthProvider } from '@/src/lib/authOAuth';
 import { Ionicons } from '@expo/vector-icons';
 import {
@@ -30,6 +31,7 @@ type AuthProviderButtonsProps = {
   dividerLabel?: string;
   onBeforeStart?: () => boolean;
   onSuccess?: () => void;
+  returnTo?: string | null;
 };
 
 const PROVIDERS: {
@@ -48,6 +50,7 @@ export default function AuthProviderButtons({
   dividerLabel,
   onBeforeStart,
   onSuccess,
+  returnTo,
 }: AuthProviderButtonsProps) {
   const colorScheme = useColorScheme();
   const { width: windowWidth } = useWindowDimensions();
@@ -101,20 +104,39 @@ export default function AuthProviderButtons({
       .catch(() => setIsAppleAuthenticationAvailable(false));
   }, []);
 
-  const handlePress = (provider: OAuthProvider) => {
+  const savePendingReturnTarget = async () => {
+    try {
+      await setPendingOAuthReturnTo(returnTo);
+    } catch (error) {
+      console.error('Unable to save OAuth return target:', error);
+    }
+  };
+
+  const clearPendingReturnTarget = async () => {
+    try {
+      await clearPendingOAuthReturnTo();
+    } catch (error) {
+      console.error('Unable to clear OAuth return target:', error);
+    }
+  };
+
+  const handlePress = async (provider: OAuthProvider) => {
     if (disabled || isBusy) return;
     if (onBeforeStart && !onBeforeStart()) return;
 
-    signInWithOAuth.mutate(
-      { provider },
-      {
-        onSuccess: (data) => {
-          if (data?.session) {
-            onSuccess?.();
-          }
-        },
-      },
-    );
+    await savePendingReturnTarget();
+
+    try {
+      const data = await signInWithOAuth.mutateAsync({ provider });
+      if (data?.session) {
+        onSuccess?.();
+      } else {
+        await clearPendingReturnTarget();
+      }
+    } catch {
+      await clearPendingReturnTarget();
+      // The mutation hook shows the alert.
+    }
   };
 
   const handleNativeGooglePress = async () => {
@@ -162,8 +184,10 @@ export default function AuthProviderButtons({
         return;
       }
 
-      signInWithGoogleIdToken.mutate(
-        {
+      await savePendingReturnTarget();
+
+      try {
+        const data = await signInWithGoogleIdToken.mutateAsync({
           identityToken: response.data.idToken,
           profile: {
             email: response.data.user.email,
@@ -172,15 +196,17 @@ export default function AuthProviderButtons({
             givenName: response.data.user.givenName,
             photoUrl: response.data.user.photo,
           },
-        },
-        {
-          onSuccess: (data) => {
-            if (data?.session) {
-              onSuccess?.();
-            }
-          },
-        },
-      );
+        });
+
+        if (data?.session) {
+          onSuccess?.();
+        } else {
+          await clearPendingReturnTarget();
+        }
+      } catch {
+        await clearPendingReturnTarget();
+        // The mutation hook shows the alert.
+      }
     } catch (error) {
       if (isErrorWithCode(error)) {
         if (error.code === statusCodes.IN_PROGRESS) {
@@ -238,19 +264,23 @@ export default function AuthProviderButtons({
       return;
     }
 
-    signInWithAppleIdToken.mutate(
-      {
+    await savePendingReturnTarget();
+
+    try {
+      const data = await signInWithAppleIdToken.mutateAsync({
         fullName: credential.fullName,
         identityToken: credential.identityToken,
-      },
-      {
-        onSuccess: (data) => {
-          if (data?.session) {
-            onSuccess?.();
-          }
-        },
-      },
-    );
+      });
+
+      if (data?.session) {
+        onSuccess?.();
+      } else {
+        await clearPendingReturnTarget();
+      }
+    } catch {
+      await clearPendingReturnTarget();
+      // The mutation hook shows the alert.
+    }
   };
 
   return (

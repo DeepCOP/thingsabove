@@ -1,6 +1,11 @@
 import AboutDetailsForm from '@/src/components/AboutDetailsForm';
 import { useSaveSignupAboutDetails, useUpdateProfile } from '@/src/hooks/useProfile';
 import {
+  getAuthRedirectParams,
+  getAuthRedirectReturnTo,
+  type AuthRedirectSearchParams,
+} from '@/src/lib/authRedirects';
+import {
   hasProfileDetailsErrors,
   ProfileDetailsFormErrors,
   toSignUpAboutDetailsInput,
@@ -9,7 +14,7 @@ import {
 } from '@/src/profileDetails';
 import { useAuth } from '@/src/state/AuthContext';
 import { useSignUpDetailsStore } from '@/src/state/useSignUpDetailsStore';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { Href, useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import {
   Keyboard,
@@ -25,12 +30,15 @@ import {
 
 export default function AboutDetails() {
   const router = useRouter();
-  const { email, userId, firstName, lastName } = useLocalSearchParams<{
-    email?: string;
-    userId?: string;
-    firstName?: string;
-    lastName?: string;
-  }>();
+  const searchParams = useLocalSearchParams<
+    {
+      email?: string;
+      userId?: string;
+      firstName?: string;
+      lastName?: string;
+    } & AuthRedirectSearchParams
+  >();
+  const { email, userId, firstName, lastName } = searchParams;
   const colorScheme = useColorScheme();
   const { details, setDetails, resetDetails } = useSignUpDetailsStore();
   const { session } = useAuth();
@@ -48,16 +56,18 @@ export default function AboutDetails() {
   const isSaving = updateProfile.isPending || saveSignupAboutDetails.isPending;
   const signupEmail = typeof email === 'string' ? email.trim() : '';
   const signupUserId = typeof userId === 'string' ? userId : '';
+  const authRedirectParams = getAuthRedirectParams(searchParams);
+  const postSignupReturnTo = getAuthRedirectReturnTo(searchParams);
 
   const finishFlow = () => {
     resetDetails();
     if (hasSession) {
-      router.replace('/app');
+      router.replace((postSignupReturnTo ?? '/app') as Href);
       return;
     }
     router.replace({
       pathname: '/app/confirm-email',
-      params: { email: signupEmail },
+      params: { email: signupEmail, ...authRedirectParams },
     });
   };
 
