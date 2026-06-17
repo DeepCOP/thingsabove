@@ -13,6 +13,7 @@ type Props = {
   onTogglePraying: () => void;
   onEncourage: () => void;
   onMarkAnswered?: () => void;
+  markAnsweredLabel?: string;
   answering?: boolean;
 };
 
@@ -30,6 +31,7 @@ export default function PrayerRequestCard({
   onTogglePraying,
   onEncourage,
   onMarkAnswered,
+  markAnsweredLabel = 'Answered',
   answering,
 }: Props) {
   const displayName = getDisplayName({
@@ -87,6 +89,19 @@ export default function PrayerRequestCard({
           {item.content}
         </Text>
 
+        {item.is_answered && item.testimony ? (
+          <View className="mt-4 rounded-3xl bg-emerald-50 p-4 dark:bg-emerald-950/30">
+            <Text className="text-xs font-semibold uppercase tracking-wide text-emerald-700 dark:text-emerald-300">
+              Testimony
+            </Text>
+            <Text
+              className="mt-2 text-sm leading-6 text-emerald-900 dark:text-emerald-100"
+              numberOfLines={4}>
+              {item.testimony}
+            </Text>
+          </View>
+        ) : null}
+
         <View className="mt-4 flex-row flex-wrap items-center gap-2">
           <View className="rounded-full bg-blue-50 px-2 py-1 dark:bg-blue-950/40">
             <Text className="text-xs text-blue-700 dark:text-blue-300">{item.category}</Text>
@@ -122,7 +137,7 @@ export default function PrayerRequestCard({
           <TouchableOpacity className="flex-row items-center gap-2" onPress={onMarkAnswered}>
             <Ionicons name="checkmark-circle-outline" size={18} color="#16a34a" />
             <Text className="text-sm font-medium text-emerald-600 dark:text-emerald-400">
-              {answering ? 'Saving...' : 'Answered'}
+              {answering ? 'Saving...' : markAnsweredLabel}
             </Text>
           </TouchableOpacity>
         ) : (

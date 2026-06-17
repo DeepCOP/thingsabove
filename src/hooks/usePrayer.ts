@@ -18,6 +18,7 @@ import {
   PrayerRequestPage,
   PrayerScope,
 } from '@/src/types/types';
+import { useAuth } from '@/src/state/AuthContext';
 import {
   InfiniteData,
   useInfiniteQuery,
@@ -25,6 +26,17 @@ import {
   useQuery,
   useQueryClient,
 } from '@tanstack/react-query';
+
+const prayerRequestsKey = (userId: string | undefined) => ['prayer_requests', userId] as const;
+
+const prayerBoardKey = (userId: string | undefined, scope: PrayerScope, filter: PrayerFilter) =>
+  [...prayerRequestsKey(userId), scope, filter] as const;
+
+const prayerRequestKey = (userId: string | undefined, requestId: string | undefined) =>
+  ['prayer_request', userId, requestId] as const;
+
+const prayerEncouragementsKey = (userId: string | undefined, requestId: string | undefined) =>
+  ['prayer_encouragements', userId, requestId] as const;
 
 const togglePrayerSupportFields = <
   T extends {
@@ -45,8 +57,11 @@ const togglePrayerSupportFields = <
 };
 
 export function usePrayerBoard(scope: PrayerScope, filter: PrayerFilter) {
+  const { session } = useAuth();
+  const userId = session?.user?.id;
+
   return useInfiniteQuery({
-    queryKey: ['prayer_requests', scope, filter],
+    queryKey: prayerBoardKey(userId, scope, filter),
     initialPageParam: null as PrayerRequestCursor | null,
     queryFn: async ({ pageParam }) =>
       await fetchPrayerRequests({
@@ -60,56 +75,65 @@ export function usePrayerBoard(scope: PrayerScope, filter: PrayerFilter) {
 }
 
 export function usePrayerRequest(requestId: string | undefined) {
+  const { session } = useAuth();
+  const userId = session?.user?.id;
+
   return useQuery({
-    queryKey: ['prayer_request', requestId],
+    queryKey: prayerRequestKey(userId, requestId),
     enabled: !!requestId,
     queryFn: async () => await fetchPrayerRequestDetail(requestId!),
   });
 }
 
 export function usePrayerRequestEncouragements(requestId: string | undefined) {
+  const { session } = useAuth();
+  const userId = session?.user?.id;
+
   return useQuery({
-    queryKey: ['prayer_encouragements', requestId],
+    queryKey: prayerEncouragementsKey(userId, requestId),
     enabled: !!requestId,
     queryFn: async () => await fetchPrayerRequestEncouragements(requestId!),
   });
 }
 
 export function useSavePrayerRequest() {
+  const { session } = useAuth();
+  const userId = session?.user?.id;
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (input: SavePrayerRequestInput) => await savePrayerRequest(input),
     onSuccess: (requestId, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['prayer_requests'] });
+      queryClient.invalidateQueries({ queryKey: prayerRequestsKey(userId) });
       queryClient.invalidateQueries({
-        queryKey: ['prayer_request', variables.requestId ?? requestId],
+        queryKey: prayerRequestKey(userId, variables.requestId ?? requestId),
       });
     },
   });
 }
 
 export function useTogglePrayerRequestSupport() {
+  const { session } = useAuth();
+  const userId = session?.user?.id;
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (requestId: string) => await togglePrayerRequestSupport(requestId),
     onMutate: async (requestId) => {
-      await queryClient.cancelQueries({ queryKey: ['prayer_requests'] });
-      await queryClient.cancelQueries({ queryKey: ['prayer_request', requestId] });
+      await queryClient.cancelQueries({ queryKey: prayerRequestsKey(userId) });
+      await queryClient.cancelQueries({ queryKey: prayerRequestKey(userId, requestId) });
 
       const previousPrayerRequestLists = queryClient.getQueriesData<
         InfiniteData<PrayerRequestPage>
       >({
-        queryKey: ['prayer_requests'],
+        queryKey: prayerRequestsKey(userId),
       });
-      const previousPrayerRequestDetail = queryClient.getQueryData<PrayerRequestDetail | null>([
-        'prayer_request',
-        requestId,
-      ]);
+      const previousPrayerRequestDetail = queryClient.getQueryData<PrayerRequestDetail | null>(
+        prayerRequestKey(userId, requestId),
+      );
 
       queryClient.setQueriesData<InfiniteData<PrayerRequestPage>>(
-        { queryKey: ['prayer_requests'] },
+        { queryKey: prayerRequestsKey(userId) },
         (current) =>
           current
             ? {
@@ -125,7 +149,7 @@ export function useTogglePrayerRequestSupport() {
       );
 
       queryClient.setQueryData<PrayerRequestDetail | null>(
-        ['prayer_request', requestId],
+        prayerRequestKey(userId, requestId),
         (current) => (current ? togglePrayerSupportFields(current) : current),
       );
 
@@ -138,40 +162,47 @@ export function useTogglePrayerRequestSupport() {
       context?.previousPrayerRequestLists.forEach(([queryKey, data]) => {
         queryClient.setQueryData(queryKey, data);
       });
-      queryClient.setQueryData(['prayer_request', requestId], context?.previousPrayerRequestDetail);
+      queryClient.setQueryData(
+        prayerRequestKey(userId, requestId),
+        context?.previousPrayerRequestDetail,
+      );
     },
     onSettled: (_didPray, _error, requestId) => {
-      queryClient.invalidateQueries({ queryKey: ['prayer_requests'] });
-      queryClient.invalidateQueries({ queryKey: ['prayer_request', requestId] });
+      queryClient.invalidateQueries({ queryKey: prayerRequestsKey(userId) });
+      queryClient.invalidateQueries({ queryKey: prayerRequestKey(userId, requestId) });
     },
   });
 }
 
 export function useAddPrayerRequestEncouragement() {
+  const { session } = useAuth();
+  const userId = session?.user?.id;
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async ({ requestId, content }: { requestId: string; content: string }) =>
       await addPrayerRequestEncouragement({ requestId, content }),
     onSuccess: (_encouragementId, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['prayer_requests'] });
-      queryClient.invalidateQueries({ queryKey: ['prayer_request', variables.requestId] });
+      queryClient.invalidateQueries({ queryKey: prayerRequestsKey(userId) });
+      queryClient.invalidateQueries({ queryKey: prayerRequestKey(userId, variables.requestId) });
       queryClient.invalidateQueries({
-        queryKey: ['prayer_encouragements', variables.requestId],
+        queryKey: prayerEncouragementsKey(userId, variables.requestId),
       });
     },
   });
 }
 
 export function useSetPrayerRequestAnswered() {
+  const { session } = useAuth();
+  const userId = session?.user?.id;
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ requestId, isAnswered }: { requestId: string; isAnswered: boolean }) =>
-      await setPrayerRequestAnswered({ requestId, isAnswered }),
+    mutationFn: async (variables: { requestId: string; isAnswered: boolean; testimony?: string }) =>
+      await setPrayerRequestAnswered(variables),
     onSuccess: (_data, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['prayer_requests'] });
-      queryClient.invalidateQueries({ queryKey: ['prayer_request', variables.requestId] });
+      queryClient.invalidateQueries({ queryKey: prayerRequestsKey(userId) });
+      queryClient.invalidateQueries({ queryKey: prayerRequestKey(userId, variables.requestId) });
     },
   });
 }
