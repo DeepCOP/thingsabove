@@ -16,7 +16,7 @@ type CommunitySection = 'my-church' | 'prayer-board' | 'praise-item' | 'friends'
 const COMMUNITY_SECTIONS: { key: CommunitySection; label: string }[] = [
   { key: 'my-church', label: 'My Church' },
   { key: 'prayer-board', label: 'Prayer Board' },
-  { key: 'praise-item', label: 'Praise Item' },
+  { key: 'praise-item', label: 'Answered Prayers' },
   { key: 'friends', label: 'Friends' },
 ];
 
@@ -94,11 +94,11 @@ export default function CommunityTab() {
         <PrayerBoardScreen
           fixedFilter="answered"
           emptyStateCopy={{
-            title: 'No praise items yet',
+            title: 'No answered prayers yet',
             description:
               'Answered prayer requests will appear here as people share what God has done.',
           }}
-          loadMoreLabel="Load More Praise Items"
+          loadMoreLabel="Load More Answered Prayers"
         />
       );
     }
