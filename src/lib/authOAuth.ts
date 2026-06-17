@@ -190,6 +190,17 @@ const getCallbackParam = (url: string, key: string) => {
   return hashParams.get(key) ?? searchParams.get(key);
 };
 
+const getExistingAuthSessionData = async () => {
+  const { data } = await supabase.auth.getSession();
+
+  if (!data.session) return null;
+
+  return {
+    session: data.session,
+    user: data.session.user,
+  };
+};
+
 export const createSessionFromCallbackUrl = async (url: string) => {
   const errorDescription = getCallbackParam(url, 'error_description');
   const error = getCallbackParam(url, 'error');
@@ -201,7 +212,12 @@ export const createSessionFromCallbackUrl = async (url: string) => {
   const code = getCallbackParam(url, 'code');
   if (code) {
     const { data, error } = await supabase.auth.exchangeCodeForSession(code);
-    if (error) throw error;
+    if (error) {
+      const existingSessionData = await getExistingAuthSessionData();
+      if (existingSessionData) return existingSessionData;
+
+      throw error;
+    }
     return data;
   }
 
@@ -217,7 +233,12 @@ export const createSessionFromCallbackUrl = async (url: string) => {
     refresh_token: refreshToken,
   });
 
-  if (sessionError) throw sessionError;
+  if (sessionError) {
+    const existingSessionData = await getExistingAuthSessionData();
+    if (existingSessionData) return existingSessionData;
+
+    throw sessionError;
+  }
 
   return data;
 };

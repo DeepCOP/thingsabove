@@ -293,6 +293,7 @@ export default function SignUp() {
                 onSuccess={() => {
                   router.replace('/app/about-details');
                 }}
+                returnTo="/app/about-details"
               />
             </View>
           </View>
