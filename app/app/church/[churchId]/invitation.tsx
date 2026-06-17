@@ -70,13 +70,6 @@ export default function ChurchInvitationRoute() {
 
   const viewerProfile = viewerProfileQuery.data ?? null;
   const hasAccepted = viewerProfile?.church?.id === churchId;
-  const churchInvitationReturnToParams = new URLSearchParams();
-  if (invitedBy) {
-    churchInvitationReturnToParams.set('invitedBy', invitedBy);
-  }
-  const churchInvitationReturnTo = `/app/church/${encodeURIComponent(churchId)}/invitation${
-    churchInvitationReturnToParams.size > 0 ? `?${churchInvitationReturnToParams.toString()}` : ''
-  }`;
   const onInviterPress = (userId: string) => {
     router.push(`/app/profile/${userId}` as Href);
   };
@@ -103,7 +96,10 @@ export default function ChurchInvitationRoute() {
           onSignIn={() =>
             router.push({
               pathname: '/app/signin',
-              params: { returnTo: churchInvitationReturnTo },
+              params: {
+                redirectChurchId: churchId,
+                ...(invitedBy ? { redirectChurchInvitedBy: invitedBy } : {}),
+              },
             } as Href)
           }
           onCreateAccount={() => router.push('/app/signup')}

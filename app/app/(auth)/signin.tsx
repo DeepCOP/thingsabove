@@ -23,7 +23,16 @@ import {
 
 export default function SignIn() {
   const router = useRouter();
-  const { redirectPlanId, redirectGroupId, redirectInvitedBy, returnTo } = useLocalSearchParams<{
+  const {
+    redirectChurchId,
+    redirectChurchInvitedBy,
+    redirectPlanId,
+    redirectGroupId,
+    redirectInvitedBy,
+    returnTo,
+  } = useLocalSearchParams<{
+    redirectChurchId?: string;
+    redirectChurchInvitedBy?: string;
     redirectPlanId?: string;
     redirectGroupId?: string;
     redirectInvitedBy?: string;
@@ -46,7 +55,24 @@ export default function SignIn() {
     return `/app/devotional_detail/${encodeURIComponent(redirectPlanId)}/invitation?${params.toString()}`;
   };
 
-  const oauthReturnTo = getPlanInvitationReturnTo() ?? normalizeOAuthReturnTo(returnTo);
+  const getChurchInvitationReturnTo = () => {
+    if (!redirectChurchId) return null;
+
+    const params = new URLSearchParams();
+    if (redirectChurchInvitedBy) {
+      params.set('invitedBy', redirectChurchInvitedBy);
+    }
+
+    const search = params.toString();
+    return `/app/church/${encodeURIComponent(redirectChurchId)}/invitation${
+      search ? `?${search}` : ''
+    }`;
+  };
+
+  const oauthReturnTo =
+    getPlanInvitationReturnTo() ??
+    getChurchInvitationReturnTo() ??
+    normalizeOAuthReturnTo(returnTo);
 
   const redirectToInvitation = () => {
     if (!redirectPlanId || !redirectGroupId) return;
@@ -61,9 +87,26 @@ export default function SignIn() {
     } as Href);
   };
 
+  const redirectToChurchInvitation = () => {
+    if (!redirectChurchId) return;
+
+    router.replace({
+      pathname: '/app/church/[churchId]/invitation',
+      params: {
+        churchId: redirectChurchId,
+        ...(redirectChurchInvitedBy ? { invitedBy: redirectChurchInvitedBy } : {}),
+      },
+    } as Href);
+  };
+
   const redirectAfterSignIn = () => {
     if (redirectPlanId && redirectGroupId) {
       redirectToInvitation();
+      return;
+    }
+
+    if (redirectChurchId) {
+      redirectToChurchInvitation();
       return;
     }
 
