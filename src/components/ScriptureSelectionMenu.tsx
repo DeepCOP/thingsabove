@@ -20,6 +20,9 @@ type ScriptureSelectionMenuProps = {
   onRequestClose?: () => void;
   onMenuLayout: (event: LayoutChangeEvent) => void;
   onOpenNotes: () => void;
+  highlightLabel?: string;
+  highlightDisabled?: boolean;
+  onToggleHighlight?: () => void | Promise<void>;
   onCopy: () => void | Promise<void>;
   onShare: () => void | Promise<void>;
 };
@@ -33,10 +36,15 @@ export default function ScriptureSelectionMenu({
   onRequestClose,
   onMenuLayout,
   onOpenNotes,
+  highlightLabel = 'Highlight',
+  highlightDisabled = false,
+  onToggleHighlight,
   onCopy,
   onShare,
 }: ScriptureSelectionMenuProps) {
   const colorScheme = useColorScheme();
+  const activeIconColor = colorScheme === 'dark' ? 'white' : 'black';
+  const disabledIconColor = colorScheme === 'dark' ? '#737373' : '#9ca3af';
 
   return (
     <Modal
@@ -65,15 +73,7 @@ export default function ScriptureSelectionMenu({
               <Ionicons
                 name="chatbubble-ellipses-outline"
                 size={22}
-                color={
-                  notesDisabled
-                    ? colorScheme === 'dark'
-                      ? '#737373'
-                      : '#9ca3af'
-                    : colorScheme === 'dark'
-                      ? 'white'
-                      : 'black'
-                }
+                color={notesDisabled ? disabledIconColor : activeIconColor}
               />
               <Text
                 className={`ml-3 text-base ${
@@ -85,17 +85,40 @@ export default function ScriptureSelectionMenu({
               </Text>
             </TouchableOpacity>
 
+            {onToggleHighlight ? (
+              <TouchableOpacity
+                className={`px-4 py-3 flex-row items-center ${
+                  highlightDisabled ? 'opacity-50' : 'opacity-100'
+                }`}
+                disabled={highlightDisabled}
+                onPress={onToggleHighlight}>
+                <Ionicons
+                  name={
+                    highlightLabel === 'Remove Highlight'
+                      ? 'remove-circle-outline'
+                      : 'color-fill-outline'
+                  }
+                  size={22}
+                  color={highlightDisabled ? disabledIconColor : activeIconColor}
+                />
+                <Text
+                  className={`ml-3 text-base ${
+                    highlightDisabled
+                      ? 'text-gray-400 dark:text-neutral-500'
+                      : 'text-primary dark:text-gray-200'
+                  }`}>
+                  {highlightLabel}
+                </Text>
+              </TouchableOpacity>
+            ) : null}
+
             <TouchableOpacity className="px-4 py-3 flex-row items-center" onPress={onCopy}>
-              <Ionicons name="copy" size={22} color={colorScheme === 'dark' ? 'white' : 'black'} />
+              <Ionicons name="copy" size={22} color={activeIconColor} />
               <Text className="ml-3 text-primary dark:text-gray-200 text-base">Copy</Text>
             </TouchableOpacity>
 
             <TouchableOpacity className="px-4 py-3 flex-row items-center" onPress={onShare}>
-              <Ionicons
-                name="share-outline"
-                size={22}
-                color={colorScheme === 'dark' ? 'white' : 'black'}
-              />
+              <Ionicons name="share-outline" size={22} color={activeIconColor} />
               <Text className="ml-3 text-primary dark:text-gray-200 text-base">Share</Text>
             </TouchableOpacity>
 

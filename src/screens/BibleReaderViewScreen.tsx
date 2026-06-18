@@ -1,7 +1,7 @@
 import { findBookInBible, getBibleDotComBookCode, getBookNameForId } from '@/src/bible/books';
 import ReaderBottomBar from '@/src/components/ReaderBottomBar';
 import ScriptureSelectionMenu from '@/src/components/ScriptureSelectionMenu';
-import { useAppStore } from '@/src/state/useAppStore';
+import { getBibleVerseHighlightKey, useAppStore } from '@/src/state/useAppStore';
 import * as Clipboard from 'expo-clipboard';
 import { useRouter } from 'expo-router';
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -36,6 +36,8 @@ export default function BibleReaderView({ onScroll }: { onScroll: (...args: any[
 
   const selectedBook = useAppStore((s) => s.selectedBook);
   const setSelectedBook = useAppStore((s) => s.setSelectedBook);
+  const bibleVerseHighlights = useAppStore((s) => s.bibleVerseHighlights);
+  const toggleBibleVerseHighlights = useAppStore((s) => s.toggleBibleVerseHighlights);
   const { width: screenWidth, height: screenHeight } = useWindowDimensions();
 
   const router = useRouter();
@@ -44,7 +46,7 @@ export default function BibleReaderView({ onScroll }: { onScroll: (...args: any[
     const menuWidth = 220;
     const horizontalMargin = 10;
     const verticalSpacing = 12;
-    const estimatedHeight = menuHeight || 210;
+    const estimatedHeight = menuHeight || 260;
     const maxLeft = Math.max(horizontalMargin, screenWidth - menuWidth - horizontalMargin);
     const left = Math.min(Math.max(horizontalMargin, menuAnchor.x - menuWidth / 2), maxLeft);
 
@@ -78,6 +80,7 @@ export default function BibleReaderView({ onScroll }: { onScroll: (...args: any[
   const currentBookIndex = currentBook
     ? bible.books.findIndex((book) => book.id === currentBook.id)
     : -1;
+  const chapterNumber = Number(selectedBook.chapter);
 
   useEffect(() => {
     if (selectedBook.verseStart == null) {
@@ -199,10 +202,39 @@ export default function BibleReaderView({ onScroll }: { onScroll: (...args: any[
       end: sorted[sorted.length - 1],
     };
   };
+
+  const selectedVerseReferences = useMemo(
+    () =>
+      selectedVerse.map(({ number }) => ({
+        bookId: currentBookId,
+        chapter: chapterNumber,
+        verse: number,
+      })),
+    [chapterNumber, currentBookId, selectedVerse],
+  );
+
+  const areSelectedVersesHighlighted =
+    selectedVerseReferences.length > 0 &&
+    selectedVerseReferences.every(
+      (reference) => bibleVerseHighlights[getBibleVerseHighlightKey(reference)],
+    );
+
+  const isVerseSelected = (verse: number) => selectedVerse.some((item) => item.number === verse);
+
+  const isVerseHighlighted = (verse: number) =>
+    Boolean(
+      bibleVerseHighlights[
+        getBibleVerseHighlightKey({
+          bookId: currentBookId,
+          chapter: chapterNumber,
+          verse,
+        })
+      ],
+    );
+
   const chapters = currentBook?.chapters;
   const chapterCount = chapters?.length || 0;
 
-  const chapterNumber = Number(selectedBook.chapter);
   const verses = currentBook?.chapters.find((chapter) => chapter.chapter === chapterNumber)?.verses;
   const selectedVerseRange = getSelectedVerseRange();
   const hasBibleChapter = currentBookIndex >= 0 && chapterCount > 0;
@@ -232,45 +264,61 @@ export default function BibleReaderView({ onScroll }: { onScroll: (...args: any[
           </View>
 
           {/* VERSES */}
-          {verses?.map(({ verse, text }) => (
-            <View
-              key={verse}
-              className="mb-3"
-              onLayout={(event) => {
-                versePositions.current[Number(verse)] = event.nativeEvent.layout.y;
-              }}>
-              <TouchableOpacity
-                onPress={() => {
-                  if (!selectedVerse.some((item) => item.number === verse)) {
-                    setSelectedVerse((prev) => [{ number: verse, text: text as string }, ...prev]);
-                  } else {
-                    setSelectedVerse((prev) => prev.filter((item) => item.number !== verse));
-                  }
-                }}
-                onLongPress={(event) => {
-                  const pageX = event?.nativeEvent?.pageX ?? screenWidth / 2;
-                  const pageY = event?.nativeEvent?.pageY ?? screenHeight / 2;
-                  if (!selectedVerse.some((item) => item.number === verse)) {
-                    setSelectedVerse((prev) => [{ number: verse, text: text as string }, ...prev]);
-                  }
-                  setMenuAnchor({ x: pageX, y: pageY });
-                  setShowMenu(true);
-                }}
-                className={`flex-row items-start rounded-md px-1 ${
-                  selectedVerse.some((item) => item.number === verse)
-                    ? 'bg-yellow-200 dark:bg-yellow-700'
-                    : ''
-                }`}>
-                <Text className="text-verseNumber font-[400] mr-1 -mt-1 dark:text-gray-400">
-                  {verse}
-                </Text>
+          {verses?.map(({ verse, text }) => {
+            const verseNumber = Number(verse);
+            const selected = isVerseSelected(verseNumber);
+            const highlighted = isVerseHighlighted(verseNumber);
 
-                <Text className="flex-1 text-[17px] leading-7 text-primary dark:text-gray-100 font-semibold  font-open-sans-regular indent-5">
-                  {text as string}
-                </Text>
-              </TouchableOpacity>
-            </View>
-          ))}
+            return (
+              <View
+                key={verse}
+                className="mb-3"
+                onLayout={(event) => {
+                  versePositions.current[verseNumber] = event.nativeEvent.layout.y;
+                }}>
+                <TouchableOpacity
+                  onPress={() => {
+                    if (!selected) {
+                      setSelectedVerse((prev) => [
+                        { number: verseNumber, text: text as string },
+                        ...prev,
+                      ]);
+                    } else {
+                      setSelectedVerse((prev) =>
+                        prev.filter((item) => item.number !== verseNumber),
+                      );
+                    }
+                  }}
+                  onLongPress={(event) => {
+                    const pageX = event?.nativeEvent?.pageX ?? screenWidth / 2;
+                    const pageY = event?.nativeEvent?.pageY ?? screenHeight / 2;
+                    if (!selected) {
+                      setSelectedVerse((prev) => [
+                        { number: verseNumber, text: text as string },
+                        ...prev,
+                      ]);
+                    }
+                    setMenuAnchor({ x: pageX, y: pageY });
+                    setShowMenu(true);
+                  }}
+                  className={`flex-row items-start rounded-md px-1 ${
+                    selected
+                      ? 'bg-yellow-200 dark:bg-yellow-700'
+                      : highlighted
+                        ? 'bg-yellow-100 dark:bg-yellow-800/40'
+                        : ''
+                  }`}>
+                  <Text className="text-verseNumber font-[400] mr-1 -mt-1 dark:text-gray-400">
+                    {verse}
+                  </Text>
+
+                  <Text className="flex-1 text-[17px] leading-7 text-primary dark:text-gray-100 font-semibold  font-open-sans-regular indent-5">
+                    {text as string}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            );
+          })}
         </Animated.ScrollView>
 
         <ReaderBottomBar
@@ -323,6 +371,8 @@ export default function BibleReaderView({ onScroll }: { onScroll: (...args: any[
           title={selectedVerse.length > 0 ? formatSelectedVerseTitle().header : ''}
           menuStyle={contextMenuStyle}
           notesDisabled={!selectedVerseRange}
+          highlightLabel={areSelectedVersesHighlighted ? 'Remove Highlight' : 'Highlight'}
+          highlightDisabled={selectedVerseReferences.length === 0}
           onClose={() => setShowMenu(false)}
           onRequestClose={() => {
             setSelectedVerse([]);
@@ -351,6 +401,11 @@ export default function BibleReaderView({ onScroll }: { onScroll: (...args: any[
                 version,
               },
             } as never);
+          }}
+          onToggleHighlight={() => {
+            toggleBibleVerseHighlights(selectedVerseReferences);
+            setSelectedVerse([]);
+            setShowMenu(false);
           }}
           onCopy={async () => {
             await Clipboard.setStringAsync(
