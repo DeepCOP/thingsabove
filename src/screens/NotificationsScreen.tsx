@@ -55,7 +55,7 @@ export default function NotificationsScreen({
     return (
       <View className="flex-1 items-center justify-center bg-white px-6 dark:bg-black">
         <Ionicons name="notifications" size={50} color="gray" />
-        <Text className="text-gray-700 dark:text-gray-200">No unread notifications</Text>
+        <Text className="text-gray-700 dark:text-gray-200">No notifications</Text>
       </View>
     );
   }

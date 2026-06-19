@@ -3,8 +3,9 @@ import NotificationsScreen from '@/src/screens/NotificationsScreen';
 import { useAuth } from '@/src/state/AuthContext';
 import { AppNotification, isNotificationType, NOTIFICATION_TYPES } from '@/src/types/notifications';
 import { Json } from '@/src/types/supabase.gen.types';
+import { useIsFocused } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Alert } from 'react-native';
 
 type PlanInviteNotificationData = {
@@ -111,17 +112,30 @@ function parseGroupDayCompletedNotificationData(
 
 export default function NotificationsTab() {
   const router = useRouter();
+  const isFocused = useIsFocused();
   const { session } = useAuth();
-  const { notificationsQuery, markRead } = useNotifications(session?.user?.id);
+  const { notificationsQuery, markAllRead } = useNotifications(session?.user?.id);
+  const { mutate: markAllNotificationsRead } = markAllRead;
+  const markedReadFocusUserIdRef = useRef<string | null>(null);
   const [selectedMessageNotification, setSelectedMessageNotification] =
     useState<AppNotification | null>(null);
   const isLoading = notificationsQuery.isFetching && !notificationsQuery.data;
 
-  function markNotificationAsRead(item: AppNotification) {
-    if (!item.is_read) {
-      markRead.mutate(item.id);
+  useEffect(() => {
+    if (!isFocused) {
+      markedReadFocusUserIdRef.current = null;
+      return;
     }
-  }
+
+    const userId = session?.user?.id;
+
+    if (!userId || markedReadFocusUserIdRef.current === userId) {
+      return;
+    }
+
+    markedReadFocusUserIdRef.current = userId;
+    markAllNotificationsRead(userId);
+  }, [isFocused, markAllNotificationsRead, session?.user?.id]);
 
   function showUnsupportedNotificationAlert() {
     Alert.alert(
@@ -156,7 +170,6 @@ export default function NotificationsTab() {
             ...(data.invited_by ? { invitedBy: data.invited_by } : {}),
           },
         });
-        markNotificationAsRead(item);
         return;
       }
       case NOTIFICATION_TYPES.GROUP_DAY_COMPLETED: {
@@ -180,12 +193,10 @@ export default function NotificationsTab() {
             ...(data.day_number ? { dayNumber: String(data.day_number) } : {}),
           },
         });
-        markNotificationAsRead(item);
         return;
       }
       case NOTIFICATION_TYPES.FRIEND_REQUEST:
         router.push('/app/accept_friend');
-        markNotificationAsRead(item);
         return;
       case NOTIFICATION_TYPES.PRAYER_ENCOURAGEMENT: {
         const data = parsePrayerEncouragementNotificationData(item.data);
@@ -204,12 +215,10 @@ export default function NotificationsTab() {
             requestId: data.request_id,
           },
         });
-        markNotificationAsRead(item);
         return;
       }
       case NOTIFICATION_TYPES.AI_NOTIFICATION:
         setSelectedMessageNotification(item);
-        markNotificationAsRead(item);
         return;
       default:
         showUnsupportedNotificationAlert();

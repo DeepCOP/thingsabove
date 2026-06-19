@@ -274,6 +274,18 @@ export const markNotificationRead = async (p_notification_id: string) => {
   if (error) throw error;
 };
 
+export const markAllNotificationsRead = async (userId: string) => {
+  if (!userId) return;
+
+  const { error } = await supabase
+    .from('notifications')
+    .update({ is_read: true })
+    .eq('user_id', userId)
+    .eq('is_read', false);
+
+  if (error) throw error;
+};
+
 export const uploadAvatar = async (
   filePath: string,
   mimeType: string,
