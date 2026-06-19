@@ -289,7 +289,12 @@ export default function SignUp() {
               </TouchableOpacity>
 
               <AuthProviderButtons
+                buttonLabels={{
+                  apple: 'Sign Up with Apple',
+                  google: 'Sign Up with Google',
+                }}
                 dividerLabel="or sign up with"
+                nativeAppleButtonType="signUp"
                 onBeforeStart={() => {
                   if (acceptedPolicies) return true;
 

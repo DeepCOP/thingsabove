@@ -27,8 +27,10 @@ import {
 } from 'react-native';
 
 type AuthProviderButtonsProps = {
+  buttonLabels?: Partial<Record<OAuthProvider, string>>;
   disabled?: boolean;
   dividerLabel?: string;
+  nativeAppleButtonType?: 'continue' | 'signIn' | 'signUp';
   onBeforeStart?: () => boolean;
   onSuccess?: () => void;
   returnTo?: string | null;
@@ -44,10 +46,17 @@ const PROVIDERS: {
 ];
 
 const GOOGLE_G_MARK = require('../../assets/images/google-g.svg');
+const APPLE_NATIVE_BUTTON_TYPES = {
+  continue: AppleAuthentication.AppleAuthenticationButtonType.CONTINUE,
+  signIn: AppleAuthentication.AppleAuthenticationButtonType.SIGN_IN,
+  signUp: AppleAuthentication.AppleAuthenticationButtonType.SIGN_UP,
+};
 
 export default function AuthProviderButtons({
+  buttonLabels,
   disabled = false,
   dividerLabel,
+  nativeAppleButtonType = 'signIn',
   onBeforeStart,
   onSuccess,
   returnTo,
@@ -68,6 +77,8 @@ export default function AuthProviderButtons({
   const googleButtonBackgroundColor = colorScheme === 'dark' ? '#131314' : '#FFFFFF';
   const googleButtonBorderColor = colorScheme === 'dark' ? '#8E918F' : '#747775';
   const googleButtonTextColor = colorScheme === 'dark' ? '#E3E3E3' : '#1F1F1F';
+  const googleButtonLabel = buttonLabels?.google ?? 'Continue with Google';
+  const appleButtonLabel = buttonLabels?.apple ?? 'Continue with Apple';
   const authProviderButtonWidth = Math.max(192, Math.min(windowWidth - 48, 312));
   const visibleProviders = PROVIDERS.filter(
     ({ provider }) =>
@@ -299,7 +310,7 @@ export default function AuthProviderButtons({
         {shouldUseNativeGoogle ? (
           <TouchableOpacity
             activeOpacity={0.85}
-            accessibilityLabel="Continue with Google"
+            accessibilityLabel={googleButtonLabel}
             accessibilityRole="button"
             disabled={disabled || isBusy}
             onPress={handleNativeGooglePress}
@@ -355,7 +366,7 @@ export default function AuthProviderButtons({
                       fontWeight: '600',
                       lineHeight: 20,
                     }}>
-                    Continue with Google
+                    {googleButtonLabel}
                   </Text>
                 </>
               )}
@@ -366,10 +377,12 @@ export default function AuthProviderButtons({
         {visibleProviders.map(({ provider, label, icon }) => {
           const isProviderBusy = isBusy && signInWithOAuth.variables?.provider === provider;
           const isDisabled = disabled || isBusy;
+          const providerLabel = buttonLabels?.[provider] ?? label;
 
           return (
             <TouchableOpacity
               key={provider}
+              accessibilityLabel={providerLabel}
               accessibilityRole="button"
               className="flex-row items-center justify-center rounded-full border border-gray-300 bg-white p-3 dark:border-gray-700 dark:bg-black"
               disabled={isDisabled}
@@ -386,7 +399,7 @@ export default function AuthProviderButtons({
                 <>
                   <Ionicons name={icon} size={20} color={foregroundColor} />
                   <Text className="ml-3 text-center font-semibold text-gray-900 dark:text-white">
-                    {label}
+                    {providerLabel}
                   </Text>
                 </>
               )}
@@ -403,7 +416,8 @@ export default function AuthProviderButtons({
               width: authProviderButtonWidth,
             }}>
             <AppleAuthentication.AppleAuthenticationButton
-              buttonType={AppleAuthentication.AppleAuthenticationButtonType.SIGN_IN}
+              accessibilityLabel={appleButtonLabel}
+              buttonType={APPLE_NATIVE_BUTTON_TYPES[nativeAppleButtonType]}
               buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.BLACK}
               cornerRadius={24}
               onPress={handleNativeApplePress}
