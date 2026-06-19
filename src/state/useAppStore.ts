@@ -16,6 +16,21 @@ export type SelectedBibleBook = {
   verseEnd?: number;
 };
 
+export type BibleVerseHighlight = {
+  bookId: string;
+  chapter: number;
+  verse: number;
+  createdAt: string;
+};
+
+type BibleVerseHighlightReference = Pick<BibleVerseHighlight, 'bookId' | 'chapter' | 'verse'>;
+
+export const getBibleVerseHighlightKey = ({
+  bookId,
+  chapter,
+  verse,
+}: BibleVerseHighlightReference) => `${bookId}:${chapter}:${verse}`;
+
 type SortOption = 'Recent' | 'Trending';
 type ThemeMode = 'light' | 'dark' | 'system';
 
@@ -54,6 +69,8 @@ type AppState = {
 
   selectedBook: SelectedBibleBook;
   setSelectedBook: (book: SelectedBibleBook) => void;
+  bibleVerseHighlights: Record<string, BibleVerseHighlight>;
+  toggleBibleVerseHighlights: (references: BibleVerseHighlightReference[]) => void;
 
   currentPlan: any;
   setCurrentPlan: (plan: any) => void;
@@ -71,6 +88,7 @@ type PersistedAppState = Pick<
   | 'version'
   | 'bibleVersionStates'
   | 'selectedBook'
+  | 'bibleVerseHighlights'
   | 'currentPlan'
   | 'theme'
 >;
@@ -88,6 +106,7 @@ const DEFAULT_PERSISTED_STATE: PersistedAppState = {
   version: 'KJV',
   bibleVersionStates: {},
   selectedBook: DEFAULT_SELECTED_BOOK,
+  bibleVerseHighlights: {},
   currentPlan: null,
   theme: 'system',
 };
@@ -184,6 +203,41 @@ const normalizeBibleVersionStates = (
   return Object.fromEntries(normalizedEntries);
 };
 
+const normalizeBibleVerseHighlights = (value: unknown): Record<string, BibleVerseHighlight> => {
+  if (!isRecord(value)) {
+    return {};
+  }
+
+  const normalizedHighlights: Record<string, BibleVerseHighlight> = {};
+
+  Object.values(value).forEach((entry) => {
+    if (!isRecord(entry)) {
+      return;
+    }
+
+    const rawBookId = typeof entry.bookId === 'string' ? entry.bookId : '';
+    const bookId =
+      getCanonicalBookIdByName(rawBookId) || (rawBookId.trim() && rawBookId.trim().toUpperCase());
+    const chapter = toPositiveNumber(entry.chapter);
+    const verse = toPositiveNumber(entry.verse);
+
+    if (!bookId || !chapter || !verse) {
+      return;
+    }
+
+    const highlight: BibleVerseHighlight = {
+      bookId,
+      chapter,
+      verse,
+      createdAt: typeof entry.createdAt === 'string' ? entry.createdAt : '1970-01-01T00:00:00.000Z',
+    };
+
+    normalizedHighlights[getBibleVerseHighlightKey(highlight)] = highlight;
+  });
+
+  return normalizedHighlights;
+};
+
 const partializeAppState = (state: AppState): PersistedAppState => ({
   user: state.user,
   hasCompletedOnboarding: state.hasCompletedOnboarding,
@@ -192,6 +246,7 @@ const partializeAppState = (state: AppState): PersistedAppState => ({
   version: state.version,
   bibleVersionStates: state.bibleVersionStates,
   selectedBook: state.selectedBook,
+  bibleVerseHighlights: state.bibleVerseHighlights,
   currentPlan: state.currentPlan,
   theme: state.theme,
 });
@@ -215,6 +270,7 @@ const migrateAppState = (persistedState: unknown): PersistedAppState => {
     version: normalizeBibleVersionId(persistedState.version) ?? DEFAULT_PERSISTED_STATE.version,
     bibleVersionStates: normalizeBibleVersionStates(persistedState.bibleVersionStates),
     selectedBook: normalizeSelectedBook(persistedState.selectedBook),
+    bibleVerseHighlights: normalizeBibleVerseHighlights(persistedState.bibleVerseHighlights),
     currentPlan: hasOwn(persistedState, 'currentPlan')
       ? persistedState.currentPlan
       : DEFAULT_PERSISTED_STATE.currentPlan,
@@ -243,6 +299,51 @@ export const useAppStore = create<AppState>()(
 
       selectedBook: DEFAULT_SELECTED_BOOK,
       setSelectedBook: (selectedBook) => set({ selectedBook }),
+      bibleVerseHighlights: DEFAULT_PERSISTED_STATE.bibleVerseHighlights,
+      toggleBibleVerseHighlights: (references) =>
+        set((state) => {
+          const normalizedReferences = references.flatMap((reference) => {
+            const bookId =
+              getCanonicalBookIdByName(reference.bookId) ||
+              (typeof reference.bookId === 'string' && reference.bookId.trim().toUpperCase());
+            const chapter = toPositiveNumber(reference.chapter);
+            const verse = toPositiveNumber(reference.verse);
+
+            if (!bookId || !chapter || !verse) {
+              return [];
+            }
+
+            return [{ bookId, chapter, verse }];
+          });
+
+          if (normalizedReferences.length === 0) {
+            return {};
+          }
+
+          const shouldRemove = normalizedReferences.every(
+            (reference) => state.bibleVerseHighlights[getBibleVerseHighlightKey(reference)],
+          );
+          const nextHighlights = { ...state.bibleVerseHighlights };
+
+          if (shouldRemove) {
+            normalizedReferences.forEach((reference) => {
+              delete nextHighlights[getBibleVerseHighlightKey(reference)];
+            });
+          } else {
+            const createdAt = new Date().toISOString();
+
+            normalizedReferences.forEach((reference) => {
+              const key = getBibleVerseHighlightKey(reference);
+
+              nextHighlights[key] = {
+                ...reference,
+                createdAt: nextHighlights[key]?.createdAt ?? createdAt,
+              };
+            });
+          }
+
+          return { bibleVerseHighlights: nextHighlights };
+        }),
 
       currentPlan: DEFAULT_PERSISTED_STATE.currentPlan,
       setCurrentPlan: (currentPlan) => set({ currentPlan }),
@@ -273,7 +374,7 @@ export const useAppStore = create<AppState>()(
     }),
     {
       name: 'app-storage',
-      version: 3,
+      version: 4,
       storage: createJSONStorage(() => AsyncStorage),
       migrate: (persistedState) => migrateAppState(persistedState),
       merge: (persistedState, currentState) => ({
