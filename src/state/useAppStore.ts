@@ -16,13 +16,10 @@ export type SelectedBibleBook = {
   verseEnd?: number;
 };
 
-export type BibleVerseHighlightColor = 'yellow';
-
 export type BibleVerseHighlight = {
   bookId: string;
   chapter: number;
   verse: number;
-  color: BibleVerseHighlightColor;
   createdAt: string;
 };
 
@@ -232,7 +229,6 @@ const normalizeBibleVerseHighlights = (value: unknown): Record<string, BibleVers
       bookId,
       chapter,
       verse,
-      color: entry.color === 'yellow' ? entry.color : 'yellow',
       createdAt: typeof entry.createdAt === 'string' ? entry.createdAt : '1970-01-01T00:00:00.000Z',
     };
 
@@ -341,7 +337,6 @@ export const useAppStore = create<AppState>()(
 
               nextHighlights[key] = {
                 ...reference,
-                color: 'yellow',
                 createdAt: nextHighlights[key]?.createdAt ?? createdAt,
               };
             });
