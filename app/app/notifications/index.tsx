@@ -114,28 +114,57 @@ export default function NotificationsTab() {
   const router = useRouter();
   const isFocused = useIsFocused();
   const { session } = useAuth();
-  const { notificationsQuery, markAllRead } = useNotifications(session?.user?.id);
+  const { notificationsQuery, notificationsCountQuery, markAllRead } = useNotifications(
+    session?.user?.id,
+  );
   const { mutate: markAllNotificationsRead } = markAllRead;
-  const markedReadFocusUserIdRef = useRef<string | null>(null);
+  const markAllReadAttemptKeyRef = useRef<string | null>(null);
   const [selectedMessageNotification, setSelectedMessageNotification] =
     useState<AppNotification | null>(null);
   const isLoading = notificationsQuery.isFetching && !notificationsQuery.data;
+  const unreadNotificationCount = notificationsCountQuery.data ?? 0;
+  const unreadNotificationIds =
+    notificationsQuery.data
+      ?.filter((notification) => !notification.is_read)
+      .map((notification) => notification.id)
+      .sort()
+      .join(':') ?? '';
+  const hasUnreadNotifications = unreadNotificationCount > 0 || unreadNotificationIds.length > 0;
+  const markAllReadAttemptKey = [
+    session?.user?.id ?? 'no-user',
+    unreadNotificationCount,
+    unreadNotificationIds,
+  ].join(':');
 
   useEffect(() => {
     if (!isFocused) {
-      markedReadFocusUserIdRef.current = null;
+      markAllReadAttemptKeyRef.current = null;
       return;
     }
 
     const userId = session?.user?.id;
 
-    if (!userId || markedReadFocusUserIdRef.current === userId) {
+    if (
+      !userId ||
+      !hasUnreadNotifications ||
+      markAllReadAttemptKeyRef.current === markAllReadAttemptKey
+    ) {
       return;
     }
 
-    markedReadFocusUserIdRef.current = userId;
-    markAllNotificationsRead(userId);
-  }, [isFocused, markAllNotificationsRead, session?.user?.id]);
+    markAllReadAttemptKeyRef.current = markAllReadAttemptKey;
+    markAllNotificationsRead(userId, {
+      onError: () => {
+        markAllReadAttemptKeyRef.current = null;
+      },
+    });
+  }, [
+    hasUnreadNotifications,
+    isFocused,
+    markAllNotificationsRead,
+    markAllReadAttemptKey,
+    session?.user?.id,
+  ]);
 
   function showUnsupportedNotificationAlert() {
     Alert.alert(
