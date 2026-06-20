@@ -3,8 +3,8 @@ import {
   useSignInUserWithGoogleIdToken,
   useSignInUserWithOAuth,
 } from '@/src/hooks/useProfile';
-import { clearPendingOAuthReturnTo, setPendingOAuthReturnTo } from '@/src/lib/oauthReturnTo';
 import type { OAuthProvider } from '@/src/lib/authOAuth';
+import { clearPendingOAuthReturnTo, setPendingOAuthReturnTo } from '@/src/lib/oauthReturnTo';
 import { Ionicons } from '@expo/vector-icons';
 import {
   GoogleSignin,
@@ -30,7 +30,7 @@ type AuthProviderButtonsProps = {
   buttonLabels?: Partial<Record<OAuthProvider, string>>;
   disabled?: boolean;
   dividerLabel?: string;
-  nativeAppleButtonType?: 'continue' | 'signIn' | 'signUp';
+  nativeAppleButtonType?: 'continue' | 'signUp';
   onBeforeStart?: () => boolean;
   onSuccess?: () => void;
   returnTo?: string | null;
@@ -46,9 +46,10 @@ const PROVIDERS: {
 ];
 
 const GOOGLE_G_MARK = require('../../assets/images/google-g.svg');
+const AUTH_PROVIDER_BUTTON_FONT_SIZE = 14;
+const AUTH_PROVIDER_BUTTON_LINE_HEIGHT = 20;
 const APPLE_NATIVE_BUTTON_TYPES = {
   continue: AppleAuthentication.AppleAuthenticationButtonType.CONTINUE,
-  signIn: AppleAuthentication.AppleAuthenticationButtonType.SIGN_IN,
   signUp: AppleAuthentication.AppleAuthenticationButtonType.SIGN_UP,
 };
 
@@ -56,7 +57,7 @@ export default function AuthProviderButtons({
   buttonLabels,
   disabled = false,
   dividerLabel,
-  nativeAppleButtonType = 'signIn',
+  nativeAppleButtonType = 'continue',
   onBeforeStart,
   onSuccess,
   returnTo,
@@ -362,9 +363,9 @@ export default function AuthProviderButtons({
                   <Text
                     style={{
                       color: googleButtonTextColor,
-                      fontSize: 14,
+                      fontSize: AUTH_PROVIDER_BUTTON_FONT_SIZE,
                       fontWeight: '600',
-                      lineHeight: 20,
+                      lineHeight: AUTH_PROVIDER_BUTTON_LINE_HEIGHT,
                     }}>
                     {googleButtonLabel}
                   </Text>
@@ -398,7 +399,12 @@ export default function AuthProviderButtons({
               ) : (
                 <>
                   <Ionicons name={icon} size={20} color={foregroundColor} />
-                  <Text className="ml-3 text-center font-semibold text-gray-900 dark:text-white">
+                  <Text
+                    className="ml-3 text-center font-semibold text-gray-900 dark:text-white"
+                    style={{
+                      fontSize: AUTH_PROVIDER_BUTTON_FONT_SIZE,
+                      lineHeight: AUTH_PROVIDER_BUTTON_LINE_HEIGHT,
+                    }}>
                     {providerLabel}
                   </Text>
                 </>

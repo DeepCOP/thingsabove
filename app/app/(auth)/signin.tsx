@@ -125,6 +125,7 @@ export default function SignIn() {
 
           <AuthProviderButtons
             dividerLabel="or sign in with"
+            nativeAppleButtonType="continue"
             onSuccess={redirectAfterSignIn}
             returnTo={authReturnTo}
           />
