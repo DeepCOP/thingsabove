@@ -28,6 +28,9 @@ const googleIosUrlScheme = process.env.EXPO_PUBLIC_GOOGLE_IOS_URL_SCHEME;
 const googleSignInPlugin = googleIosUrlScheme
   ? [['@react-native-google-signin/google-signin', { iosUrlScheme: googleIosUrlScheme }]]
   : [];
+const locationWhenInUsePermission =
+  '$(PRODUCT_NAME) uses your location to save your city, country, and time zone in your profile. ' +
+  'For example, your time zone helps schedule devotional reminders and app notifications at appropriate local times.';
 
 export default ({ config }) => ({
   expo: {
@@ -46,6 +49,7 @@ export default ({ config }) => ({
       associatedDomains: ['applinks:thingsabove.life'],
       infoPlist: {
         ITSAppUsesNonExemptEncryption: false,
+        NSLocationWhenInUseUsageDescription: locationWhenInUsePermission,
       },
       usesAppleSignIn: true,
       entitlements: {
@@ -91,8 +95,7 @@ export default ({ config }) => ({
       [
         'expo-location',
         {
-          locationWhenInUsePermission:
-            'Allow $(PRODUCT_NAME) to use your location for nearby features and local defaults.',
+          locationWhenInUsePermission,
         },
       ],
       [
