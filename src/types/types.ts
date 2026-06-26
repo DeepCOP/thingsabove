@@ -12,6 +12,11 @@ export type ProfilesInsert = Database['public']['Tables']['profiles']['Insert'];
 
 export type ProfilesUpdate = Database['public']['Tables']['profiles']['Update'];
 
+export type Friendship = Pick<
+  Database['public']['Tables']['friends']['Row'],
+  'requester_id' | 'receiver_id' | 'status'
+>;
+
 export type Church = Database['public']['Tables']['churches']['Row'];
 
 export type ChurchInsert = Database['public']['Tables']['churches']['Insert'];

@@ -1,5 +1,10 @@
 import { acceptFriendRequest, addFriend, declineFriendRequest } from '@/src/api/mutations';
-import { fetchPendingFriendRequests, fetchUserFriends, getUserByEmail } from '@/src/api/queries';
+import {
+  fetchFriendship,
+  fetchPendingFriendRequests,
+  fetchUserFriends,
+  getUserByEmail,
+} from '@/src/api/queries';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 export function useFriends(userId: string | undefined) {
@@ -11,6 +16,20 @@ export function useFriends(userId: string | undefined) {
   });
 }
 
+export function useFriendship({
+  userId,
+  friendId,
+}: {
+  userId: string | undefined;
+  friendId: string | undefined;
+}) {
+  return useQuery({
+    queryKey: ['friendship', userId, friendId],
+    enabled: !!userId && !!friendId && userId !== friendId,
+    queryFn: async () => await fetchFriendship({ userId: userId!, friendId: friendId! }),
+  });
+}
+
 export function useAddFriend() {
   const qc = useQueryClient();
 
@@ -19,6 +38,7 @@ export function useAddFriend() {
       await addFriend({ receiver_id: friendId }),
     onSuccess: (_data, variables) => {
       qc.invalidateQueries({ queryKey: ['friends', variables.userId] });
+      qc.invalidateQueries({ queryKey: ['friendship', variables.userId, variables.friendId] });
       qc.invalidateQueries({ queryKey: ['get_user_by_email'] });
     },
   });
@@ -42,6 +62,7 @@ export function useAcceptFriendRequest() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['friends'] });
       qc.invalidateQueries({ queryKey: ['friend_requests'] });
+      qc.invalidateQueries({ queryKey: ['friendship'] });
     },
   });
 }
@@ -55,6 +76,7 @@ export function useDeclineFriendRequest() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['friend_requests'] });
       qc.invalidateQueries({ queryKey: ['friends'] });
+      qc.invalidateQueries({ queryKey: ['friendship'] });
     },
   });
 }

@@ -1,13 +1,30 @@
 import UserAvatar from '@/src/components/UserAvatar';
-import { ProfileWithChurch } from '@/src/types/types';
-import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { Friendship, ProfileWithChurch } from '@/src/types/types';
+import { Ionicons } from '@expo/vector-icons';
+import {
+  ActivityIndicator,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+  useColorScheme,
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 type Props = {
   profile: ProfileWithChurch;
   canOpenChurch?: boolean;
   isCurrentUser?: boolean;
+  viewerUserId?: string;
+  friendship?: Friendship | null;
+  isFriendshipLoading?: boolean;
+  isAddingFriend?: boolean;
+  isAcceptingFriend?: boolean;
+  isDecliningFriend?: boolean;
   onOpenChurch?: () => void;
+  onAddFriend?: () => void;
+  onAcceptFriendRequest?: () => void;
+  onDeclineFriendRequest?: () => void;
 };
 
 const DetailRow = ({ label, value }: { label: string; value: string }) => (
@@ -23,9 +40,19 @@ export default function PublicProfileScreen({
   profile,
   canOpenChurch = false,
   isCurrentUser = false,
+  viewerUserId,
+  friendship,
+  isFriendshipLoading = false,
+  isAddingFriend = false,
+  isAcceptingFriend = false,
+  isDecliningFriend = false,
   onOpenChurch,
+  onAddFriend,
+  onAcceptFriendRequest,
+  onDeclineFriendRequest,
 }: Props) {
   const insets = useSafeAreaInsets();
+  const colorScheme = useColorScheme();
   const displayBio = profile.bio?.trim() ?? '';
   const churchName = profile.church?.name ?? 'Not provided';
   const churchAddress = profile.church?.address ?? '';
@@ -37,6 +64,34 @@ export default function PublicProfileScreen({
     profile.church?.address ||
     profile.church?.website_url,
   );
+  const isPendingFriendship = friendship?.status === 'pending';
+  const isAcceptedFriendship = friendship?.status === 'accepted';
+  const isIncomingFriendRequest = isPendingFriendship && friendship?.receiver_id === viewerUserId;
+  const isHandlingFriendRequest = isAcceptingFriend || isDecliningFriend;
+  const showFriendAction =
+    !isCurrentUser && Boolean(isFriendshipLoading || friendship || onAddFriend);
+  const canSendFriendRequest =
+    !friendship && !isFriendshipLoading && !isAddingFriend && Boolean(onAddFriend);
+  const isPrimaryFriendAction = canSendFriendRequest || isAddingFriend;
+  const primaryActionColor = colorScheme === 'dark' ? '#000000' : '#ffffff';
+  const secondaryActionColor = isAcceptedFriendship ? '#16a34a' : '#6b7280';
+  const friendActionIconColor = isPrimaryFriendAction ? primaryActionColor : secondaryActionColor;
+  const friendActionLabel = isAddingFriend
+    ? 'Sending...'
+    : isFriendshipLoading
+      ? 'Checking...'
+      : isAcceptedFriendship
+        ? 'Friends'
+        : isPendingFriendship
+          ? isIncomingFriendRequest
+            ? 'Request Pending'
+            : 'Request Sent'
+          : 'Add Friend';
+  const friendActionLabelClassName = isPrimaryFriendAction
+    ? 'text-white dark:text-black'
+    : isAcceptedFriendship
+      ? 'text-green-700 dark:text-green-400'
+      : 'text-gray-600 dark:text-gray-300';
 
   return (
     <ScrollView
@@ -59,6 +114,76 @@ export default function PublicProfileScreen({
           <Text className="mt-1 text-sm text-gray-500 dark:text-gray-400">
             This is your public profile
           </Text>
+        ) : null}
+
+        {showFriendAction ? (
+          isIncomingFriendRequest && onAcceptFriendRequest && onDeclineFriendRequest ? (
+            <View className="mt-4 items-center">
+              <Text className="text-sm text-gray-600 dark:text-gray-300">
+                {profile.first_name} sent you a friend request
+              </Text>
+
+              <View className="mt-3 flex-row gap-3">
+                <TouchableOpacity
+                  className="flex-row items-center justify-center rounded-full border border-gray-300 px-4 py-3 dark:border-neutral-700"
+                  disabled={isHandlingFriendRequest}
+                  onPress={onDeclineFriendRequest}>
+                  {isDecliningFriend ? (
+                    <ActivityIndicator color="#6b7280" size="small" />
+                  ) : (
+                    <Ionicons color="#6b7280" name="close-circle-outline" size={18} />
+                  )}
+                  <Text className="ml-2 font-semibold text-gray-600 dark:text-gray-300">
+                    Decline
+                  </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  className="flex-row items-center justify-center rounded-full bg-black px-4 py-3 dark:bg-white"
+                  disabled={isHandlingFriendRequest}
+                  onPress={onAcceptFriendRequest}>
+                  {isAcceptingFriend ? (
+                    <ActivityIndicator color={primaryActionColor} size="small" />
+                  ) : (
+                    <Ionicons
+                      color={primaryActionColor}
+                      name="checkmark-circle-outline"
+                      size={18}
+                    />
+                  )}
+                  <Text className="ml-2 font-semibold text-white dark:text-black">Accept</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          ) : (
+            <TouchableOpacity
+              className={`mt-4 flex-row items-center justify-center rounded-full px-5 py-3 ${
+                isPrimaryFriendAction
+                  ? 'bg-black dark:bg-white'
+                  : 'border border-gray-200 bg-gray-50 dark:border-neutral-800 dark:bg-neutral-900'
+              }`}
+              disabled={!canSendFriendRequest}
+              onPress={onAddFriend}>
+              {isAddingFriend || isFriendshipLoading ? (
+                <ActivityIndicator color={friendActionIconColor} size="small" />
+              ) : (
+                <Ionicons
+                  color={friendActionIconColor}
+                  name={
+                    isAcceptedFriendship
+                      ? 'checkmark-circle-outline'
+                      : isPendingFriendship
+                        ? 'time-outline'
+                        : 'person-add-outline'
+                  }
+                  size={18}
+                />
+              )}
+              <Text className={`ml-2 font-semibold ${friendActionLabelClassName}`}>
+                {friendActionLabel}
+              </Text>
+            </TouchableOpacity>
+          )
         ) : null}
       </View>
 
