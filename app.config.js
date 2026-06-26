@@ -24,6 +24,18 @@ const androidAppRoutes = [
   '/profile',
 ];
 const androidAppLinkPaths = ['/app', ...androidAppRoutes.map((pathPrefix) => `/app${pathPrefix}`)];
+const defaultAppLinkHosts = ['thingsabove.life', 'beta.thingsabove.life'];
+const configuredAppLinkHosts = process.env.EXPO_PUBLIC_APP_LINK_HOSTS?.split(',')
+  .map((host) => host.trim())
+  .filter(Boolean);
+const appLinkHosts = configuredAppLinkHosts?.length ? configuredAppLinkHosts : defaultAppLinkHosts;
+const androidAppLinkData = appLinkHosts.flatMap((host) =>
+  androidAppLinkPaths.map((pathPrefix) => ({
+    scheme: 'https',
+    host,
+    pathPrefix,
+  })),
+);
 const googleIosUrlScheme = process.env.EXPO_PUBLIC_GOOGLE_IOS_URL_SCHEME;
 const googleSignInPlugin = googleIosUrlScheme
   ? [['@react-native-google-signin/google-signin', { iosUrlScheme: googleIosUrlScheme }]]
@@ -46,7 +58,7 @@ export default ({ config }) => ({
     ios: {
       supportsTablet: true,
       bundleIdentifier: 'life.thingsabove',
-      associatedDomains: ['applinks:thingsabove.life'],
+      associatedDomains: appLinkHosts.map((host) => `applinks:${host}`),
       infoPlist: {
         ITSAppUsesNonExemptEncryption: false,
         NSLocationWhenInUseUsageDescription: locationWhenInUsePermission,
@@ -74,11 +86,7 @@ export default ({ config }) => ({
         {
           action: 'VIEW',
           autoVerify: true,
-          data: androidAppLinkPaths.map((pathPrefix) => ({
-            scheme: 'https',
-            host: 'thingsabove.life',
-            pathPrefix,
-          })),
+          data: androidAppLinkData,
           category: ['BROWSABLE', 'DEFAULT'],
         },
       ],
