@@ -1,15 +1,26 @@
 import LoadingSpinner from '@/src/components/LoadingSpinner';
+import {
+  useAcceptFriendRequest,
+  useAddFriend,
+  useDeclineFriendRequest,
+  useFriendship,
+} from '@/src/hooks/useFriends';
 import { useProfile } from '@/src/hooks/useProfile';
 import PublicProfileScreen from '@/src/screens/PublicProfileScreen';
 import { useAuth } from '@/src/state/AuthContext';
 import { Href, useLocalSearchParams, useRouter } from 'expo-router';
-import { Text, TouchableOpacity, View } from 'react-native';
+import { Alert, Text, TouchableOpacity, View } from 'react-native';
 
 export default function PublicProfileRoute() {
   const { userId } = useLocalSearchParams<{ userId: string }>();
   const router = useRouter();
   const { session } = useAuth();
+  const viewerUserId = session?.user?.id;
   const targetUserProfile = useProfile(userId);
+  const friendshipQuery = useFriendship({ userId: viewerUserId, friendId: userId });
+  const addFriend = useAddFriend();
+  const acceptFriendRequest = useAcceptFriendRequest();
+  const declineFriendRequest = useDeclineFriendRequest();
 
   if (targetUserProfile.isLoading) {
     return <LoadingSpinner style={{ marginTop: 30 }} />;
@@ -36,14 +47,63 @@ export default function PublicProfileRoute() {
   }
 
   const profileChurchId = targetUserProfile.data.church?.id ?? null;
+  const requesterId = friendshipQuery.data?.requester_id;
 
   return (
     <PublicProfileScreen
       profile={targetUserProfile.data}
       isCurrentUser={session?.user?.id === targetUserProfile.data.id}
+      viewerUserId={viewerUserId}
+      friendship={friendshipQuery.data ?? null}
+      isFriendshipLoading={friendshipQuery.isLoading || friendshipQuery.isFetching}
+      isAddingFriend={addFriend.isPending}
+      isAcceptingFriend={acceptFriendRequest.isPending}
+      isDecliningFriend={declineFriendRequest.isPending}
       canOpenChurch={Boolean(profileChurchId)}
       onOpenChurch={
         profileChurchId ? () => router.push(`/app/church/${profileChurchId}` as Href) : undefined
+      }
+      onAddFriend={
+        viewerUserId
+          ? () =>
+              addFriend.mutate(
+                {
+                  friendId: targetUserProfile.data.id,
+                  userId: viewerUserId,
+                },
+                {
+                  onError: (error) => {
+                    Alert.alert('Unable to send friend request', error.message);
+                  },
+                },
+              )
+          : undefined
+      }
+      onAcceptFriendRequest={
+        requesterId
+          ? () =>
+              acceptFriendRequest.mutate(
+                { friendId: requesterId },
+                {
+                  onError: (error) => {
+                    Alert.alert('Unable to accept friend request', error.message);
+                  },
+                },
+              )
+          : undefined
+      }
+      onDeclineFriendRequest={
+        requesterId
+          ? () =>
+              declineFriendRequest.mutate(
+                { friendId: requesterId },
+                {
+                  onError: (error) => {
+                    Alert.alert('Unable to decline friend request', error.message);
+                  },
+                },
+              )
+          : undefined
       }
     />
   );

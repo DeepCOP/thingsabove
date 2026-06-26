@@ -2,6 +2,7 @@ import { supabase } from '../lib/supabaseClient';
 import {
   DayItemTemplate,
   DayItemType,
+  Friendship,
   ProfileLocation,
   ProfilesUpdate,
   ProfileWithChurch,
@@ -227,6 +228,31 @@ export const fetchUserFriends = async ({ userId }: { userId: string }) => {
 
   // Normalize → always return "the other user"
   return data.map((f) => (f.requester.id === userId ? f.receiver : f.requester));
+};
+
+export const fetchFriendship = async ({
+  userId,
+  friendId,
+}: {
+  userId: string;
+  friendId: string;
+}) => {
+  if (!userId || !friendId || userId === friendId) {
+    return null;
+  }
+
+  const { data, error } = await supabase
+    .from('friends')
+    .select('requester_id, receiver_id, status')
+    .or(
+      `and(requester_id.eq.${userId},receiver_id.eq.${friendId}),and(requester_id.eq.${friendId},receiver_id.eq.${userId})`,
+    )
+    .limit(1)
+    .maybeSingle();
+
+  if (error) throw error;
+
+  return data as Friendship | null;
 };
 
 export const fetchUserPlans = async (planId: string[]) => {
