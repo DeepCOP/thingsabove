@@ -86,6 +86,15 @@ export default function AuthProviderButtons({
       !(provider === 'apple' && shouldUseNativeApple) &&
       !(provider === 'google' && shouldUseNativeGoogle),
   );
+  const divider = dividerLabel ? (
+    <View className="my-5 flex-row items-center">
+      <View className="h-px flex-1 bg-gray-200 dark:bg-gray-800" />
+      <Text className="mx-3 text-xs font-semibold uppercase text-gray-500 dark:text-gray-400">
+        {dividerLabel}
+      </Text>
+      <View className="h-px flex-1 bg-gray-200 dark:bg-gray-800" />
+    </View>
+  ) : null;
 
   useEffect(() => {
     if (!shouldUseNativeGoogle) return;
@@ -297,16 +306,6 @@ export default function AuthProviderButtons({
 
   return (
     <View>
-      {dividerLabel ? (
-        <View className="my-5 flex-row items-center">
-          <View className="h-px flex-1 bg-gray-200 dark:bg-gray-800" />
-          <Text className="mx-3 text-xs font-semibold uppercase text-gray-500 dark:text-gray-400">
-            {dividerLabel}
-          </Text>
-          <View className="h-px flex-1 bg-gray-200 dark:bg-gray-800" />
-        </View>
-      ) : null}
-
       <View className="gap-3">
         {shouldUseNativeGoogle ? (
           <TouchableOpacity
@@ -432,6 +431,8 @@ export default function AuthProviderButtons({
           </View>
         ) : null}
       </View>
+
+      {divider}
     </View>
   );
 }

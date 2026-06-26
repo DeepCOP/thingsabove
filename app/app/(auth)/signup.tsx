@@ -147,6 +147,28 @@ export default function SignUp() {
                 Create Your Account
               </Text>
 
+              <AuthProviderButtons
+                buttonLabels={{
+                  apple: 'Sign Up with Apple',
+                  google: 'Sign Up with Google',
+                }}
+                dividerLabel="or sign up with email"
+                nativeAppleButtonType="signUp"
+                onBeforeStart={() => {
+                  if (acceptedPolicies) return true;
+
+                  Alert.alert(
+                    'Accept policies',
+                    'Please agree to the Terms of Service and Statement of Faith before continuing.',
+                  );
+                  return false;
+                }}
+                onSuccess={() => {
+                  router.replace(aboutDetailsPath as Href);
+                }}
+                returnTo={aboutDetailsPath}
+              />
+
               <Input
                 label="First Name"
                 value={firstName}
@@ -287,28 +309,6 @@ export default function SignUp() {
                   Sign Up
                 </Text>
               </TouchableOpacity>
-
-              <AuthProviderButtons
-                buttonLabels={{
-                  apple: 'Sign Up with Apple',
-                  google: 'Sign Up with Google',
-                }}
-                dividerLabel="or sign up with"
-                nativeAppleButtonType="signUp"
-                onBeforeStart={() => {
-                  if (acceptedPolicies) return true;
-
-                  Alert.alert(
-                    'Accept policies',
-                    'Please agree to the Terms of Service and Statement of Faith before continuing.',
-                  );
-                  return false;
-                }}
-                onSuccess={() => {
-                  router.replace(aboutDetailsPath as Href);
-                }}
-                returnTo={aboutDetailsPath}
-              />
             </View>
           </View>
         </KeyboardAwareScrollView>

@@ -77,6 +77,13 @@ export default function SignIn() {
           }}
           keyboardShouldPersistTaps="handled"
           automaticallyAdjustKeyboardInsets>
+          <AuthProviderButtons
+            dividerLabel="or sign in with email"
+            nativeAppleButtonType="continue"
+            onSuccess={redirectAfterSignIn}
+            returnTo={authReturnTo}
+          />
+
           <Input
             label="Email"
             value={email}
@@ -122,13 +129,6 @@ export default function SignIn() {
               Sign In
             </Text>
           </TouchableOpacity>
-
-          <AuthProviderButtons
-            dividerLabel="or sign in with"
-            nativeAppleButtonType="continue"
-            onSuccess={redirectAfterSignIn}
-            returnTo={authReturnTo}
-          />
         </ScrollView>
       </TouchableWithoutFeedback>
     </KeyboardAvoidingView>
