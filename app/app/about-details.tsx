@@ -27,9 +27,11 @@ import {
   useColorScheme,
   View,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function AboutDetails() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const searchParams = useLocalSearchParams<
     {
       email?: string;
@@ -117,7 +119,8 @@ export default function AboutDetails() {
           contentContainerStyle={{
             flexGrow: 1,
             paddingHorizontal: 24,
-            paddingVertical: 24,
+            paddingTop: insets.top + 24,
+            paddingBottom: insets.bottom + 24,
           }}
           keyboardShouldPersistTaps="handled"
           automaticallyAdjustKeyboardInsets>
