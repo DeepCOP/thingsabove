@@ -1216,7 +1216,6 @@ export type Database = {
           content: string;
           created_at: string;
           id: string;
-          is_anonymous: boolean;
           is_answered: boolean;
           is_urgent: boolean;
           scope: string;
@@ -1232,7 +1231,6 @@ export type Database = {
           content: string;
           created_at?: string;
           id?: string;
-          is_anonymous?: boolean;
           is_answered?: boolean;
           is_urgent?: boolean;
           scope: string;
@@ -1248,7 +1246,6 @@ export type Database = {
           content?: string;
           created_at?: string;
           id?: string;
-          is_anonymous?: boolean;
           is_answered?: boolean;
           is_urgent?: boolean;
           scope?: string;
@@ -1910,7 +1907,6 @@ export type Database = {
           p_allow_comments?: boolean;
           p_category: string;
           p_content: string;
-          p_is_anonymous?: boolean;
           p_is_urgent?: boolean;
           p_scope: string;
         };
@@ -2231,7 +2227,6 @@ export type Database = {
           created_at: string;
           encouragement_count: number;
           id: string;
-          is_anonymous: boolean;
           is_answered: boolean;
           is_urgent: boolean;
           prayer_count: number;
@@ -2265,7 +2260,6 @@ export type Database = {
           created_at: string;
           encouragement_count: number;
           id: string;
-          is_anonymous: boolean;
           is_answered: boolean;
           is_urgent: boolean;
           prayer_count: number;
@@ -2639,7 +2633,6 @@ export type Database = {
           p_allow_comments?: boolean;
           p_category: string;
           p_content: string;
-          p_is_anonymous?: boolean;
           p_is_urgent?: boolean;
           p_request_id: string;
           p_scope: string;

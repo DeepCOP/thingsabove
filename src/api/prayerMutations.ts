@@ -6,7 +6,6 @@ export type SavePrayerRequestInput = {
   scope: PrayerScope;
   category: PrayerCategory;
   content: string;
-  isAnonymous: boolean;
   isUrgent: boolean;
   allowComments: boolean;
 };
@@ -16,7 +15,6 @@ export const savePrayerRequest = async ({
   scope,
   category,
   content,
-  isAnonymous,
   isUrgent,
   allowComments,
 }: SavePrayerRequestInput) => {
@@ -24,7 +22,6 @@ export const savePrayerRequest = async ({
     p_scope: scope,
     p_category: category,
     p_content: content,
-    p_is_anonymous: isAnonymous,
     p_is_urgent: isUrgent,
     p_allow_comments: allowComments,
   };

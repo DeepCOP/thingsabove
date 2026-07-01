@@ -121,12 +121,10 @@ export default function PrayerRequestDetailScreen({ requestId }: Props) {
   }
 
   const displayName = getDisplayName({
-    isAnonymous: request.is_anonymous,
     firstName: request.author_first_name,
     lastName: request.author_last_name,
   });
   const avatarName = getAvatarNameParts({
-    isAnonymous: request.is_anonymous,
     firstName: request.author_first_name,
     lastName: request.author_last_name,
   });
@@ -177,8 +175,8 @@ export default function PrayerRequestDetailScreen({ requestId }: Props) {
             }
             titleClassName="font-semibold text-gray-900 dark:text-white"
             titleRowClassName="flex-row flex-wrap items-center gap-2"
-            uri={request.is_anonymous ? null : request.author_avatar_url}
-            userId={request.is_anonymous ? null : request.user_id}
+            uri={request.author_avatar_url}
+            userId={request.user_id}
           />
 
           <Text className="mt-5 text-base leading-7 text-gray-800 dark:text-gray-200">

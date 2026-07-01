@@ -39,7 +39,6 @@ export default function PrayerRequestComposerScreen({ requestId }: Props) {
   const [scope, setScope] = useState<PrayerScope>('public');
   const [category, setCategory] = useState<PrayerCategory>('Family');
   const [requestText, setRequestText] = useState('');
-  const [isAnonymous, setIsAnonymous] = useState(false);
   const [isUrgent, setIsUrgent] = useState(false);
   const [allowComments, setAllowComments] = useState(true);
   const hasInitializedScopeRef = useRef(false);
@@ -59,7 +58,6 @@ export default function PrayerRequestComposerScreen({ requestId }: Props) {
     setScope(requestQuery.data.scope as PrayerScope);
     setCategory(requestQuery.data.category as PrayerCategory);
     setRequestText(requestQuery.data.content);
-    setIsAnonymous(requestQuery.data.is_anonymous);
     setIsUrgent(requestQuery.data.is_urgent);
     setAllowComments(requestQuery.data.allow_comments);
   }, [requestQuery.data]);
@@ -81,7 +79,6 @@ export default function PrayerRequestComposerScreen({ requestId }: Props) {
     (scope === 'church' && !hasChurch);
 
   const previewName = getDisplayName({
-    isAnonymous,
     firstName: profileQuery.data?.first_name,
     lastName: profileQuery.data?.last_name,
     fallbackLabel: 'Your name',
@@ -102,7 +99,6 @@ export default function PrayerRequestComposerScreen({ requestId }: Props) {
         scope,
         category,
         content: requestText.trim(),
-        isAnonymous,
         isUrgent,
         allowComments,
       },
@@ -223,24 +219,8 @@ export default function PrayerRequestComposerScreen({ requestId }: Props) {
 
         <View className="mt-4 rounded-3xl border border-gray-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-950">
           <Text className="text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
-            Visibility
+            Options
           </Text>
-
-          <View className="mt-4 flex-row items-center justify-between">
-            <View className="flex-1 pr-4">
-              <Text className="text-base font-medium text-gray-900 dark:text-white">
-                Post anonymously
-              </Text>
-              <Text className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                Hide your name on the prayer board.
-              </Text>
-            </View>
-            <Switch
-              value={isAnonymous}
-              onValueChange={setIsAnonymous}
-              trackColor={switchTrackColor}
-            />
-          </View>
 
           <View className="mt-4 flex-row items-center justify-between">
             <View className="flex-1 pr-4">
