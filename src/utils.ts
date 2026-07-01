@@ -319,39 +319,25 @@ export function getAvatarInitials(first_name?: string | null, last_name?: string
 }
 
 type DisplayNameOptions = {
-  isAnonymous?: boolean;
   firstName?: string | null;
   lastName?: string | null;
-  anonymousLabel?: string;
   fallbackLabel?: string;
 };
 
 export function getDisplayName({
-  isAnonymous = false,
   firstName,
   lastName,
-  anonymousLabel = 'Anonymous',
   fallbackLabel = 'Member',
 }: DisplayNameOptions) {
-  if (isAnonymous) {
-    return anonymousLabel;
-  }
-
   const name = [firstName, lastName].filter(Boolean).join(' ').trim();
   return name || fallbackLabel;
 }
 
 export function getAvatarNameParts({
-  isAnonymous = false,
   firstName,
   lastName,
-  anonymousLabel = 'Anonymous',
   fallbackLabel = 'Member',
 }: DisplayNameOptions) {
-  if (isAnonymous) {
-    return { firstName: anonymousLabel, lastName: undefined };
-  }
-
   if (firstName) {
     return { firstName, lastName: lastName ?? undefined };
   }

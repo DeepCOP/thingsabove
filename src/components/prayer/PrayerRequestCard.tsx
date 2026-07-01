@@ -35,12 +35,10 @@ export default function PrayerRequestCard({
   answering,
 }: Props) {
   const displayName = getDisplayName({
-    isAnonymous: item.is_anonymous,
     firstName: item.author_first_name,
     lastName: item.author_last_name,
   });
   const avatarName = getAvatarNameParts({
-    isAnonymous: item.is_anonymous,
     firstName: item.author_first_name,
     lastName: item.author_last_name,
   });
@@ -79,8 +77,8 @@ export default function PrayerRequestCard({
           }
           titleClassName="font-semibold text-gray-900 dark:text-white"
           titleRowClassName="flex-row flex-wrap items-center gap-2"
-          uri={item.is_anonymous ? null : item.author_avatar_url}
-          userId={item.is_anonymous ? null : item.user_id}
+          uri={item.author_avatar_url}
+          userId={item.user_id}
         />
 
         <Text
