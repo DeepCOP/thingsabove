@@ -3,21 +3,21 @@ import { PlanDayComment } from '@/src/types/types';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { fetchPlanDayComments } from '../api/groupQueries';
 
-export function useComments(planId: string, dayId: string, group_id?: string) {
+export function useComments(planId: string, dayId: string, progressId: string, group_id?: string) {
   const queryClient = useQueryClient();
-  const queryKey = ['day_comments', planId, dayId, group_id] as const;
+  const queryKey = ['day_comments', planId, dayId, progressId, group_id] as const;
 
   const fetchComments = useQuery({
     queryKey,
-    enabled: !!planId && !!dayId,
+    enabled: !!planId && !!dayId && !!progressId,
     staleTime: 0,
     queryFn: async () =>
-      (await fetchPlanDayComments({ planId, dayId, group_id })) as PlanDayComment[],
+      (await fetchPlanDayComments({ planId, dayId, progressId, group_id })) as PlanDayComment[],
   });
 
   const addComment = useMutation({
     mutationFn: async (content: string) =>
-      await addPlanDayComment({ planId, dayId, content, group_id }),
+      await addPlanDayComment({ planId, dayId, progressId, content, group_id }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey });
     },

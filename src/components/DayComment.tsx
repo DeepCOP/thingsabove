@@ -18,6 +18,7 @@ import LoadingSpinner from './LoadingSpinner';
 import ProfileIdentityRow from './ProfileIdentityRow';
 
 type Props = {
+  progressId: string;
   planId: string;
   dayId: string;
   group_id?: string;
@@ -116,6 +117,7 @@ const DayCommentsFooter = memo(function DayCommentsFooter({
 const DayCommentsBottomSheet = forwardRef<BottomSheet, Props>(
   (
     {
+      progressId,
       planId,
       dayId,
       group_id,
@@ -142,6 +144,7 @@ const DayCommentsBottomSheet = forwardRef<BottomSheet, Props>(
     const { commentsQuery, addComment, updateComment, deleteComment } = useComments(
       planId,
       dayId,
+      progressId,
       group_id,
     );
     const comments = commentsQuery.data || [];

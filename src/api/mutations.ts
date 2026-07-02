@@ -118,11 +118,13 @@ export const stopPlanProgress = async ({
 export const addPlanDayComment = async ({
   planId,
   dayId,
+  progressId,
   content,
   group_id,
 }: {
   planId: string;
   dayId: string;
+  progressId: string;
   content: string;
   group_id?: string;
 }) => {
@@ -131,6 +133,7 @@ export const addPlanDayComment = async ({
     p_day_id: dayId,
     p_content: content,
     p_group_id: group_id,
+    p_progress_id: progressId,
   });
 
   if (error) throw error;
