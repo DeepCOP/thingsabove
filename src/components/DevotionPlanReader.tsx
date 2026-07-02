@@ -435,19 +435,7 @@ export default function DevotionalPlanReader({
             />
           </View>
 
-          {isDevotionalItem ? (
-            <TouchableOpacity
-              onPress={async () => {
-                const content = `${plan?.title}: Day ${item?.day_number} · Devotional \n\n ${process.env.EXPO_PUBLIC_BASE_URL}/app/devotional_detail/${plan?.id}/${item?.day_id}/${item.id}`;
-                await Share.share({ message: content });
-              }}>
-              <Ionicons
-                name="share-social-outline"
-                size={24}
-                color={colorScheme === 'dark' ? '#fff' : '#111'}
-              />
-            </TouchableOpacity>
-          ) : (
+          {!isDevotionalItem && (
             <TouchableOpacity
               onPress={() => router.push('/app/bible/versions')}
               disabled={Boolean(loadingVersionId)}
