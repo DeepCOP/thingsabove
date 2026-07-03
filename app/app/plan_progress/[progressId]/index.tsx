@@ -353,6 +353,7 @@ export default function PlanProgress() {
       />
 
       <PlanProgressScreen
+        progressId={progressIdParam as string}
         insetsBottom={insets.bottom}
         coverImage={plan.cover_image || undefined}
         completions={plan.completions ?? 0}

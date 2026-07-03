@@ -14,6 +14,7 @@ import { StartReadingCTA } from '@/src/components/planProgress/StartReadingCTA';
 import { DayItemsProgress, DevotionalDays, PlanGroupMember, PlanProgress } from '@/src/types/types';
 
 type Props = {
+  progressId: string;
   insetsBottom: number;
   coverImage?: string;
   completions?: number;
@@ -43,6 +44,7 @@ type Props = {
 };
 
 export default function PlanProgressScreen({
+  progressId,
   insetsBottom,
   coverImage,
   completions,
@@ -206,6 +208,7 @@ export default function PlanProgressScreen({
 
       <DayCommentsSection
         ref={commentsSheetRef}
+        progressId={progressId}
         planId={planProgress.plan_id || ''}
         dayId={selectedDayData?.id || ''}
         group_id={planProgress.group_id || undefined}

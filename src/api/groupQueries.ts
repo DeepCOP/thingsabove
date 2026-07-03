@@ -153,16 +153,19 @@ export const fetchPlanGroupMembers = async ({ groupId }: { groupId: string }) =>
 export const fetchPlanDayComments = async ({
   planId,
   dayId,
+  progressId,
   group_id,
 }: {
   planId: string;
   dayId: string;
+  progressId: string;
   group_id?: string;
 }) => {
   const { data, error } = await supabase.rpc('get_plan_day_comments', {
     p_plan_id: planId!,
     p_day_id: dayId!,
     p_group_id: group_id,
+    p_progress_id: progressId,
   });
 
   if (error) throw error;

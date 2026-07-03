@@ -223,6 +223,7 @@ export type Database = {
           group_id: string | null;
           id: string;
           plan_id: string;
+          progress_id: string | null;
           updated_at: string | null;
           user_id: string | null;
         };
@@ -233,6 +234,7 @@ export type Database = {
           group_id?: string | null;
           id?: string;
           plan_id: string;
+          progress_id?: string | null;
           updated_at?: string | null;
           user_id?: string | null;
         };
@@ -243,6 +245,7 @@ export type Database = {
           group_id?: string | null;
           id?: string;
           plan_id?: string;
+          progress_id?: string | null;
           updated_at?: string | null;
           user_id?: string | null;
         };
@@ -273,6 +276,13 @@ export type Database = {
             columns: ['plan_id'];
             isOneToOne: false;
             referencedRelation: 'devotional_plans_view';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'comments_progress_id_fkey';
+            columns: ['progress_id'];
+            isOneToOne: false;
+            referencedRelation: 'plan_progress';
             referencedColumns: ['id'];
           },
         ];
@@ -1817,6 +1827,7 @@ export type Database = {
           p_day_id: string;
           p_group_id?: string;
           p_plan_id: string;
+          p_progress_id?: string;
         };
         Returns: undefined;
       };
@@ -2143,7 +2154,12 @@ export type Database = {
         }[];
       };
       get_plan_day_comments: {
-        Args: { p_day_id: string; p_group_id?: string; p_plan_id: string };
+        Args: {
+          p_day_id: string;
+          p_group_id?: string;
+          p_plan_id: string;
+          p_progress_id?: string;
+        };
         Returns: {
           avatar_url: string;
           content: string;
