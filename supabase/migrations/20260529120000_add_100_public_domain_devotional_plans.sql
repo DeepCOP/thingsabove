@@ -27120,10 +27120,6 @@ $plans$::jsonb)
   loop
     v_plan_id := (v_plan ->> 'id')::uuid;
 
-    if exists (select 1 from public.devotional_plans where id = v_plan_id) then
-      continue;
-    end if;
-
     insert into public.devotional_plans (
       id, title, description, cover_image, completions, tags, status, total_days, author_id, created_at, updated_at
     )
@@ -27139,7 +27135,25 @@ $plans$::jsonb)
       null,
       v_now,
       v_now
+    )
+    on conflict (id) do update
+    set title = excluded.title,
+        description = excluded.description,
+        cover_image = excluded.cover_image,
+        tags = excluded.tags,
+        status = excluded.status,
+        total_days = excluded.total_days,
+        updated_at = excluded.updated_at;
+
+    delete from public.scripture_references
+    where day_id in (
+      select id
+      from public.devotional_days
+      where plan_id = v_plan_id
     );
+
+    delete from public.devotional_days
+    where plan_id = v_plan_id;
 
     for v_day in
       select value
