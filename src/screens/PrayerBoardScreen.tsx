@@ -236,7 +236,7 @@ export default function PrayerBoardScreen({
 
       <View
         className="border-t border-gray-200 bg-white px-4 pt-3 dark:border-neutral-800 dark:bg-black"
-        style={{ paddingBottom: insets.bottom }}>
+        style={{ paddingBottom: 12 }}>
         <TouchableOpacity
           className="rounded-full bg-black px-6 py-4 dark:bg-white"
           onPress={() => router.push('/app/prayer/new')}>
