@@ -133,112 +133,118 @@ export default function PrayerBoardScreen({
   };
 
   return (
-    <ScrollView
-      className="flex-1 bg-white dark:bg-black"
-      contentContainerStyle={{
-        paddingHorizontal: 16,
-        paddingTop: 16,
-        paddingBottom: insets.bottom + 24,
-      }}
-      refreshControl={
-        <RefreshControl refreshing={isRefreshing} onRefresh={handleRefresh} tintColor="#2563eb" />
-      }>
-      <PrayerScopeSwitch hasChurch={hasChurch} scope={scope} onChange={setScope} />
+    <View className="flex-1 bg-white dark:bg-black">
+      <ScrollView
+        className="flex-1"
+        contentContainerStyle={{
+          paddingHorizontal: 16,
+          paddingTop: 16,
+          paddingBottom: 24,
+        }}
+        refreshControl={
+          <RefreshControl refreshing={isRefreshing} onRefresh={handleRefresh} tintColor="#2563eb" />
+        }>
+        <PrayerScopeSwitch hasChurch={hasChurch} scope={scope} onChange={setScope} />
 
-      {isChurchLocked ? (
-        <View className="mt-4">
-          <PrayerEmptyState
-            icon="people-outline"
-            title="Join your church prayer board"
-            description="Add your church in Profile to unlock church-only prayer requests and support your local community."
-            ctaLabel="Open Profile"
-            onCta={() => router.navigate('/app/(tabs)/ProfileTab')}
-          />
-        </View>
-      ) : (
-        <>
-          {!fixedFilter ? (
-            <View className="mt-4">
-              <PrayerFilterChips filter={activeFilter} onChange={setFilter} />
-            </View>
-          ) : null}
-
-          <View className="mt-6 gap-4">
-            {boardQuery.isLoading ? (
-              <PrayerBoardSkeleton />
-            ) : boardQuery.isError && boardItems.length === 0 ? (
-              <PrayerEmptyState
-                icon="alert-circle-outline"
-                title="Unable to load the prayer board"
-                description="Pull to refresh or try again in a moment."
-                ctaLabel="Try Again"
-                onCta={() => boardQuery.refetch()}
-              />
-            ) : boardItems.length > 0 ? (
-              boardItems.map((item) => (
-                <PrayerRequestCard
-                  key={item.id}
-                  item={item}
-                  onPress={() =>
-                    router.push({
-                      pathname: '/app/prayer/[requestId]',
-                      params: { requestId: item.id },
-                    })
-                  }
-                  onTogglePraying={() => togglePrayerMutation.mutate(item.id)}
-                  onEncourage={() =>
-                    router.push({
-                      pathname: '/app/prayer/[requestId]',
-                      params: { requestId: item.id },
-                    })
-                  }
-                  onMarkAnswered={
-                    item.viewer_is_owner && !item.is_answered
-                      ? () =>
-                          router.push({
-                            pathname: '/app/prayer/[requestId]',
-                            params: { requestId: item.id },
-                          })
-                      : undefined
-                  }
-                  markAnsweredLabel="Praise"
-                />
-              ))
-            ) : (
-              <PrayerEmptyState
-                title={resolvedEmptyCopy.title}
-                description={resolvedEmptyCopy.description}
-                ctaLabel={newRequestLabel}
-                onCta={() => router.push('/app/prayer/new')}
-              />
-            )}
-
-            {boardItems.length > 0 && boardQuery.hasNextPage ? (
-              <View className="items-center pt-2">
-                {boardQuery.isFetchingNextPage ? (
-                  <LoadingSpinner size="small" />
-                ) : (
-                  <TouchableOpacity
-                    className="rounded-full border border-gray-300 px-5 py-3 dark:border-neutral-700"
-                    onPress={() => boardQuery.fetchNextPage()}>
-                    <Text className="font-medium text-gray-900 dark:text-white">
-                      {loadMoreLabel}
-                    </Text>
-                  </TouchableOpacity>
-                )}
+        {isChurchLocked ? (
+          <View className="mt-4">
+            <PrayerEmptyState
+              icon="people-outline"
+              title="Join your church prayer board"
+              description="Add your church in Profile to unlock church-only prayer requests and support your local community."
+              ctaLabel="Open Profile"
+              onCta={() => router.navigate('/app/(tabs)/ProfileTab')}
+            />
+          </View>
+        ) : (
+          <>
+            {!fixedFilter ? (
+              <View className="mt-4">
+                <PrayerFilterChips filter={activeFilter} onChange={setFilter} />
               </View>
             ) : null}
-          </View>
-        </>
-      )}
 
-      <TouchableOpacity
-        className="mt-6 rounded-full bg-black px-6 py-4 dark:bg-white"
-        onPress={() => router.push('/app/prayer/new')}>
-        <Text className="text-center font-semibold text-white dark:text-black">
-          {newRequestLabel}
-        </Text>
-      </TouchableOpacity>
-    </ScrollView>
+            <View className="mt-6 gap-4">
+              {boardQuery.isLoading ? (
+                <PrayerBoardSkeleton />
+              ) : boardQuery.isError && boardItems.length === 0 ? (
+                <PrayerEmptyState
+                  icon="alert-circle-outline"
+                  title="Unable to load the prayer board"
+                  description="Pull to refresh or try again in a moment."
+                  ctaLabel="Try Again"
+                  onCta={() => boardQuery.refetch()}
+                />
+              ) : boardItems.length > 0 ? (
+                boardItems.map((item) => (
+                  <PrayerRequestCard
+                    key={item.id}
+                    item={item}
+                    onPress={() =>
+                      router.push({
+                        pathname: '/app/prayer/[requestId]',
+                        params: { requestId: item.id },
+                      })
+                    }
+                    onTogglePraying={() => togglePrayerMutation.mutate(item.id)}
+                    onEncourage={() =>
+                      router.push({
+                        pathname: '/app/prayer/[requestId]',
+                        params: { requestId: item.id },
+                      })
+                    }
+                    onMarkAnswered={
+                      item.viewer_is_owner && !item.is_answered
+                        ? () =>
+                            router.push({
+                              pathname: '/app/prayer/[requestId]',
+                              params: { requestId: item.id },
+                            })
+                        : undefined
+                    }
+                    markAnsweredLabel="Praise"
+                  />
+                ))
+              ) : (
+                <PrayerEmptyState
+                  title={resolvedEmptyCopy.title}
+                  description={resolvedEmptyCopy.description}
+                  ctaLabel={newRequestLabel}
+                  onCta={() => router.push('/app/prayer/new')}
+                />
+              )}
+
+              {boardItems.length > 0 && boardQuery.hasNextPage ? (
+                <View className="items-center pt-2">
+                  {boardQuery.isFetchingNextPage ? (
+                    <LoadingSpinner size="small" />
+                  ) : (
+                    <TouchableOpacity
+                      className="rounded-full border border-gray-300 px-5 py-3 dark:border-neutral-700"
+                      onPress={() => boardQuery.fetchNextPage()}>
+                      <Text className="font-medium text-gray-900 dark:text-white">
+                        {loadMoreLabel}
+                      </Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
+              ) : null}
+            </View>
+          </>
+        )}
+      </ScrollView>
+
+      <View
+        className="border-t border-gray-200 bg-white px-4 pt-3 dark:border-neutral-800 dark:bg-black"
+        style={{ paddingBottom: insets.bottom }}>
+        <TouchableOpacity
+          className="rounded-full bg-black px-6 py-4 dark:bg-white"
+          onPress={() => router.push('/app/prayer/new')}>
+          <Text className="text-center font-semibold text-white dark:text-black">
+            {newRequestLabel}
+          </Text>
+        </TouchableOpacity>
+      </View>
+    </View>
   );
 }
