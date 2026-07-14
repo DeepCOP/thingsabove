@@ -29,6 +29,13 @@ export default function AppLayout() {
   const isCheckingPendingAuthRedirect =
     Boolean(userId && hasCompletedOnboarding && checkedPendingAuthRedirectUserId !== userId) ||
     Boolean(pendingAuthRedirectPathname && pendingAuthRedirectPathname !== pathname);
+  const onboardingRedirect = !hasCompletedOnboarding
+    ? pathname !== '/app' && pathname !== '/app/onboarding'
+      ? APP_ONBOARDING
+      : null
+    : pathname === '/app/onboarding' && !isCheckingPendingAuthRedirect
+      ? APP_HOME
+      : null;
 
   useEffect(() => {
     if (!userId) {
@@ -81,14 +88,6 @@ export default function AppLayout() {
 
     setPendingAuthRedirectPathname(null);
   }, [pendingAuthRedirectPathname, pathname]);
-
-  if (!hasCompletedOnboarding && pathname !== '/app/onboarding') {
-    return <Redirect href={APP_ONBOARDING} />;
-  }
-
-  if (hasCompletedOnboarding && pathname === '/app/onboarding') {
-    return <Redirect href={APP_HOME} />;
-  }
 
   return (
     <>
@@ -159,7 +158,8 @@ export default function AppLayout() {
           <Stack.Screen name="notifications/index" options={{ title: 'Notifications' }} />
         </Stack.Protected>
       </Stack>
-      {isCheckingPendingAuthRedirect ? (
+      {onboardingRedirect ? <Redirect href={onboardingRedirect} /> : null}
+      {isCheckingPendingAuthRedirect || onboardingRedirect ? (
         <LoadingSpinner
           ViewStyles={[StyleSheet.absoluteFillObject, { backgroundColor: colors.background }]}
         />

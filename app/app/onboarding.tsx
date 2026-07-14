@@ -1,6 +1,5 @@
 import { useAppStore } from '@/src/state/useAppStore';
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
 import { useRef, useState } from 'react';
 import {
   NativeScrollEvent,
@@ -50,7 +49,6 @@ const steps: OnboardingStep[] = [
 ];
 
 export default function Onboarding() {
-  const router = useRouter();
   const colorScheme = useColorScheme();
   const { width } = useWindowDimensions();
   const pagerRef = useRef<ScrollView>(null);
@@ -60,7 +58,6 @@ export default function Onboarding() {
 
   const finishOnboarding = () => {
     completeOnboarding();
-    router.replace('/app/(tabs)/PlansTab');
   };
 
   const handlePrimaryAction = () => {
