@@ -2602,7 +2602,10 @@ export type Database = {
         };
         Returns: undefined;
       };
-      tags_include_reading: { Args: { tags: string[] }; Returns: boolean };
+      tags_include_scripture_focused: {
+        Args: { tags: string[] };
+        Returns: boolean;
+      };
       tags_to_text: { Args: { tags: string[] }; Returns: string };
       toggle_day_completion: {
         Args: {
