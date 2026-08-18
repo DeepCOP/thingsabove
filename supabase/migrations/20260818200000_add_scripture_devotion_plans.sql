@@ -5,6 +5,20 @@
 -- Follows the existing seeding migrations, e.g.
 -- 20260529120000_add_100_public_domain_devotional_plans.sql. Idempotent upsert.
 
+-- Public devotional plans for books of the Bible (NIV).
+-- The NIV divides each book into sections; each section becomes one plan day
+-- with a short 5-10 minute devotional, and the section reference is stored as
+-- the day passage (public.scripture_references).
+-- Follows the existing seeding migrations, e.g.
+-- 20260529120000_add_100_public_domain_devotional_plans.sql. Idempotent upsert.
+
+-- Public devotional plans for books of the Bible (NIV).
+-- The NIV divides each book into sections; each section becomes one plan day
+-- with a short 5-10 minute devotional, and the section reference is stored as
+-- the day passage (public.scripture_references).
+-- Follows the existing seeding migrations, e.g.
+-- 20260529120000_add_100_public_domain_devotional_plans.sql. Idempotent upsert.
+
 -- Add a public devotional plan for the book of Genesis (NIV).
 -- The NIV divides Genesis into sections; each section becomes one plan day
 -- with a short 5-10 minute devotional, and the section reference is stored as
@@ -783,8 +797,234 @@ begin
         ]
       }
     ]
+  },
+  {
+    "id": "93000000-0000-0000-0000-0000000000c9",
+    "title": "Leviticus: Holiness in the Presence of God",
+    "description": "A walk through the book of Leviticus following the NIV outline. Each section becomes one plan day with a short 5-10 minute devotional, and the section reference is the day passage. The book moves from the sacrificial system and the priesthood to the Day of Atonement, the holiness code, and the calendar of festivals, centering on the call to be holy because God is holy.",
+    "total_days": 26,
+    "tags": [
+      "holiness",
+      "worship",
+      "atonement",
+      "reading",
+      "wisdom"
+    ],
+    "cover_image": "https://images.unsplash.com/photo-1445116572660-236099ec97a0?auto=format&fit=crop&w=1200&q=80",
+    "days": [
+      {
+        "day_number": 1,
+        "title": "Day 1 - The Burnt Offering (Leviticus 1:1-17)",
+        "content": "<p>Scripture records that the Lord calls to Moses from the tent of meeting and gives Israel instructions for sacrifice. If anyone brings a burnt offering from the herd, it must be a male without defect, brought to the entrance of the tent of meeting; the offerer is to lay a hand on its head so that it may be accepted on their behalf to make atonement, then slaughter it, and the priests are to arrange the pieces on the altar, where it is burned - an aroma pleasing to the Lord. Instructions are also given for offers from the flock and from birds.</p><p><strong>Interpretation/Application:</strong> The repeated demand for a spotless victim and the placement of blood on the altar teach that sin is costly and that drawing near to a holy God requires a substitute life given in our place. We no longer bring lambs, because the once-for-all offering has already been made in Christ, the Lamb without blemish. Let the costliness of the altar shape your gratitude for the one who offered himself for you.</p>",
+        "references": [
+          "Leviticus 1:1-17"
+        ]
+      },
+      {
+        "day_number": 2,
+        "title": "Day 2 - The Grain Offering (Leviticus 2:1-16)",
+        "content": "<p>Scripture records that when anyone brings a grain offering to the Lord it is to be of the finest flour, mixed with olive oil and incense. A priest burns a memorial portion on the altar as a food offering, an aroma pleasing to the Lord; the rest belongs to Aaron and his sons. The offering must contain no yeast or honey when burned on the altar, but is to be seasoned with salt, the salt of the covenant of your God. Firstfruits of new grain are to be crushed and offered.</p><p><strong>Interpretation/Application:</strong> The grain offering takes the staple bread and labor of daily life and returns them to God, acknowledging that he alone provides our daily bread. The covenant salt pictures sharing the table in faithfulness, and the ban on yeast calls for an offering unmixed with corruption. Bring to God the ordinary fruit of your work, not only your emergencies, and let your daily provision be seasoned with covenant faithfulness.</p>",
+        "references": [
+          "Leviticus 2:1-16"
+        ]
+      },
+      {
+        "day_number": 3,
+        "title": "Day 3 - The Fellowship Offering (Leviticus 3:1-17)",
+        "content": "<p>Scripture records that if a person's fellowship offering is from the herd, it may be male or female but must be without defect. The offerer lays a hand on the head and slaughters it at the entrance to the tent; the priests splash the blood against the altar and burn the portions of fat around the inner parts, the long lobe of the liver, and the kidneys, as a food offering, an aroma pleasing to the Lord. Then the Lord declares a lasting ordinance: none of the fat and none of the blood may be eaten, wherever they live.</p><p><strong>Interpretation/Application:</strong> Unlike the wholly burned offering, the fellowship offering was shared - the worshiper and the priests actually ate portions of it, celebrating communion with God and with one another. It pictures the peace and table fellowship believers are invited to share. The prohibition of blood teaches that the life belongs to God; the best portions are his, and what is sacred is not ours to consume as we please. Live each day as an offering shared in glad fellowship with God and neighbor.</p>",
+        "references": [
+          "Leviticus 3:1-17"
+        ]
+      },
+      {
+        "day_number": 4,
+        "title": "Day 4 - The Sin Offering (Leviticus 4:1-35)",
+        "content": "<p>Scripture records that when anyone sins unintentionally and does what is forbidden in any of the Lord's commands, the sin offering is brought. If the anointed priest has sinned, he brings a young bull, lays his hand on its head, slaughters it, and dips his finger in the blood, sprinkling it before the veil and putting some on the horns of the altar of incense while the rest is poured out at the base of the altar of burnt offering. The Lord also gives graded instructions for the whole community, for a leader, and for a common person, scaling the offering to each circumstance.</p><p><strong>Interpretation/Application:</strong> Even unintentional sins - the failures we barely notice - required atonement, showing that guilt before a holy God is not only about wilful rebellion. The offering's blood speaks of life poured out to cover impurity. This anxious searching of conscience finds its rest at the cross: Christ died even for the sins we did not fully see. Rather than shrug off your hidden failures, bring them to the one who has made atonement for you, that grace may enlarge your vigilance.</p>",
+        "references": [
+          "Leviticus 4:1-35"
+        ]
+      },
+      {
+        "day_number": 5,
+        "title": "Day 5 - The Trespass Offering (Leviticus 5:14-6:7)",
+        "content": "<p>Scripture records that when anyone is unfaithful to the Lord, unknowingly violating any of the sacred things, they must bring a ram without defect as a guilt offering, and they must make restitution in full for the wrong done to the holy things, adding a fifth of the value. If a person deceives a neighbor about property, robs, or falsely swears, they must return what was taken plus a fifth and bring a ram to the priest, that atonement may be made for them and they may be forgiven.</p><p><strong>Interpretation/Application:</strong> The guilt offering makes clear that worship and honesty belong together: true repentance toward God is matched by restitution to the neighbor who was wronged. Forgiveness did not cancel the duty to make things right. It is a costly grace that restores both the altar and the household. If you have wronged another, the way forward is not simply to ask God's pardon but also to do what is in your power to set the relationship aright, restoring more than you took.</p>",
+        "references": [
+          "Leviticus 5:14-6:7"
+        ]
+      },
+      {
+        "day_number": 6,
+        "title": "Day 6 - Instructions for the Priests (Leviticus 6:8-7:38)",
+        "content": "<p>Scripture records that the Lord instructs Aaron and his sons in the care of the offerings: the burnt offering is to remain on the altar hearth all night, its fire kept burning; the priest wears linen garments when he takes up the ashes of the grain offering; the sin offering that belongs to the priest is to be burned; and the flesh of the guilt offering is to be eaten only by the priest in the sanctuary. These laws are given on the day Moses anointed and ordained the priests, at Sinai.</p><p><strong>Interpretation/Application:</strong> The details of tending the fire and handling the sacred portions show that serving God is not casual but careful stewardship of holy things. The priests were given charge of what belonged to the Lord, and their daily work of tending the altar was worship. There is a sacred maintenance in every calling before God - faithfulness in the unseen, regular duties keeps the fire of devotion burning. What has God placed in your care to tend faithfully, day in and day out?</p>",
+        "references": [
+          "Leviticus 6:8-7:38"
+        ]
+      },
+      {
+        "day_number": 7,
+        "title": "Day 7 - The Ordination of Aaron and His Sons (Leviticus 8:1-36)",
+        "content": "<p>Scripture records that the Lord tells Moses to bring Aaron and his sons, the garments, the anointing oil, and the offerings, and to gather the whole assembly at the entrance to the tent of meeting. Moses washes them with water, dresses Aaron in the sacred garments, anoints the tabernacle and altar, pours anointing oil on Aaron's head to consecrate him, and clothes his sons with tunics. The ordination offering is made, and Moses and the priests remain at the entrance of the tent for seven days, for the ordination ceremony lasts seven days.</p><p><strong>Interpretation/Application:</strong> No one simply assumes the role of priest; it is conferred by God through washing, clothing, and anointing at a public assembly. The seven days set apart signal that coming near to God is not rushed but reverent and deliberate. A calling to serve is never self-appointed but received, clean in washing, clothed in garments not one's own, and anointed by the Spirit. If God has set you apart for a service, remember it is his consecration that qualifies you, not your readiness.</p>",
+        "references": [
+          "Leviticus 8:1-36"
+        ]
+      },
+      {
+        "day_number": 8,
+        "title": "Day 8 - The Priestly Ministry Begins (Leviticus 9:1-10:20)",
+        "content": "<p>Scripture records that on the eighth day Moses summons Aaron and his sons, and Aaron makes the sin offering and the burnt offering, lifts his hands toward the people and blesses them, and both Moses and Aaron enter the tent and come out to bless the people. The glory of the Lord appears to all the people, and fire comes out from the presence of the Lord and consumes the offerings, and the people fall on their faces. Yet in the fall, Nadab and Abihu, sons of Aaron, take unauthorized fire before the Lord, and fire from the presence of the Lord consumes them.</p><p><strong>Interpretation/Application:</strong> The same fire that accepts the offering of obedience also judges unauthorized worship. Worship that is approached God's way is received with joy, while worship on our own terms - substituting our fire for his - meets with terrifying consequence. Here is the holiness of God in one chapter: he descends in glory and he burns what is presumptuous. Come near to God, but never casually redefine how he may be worshipped; true reverence orders its approach by his revealed will.</p>",
+        "references": [
+          "Leviticus 9:1-10:20"
+        ]
+      },
+      {
+        "day_number": 9,
+        "title": "Day 9 - Clean and Unclean Food (Leviticus 11:1-47)",
+        "content": "<p>Scripture records that the Lord spells out which animals may be eaten: any animal with a divided hoof that chews the cud, and any fish with fins and scales. Creatures that do not meet these marks - camels, rabbits, pigs, and creatures that swarm on the ground - are unclean. The Lord also explains how that which is eaten touches purity: for I am the Lord your God; consecrate yourselves and be holy, because I am holy. Anything a person touches that dies of itself becomes unclean.</p><p><strong>Interpretation/Application:</strong> These food laws set Israel apart as a distinct holy people whose everyday eating was an act of loyalty to God. God is holy and his people are to be holy in the most ordinary routines. While the New Testament teaches that these dietary boundaries are fulfilled in Christ and no longer bind the Christian conscience, the call behind them does not pass away: your common life is to be set apart for God. Let something as routine as a meal remind you that all of life is ordered to his holiness.</p>",
+        "references": [
+          "Leviticus 11:1-47"
+        ]
+      },
+      {
+        "day_number": 10,
+        "title": "Day 10 - Purification After Childbirth (Leviticus 12:1-8)",
+        "content": "<p>Scripture records that the Lord tells Moses that when a woman conceives and gives birth to a boy, she is ceremonially unclean for seven days, and on the eighth day the boy is to be circumcised. For a daughter she remains unclean for two weeks. She is then to continue in purification through times determined by the law, and after the days of purification she brings a year-old lamb as a burnt offering and a young pigeon or dove as a sin offering so that the priest may make atonement for her and she will be clean.</p><p><strong>Interpretation/Application:</strong> The offering prescribed here, and the allowance for the poor, were fulfilled in a striking way: Joseph and Mary presented the infant Jesus at the temple with the offering of the poor - a pair of doves. Into the full tide of human birth, weakness, and need, God sent his Son subject to the very laws of purification. No stage of life, not even its humble beginnings and its blood, falls outside his provision and redemption.</p>",
+        "references": [
+          "Leviticus 12:1-8"
+        ]
+      },
+      {
+        "day_number": 11,
+        "title": "Day 11 - Regulations About Defiling Skin Diseases (Leviticus 13:1-59)",
+        "content": "<p>Scripture records that the Lord gives the priests careful rules for examining a person with a possible defiling skin disease: its swelling, rash, or spot is brought to Aaron or to his sons, who examine it and pronounce the person clean or unclean. The priest watches for deeper symptoms, and if the condition is unclean the person must live outside the camp, tearing their clothes and calling out, Unclean! Unclean! Detailed rules also govern mildew and mold that defiles garments and fabrics.</p><p><strong>Interpretation/Application:</strong> These rules were public health in sacred clothing, isolating infection so that the purity of the assembled camp was preserved. They also show a God who cares about the condition of skin and cloth, not only about hearts and altars. Later, Jesus will touch lepers - something the law forbade - and cleanse them, showing that what separated people from the community is exactly the place his compassion went.</p>",
+        "references": [
+          "Leviticus 13:1-59"
+        ]
+      },
+      {
+        "day_number": 12,
+        "title": "Day 12 - Cleansing From Defiling Skin Diseases (Leviticus 14:1-32)",
+        "content": "<p>Scripture records that when a person with a defiling skin disease is healed, the priest is to go outside the camp and examine them, and if the condition is gone, two live clean birds, cedar wood, scarlet yarn, and hyssop are brought. One bird is killed over fresh water, the living bird is dipped in the blood and released into the open fields, and the person is declared clean; after washing clothes and shaving, they re-enter the camp, and on the eighth day offerings of a guilt offering, sin offering, and burnt offering are made. A poorer person may bring fewer offerings.</p><p><strong>Interpretation/Application:</strong> The striking ritual of two birds - one slain, one released into the open field - pictures atonement and renewed life: death covers uncleanness while a living bird, dipped in blood, flies away free. The healed person is restored not merely physically but to the camp, to worship, to community. Deliverance is more than health; it is reinstatement among God's people. The resurrected Christ is our living bird released for us; his cleansing restores us to full fellowship and worship.</p>",
+        "references": [
+          "Leviticus 14:1-32"
+        ]
+      },
+      {
+        "day_number": 13,
+        "title": "Day 13 - Cleansing From Defiling Molds (Leviticus 14:33-57)",
+        "content": "<p>Scripture records that when the Lord places a defiling mold in a house, the owner is to report it to the priest, who comes and examines it. If it appears to be a spreading mold, the affected stones are taken out and thrown into an unclean place outside the town, the house is scraped, and new stones are put in. If the mold returns, the whole house is torn down. If it does not spread, the priest pronounces it clean, purifies it with the blood of a bird and running water, and releases the live bird. These are the regulations for the whole category.</p><p><strong>Interpretation/Application:</strong> Even bricks and stone, things we think of as mere material, fall under God's holy order. Purity to the Lord is not only about bodies and behavior but about the spaces where we live and the air we share. The diligence to cut out, scrape, and inspect teaches a spiritual discipline: deal completely and early with what defiles - do not let an unclean thing spread unchecked in the house of your life until it requires a full demolition.</p>",
+        "references": [
+          "Leviticus 14:33-57"
+        ]
+      },
+      {
+        "day_number": 14,
+        "title": "Day 14 - Discharges Causing Uncleanness (Leviticus 15:1-33)",
+        "content": "<p>Scripture records that the Lord gives laws for discharges from a man's body and for a woman's monthly flow, declaring that anything the person touches, sits on, or lies on becomes unclean, and that anyone who touches such things must bathe and be unclean until evening. A bird and a pigeon are prescribed as offerings, and the section concludes: In this way you will keep the Israelites separate from things that make them unclean, so they will not die in their uncleanness for defiling my dwelling place.</p><p><strong>Interpretation/Application:</strong> These unglamorous laws about bodily discharge teach that even the private, embarrassed places of human life come under God's gaze and care - nothing is outside his holiness and his provision of cleansing. The body in its weakness is taken seriously before God. We need not be ashamed to bring the unmentionable parts of life to him, for the priesthood was given so that even these could be made clean and the unclean kept near the blessing of the dwelling place.</p>",
+        "references": [
+          "Leviticus 15:1-33"
+        ]
+      },
+      {
+        "day_number": 15,
+        "title": "Day 15 - The Day of Atonement (Leviticus 16:1-34)",
+        "content": "<p>Scripture records that after the death of Aaron's two sons, the Lord instructs Aaron about entering the Most Holy Place, for he may not come whenever he chooses. On the Day of Atonement the priest makes atonement for himself, his household, and the whole community. He brings a bull for his own sin and two goats before the Lord. One goat is sacrificed as a sin offering; on the other he lays both hands and confesses over it all the wickedness and rebellion of the Israelites, and sends it away into the wilderness, where it carries all their iniquities.</p><p><strong>Interpretation/Application:</strong> The high priest entered the Most Holy Place but once a year, bearing blood, and the sins of the people were laid on a scapegoat carried away into the wilderness. It is the shadow of the cross: in Christ we have a sacrifice that fully atones and an innocent one who carries our sins away. What Israel saw but once a year, with fear, the gospel says is finished. Because he entered the true Most Holy Place once, you can come with confidence. Let the scapegoat teach you how far God removes our transgressions.</p>",
+        "references": [
+          "Leviticus 16:1-34"
+        ]
+      },
+      {
+        "day_number": 16,
+        "title": "Day 16 - The Place of Sacrifice and the Life in the Blood (Leviticus 17:1-16)",
+        "content": "<p>Scripture records that the Lord commands that any sacrifice be brought to the tent of meeting and offered to him, rather than offered in the open field where it would become sacrifice to goat idols. Any Israelite or foreigner who hunts an animal that may be eaten must drain out its blood and cover it with earth, and the Lord gives the reason: For the life of a creature is in the blood, and I have given it to you to make atonement for yourselves on the altar; it is the blood that makes atonement for one's life.</p><p><strong>Interpretation/Application:</strong> The command to centralize sacrifice wove the people together around one altar and one God, guarding them from drifting into the worship of wilderness spirits. And the great sentence, the life is in the blood, gives the theology that runs to Golgotha: atonement comes only through life poured out. That the blood was given by God for atonement is a divine gift, not a human price. Ground your gratitude here - life's cost was God's provision from the beginning.</p>",
+        "references": [
+          "Leviticus 17:1-16"
+        ]
+      },
+      {
+        "day_number": 17,
+        "title": "Day 17 - Unlawful Sexual Relations (Leviticus 18:1-30)",
+        "content": "<p>Scripture records that the Lord declares: I am the Lord your God. You must not do as they do in Egypt, where you used to live, and you must not do as they do in the land of Canaan, where I am bringing you. Do not follow their practices. He then prohibits a long list of unlawful sexual relations within family and household, declares that the land is defiled by such practices and that it vomits out its inhabitants, and warns that anyone who commits these things will be cut off from their people, for I am the Lord.</p><p><strong>Interpretation/Application:</strong> Holiness is here defined in the most relational and vulnerable arena - how we use our bodies with others. The people were not to copy surrounding cultures but to live by a revealed order. The warning that the land itself vomits out the defiled shows that a society that discards God's order for relationships sows its own ruin. Before his commands, our culture is not the standard; his word is. Let the bodies God gave you be governed by his design.</p>",
+        "references": [
+          "Leviticus 18:1-30"
+        ]
+      },
+      {
+        "day_number": 18,
+        "title": "Day 18 - Be Holy (Leviticus 19:1-37)",
+        "content": "<p>Scripture records that the Lord says: Be holy because I, the Lord your God, am holy. Each of you must respect your mother and father, keep my Sabbaths, do not turn to idols, do not steal, do not deceive, do not swear falsely, and when you reap do not strip your field but leave gleanings for the poor and the foreigner. Do not defraud or rob your neighbor, do not curse the deaf or put a stumbling block in front of the blind, and love your neighbor as yourself. The chapter closes with a series of just laws for the whole community.</p><p><strong>Interpretation/Application:</strong> In the middle of Leviticus, holiness is spelled out in stunningly concrete terms: leaving edges of the harvest for the hungry, honoring parents, refusing gossip and revenge, and loving the neighbor as yourself. Jesus took the command to love your neighbor as yourself directly from this chapter and called it the heart of the Law. Holiness, biblically, is love made practical toward the people at your door. Begin with the quiet edges of your field this week - the kindnesses you could easily skip.</p>",
+        "references": [
+          "Leviticus 19:1-37"
+        ]
+      },
+      {
+        "day_number": 19,
+        "title": "Day 19 - Punishments for Sin (Leviticus 20:1-27)",
+        "content": "<p>Scripture records that the Lord commands punishments for those who give their children to Molek, who practice the worship of the field gods, and who commit the relationships forbidden in the previous chapter, declaring that anyone who does such things is to be cut off from their people. He calls these practices the customs of the nations, which defile and which the land despises, and he repeats the charge: You are to be holy to me because I, the Lord, am holy, and I have set you apart from the nations to be my own.</p><p><strong>Interpretation/Application:</strong> The severity of these judgments shows how seriously God takes covenant faith and purity; what the neighboring peoples treated as custom, Israel was to treat as defilement. The chapter's purpose is guarding a people set apart for God, and it shows that grace does not lower his standard - it calls a people out. Let the holiness you have received not be treated as cheap; your identity is already set apart, and the life should begin to match it.</p>",
+        "references": [
+          "Leviticus 20:1-27"
+        ]
+      },
+      {
+        "day_number": 20,
+        "title": "Day 20 - Rules for Priests (Leviticus 21:1-24)",
+        "content": "<p>Scripture records that the Lord commands additional consecration for the priests, the sons of Aaron. They must not make themselves ceremonially unclean for any of their people except for the nearest relatives, and a priest who has a marred face is still to eat the food of his God but is not to come near the curtain. The Lord declares: You must keep distinct between the holy and the common, between the unclean and the clean. I am the Lord, who makes you holy.</p><p><strong>Interpretation/Application:</strong> Those closest to the altar bore the highest standard, for they represented the holy people before the holy God. Yet even the one with a marred face still partook of the bread of the presence - imperfection barred him from the curtain but not from the table. It is a quiet reassurance: holiness feels demanding, yet God's provision extends even to those whose service is limited by their condition. Draw near to the God who makes holy, whether you stand before his altar or at its edge.</p>",
+        "references": [
+          "Leviticus 21:1-24"
+        ]
+      },
+      {
+        "day_number": 21,
+        "title": "Day 21 - The Sanctity of the Offerings (Leviticus 22:1-33)",
+        "content": "<p>Scripture records that the Lord instructs Aaron and his sons to treat the sacred gifts with care: any priest who discharges his duties while ceremonially unclean must not eat the sacred offerings, and no one outside the priest's household may eat them. The people are told to present their offerings without defect - an animal that is blind, injured, or maimed must not be offered on the altar, for the Lord says, Do not profane my holy name. I must be acknowledged as holy by the Israelites. I am the Lord, who makes you holy, who brought you out of Egypt to be your God.</p><p><strong>Interpretation/Application:</strong> Offering God our blemishes - the neglected, the grudged, the leftover - profanes his name, for he has shown himself worthy of the best we have. The standard of a flawless sacrifice prefigures the perfect Lamb who would one day be offered. The reminder gives both sides of the gospel: he makes you holy, and therefore he deserves your best. Do not give God the damaged animals of your time and affection; give him the first and the whole.</p>",
+        "references": [
+          "Leviticus 22:1-33"
+        ]
+      },
+      {
+        "day_number": 22,
+        "title": "Day 22 - The Appointed Festivals (Leviticus 23:1-44)",
+        "content": "<p>Scripture records that the Lord lists the appointed festivals of Israel: the Sabbath as a day of rest, the Passover and the Festival of Unleavened Bread, the Festival of Firstfruits, the Festival of Weeks, the Festival of Trumpets, and the Day of Atonement. He gives the greatest detail to the Festival of Tabernacles, when the people take branches and rejoice before the Lord for seven days, so that your generations will know that I made the Israelites live in temporary shelters when I brought them out of Egypt. On the first and eighth days the people do no regular work.</p><p><strong>Interpretation/Application:</strong> The calendar itself was shaped as worship, a rhythm of rest, remembrance, and rejoicing built into the year. Observing these festivals, Israel relived the great acts of God - rescue, provision, and pilgrimage - generation after generation. These festivals looked forward to Christ, and they teach us that our time belongs to God. God sets rhythms of stopping, remembering, and celebrating, not because he needs our observance but because we need the reminder of grace amid busy weeks.</p>",
+        "references": [
+          "Leviticus 23:1-44"
+        ]
+      },
+      {
+        "day_number": 23,
+        "title": "Day 23 - Oil, Bread, and the Blasphemer (Leviticus 24:1-23)",
+        "content": "<p>Scripture records that the Lord commands Aaron to keep the lamps in the tabernacle burning regularly with clear oil from pressed olives, and to set out the twelve loaves of the bread of the Presence on the gold table each Sabbath as a lasting covenant. In a narrative interlude, a man quarrels in the camp and blasphemes the Name with a curse; he is brought to Moses, and the Lord commands that the whole assembly stone the blasphemer. The laws that follow require restitution and the eye for eye, life for life principle, with one law for citizen and foreigner alike.</p><p><strong>Interpretation/Application:</strong> The never-extinguished lamps and the steady bread of the Presence show a God who dwells with his people continuously, not occasionally. Then the episode of the blasphemer reminds us that the Name by which God has made himself known is not to be taken lightly. The law of equal justice, applied to citizen and foreigner alike, reflects a God who plays no favorites. Let the unquenchable lamp of his presence and the weight of his holy name shape both your devotion and your fairness toward every neighbor.</p>",
+        "references": [
+          "Leviticus 24:1-23"
+        ]
+      },
+      {
+        "day_number": 24,
+        "title": "Day 24 - The Sabbath Year and Jubilee (Leviticus 25:1-55)",
+        "content": "<p>Scripture records that the Lord commands a Sabbath of rest for the land every seventh year, when the fields and vines are not to be planted or harvested but the land is to have its Sabbath rest. And he commands that every fiftieth year be consecrated as the Year of Jubilee: proclaim liberty throughout the land to all its inhabitants, return to your family property and to your own clan, and do not take advantage of your neighbor. He grounds it in his ownership: the land is mine and you reside in my land as foreigners and strangers, and he forbids taking interest that oppresses a brother.</p><p><strong>Interpretation/Application:</strong> Jubilee was a dramatic act of economic grace - debts and land were reset so that no family was permanently lost in poverty, because God owns the land and his people are fellow servants. It shows God's concern for the vulnerable and his resistance to generational inequality. Jesus stood in his hometown and read from this same scroll when he announced release. Let the good news of release sound in your living today, and hold your possessions as entrusted rather than owned, that no neighbor be crushed beneath you.</p>",
+        "references": [
+          "Leviticus 25:1-55"
+        ]
+      },
+      {
+        "day_number": 25,
+        "title": "Day 25 - Reward and Warning (Leviticus 26:1-46)",
+        "content": "<p>Scripture records that the Lord sets before Israel the two paths: if you follow my decrees, I will send you rain in its season, the land will yield its crops, I will grant peace in the land and you will lie down with no one to make you afraid; but if you will not listen to me, I will bring distress and rebuke, and if then you continue hostile toward me, I will discipline you seven times over for your sins, and you will be scattered among the nations. Yet even then the Lord will remember his covenant with Jacob, Isaac, and Abraham, and he will not reject them or destroy them completely, for I am the Lord their God.</p><p><strong>Interpretation/Application:</strong> The blessings and curses attach real consequences to covenant faithfulness - holiness brings the nearness of God, rebellion brings the bitterness of distance. Yet the covenant memory of God runs deeper than the failure of Israel; their discipline is not abandonment. No defeat or scattering, even one you may have brought on yourself, places you beyond the remembrance of God's mercy. When you falter, the way back is the repentance he himself provides.</p>",
+        "references": [
+          "Leviticus 26:1-46"
+        ]
+      },
+      {
+        "day_number": 26,
+        "title": "Day 26 - Redeeming What Is the Lord (Leviticus 27:1-34)",
+        "content": "<p>Scripture records that the Lord sets down valuations for vows made to him - for persons, livestock, houses, and fields - so that a promised gift could be paid in full or redeemed by adding a fifth of its value. A person may dedicate a field to the Lord and redeem it, and these dedications belong to the priests. The chapter closes with the rule that the tithe of the land, whether grain or fruit, is holy to the Lord, and any tithe of the herd or flock that is set apart may not be redeemed, for it is the Lord's holy portion.</p><p><strong>Interpretation/Application:</strong> These careful valuations show that vows to God were not casual words to be shrugged off; what is dedicated to the Lord is holy, weighed, and taken seriously. The unchangeable tithe guarded against turning generosity into a bargain. God wanted no one to give resentfully from strapped pockets, but neither to break a pledged devotion. When you vow the Lord a promise, a service, or a gift, let it be measured by his sanctity rather than by convenience, and keep it as the holy portion it is.</p>",
+        "references": [
+          "Leviticus 27:1-34"
+        ]
+      }
+    ]
   }
 ]
+
+
 
 $plans$::jsonb)
   loop
