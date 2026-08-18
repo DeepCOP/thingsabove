@@ -1,3 +1,10 @@
+-- Public devotional plans for books of the Bible (NIV).
+-- The NIV divides each book into sections; each section becomes one plan day
+-- with a short 5-10 minute devotional, and the section reference is stored as
+-- the day passage (public.scripture_references).
+-- Follows the existing seeding migrations, e.g.
+-- 20260529120000_add_100_public_domain_devotional_plans.sql. Idempotent upsert.
+
 -- Add a public devotional plan for the book of Genesis (NIV).
 -- The NIV divides Genesis into sections; each section becomes one plan day
 -- with a short 5-10 minute devotional, and the section reference is stored as
@@ -55,7 +62,7 @@ begin
           "Genesis 3:1-24"
         ]
       },
-{
+      {
         "day_number": 4,
         "title": "Day 4 - Cain and Abel (Genesis 4:1-16)",
         "content": "<p>Scripture records that two brothers bring offerings to the Lord: Abel's gift is accepted and Cain's is not. God speaks directly to Cain, saying, Why are you angry? Why is your face downcast? If you do what is right, will you not be accepted? But sin is crouching at his door and desires to have him. Cain rises up and kills his brother Abel. The Lord asks Cain, Where is your brother Abel?</p><p><strong>Interpretation/Application:</strong> The difference between the two offerings is not said to be the value of the gift but the condition of the heart. What begins as wounded pride can, if unguarded, harden into something far darker. God's question - Where is your brother? - echoes through the ages: we are our brother's keeper, whether we like it or not. When your offering, your role, or your reward is not what you expected, watch your heart; sin is always crouching at the door. Rather than feeding resentment, bring your raw disappointment to God, who speaks to you as He spoke to Cain - with patience, with warning, and still with the offer of a way.</p>",
@@ -79,7 +86,7 @@ begin
           "Genesis 5:1-32"
         ]
       },
-{
+      {
         "day_number": 7,
         "title": "Day 7 - Wickedness in the World (Genesis 6:1-8)",
         "content": "<p>Scripture records that when the human race increases, wickedness grows, and that every inclination of the human heart is only evil all the time. The Lord is grieved over His creation. Scripture also says that Noah found favor in the eyes of the Lord, because Noah was righteous and blameless among his people and walked faithfully with God.</p><p><strong>Interpretation/Application:</strong> The God of Genesis is not indifferent; He grieves - judgment is not His delight but His sorrowful response to entrenched evil. Yet in the very same passage grace appears: Noah found favor in the eyes of the Lord; the word behind favor echoes the idea of grace, something undeserved and freely given. Remember that God was not looking for a crowd in Noah's day; He was looking for one faithful heart. Be that person in your own circle - receiving God's grace and lending your life to His purposes rather than to the tide of the times.</p>",
@@ -103,7 +110,7 @@ begin
           "Genesis 9:1-17"
         ]
       },
-{
+      {
         "day_number": 10,
         "title": "Day 10 - The Sons of Noah (Genesis 9:18-29)",
         "content": "<p>Scripture records that after his deliverance, Noah plants a vineyard and, in a moment of weakness, becomes drunk and lies uncovered in his tent. Ham sees his father's nakedness and tells his brothers outside, while Shem and Japheth walk in backward with a garment to cover their father. When Noah wakes he speaks a curse and a blessing over his sons' descendants.</p><p><strong>Interpretation/Application:</strong> The scene is strikingly human - even the hero of the flood stumbles - and what follows is not a vindictive burst but a glimpse of how our choices ripple outward: Ham's disrespect becomes a defining memory, while Shem is honored as the line through whom blessing continues. The response of the two brothers shows what love does in the presence of another's shame: it covers rather than exposes. When others stumble, how do you respond? The instinct of the world is to look, to broadcast, to feel superior; love, by contrast, walks backward and covers. Guard your own heart against the pride of the early days of faith, and be the kind of person who protects the dignity of others even when they have fallen.</p>",
@@ -127,7 +134,7 @@ begin
           "Genesis 11:1-9"
         ]
       },
-{
+      {
         "day_number": 13,
         "title": "Day 13 - From Shem to Abram (Genesis 11:10-26)",
         "content": "<p>After Babel, Scripture narrows the story once more, following the line of Shem generation by generation until it reaches Terah, and out of his household comes Abram. The names and ages carry the quiet weight of a promise repeated across generations.</p><p><strong>Interpretation/Application:</strong> The genealogy reminds us that God works through the unremarkable, patient accumulation of years - there are no dramatic chapters here, only faithful continuance, and the God who spans all of history works inside the slow, daily progress of an ordinary family. Do not despise the small, seemingly ordinary parts of your story; the years that feel like waiting or repetition may be exactly where God is preparing you for something generations later. The line from Shem to Abram teaches us that God is never in a hurry and never forgets a promise.</p>",
@@ -151,7 +158,7 @@ begin
           "Genesis 12:1-9"
         ]
       },
-{
+      {
         "day_number": 16,
         "title": "Day 16 - Abram in Egypt (Genesis 12:10-20)",
         "content": "<p>Scripture records that, hard on the heels of his step of faith, a famine drives Abram to Egypt. Fearing for his life, he asks Sarai to say she is his sister; Pharaoh takes her into his household, and only when the Lord afflicts Pharaoh's household with plagues is the deception exposed. Abram is confronted and sent away.</p><p><strong>Interpretation/Application:</strong> The passage is disturbingly honest about the life of faith: the same man who left everything to follow God is here unraveled by fear. What is prominent in the story is not Abram's heroism but God's protection - even through his failure, God guards His promise. Faith does not mean never faltering; it means that God is faithful when we are not. You may have a famine season coming - a crisis that tempts you to grasp, to scheme, to protect your own name. In such moments honesty with God and with others is the way back. Let this passage free you from the guilt of past lapses and teach you to trust God's protection rather than your own maneuvering.</p>",
@@ -175,7 +182,7 @@ begin
           "Genesis 14:1-24"
         ]
       },
-{
+      {
         "day_number": 19,
         "title": "Day 19 - God's Covenant With Abram (Genesis 15:1-21)",
         "content": "<p>Scripture records God speaking to Abram in a vision: Do not be afraid, Abram. I am your shield, your very great reward. Yet Abram voices his ache: You have given me no children. Into this wound God speaks the promise of descendants as numerous as the stars, and the text says Abram believed the Lord, and it was credited to him as righteousness. The covenant is then sealed with a solemn ritual, and as Abram falls into a deep sleep God passes between the pieces alone.</p><p><strong>Interpretation/Application:</strong> Faith here is not a feeling but a settled trust in God's word, and the covenant rests not on Abram's capacity but on God's own commitment - God takes the promise upon Himself. When God's timeline outpaces yours, bring the honest ache of your heart to Him as Abram did. And remember whose covenant this is: God bound Himself to you before you could keep your side. Believe Him, and let that belief be counted righteous - resting not in your performance but in His faithfulness.</p>",
@@ -199,7 +206,7 @@ begin
           "Genesis 17:1-27"
         ]
       },
-{
+      {
         "day_number": 22,
         "title": "Day 22 - The Three Visitors (Genesis 18:1-15)",
         "content": "<p>Scripture records that by the great trees at Mamre Abraham welcomes three strangers with lavish hospitality, and Scripture says that in this way people have, without knowing it, shown hospitality to angels. One of the visitors carries an impossible message: about this time next year, Sarah will have a son. Sarah, listening at the tent door, laughs to herself, for she is old; the Lord hears her and asks, Is anything too hard for the Lord?</p><p><strong>Interpretation/Application:</strong> Whatever has died in you - a hope, a relationship, a calling you let go of long ago - hold it up to that question. Your laughter may be the laughter of cynicism or of deferred hope, but God's word remains. Receive His promise with humility and wonder, and let the impossible become the foundation of your expectation. The question that haunts every season of doubt also carries the answer: nothing is too hard for the Lord.</p>",
@@ -223,7 +230,7 @@ begin
           "Genesis 19:1-29"
         ]
       },
-{
+      {
         "day_number": 25,
         "title": "Day 25 - Abraham and Abimelek (Genesis 20:1-18)",
         "content": "<p>Scripture records that Abraham moves into the region of Gerar and, fearing for his life, asks Sarah to say she is his sister; Abimelek takes her. The text records that God warns Abimelek in a dream and protects the promise, that Abimelek acts with more integrity in the situation than Abraham does, and that Abraham confesses his fear.</p><p><strong>Interpretation/Application:</strong> It is humbling to meet the pattern of our own repeated failures - Abraham repeats the very deception he fell into in Egypt, the same unbelief rising at the same pressure point. But notice what is constant: God's commitment does not depend on Abraham's courage. When you recognize an old sin resurfacing, do not despair at the pattern; bring it to God, who forgives and restores again. His covenant with you holds even when your faith wavers.</p>",
@@ -247,7 +254,7 @@ begin
           "Genesis 21:22-34"
         ]
       },
-{
+      {
         "day_number": 28,
         "title": "Day 28 - Abraham Tested (Genesis 22:1-19)",
         "content": "<p>Scripture records that God said, Take your son, your only son, Isaac, whom you love, and sacrifice him there as a burnt offering. Abraham rises early and goes. To Isaac's question, where is the lamb?, Abraham answers, God himself will provide the lamb. At the last moment the angel calls out, and Abraham sees a ram caught in the thicket; he names the place The Lord Will Provide.</p><p><strong>Interpretation/Application:</strong> This is the deepest test of trust, and its resolution reveals the heart of the whole Bible: Abraham holds nothing back from God, and God holds nothing back from the world - years later giving His own Son on a hill, the lamb provided at last. Is there anything you are unwilling to entrust to God? Faith does not demand that you know the outcome, only that you trust the One who does. Bring your dearest treasure to Him, and be ready to discover the ram in the thicket - that God has provided what you could not imagine.</p>",
@@ -271,7 +278,7 @@ begin
           "Genesis 23:1-20"
         ]
       },
-{
+      {
         "day_number": 31,
         "title": "Day 31 - Isaac and Rebekah (Genesis 24:1-67)",
         "content": "<p>Scripture records that Abraham sends his trusted servant to find a wife for Isaac from his own kindred. At the well the servant prays for a sign, and before he finishes, Rebekah appears and shows the very hospitality he had asked for. The servant bows and worships; Rebekah and her family consent; and when Rebekah sees Isaac in the field, she dismounts and covers herself with her veil.</p><p><strong>Interpretation/Application:</strong> It is a chapter of answered prayer and yielded obedience, moving with the quiet confidence that God is guiding - the covenant line is passed on through an ordinary act of trust: a prayer at a well, a girl with a water jar, a servant who told God his request. For decisions large and small, you can bring your way before God and trust Him to guide. Pray specifically, act with integrity, and leave room for the divine yes. And learn from Isaac and Rebekah - when God brings you to the right place and person, receive it with joy and be comforted.</p>",
@@ -295,7 +302,7 @@ begin
           "Genesis 25:19-34"
         ]
       },
-{
+      {
         "day_number": 34,
         "title": "Day 34 - Isaac and Abimelek (Genesis 26:1-33)",
         "content": "<p>Scripture records that a famine drives Isaac to Gerar and that the Lord appears to him, repeating the promise made to Abraham: I will be with you and will bless you. Isaac reopens the wells his father had dug, and time and again he digs a well and the herdsmen quarrel over it, so he moves on and digs again, until at last the Lord appears to him and says, I am the God of your father Abraham; do not be afraid. Abimelek then comes to him saying, We saw clearly that the Lord was with you.</p><p><strong>Interpretation/Application:</strong> The center of the chapter is a story of perseverance in the dry places - sometimes the faithful path is simply to keep digging, quietly, refusing to fight for what God will give. Persistency in obedience is its own testimony. When your wells are disputed, keep digging in faith, and let God be the one to vindicate you.</p>",
@@ -319,7 +326,7 @@ begin
           "Genesis 27:41-28:9"
         ]
       },
-{
+      {
         "day_number": 37,
         "title": "Day 37 - Jacob's Dream at Bethel (Genesis 28:10-22)",
         "content": "<p>Scripture records that Jacob, a homeless fugitive, lays his head on a stone in the open country and in a dream sees a ladder resting on the earth with its top reaching to heaven, with angels ascending and descending on it. Above it stands the Lord, who repeats the promises made to Abraham and adds, I am with you and will watch over you wherever you go. Jacob wakes and declares, Surely the Lord is in this place.</p><p><strong>Interpretation/Application:</strong> The God of the sanctuary meets His man in the wilderness, on the run and emptied of everything; a staircase of grace connects heaven and earth, and the gospels tell us Jesus Himself is the one on whom the angels ascend and descend. Have you ever felt at your lowest, a stone for a pillow? It is often there - not in the well-ordered sanctuary but in the wilderness of our failure - that God draws near with a word of presence. He meets you where you are, and His promise is not revoked by your flight. There is a ladder between God and you, and it is held by Jesus Himself.</p>",
@@ -343,7 +350,7 @@ begin
           "Genesis 29:31-30:24"
         ]
       },
-{
+      {
         "day_number": 40,
         "title": "Day 40 - Jacob's Flocks Increase (Genesis 30:25-43)",
         "content": "<p>Scripture records that Jacob, having served his time, asks to leave. Laban, seeing that the Lord has blessed him because of Jacob, urges him to stay, and they strike an unusual arrangement: Jacob will keep the streaked and spotted and dark animals as his wages. The text says the stronger animals produce the sort that belong to Jacob, so that he grows exceedingly prosperous while Laban's herds dwindle.</p><p><strong>Interpretation/Application:</strong> The chapter shows a shrewd man working the system, yet Scripture is clear that the true source is God - the blessing does not come from Jacob's cleverness alone but from the God of his father being with him. We may scheme and strive and outmaneuver, but the One who causes the flock to increase is God. When you prosper, do not imagine it is only your effort; give the growth to God, hold your success loosely, and let prosperity form gratitude rather than pride in you, for blessing is a stewardship from Him.</p>",
@@ -367,7 +374,7 @@ begin
           "Genesis 32:1-21"
         ]
       },
-{
+      {
         "day_number": 43,
         "title": "Day 43 - Jacob Wrestles With God (Genesis 32:22-32)",
         "content": "<p>Scripture records that that night Jacob sends his family across the ford and is left alone. A man wrestles with him until daybreak; the man dislocates Jacob's hip with a touch, and yet Jacob will not let him go. When the man asks Jacob's name, Jacob confesses it, and the man declares: Your name will no longer be Jacob, but Israel, because you have struggled with God and with humans and have overcome.</p><p><strong>Interpretation/Application:</strong> Jacob limps away with a new name, a changed man, marked for life. He had asked God to save him, and the answer came as a fight in the dark; grace does not always arrive gently - sometimes it grips us, wounds us, and refuses to let us go until we yield every claim to our own strength. What are you wrestling with tonight? It may be that God Himself is in the struggle, seeking not your defeat but your transformation. Do not let go until He blesses you; it is better to enter the day crippled and named by God than to cross it self-sufficient and unchanged. His blessing often leaves a mark, but the mark is glory.</p>",
@@ -391,7 +398,7 @@ begin
           "Genesis 34:1-31"
         ]
       },
-{
+      {
         "day_number": 46,
         "title": "Day 46 - Jacob Returns to Bethel (Genesis 35:1-15)",
         "content": "<p>Scripture records that God says to Jacob, Go up to Bethel and settle there, and build an altar there to God, who appeared to you when you were fleeing from your brother. Jacob responds by putting away the foreign gods in his household and purifying his family, and there God renews the promise and the name Israel.</p><p><strong>Interpretation/Application:</strong> Bethel - the house of God - was the site of Jacob's ladder, his lowest point elevated by grace; now, years later, he is called back to remember, and the return is marked by worship and cleansing, a resetting of the house around the God who had met him in the wilderness when he had nothing to offer. Do you have a Bethel - a place where God met you at your lowest? The discipline of return is one of the most healing we can practice. Go back to the place of your first love, offer your life afresh, and lay aside the gods that have gathered in your house. God is still there, still promising, still ready to renew your name.</p>",
@@ -415,7 +422,7 @@ begin
           "Genesis 36:1-43"
         ]
       },
-{
+      {
         "day_number": 49,
         "title": "Day 49 - Joseph's Dreams (Genesis 37:1-36)",
         "content": "<p>Scripture records that the saga of Joseph begins with favor and jealousy: he is the son of Jacob's old age, loved above his brothers and given an ornate robe. His dreams - of sheaves and stars bowing before him - inflame the envy until his brothers strip him of the robe, throw him into a cistern, and sell him to merchants bound for Egypt; they deceive their father into thinking he has been devoured by a wild animal.</p><p><strong>Interpretation/Application:</strong> There is almost nothing comforting in the scene except the betrayal itself, yet hidden in the wreckage is the working of God, who will take an evil intended against His servant and use it to save many alive - the robe is torn, but the dream is not dead. Betrayal stains some of our deepest stories, and we may wonder where God is in them; remember Joseph, for the favor of God on your life will draw envy, but it will also be the thing that carries you. You do not have to orchestrate the ending; the God who gave the dream is still watching that pit, and He is not finished.</p>",
@@ -439,7 +446,7 @@ begin
           "Genesis 39:1-23"
         ]
       },
-{
+      {
         "day_number": 52,
         "title": "Day 52 - The Cupbearer and the Baker (Genesis 40:1-23)",
         "content": "<p>Scripture records that two of Pharaoh's officials - the chief cupbearer and the chief baker - are thrown into the prison where Joseph is, and that both have troubling dreams. Seeing their dejection, Joseph asks why they are so sad; when they say no one can interpret the dreams, Joseph answers, Do not interpretations belong to God? Tell me your dreams. He interprets them accurately, and both come true exactly as he said; but the cupbearer, restored to his post, forgets Joseph.</p><p><strong>Interpretation/Application:</strong> Too often we rely on human memory, and it fails us; but the lesson of the chapter is that God has not forgotten, even when people do. When your name is overlooked and your faithfulness goes unremembered, do not let hope die - the Bible narrates the delay without despair because God is still writing. Sooner or later, on His clock, the dream will be remembered, and your waiting is part of the story He is still telling.</p>",
@@ -463,7 +470,7 @@ begin
           "Genesis 41:37-57"
         ]
       },
-{
+      {
         "day_number": 55,
         "title": "Day 55 - Joseph's Brothers Go to Egypt (Genesis 42:1-38)",
         "content": "<p>Scripture records that, emboldened by the famine, Jacob sends his sons to Egypt for grain. They bow before its governor - unknowingly fulfilling Joseph's dream of the sheaves - and Joseph recognizes his brothers. He tests them harshly, accusing them of being spies, keeping Simeon, and demanding that they return with their youngest brother Benjamin. Overhearing them speak in their own tongue, he hears them say, Surely we are being punished because of our brother, and Joseph turns aside and weeps.</p><p><strong>Interpretation/Application:</strong> The brothers, whose conscience has been slumbering for years, are suddenly awakened, and Joseph's tears show that the wounds of the past are still tender. Guilt has a long memory, and it is often God's servant in our lives, bringing us to the point of confession long after the deed; the famine of circumstances can be the very thing that makes us finally face what we have buried. Do not resist the discomfort that surfaces your hidden sins; let it drive you toward the grace that alone can pardon and heal them.</p>",
@@ -487,7 +494,7 @@ begin
           "Genesis 44:1-34"
         ]
       },
-{
+      {
         "day_number": 58,
         "title": "Day 58 - Joseph Makes Himself Known (Genesis 45:1-28)",
         "content": "<p>Scripture records that Joseph can contain himself no longer: he orders everyone out and, weeping so loudly that all Egypt hears, reveals himself to his brothers - I am Joseph! They are terrified and speechless, but Joseph lifts them up: Do not be distressed and do not be angry with yourselves for selling me here, because it was to save lives that God sent me ahead of you. Then he falls on their necks and weeps, and they talk together as family again.</p><p><strong>Interpretation/Application:</strong> Here is the gospel in miniature: the one who was wronged chooses not revenge but reconciliation, and he frames the whole betrayal as part of God's saving purpose - a sovereignty large enough to work even through human evil. Is there a wound you have resisted the urge to reconcile? Extending and receiving forgiveness is not the same as pretending the wrong never happened; it is refusing to let it have the last word. Like Joseph, you can choose to forgive because you trust the God who works through what others meant for harm.</p>",
@@ -511,7 +518,7 @@ begin
           "Genesis 47:1-12"
         ]
       },
-{
+      {
         "day_number": 61,
         "title": "Day 61 - Joseph and the Famine (Genesis 47:13-26)",
         "content": "<p>Scripture records that the famine grows severe and Joseph's management sustains the land. When the people's silver runs out, they trade their livestock for grain; when that is gone, they sell their land and finally themselves, becoming Pharaoh's servants. Joseph supplies them with seed in exchange for a fifth of the harvest, and the people respond, You have saved our lives.</p><p><strong>Interpretation/Application:</strong> The chapter records the consolidation of Pharaoh's power, and a modern reader may wince at what looks like economic entrenchment; yet the narrative emphasis falls on provision in crisis - that through Joseph, God saved many people alive, even as their circumstances changed. Provision is a form of ministry: not everyone is called to rescue at a dramatic moment, but everyone can steward resources and gifts for the good of others in hard times. Ask how your abundance - of money, time, insight, or influence - could become seed for someone facing their own famine. Generosity is God's way of saving lives.</p>",
@@ -535,7 +542,7 @@ begin
           "Genesis 48:1-22"
         ]
       },
-{
+      {
         "day_number": 64,
         "title": "Day 64 - Jacob Blesses His Sons (Genesis 49:1-28)",
         "content": "<p>Scripture records that Jacob, gathering his sons, speaks over each of them a blessing that is also an unveiling: some receive words of strength, others warnings that expose long-buried sins - Reuben's instability, the violence of Simeon and Levi, and Judah receiving the promise of a ruler whose scepter will not depart from him until Shiloh comes.</p><p><strong>Interpretation/Application:</strong> Jacob speaks with the eyes of one who has seen enough of life to say hard truths gently; he does not pretend his sons are perfect, yet he blesses them all as the bearers of Israel's future, and the tribe of Judah - born out of the broken story of Tamar - is singled out for the line of kingship. Families need honest words spoken in love. You may carry another's blame, just as these brothers carried remembered failures, or you may need to speak what is hard because it is healing; let the harsh truth be wrapped in the blessing of belonging. And rest in this: out of Judah's troubled line came the Lion of Judah, who redeems every tribe's twisted history.</p>",
@@ -559,7 +566,7 @@ begin
           "Genesis 50:1-14"
         ]
       },
-{
+      {
         "day_number": 67,
         "title": "Day 67 - Joseph Reassures His Brothers (Genesis 50:15-21)",
         "content": "<p>Scripture records that with their father dead, the brothers' old guilt resurfaces, and they fear Joseph will pay them back for selling him into slavery. Joseph weeps at their fear. Then his brothers bow before him, and he says, Don't be afraid. Am I in the place of God? You intended to harm me, but God intended it for good to accomplish what is now being done, the saving of many lives.</p><p><strong>Interpretation/Application:</strong> Joseph refuses the bitterness that entitlement would grant him; he has seen, from the pit to the palace, that God was redeeming the evil done against him. Forgiveness here is not a vague sentiment but a settled trust that God can take the worst intentions of others and weave them into good. Is there a harm done to you that you have let define you? Forgiveness is not saying the wrong did not matter, nor that you are nothing to God; it is handing the intention and the outcome to the One who is in the place of God. Let Him turn what was meant for harm into the saving of many lives, and set your heart free.</p>",
@@ -576,8 +583,209 @@ begin
         ]
       }
     ]
+  },
+  {
+    "id": "93000000-0000-0000-0000-0000000000c8",
+    "title": "Exodus: Deliverance, Covenant, and Presence",
+    "description": "A walk through the book of Exodus following its major movements: the oppression and rescue of Israel, the plagues, the Passover, the crossing of the sea, the giving of the Law at Sinai, and the building of the tabernacle. Each day pairs a section of Exodus with a 5-10 minute devotional and the section reference as the day passage.",
+    "total_days": 23,
+    "tags": [
+      "deliverance",
+      "covenant",
+      "faith",
+      "reading",
+      "wisdom"
+    ],
+    "cover_image": "https://images.unsplash.com/photo-1445116572660-236099ec97a0?auto=format&fit=crop&w=1200&q=80",
+    "days": [
+      {
+        "day_number": 1,
+        "title": "Day 1 - The Birth of Moses (Exodus 2:1-10)",
+        "content": "<p>Scripture records that a Levite woman bears a son and, seeing that he is a fine child, hides him for three months. When she can hide him no longer she places him in a papyrus basket, sets it among the reeds on the bank of the Nile, and stations his sister at a distance to see what happens. Pharaoh's daughter comes down to bathe, finds the basket, and has pity on the crying child; the boy's sister offers to fetch a Hebrew woman to nurse him, so the baby is raised by his own mother until he is weaned, and then he becomes the adopted son of Pharaoh's daughter, who names him Moses, because she drew him out of the water.</p><p><strong>Interpretation/Application:</strong> God preserves a hopeless child through the risk and courage of ordinary people - his mother's faith, his sister's quick wit, a princess's compassion. The text presents this as God at work behind human choices. Identify the baskets God has used in your life - small, brave acts by others that kept you afloat - and consider how your courage today might cradle someone else's future.</p>",
+        "references": [
+          "Exodus 2:1-10"
+        ]
+      },
+      {
+        "day_number": 2,
+        "title": "Day 2 - Moses Flees to Midian (Exodus 2:11-25)",
+        "content": "<p>Scripture records that after Moses has grown up he goes out and, seeing an Egyptian beating a Hebrew, strikes the Egyptian and hides him in the sand. The next day he finds two Hebrews quarreling and asks why one is striking the other; the man replies, who made you ruler and judge over us? Are you thinking of killing me as you killed the Egyptian? Moses flees to Midian, where he sits down by a well and defends the daughters of Reuel from shepherds, is invited into their home, and marries Zipporah. Meanwhile Scripture records that the Israelites groan in their slavery and cry out, and that God hears their groaning, remembers his covenant with Abraham, Isaac and Jacob, looks on them and is concerned about them.</p><p><strong>Interpretation/Application:</strong> Moses attempts deliverance in his own strength and it backfires, yet the text shows that God is already hearing the cry of his people. Our initiatives can be sincere but premature; God's timing is part of his deliverance. When your well-timed effort meets resistance, recall that God remembers the covenant - the foundation of rescue is God's faithfulness, not your premature zeal.</p>",
+        "references": [
+          "Exodus 2:11-25"
+        ]
+      },
+      {
+        "day_number": 3,
+        "title": "Day 3 - The Burning Bush (Exodus 3:1-22)",
+        "content": "<p>Scripture records that Moses, tending the flock of his father-in-law, comes to Horeb, the mountain of God, and sees a bush burning yet not consumed. As he turns aside to look, God calls to him from within the bush and tells him to remove his sandals, for he is standing on holy ground. God reveals himself as the God of Abraham, Isaac and Jacob, says he has seen the misery of his people and heard their cry, and commissions Moses to bring them out of Egypt. When Moses asks what he should say, God declares his name and his plan to lead the people to a land flowing with milk and honey.</p><p><strong>Interpretation/Application:</strong> The God who hears the cry of slaves draws near to the ordinary work of a shepherd. Holy ground can be anywhere God is; the same fire that reveals his glory does not consume. Whether you feel qualified or not, God's call is rooted in who HE is, not in what you can prove.</p>",
+        "references": [
+          "Exodus 3:1-22"
+        ]
+      },
+      {
+        "day_number": 4,
+        "title": "Day 4 - Signs for Moses (Exodus 4:1-17)",
+        "content": "<p>Scripture records that Moses objects that the people will not believe him, so God shows him three signs: his staff becomes a serpent and back again, his hand becomes leprous and is restored, and water from the Nile becomes blood on the dry land. Moses continues to protest that he is not eloquent, slow of speech and tongue, and asks God to send someone else. Scripture records that the Lord's anger burns against Moses, yet he gives Aaron his brother to be his spokesman, saying, I will help both of you speak and will teach you what to do.</p><p><strong>Interpretation/Application:</strong> God patiently supplies proof for doubt and a partner for weakness, yet the narrative does not hide that Moses's last excuse grieved the Lord. God meets us in our reluctance, often with provision - but the call remains. Examine what you think disqualifies you, and see whether God is offering you both the sign and the Aaron you need.</p>",
+        "references": [
+          "Exodus 4:1-17"
+        ]
+      },
+      {
+        "day_number": 5,
+        "title": "Day 5 - Moses Returns to Egypt (Exodus 4:18-31)",
+        "content": "<p>Scripture records that Moses tells his father-in-law he must return to his own people in Egypt and takes his wife and sons, carrying the staff of God in his hand. It records that he and Aaron gather the elders of Israel, that Aaron tells them everything the Lord has said to Moses and performs the signs before the people, and that the people believed and bowed down and worshiped, for they saw that the Lord was concerned about the Israelites and had seen their misery.</p><p><strong>Interpretation/Application:</strong> The word of deliverance is first received by a believing remnant before any visible change in circumstance. Faith rests on God's word and signs even when Pharaoh has not yet relented. In your own waiting, do not require the outcome to be complete before you believe; begin with the testimony of God's concern, and let that shape your worship.</p>",
+        "references": [
+          "Exodus 4:18-31"
+        ]
+      },
+      {
+        "day_number": 6,
+        "title": "Day 6 - Bricks Without Straw (Exodus 5:1-23)",
+        "content": "<p>Scripture records that Moses and Aaron go to Pharaoh saying, Let my people go, so that they may hold a festival to me in the wilderness; Pharaoh replies, I do not know the Lord and I will not let Israel go. He then orders the taskmasters to stop supplying straw, forcing the Israelites to gather straw for themselves while still meeting the same quota, because, he says, they are lazy. The Israelite officials, beaten for failing their quota, turn on Moses and Aaron, and Moses cries out, Why, Lord, have you brought trouble on this people?</p><p><strong>Interpretation/Application:</strong> Faithful obedience does not insulate us from immediate hardship; the first word of deliverance made things harder before they improved. Moses's complaint is honest and is not rebuked. When obedience seems to increase the burden, it does not mean you are outside God's purposes - the narrative of rescue often begins with a season of darker night before the morning.</p>",
+        "references": [
+          "Exodus 5:1-23"
+        ]
+      },
+      {
+        "day_number": 7,
+        "title": "Day 7 - God Promises Deliverance (Exodus 6:1-30)",
+        "content": "<p>Scripture records that the Lord tells Moses, I am the Lord. I appeared to Abraham, to Isaac and to Jacob as God Almighty, but by my name the Lord I did not make myself fully known. He says he has heard the groaning of the Israelites and will redeem them with an outstretched arm, will take them as his own people and be their God, and will bring them into the land he promised. He reminds them that he is the Lord. The passage also records the family of Moses and Aaron.</p><p><strong>Interpretation/Application:</strong> When circumstances have not yet changed, God anchors hope in who he is and the covenant he remembers. The promise that I will be your God precedes any visible rescue. In discouraged seasons, rehearse the character of God rather than the size of the problem; the covenant-keeping name stands even when the situation has not yet moved.</p>",
+        "references": [
+          "Exodus 6:1-30"
+        ]
+      },
+      {
+        "day_number": 8,
+        "title": "Day 8 - The First Signs Before Pharaoh (Exodus 7:1-13)",
+        "content": "<p>Scripture records that the Lord tells Moses he has made him like God to Pharaoh, with Aaron as his prophet, and that he will harden Pharaoh's heart so the Egyptians will know he is the Lord. Moses and Aaron do as the Lord commands: Aaron throws down his staff and it becomes a snake, and when the Egyptian magicians do the same, Aaron's staff swallows up their staffs. Scripture records that yet Pharaoh's heart became hard and he would not listen, just as the Lord had said.</p><p><strong>Interpretation/Application:</strong> Divine signs can be met with imitation and resistance, and God's sovereignty over Pharaoh's hard heart is put forward as part of a larger purpose: that Egypt might know the Lord. When truth is contested and hearts grow hard, remember the purpose is beyond the immediate battle - God is making himself known. Keep faithfulness anchored in his character, not in immediate persuasion.</p>",
+        "references": [
+          "Exodus 7:1-13"
+        ]
+      },
+      {
+        "day_number": 9,
+        "title": "Day 9 - Plague of Blood and Frogs (Exodus 7:14-8:15)",
+        "content": "<p>Scripture records that because Pharaoh will not let the people go, the Lord tells Moses to strike the Nile, and the water turns to blood: the fish die and the river stinks, yet the magicians do the same by their secret arts and Pharaoh's heart remains hard. Then the Lord sends frogs that come up and cover the land of Egypt. Pharaoh calls for Moses and promises to let the people go if the frogs are removed; when they die in a heap, Pharaoh hardens his heart and breaks his word, just as the Lord had said he would.</p><p><strong>Interpretation/Application:</strong> God's power is shown to be above the magicians of Egypt, yet hardened hearts find reasons to resist even clear evidence. The pattern is instructive: relief from pressure was followed by a broken promise. When God answers our cry and the pressure lifts, we are tempted to return to our own way. Let answered prayer lead to renewed obedience rather than to forgetfulness.</p>",
+        "references": [
+          "Exodus 7:14-8:15"
+        ]
+      },
+      {
+        "day_number": 10,
+        "title": "Day 10 - Plague of Gnats and Flies (Exodus 8:16-32)",
+        "content": "<p>Scripture records that the dust of the land becomes gnats, and when the magicians try to produce gnats by their secret arts they fail and confess, This is the finger of God. Even so Pharaoh will not listen. Then the Lord sends swarms of flies on Egypt but sets apart the land of Goshen where his people live, so that the flies do not touch them. Pharaoh tries to bargain - go, but do not go far - and once more, when the flies are removed, he hardens his heart and will not let the people go.</p><p><strong>Interpretation/Application:</strong> Here God begins to make a distinction between his people and Egypt, and even the magicians are forced to acknowledge a power beyond their own. God's people are not spared every discomfort, but they are set apart and protected. When you face a season of trouble around you, remember that God sees and knows where you live, and that being set apart for him is a protection even in hard times.</p>",
+        "references": [
+          "Exodus 8:16-32"
+        ]
+      },
+      {
+        "day_number": 11,
+        "title": "Day 11 - Plague on Livestock, Boils, and Hail (Exodus 9:1-35)",
+        "content": "<p>Scripture records that the livestock of Egypt die, but not one of the livestock of Israel dies. Then boils break out on people and animals throughout Egypt, and even the magicians cannot stand before Moses because of the boils. Then a severe hail storm, the worst Egypt has known, strikes down everything in the field. Moses warns the people to bring their livestock and workers in from the open; those who feared the word of the Lord brought their servants in, while those who did not left theirs in the storm. Pharaoh again confesses, I have sinned this time, but when the hail stops he hardens his heart.</p><p><strong>Interpretation/Application:</strong> In the hail we see a line drawn between those who take God's warning seriously and those who do not. Faith is practical: it moves livestock indoors when judgment is announced. Half-converted confessions, like Pharaoh's, that do not endure beyond the immediate crisis are not yet repentance. Take God's warnings to heart in the small, practical choices of today.</p>",
+        "references": [
+          "Exodus 9:1-35"
+        ]
+      },
+      {
+        "day_number": 12,
+        "title": "Day 12 - Plague of Locusts and Darkness (Exodus 10:1-29)",
+        "content": "<p>Scripture records that locusts swarm over Egypt and eat every plant that the hail had left, so that nothing green remains. Pharaoh, having called Moses in haste, admits, I have sinned against the Lord your God and against you, and asks for forgiveness just once more; but after the locusts are swept into the sea, the Lord hardens Pharaoh's heart and he does not let the people go. Then a darkness that can be felt settles over Egypt for three days, yet the Israelites have light where they live. Pharaoh offers to let the people go but without their flocks and herds; Moses refuses, and Pharaoh tells him never to appear before him again.</p><p><strong>Interpretation/Application:</strong> Pharaoh's repeated confessions, undone each time relief comes, show that true repentance is a change of course, not just words spoken under pressure. The darkness that is felt over Egypt while Israel has light points to God's care for his own. When you are tempted to bargain with God - giving him part of your life but not all - hear the call to go without holding back, trusting him with your whole story.</p>",
+        "references": [
+          "Exodus 10:1-29"
+        ]
+      },
+      {
+        "day_number": 13,
+        "title": "Day 13 - The Passover (Exodus 12:1-30)",
+        "content": "<p>Scripture records that the Lord institutes the Passover: each household is to take a lamb without defect, keep it, and slaughter it at twilight, putting its blood on the doorposts and lintel of the house. They are to eat the meat roasted with fire, with unleavened bread and bitter herbs, dressed ready to travel. On that night the angel of the Lord passes over the houses marked with blood and strikes down every firstborn in Egypt - man and animal - while the people of Israel, sheltered by the blood, are passed over. There is loud wailing in Egypt, for there is hardly a house without someone dead.</p><p><strong>Interpretation/Application:</strong> The lamb's blood on the door is the hinge of the whole exodus: rescue comes through a substitute and its blood applied to the place where each household lives. The Passover looked forward, in the Christian reading, to Christ the Lamb of God whose blood delivers. Here, salvation is not earned but received by heed to God's command. Keep the posture of those ready to move - alert, gathered, and trusting in the blood of the lamb, not in your own standing.</p>",
+        "references": [
+          "Exodus 12:1-30"
+        ]
+      },
+      {
+        "day_number": 14,
+        "title": "Day 14 - The Exodus (Exodus 12:31-51)",
+        "content": "<p>Scripture records that during the night Pharaoh summons Moses and Aaron and urges them to take the Israelites and go - take your flocks and herds as you have said, and also bless me. The people, who have asked the Egyptians for articles of silver and gold and clothing, plunder the Egyptians as they leave. Six hundred thousand men on foot, besides women and children, and a mixed crowd go up out of Egypt after four hundred and thirty years, to the very day the Lord had promised. Scripture notes that it was a night of watching kept to the Lord and that the Israelites went out in battle formation under a strict rule about who may eat the Passover.</p><p><strong>Interpretation/Application:</strong> God delivers on his word to the day, and a promise made long to Abraham is kept exactly. The exodus is both a political rescue and a demonstration that God remembers his covenant. When you are between the promise and the fulfillment, remember that God keeps time. He who numbers the days of your waiting is the same God who came through for Israel on the very night he had appointed.</p>",
+        "references": [
+          "Exodus 12:31-51"
+        ]
+      },
+      {
+        "day_number": 15,
+        "title": "Day 15 - Crossing the Red Sea (Exodus 14:1-31)",
+        "content": "<p>Scripture records that Pharaoh, regretting letting Israel go, chases after them with chariots and traps them between his army and the sea. The people cry out in fear, blaming Moses, who tells them, Do not be afraid. Stand firm and you will see the deliverance the Lord will bring you today. The angel of God and the pillar of cloud move between Israel and Egypt. Moses stretches out his hand, the Lord drives the sea back with a strong east wind, and Israel crosses on dry ground with walls of water on either side. The Egyptians pursue, their chariot wheels clog, and the waters return, drowning the entire army. Israel sees the great power of the Lord and fears him and puts their trust in him.</p><p><strong>Interpretation/Application:</strong> When a way seems impossible and pursued, deliverance comes from a direction none could predict. Israel's part was only to stand firm and move forward when God said go. Fear is natural - the same people who had seen the plagues still trembled - yet they were told to stand still and see the Lord's salvation. In your own cornered moments, resist panic; your calling is to obey the next step and watch God open the sea.</p>",
+        "references": [
+          "Exodus 14:1-31"
+        ]
+      },
+      {
+        "day_number": 16,
+        "title": "Day 16 - The Song of Moses and Miriam (Exodus 15:1-21)",
+        "content": "<p>Scripture records Moses and the Israelites singing to the Lord, I will sing to the Lord, for he is highly exalted. Both horse and driver he has hurled into the sea. The song retells the deliverance: the Lord is a warrior, your right hand, Lord, was majestic in power; in the greatness of your majesty you threw down those who opposed you. Who among the gods is like you? In your unfailing love you will lead the people you have redeemed. Then Miriam the prophetess takes a tambourine and leads the women in dance, singing the same refrain, for he is highly exalted.</p><p><strong>Interpretation/Application:</strong> The first response of the redeemed is worship; the song rehearses what God has done before it asks anything. Remembering, in the form of song, is how a delivered people stay delivered. When you come through a rescue, do not quickly move on - spend time rehearsing God's faithfulness aloud, alone and with others, the way Israel sang of a God who redeems by unfailing love.</p>",
+        "references": [
+          "Exodus 15:1-21"
+        ]
+      },
+      {
+        "day_number": 17,
+        "title": "Day 17 - Manna, Water, and Quail (Exodus 16:1-17:16)",
+        "content": "<p>Scripture records that in the Desert of Sin the whole community grumbles against Moses and Aaron for lack of food, longing to have died in Egypt where there was bread. God promises bread from heaven: in the morning the people gather manna, a fine flaky substance like frost on the ground, one omer per person, with twice as much on the sixth day so the Sabbath may rest. At Rephidim the people quarrel for water and God tells Moses to strike the rock, and water comes out for the people to drink. Later, the Amalekites attack, and while Aaron and Hur hold up Moses' hands, Israel prevails. Moses builds an altar and calls it The Lord is my Banner.</p><p><strong>Interpretation/Application:</strong> In the wilderness God tests and teaches his people, giving daily bread so they learn daily trust, and water from a rock to quench an impossible thirst. Grumbling reveals a memory problem - the same people who saw the sea parted doubt that God can give bread. God's provision for the spirit comes one day at a time. When the immediate need feels empty, remember that the God who fed manna and split the rock still gives grace for today, and let need drive you to him rather than to complaint.</p>",
+        "references": [
+          "Exodus 16:1-17:16"
+        ]
+      },
+      {
+        "day_number": 18,
+        "title": "Day 18 - The Ten Commandments (Exodus 19:1-20:21)",
+        "content": "<p>Scripture records that, arriving in the Desert of Sinai, Israel camps before the mountain, and the Lord tells them, if you obey me fully and keep my covenant, then out of all nations you will be my treasured possession. The people consecrate themselves, and on the third day the mountain is covered with smoke and fire as the Lord descends to speak. At the giving of the Law, God proclaims: You shall have no other gods before me; you shall not make idols; you shall not misuse the name of the Lord; remember the Sabbath; honor your father and mother; you shall not murder, commit adultery, steal, give false testimony, or covet. The people, trembling, stand at a distance while Moses draws near.</p><p><strong>Interpretation/Application:</strong> The covenant shapes a delivered people: because you have been freed, now live as God's treasured possession. The commandments are not a ladder to be saved by but a portrait of a life in right relation to God and neighbor, with the first table about loving God and the second about loving people. Before a holy God, the people rightly tremble; the Law reveals both the standard and our need. Receive it not as cold rule but as how a people who have been redeemed are called to live.</p>",
+        "references": [
+          "Exodus 19:1-20:21"
+        ]
+      },
+      {
+        "day_number": 19,
+        "title": "Day 19 - The Book of the Covenant (Exodus 21:1-24:18)",
+        "content": "<p>Scripture records the laws God gives to regulate the life of his people after deliverance: how Hebrew servants are to be treated, laws about restitution, care for the poor and the foreigner, justice for the vulnerable, the yearly festivals, the year of rest for the land, and honesty in business and in borrowing. The people respond with one voice, Everything the Lord has said we will do. The blood of the covenant is sprinkled on the people, and Moses, Aaron and the elders go up the mountain and see the God of Israel, and they eat and drink in his presence. Moses then enters the cloud on the mountain for forty days.</p><p><strong>Interpretation/Application:</strong> The covenant community is ordered so that the weak - servants, the poor, the foreigner, the widow - are protected, showing that redeemed people are to reflect the character of their redeemer in everyday practice. Law is given to a people already saved, not to save them. As one who has been delivered, consider how God's commands order your treatment of those with less power, and let your yes to God be a wholehearted Everything the Lord has said we will do.</p>",
+        "references": [
+          "Exodus 21:1-24:18"
+        ]
+      },
+      {
+        "day_number": 20,
+        "title": "Day 20 - The Tabernacle (Exodus 25:1-31:18)",
+        "content": "<p>Scripture records the Lord's detailed instructions for a sanctuary so that he may dwell among his people: an ark of the covenant with atonement cover, a table for bread, a gold lampstand, a curtained framework of the tabernacle itself, an altar of bronze for burnt offerings, and the priestly garments of Aaron. The people are to bring offerings of gold, silver, bronze, fine linen and precious stones, all from willing hearts. Everything is to be made exactly after the pattern shown on the mountain, that he may dwell in the midst of them. Scripture also records the institution of the Sabbath as a sign between God and his people through their generations.</p><p><strong>Interpretation/Application:</strong> The tabernacle expresses the central longing of the exodus - not merely freedom from Egypt, but the presence of God dwelling among his people. Every detail, costly and carefully ordered, points to a God who is both holy and near. Notice that the whole community gives freely so that God's dwelling can be built. Consider what offering of your skill, resources or time participates in making a place for God's presence in the world around you today.</p>",
+        "references": [
+          "Exodus 25:1-31:18"
+        ]
+      },
+      {
+        "day_number": 21,
+        "title": "Day 21 - The Golden Calf (Exodus 32:1-35)",
+        "content": "<p>Scripture records that when Moses delays on the mountain, the people become restless and demand that Aaron make gods to go before them. He fashions a gold calf, and the people say, These are your gods, Israel, who brought you up out of Egypt, and they hold a festival. God tells Moses what his people have done, and Moses intercedes for them, turning aside God's anger. Coming down, Moses sees the calf and the dancing, throws down and shatters the tablets, grinds the calf to powder, and confronts Aaron. He calls for those who are for the Lord to come to him, and that day about three thousand fall. Yet Moses again asks God to forgive the people's sin.</p><p><strong>Interpretation/Application:</strong> The heart's great temptation is to fashion a god we can control from the very things God has given us, even while the true God is still speaking. Idolatry replaces trust with manufactured certainty, and it corrupts worship into indulgence. Yet the chapter also shows intercession: Moses pleads for a people who have betrayed the covenant. When you have turned from God, do not simply accept failure - turn back, and know there is one who stands in the gap and pleads for you as Moses did.</p>",
+        "references": [
+          "Exodus 32:1-35"
+        ]
+      },
+      {
+        "day_number": 22,
+        "title": "Day 22 - The Renewed Covenant and God's Glory (Exodus 33:1-34:35)",
+        "content": "<p>Scripture records Moses pitching a tent outside the camp and meeting the Lord there; he asks to see God's glory, and God passes by proclaiming, The Lord, the Lord, the compassionate and gracious God, slow to anger, abounding in love and faithfulness, maintaining love to thousands, forgiving wickedness. Moses comes down with the two new stone tablets, his face radiant because he had spoken with the Lord, so that the people are afraid to come near and he puts a veil over his face. God renews the covenant with the people and repeats the command to keep it, so that they may know that he is the Lord their God.</p><p><strong>Interpretation/Application:</strong> After the fracture of the golden calf, the covenant is renewed, not because the people are reliable but because God is gracious and abounding in steadfast love. Glory in Scripture is not raw brightness but God's character made known - compassionate, slow to anger, faithful, forgiving. When you have broken covenant, God's own self-description is your hope: he maintains love to thousands and forgives. Let the radiant face of one who has been with God remind you that time in God's presence changes what people see in you.</p>",
+        "references": [
+          "Exodus 33:1-34:35"
+        ]
+      },
+      {
+        "day_number": 23,
+        "title": "Day 23 - The Tabernacle Completed and God's Glory Fills It (Exodus 35:1-40:38)",
+        "content": "<p>Scripture records that, after Moses returns from the mountain with Moses' face concealed, the people bring more than enough offerings, and every skilled worker helps to build the tabernacle, its courtyard, the ark, the lampstand, the altar, and the priestly garments - all made just as the Lord commanded Moses. When everything is finished, the cloud covers the tent of meeting, and the glory of the Lord fills the tabernacle, so that Moses cannot enter. From then on, whenever the cloud lifts from the tabernacle, the Israelites set out, and wherever it settles, they encamp; through all their journeys the cloud of the Lord is over the tabernacle by day and fire is in the cloud by night, in the sight of all Israel.</p><p><strong>Interpretation/Application:</strong> The exodus that began with a burning bush ends with God dwelling in the midst of his people, the same glory that descended at Sinai now filling a house built among them. Everything was constructed exactly as commanded, and then the presence came - obedience prepared a dwelling, but the glory was God's own doing. The tabernacle was a mobile home for a pilgrim people, guiding their every move. Let your life be built according to his pattern, and look for the presence that fills it; and when the cloud moves, be ready to move with him.</p>",
+        "references": [
+          "Exodus 35:1-40:38"
+        ]
+      }
+    ]
   }
 ]
+
 $plans$::jsonb)
   loop
     v_plan_id := (v_plan ->> 'id')::uuid;
@@ -648,4 +856,4 @@ $plans$::jsonb)
   end loop;
 end
 $$;
--- End Genesis devotion plan.
+-- End Scripture devotion plans.
