@@ -1,6 +1,7 @@
 import { GridCard, ListCard } from '@/src/components/DevoCard';
 import LoadingSpinner from '@/src/components/LoadingSpinner';
 import { usePlans } from '@/src/hooks/useDevotionalPlans';
+import { useMyPlanProgressPlans } from '@/src/hooks/usePlanProgress';
 import { useSavedPlans, useToggleSavedPlan } from '@/src/hooks/useSavedPlans';
 import { useAuth } from '@/src/state/AuthContext';
 import { useAppStore } from '@/src/state/useAppStore';
@@ -13,8 +14,10 @@ export default function FindPlansList({ selectedTags = [] }: { selectedTags?: st
   const { plansQuery } = usePlans(selectedTags);
   const colorScheme = useColorScheme();
   const { session } = useAuth();
+  const userId = session?.user?.id;
   const { sort, isGrid } = useAppStore();
-  const savedPlansQuery = useSavedPlans(session?.user?.id);
+  const myPlanProgressPlansQuery = useMyPlanProgressPlans(userId);
+  const savedPlansQuery = useSavedPlans(userId);
   const savedPlanIds = useMemo(
     () =>
       (savedPlansQuery.data ?? [])
@@ -22,7 +25,17 @@ export default function FindPlansList({ selectedTags = [] }: { selectedTags?: st
         .filter((planId): planId is string => typeof planId === 'string' && planId.length > 0),
     [savedPlansQuery.data],
   );
-  const { toggleSavedPlan } = useToggleSavedPlan(session?.user?.id);
+  const completedPlanIds = useMemo(() => {
+    return new Set(
+      (myPlanProgressPlansQuery.data ?? []).flatMap((plan) => {
+        const totalDays = typeof plan.total_days === 'number' ? plan.total_days : 0;
+        const isComplete = (plan.completed_days ?? 0) >= totalDays;
+
+        return isComplete && plan.plan_id ? [plan.plan_id] : [];
+      }),
+    );
+  }, [myPlanProgressPlansQuery.data]);
+  const { toggleSavedPlan } = useToggleSavedPlan(userId);
   const flatData = useMemo(() => {
     const items =
       plansQuery.data?.pages.flatMap((page) =>
@@ -35,15 +48,18 @@ export default function FindPlansList({ selectedTags = [] }: { selectedTags?: st
               : null,
         })),
       ) || [];
-    return items;
-  }, [plansQuery.data]);
+    return items.filter((item) => !item.id || !completedPlanIds.has(item.id));
+  }, [completedPlanIds, plansQuery.data]);
 
   const [refreshing, setRefreshing] = useState(false);
 
   const onRefresh = async () => {
     setRefreshing(true);
 
-    await plansQuery.refetch();
+    await Promise.all([
+      plansQuery.refetch(),
+      userId ? myPlanProgressPlansQuery.refetch() : Promise.resolve(),
+    ]);
 
     setRefreshing(false);
   };
@@ -67,7 +83,7 @@ export default function FindPlansList({ selectedTags = [] }: { selectedTags?: st
     return flatData;
   }, [sort, flatData]);
 
-  if (plansQuery.isLoading) {
+  if (plansQuery.isLoading || (!!userId && myPlanProgressPlansQuery.isLoading)) {
     return <LoadingSpinner />;
   }
   const EmptyPlans = () => {
