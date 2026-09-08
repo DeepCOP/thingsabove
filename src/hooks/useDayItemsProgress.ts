@@ -20,6 +20,7 @@ export function useDayItemsProgress({ user_id, plan_id, progress_id, day_id, gro
     ['day_items_progress', user_id, progress_id, targetDayId, normalizedGroupId] as const;
   const planProgressKey = ['plan_progress', progress_id, user_id] as const;
   const myPlanProgressPlansKey = ['my_plan_progress_plans', user_id] as const;
+  const discoverPlansKey = ['discover_plans', user_id] as const;
 
   const updateDayItemsForItem = (
     items: DayItemsProgress[] | undefined,
@@ -155,6 +156,7 @@ export function useDayItemsProgress({ user_id, plan_id, progress_id, day_id, gro
       queryClient.invalidateQueries({ queryKey: getDayItemsKey(day_id) });
       queryClient.invalidateQueries({ queryKey: planProgressKey });
       queryClient.invalidateQueries({ queryKey: myPlanProgressPlansKey });
+      queryClient.invalidateQueries({ queryKey: discoverPlansKey });
     },
   });
 
@@ -219,6 +221,7 @@ export function useDayItemsProgress({ user_id, plan_id, progress_id, day_id, gro
       queryClient.invalidateQueries({ queryKey: getDayItemsKey(targetDayId) });
       queryClient.invalidateQueries({ queryKey: planProgressKey });
       queryClient.invalidateQueries({ queryKey: myPlanProgressPlansKey });
+      queryClient.invalidateQueries({ queryKey: discoverPlansKey });
     },
   });
 

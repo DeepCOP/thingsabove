@@ -48,7 +48,7 @@ export const usePlanTags = () => {
   });
 };
 
-export const usePlans = (selectedTags: string[] = []) => {
+export const usePlans = (selectedTags: string[], userId: string | undefined) => {
   const normalizedSelectedTags = useMemo(
     () =>
       Array.from(new Set(selectedTags.map((tag) => tag.trim().toLowerCase()).filter(Boolean))).sort(
@@ -58,7 +58,7 @@ export const usePlans = (selectedTags: string[] = []) => {
   );
 
   const plansQuery = useInfiniteQuery({
-    queryKey: ['discover_plans', normalizedSelectedTags],
+    queryKey: ['discover_plans', userId ?? null, normalizedSelectedTags],
     staleTime: 1000 * 60 * 60 * 24,
     queryFn: async ({ pageParam }) => fetchPlans({ pageParam, tags: normalizedSelectedTags }),
     initialPageParam: null as PlanCursor | null,

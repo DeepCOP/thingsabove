@@ -62,6 +62,9 @@ export function useStopPlanProgress() {
       queryClient.invalidateQueries({
         queryKey: ['has_user_plan_progress', variables.user_id],
       });
+      queryClient.invalidateQueries({
+        queryKey: ['discover_plans', variables.user_id],
+      });
     },
   });
 }

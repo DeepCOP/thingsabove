@@ -274,6 +274,7 @@ export function useTogglePlanReaction(planId: string, userId: string) {
   const qc = useQueryClient();
   const reactionKey = ['plan_reactions', planId, userId] as const;
   const planKey = ['plan', planId] as const;
+  const discoverPlansKey = ['discover_plans', userId] as const;
 
   return useMutation({
     mutationFn: async () => togglePlanReaction(planId, userId),
@@ -282,12 +283,12 @@ export function useTogglePlanReaction(planId: string, userId: string) {
       await Promise.all([
         qc.cancelQueries({ queryKey: reactionKey }),
         qc.cancelQueries({ queryKey: planKey }),
-        qc.cancelQueries({ queryKey: ['discover_plans'] }),
+        qc.cancelQueries({ queryKey: discoverPlansKey }),
       ]);
 
       const previousReaction = qc.getQueryData<PlanReactionCache>(reactionKey);
       const previousPlan = qc.getQueryData(planKey);
-      const previousPlans = qc.getQueriesData({ queryKey: ['discover_plans'] });
+      const previousPlans = qc.getQueriesData({ queryKey: discoverPlansKey });
 
       const baseline = resolveBaselineReaction({
         previousReaction,
@@ -308,7 +309,7 @@ export function useTogglePlanReaction(planId: string, userId: string) {
         updatePlanItemReaction(old, planId, delta, nextReaction),
       );
 
-      qc.setQueriesData({ queryKey: ['discover_plans'] }, (old: unknown) =>
+      qc.setQueriesData({ queryKey: discoverPlansKey }, (old: unknown) =>
         updateInfinitePlanPages(old, planId, delta, nextReaction),
       );
 

@@ -169,6 +169,7 @@ export default function PlanProgress() {
       qc.setQueriesData({ queryKey: ['discover_plans'] }, (old: unknown) =>
         incrementPlanCompletionsInInfiniteData(old, planId),
       );
+      void qc.invalidateQueries({ queryKey: ['discover_plans', session?.user?.id ?? null] });
       void qc.invalidateQueries({ queryKey: ['search_plans'] });
       void qc.invalidateQueries({ queryKey: planKey });
     }

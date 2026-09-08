@@ -1,7 +1,6 @@
 import { GridCard, ListCard } from '@/src/components/DevoCard';
 import LoadingSpinner from '@/src/components/LoadingSpinner';
 import { usePlans } from '@/src/hooks/useDevotionalPlans';
-import { useMyPlanProgressPlans } from '@/src/hooks/usePlanProgress';
 import { useSavedPlans, useToggleSavedPlan } from '@/src/hooks/useSavedPlans';
 import { useAuth } from '@/src/state/AuthContext';
 import { useAppStore } from '@/src/state/useAppStore';
@@ -11,12 +10,11 @@ import { useMemo, useState } from 'react';
 import { FlatList, Text, useColorScheme, View } from 'react-native';
 
 export default function FindPlansList({ selectedTags = [] }: { selectedTags?: string[] }) {
-  const { plansQuery } = usePlans(selectedTags);
   const colorScheme = useColorScheme();
   const { session } = useAuth();
   const userId = session?.user?.id;
+  const { plansQuery } = usePlans(selectedTags, userId);
   const { sort, isGrid } = useAppStore();
-  const myPlanProgressPlansQuery = useMyPlanProgressPlans(userId);
   const savedPlansQuery = useSavedPlans(userId);
   const savedPlanIds = useMemo(
     () =>
@@ -25,16 +23,6 @@ export default function FindPlansList({ selectedTags = [] }: { selectedTags?: st
         .filter((planId): planId is string => typeof planId === 'string' && planId.length > 0),
     [savedPlansQuery.data],
   );
-  const completedPlanIds = useMemo(() => {
-    return new Set(
-      (myPlanProgressPlansQuery.data ?? []).flatMap((plan) => {
-        const totalDays = typeof plan.total_days === 'number' ? plan.total_days : 0;
-        const isComplete = (plan.completed_days ?? 0) >= totalDays;
-
-        return isComplete && plan.plan_id ? [plan.plan_id] : [];
-      }),
-    );
-  }, [myPlanProgressPlansQuery.data]);
   const { toggleSavedPlan } = useToggleSavedPlan(userId);
   const flatData = useMemo(() => {
     const items =
@@ -48,18 +36,15 @@ export default function FindPlansList({ selectedTags = [] }: { selectedTags?: st
               : null,
         })),
       ) || [];
-    return items.filter((item) => !item.id || !completedPlanIds.has(item.id));
-  }, [completedPlanIds, plansQuery.data]);
+    return items;
+  }, [plansQuery.data]);
 
   const [refreshing, setRefreshing] = useState(false);
 
   const onRefresh = async () => {
     setRefreshing(true);
 
-    await Promise.all([
-      plansQuery.refetch(),
-      userId ? myPlanProgressPlansQuery.refetch() : Promise.resolve(),
-    ]);
+    await plansQuery.refetch();
 
     setRefreshing(false);
   };
@@ -83,7 +68,7 @@ export default function FindPlansList({ selectedTags = [] }: { selectedTags?: st
     return flatData;
   }, [sort, flatData]);
 
-  if (plansQuery.isLoading || (!!userId && myPlanProgressPlansQuery.isLoading)) {
+  if (plansQuery.isLoading) {
     return <LoadingSpinner />;
   }
   const EmptyPlans = () => {
