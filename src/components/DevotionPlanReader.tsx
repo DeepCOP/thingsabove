@@ -6,7 +6,9 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { findBookInBible, getBibleDotComBookCode, getBookNameForId } from '@/src/bible/books';
 import PlanCoverImage from '@/src/components/PlanCoverImage';
 import ReaderBottomBar from '@/src/components/ReaderBottomBar';
+import BibleAttribution from '@/src/components/BibleAttribution';
 import ScriptureSelectionMenu from '@/src/components/ScriptureSelectionMenu';
+import { useBibleChapter } from '@/src/hooks/useBibleChapter';
 import { useFetchDevotionalPlanById } from '@/src/hooks/useDevotionalPlans';
 import { useAppStore, type SelectedBibleBook } from '@/src/state/useAppStore';
 import { UseMutationResult } from '@tanstack/react-query';
@@ -74,9 +76,15 @@ export default function DevotionalPlanReader({
   const [menuHeight, setMenuHeight] = useState(0);
 
   const router = useRouter();
-  const selectedBook = useAppStore((s) => s.selectedBook);
+  const storedSelectedBook = useAppStore((s) => s.selectedBook);
   const setSelectedBook = useAppStore((s) => s.setSelectedBook);
-  const { bible, loadingVersionId, version } = useBible();
+  const { adapter, books, loadingVersionId, version, versionLabel, readerError, retryReader } =
+    useBible();
+  const [activeItemReference, setActiveItemReference] = useState<{
+    itemId: string;
+    reference: SelectedBibleBook;
+  } | null>(null);
+  const pendingChapterSelectionRef = useRef<SelectedBibleBook | null>(null);
   const versePositions = useRef<Record<number, number>>({});
   const scrollRef = useRef<ScrollView | null>(null);
   const didScrollRef = useRef(false);
@@ -239,24 +247,20 @@ export default function DevotionalPlanReader({
       return null;
     }
 
-    const matchedBook = findBookInBible(bible, parsedReference.book);
+    const matchedBook = findBookInBible(books, parsedReference.book);
     if (!matchedBook) {
       return null;
     }
 
-    const chapter = parsedReference.chapter ?? 1;
-    if (parsedReference.scope === 'chapter') {
-      const chapterVerses =
-        matchedBook.chapters.find((entry) => entry.chapter === chapter)?.verses ?? [];
-      const firstVerse = chapterVerses[0]?.verse;
-      const lastVerse = chapterVerses[chapterVerses.length - 1]?.verse;
-
-      return {
-        bookId: matchedBook.id,
-        chapter,
-        verseStart: firstVerse,
-        verseEnd: lastVerse,
-      };
+    const chapter = parsedReference.chapter ?? matchedBook.chapters[0];
+    if (
+      chapter == null ||
+      !matchedBook.chapters.includes(chapter) ||
+      (parsedReference.verseStart != null && parsedReference.verseStart <= 0) ||
+      (parsedReference.verseEnd != null &&
+        parsedReference.verseEnd < (parsedReference.verseStart ?? 1))
+    ) {
+      return null;
     }
 
     return {
@@ -265,30 +269,78 @@ export default function DevotionalPlanReader({
       verseStart: parsedReference.verseStart,
       verseEnd: parsedReference.verseEnd,
     };
-  }, [bible, parsedReference]);
+  }, [books, parsedReference]);
 
   const hasUnavailableScriptureReference = item?.item_type === 'scripture' && !itemSelectedBook;
+  const hasAppliedItemReference =
+    activeItemReference?.itemId === item.id && activeItemReference?.reference === itemSelectedBook;
+  const selectedBook =
+    item?.item_type === 'scripture' && !hasAppliedItemReference && itemSelectedBook
+      ? itemSelectedBook
+      : storedSelectedBook;
 
   const currentBook = useMemo(
-    () => findBookInBible(bible, selectedBook.bookId) ?? bible.books[0],
-    [bible, selectedBook.bookId],
+    () => findBookInBible(books, selectedBook.bookId),
+    [books, selectedBook.bookId],
   );
   const currentBookId = currentBook?.id ?? selectedBook.bookId;
-  const currentBookName = currentBook?.name ?? getBookNameForId(bible, currentBookId);
+  const currentBookName = currentBook?.name ?? getBookNameForId(books, currentBookId);
   const isWholeBookReference = parsedReference?.scope === 'book';
+  const chapterNumber = Number(selectedBook.chapter);
+  const canLoadChapter =
+    item?.item_type === 'scripture' &&
+    !hasUnavailableScriptureReference &&
+    Boolean(currentBook?.chapters.includes(chapterNumber));
+  const {
+    chapter,
+    loading: loadingChapter,
+    error: chapterError,
+    retry: retryChapter,
+  } = useBibleChapter(currentBook?.id, chapterNumber, { enabled: canLoadChapter });
+  const verses = chapter?.verses;
 
   useEffect(() => {
-    if (item?.item_type !== 'scripture') return;
-    if (!itemSelectedBook) return;
+    setShowMenu(false);
+    pendingChapterSelectionRef.current = null;
+    if (item?.item_type !== 'scripture' || !itemSelectedBook) return;
+
+    // A chapter reference can only select its full range once its text has loaded.
+    pendingChapterSelectionRef.current =
+      parsedReference?.scope === 'chapter' ? itemSelectedBook : null;
+    setActiveItemReference({ itemId: item.id, reference: itemSelectedBook });
     setSelectedBook(itemSelectedBook);
-  }, [item?.id, item?.item_type, itemSelectedBook, setSelectedBook]);
+  }, [item?.id, item?.item_type, itemSelectedBook, parsedReference?.scope, setSelectedBook]);
+
+  useEffect(() => {
+    if (
+      !chapter ||
+      !itemSelectedBook ||
+      pendingChapterSelectionRef.current !== itemSelectedBook ||
+      selectedBook.bookId !== itemSelectedBook.bookId ||
+      chapter.chapter !== itemSelectedBook.chapter
+    ) {
+      return;
+    }
+
+    pendingChapterSelectionRef.current = null;
+    const firstVerse = chapter.verses[0]?.verse;
+    const lastVerse = chapter.verses[chapter.verses.length - 1]?.verse;
+    setSelectedBook({ ...itemSelectedBook, verseStart: firstVerse, verseEnd: lastVerse });
+  }, [chapter, itemSelectedBook, selectedBook.bookId, setSelectedBook]);
+
+  useEffect(() => {
+    setShowMenu(false);
+    didScrollRef.current = false;
+    versePositions.current = {};
+    scrollRef.current?.scrollTo({ y: 0, animated: false });
+  }, [currentBookId, chapterNumber, adapter]);
 
   useEffect(() => {
     didScrollRef.current = false;
-    versePositions.current = {};
   }, [item.id]);
 
   useEffect(() => {
+    if (!chapter) return;
     if (!selectedBook?.verseStart) return;
     if (!scrollRef.current) return;
     if (didScrollRef.current) return;
@@ -319,7 +371,7 @@ export default function DevotionalPlanReader({
     return () => {
       cancelled = true;
     };
-  }, [selectedBook.bookId, selectedBook.chapter, selectedBook.verseStart, item.id]);
+  }, [chapter, selectedBook.bookId, selectedBook.chapter, selectedBook.verseStart, item.id]);
 
   const getSelectedRange = () => {
     if (!selectedBook?.verseStart) return '';
@@ -355,22 +407,25 @@ export default function DevotionalPlanReader({
     if (selected.length === 0) return '';
 
     const range = getSelectedRange();
-    const header = `${currentBookName} ${selectedBook.chapter}:${range} ${version}`;
+    const header = `${currentBookName} ${selectedBook.chapter}:${range} ${versionLabel}`;
     const body = selected.map((v) => `[${v.number}] ${v.text}`).join('\n');
 
     // Official Bible.com link
     const bookCode = getBibleDotComBookCode(currentBookId);
-    const link = bookCode
-      ? `${process.env.EXPO_PUBLIC_BASE_URL}/app/bible/12/${bookCode}.${selectedBook.chapter}.${range}.${version}`
-      : '';
+    const link =
+      bookCode && adapter.sourceId === 'offline'
+        ? `${process.env.EXPO_PUBLIC_BASE_URL}/app/bible/12/${bookCode}.${selectedBook.chapter}.${range}.${version}`
+        : '';
 
-    return link ? `${header}\n${body}\n${link}` : `${header}\n${body}`;
+    return [header, body, chapter?.copyright, chapter?.attributionUrl, link]
+      .filter(Boolean)
+      .join('\n');
   };
 
   const formatSelectedVerseTitle = () => {
     const range = getSelectedRange();
     if (!range) return { header: '', range: '' };
-    const header = `${currentBookName} ${selectedBook.chapter}:${range} ${version}`;
+    const header = `${currentBookName} ${selectedBook.chapter}:${range} ${versionLabel}`;
     return { header, range };
   };
   const isVerseInRange = (verseNum: number) => {
@@ -385,15 +440,22 @@ export default function DevotionalPlanReader({
     return verseNum >= verseStart && verseNum <= verseEnd;
   };
 
-  const chapterNumber = Number(selectedBook.chapter);
-  const chapterCount = currentBook?.chapters.length ?? 0;
-  const verses = currentBook?.chapters.find((chapter) => chapter.chapter === chapterNumber)?.verses;
   const scriptureVerses = verses ?? [];
   const selectedVerseRange = getSelectedVerseRange();
+  const scriptureLoading = loadingChapter || (books.length === 0 && Boolean(loadingVersionId));
+  const readingError = chapterError ?? readerError;
   const showScriptureUnavailableFallback =
-    item?.item_type === 'scripture' && (hasUnavailableScriptureReference || !verses);
-  const canGoToPreviousBookChapter = isWholeBookReference && chapterNumber > 1;
-  const canGoToNextBookChapter = isWholeBookReference && chapterNumber < chapterCount;
+    item?.item_type === 'scripture' &&
+    !scriptureLoading &&
+    !readingError &&
+    (hasUnavailableScriptureReference ||
+      !canLoadChapter ||
+      (!loadingChapter && !chapterError && !scriptureVerses.length));
+  const chapterIndex = currentBook?.chapters.indexOf(chapterNumber) ?? -1;
+  const previousChapterNumber = currentBook?.chapters[chapterIndex - 1];
+  const nextChapterNumber = chapterIndex >= 0 ? currentBook?.chapters[chapterIndex + 1] : undefined;
+  const canGoToPreviousBookChapter = isWholeBookReference && previousChapterNumber != null;
+  const canGoToNextBookChapter = isWholeBookReference && nextChapterNumber != null;
   const canGoBack = canGoToPreviousBookChapter || !first;
 
   const contextMenuStyle = useMemo(() => {
@@ -446,7 +508,7 @@ export default function DevotionalPlanReader({
                 <ActivityIndicator size="small" className="ml-2" />
               ) : (
                 <>
-                  <Text className="ml-2 font-semibold">{version}</Text>
+                  <Text className="ml-2 font-semibold">{versionLabel}</Text>
                   <Ionicons
                     name="chevron-forward"
                     size={14}
@@ -480,6 +542,17 @@ export default function DevotionalPlanReader({
               return false;
             }}
           />
+        ) : scriptureLoading ? (
+          <View className="flex-1 items-center justify-center">
+            <ActivityIndicator accessibilityLabel="Loading chapter" />
+          </View>
+        ) : readingError ? (
+          <View className="flex-1 items-center justify-center gap-3 px-6">
+            <Text className="text-center text-gray-500 dark:text-gray-400">{readingError}</Text>
+            <TouchableOpacity onPress={readerError ? retryReader : retryChapter}>
+              <Text className="font-semibold text-blue-600 dark:text-blue-400">Try again</Text>
+            </TouchableOpacity>
+          </View>
         ) : showScriptureUnavailableFallback ? (
           <View className="flex-1 items-center justify-center px-6">
             <Text className="text-center text-xl font-semibold text-gray-900 dark:text-white">
@@ -557,6 +630,10 @@ export default function DevotionalPlanReader({
                 </View>
               );
             })}
+            <BibleAttribution
+              copyright={chapter?.copyright}
+              attributionUrl={chapter?.attributionUrl}
+            />
           </Animated.ScrollView>
         )}
 
@@ -573,7 +650,7 @@ export default function DevotionalPlanReader({
               if (canGoToPreviousBookChapter) {
                 setSelectedBook({
                   bookId: currentBookId,
-                  chapter: chapterNumber - 1,
+                  chapter: previousChapterNumber!,
                 });
                 return;
               }
@@ -609,7 +686,7 @@ export default function DevotionalPlanReader({
                   onPress: () => {
                     setSelectedBook({
                       bookId: currentBookId,
-                      chapter: chapterNumber + 1,
+                      chapter: nextChapterNumber!,
                     });
                   },
                 }
@@ -647,7 +724,7 @@ export default function DevotionalPlanReader({
           }
         />
         <ScriptureSelectionMenu
-          visible={showMenu}
+          visible={showMenu && Boolean(selectedVerseRange) && hasAppliedItemReference}
           title={formatSelectedVerseTitle().header || ' '}
           menuStyle={contextMenuStyle}
           notesDisabled={!selectedVerseRange}
@@ -664,14 +741,23 @@ export default function DevotionalPlanReader({
                 book: currentBookName,
                 chapter: String(chapterNumber),
                 verseNumber: String(selectedVerseRange.start.number),
-                verseText: selectedVerseRange.start.text,
+                verseText: getSelectedVerses()
+                  .map((entry) => `[${entry.number}] ${entry.text}`)
+                  .join(' '),
                 selectionStart: String(selectedVerseRange.start.number),
                 selectionEnd: String(selectedVerseRange.end.number),
                 selectionVerses: getSelectedVerses()
                   .map((entry) => entry.number)
                   .join(','),
-                verseCount: String(verses?.length ?? 0),
+                verseCount: String(
+                  adapter.sourceId !== 'offline'
+                    ? Math.max(0, ...(verses ?? []).map((entry) => entry.verse))
+                    : (verses?.length ?? 0),
+                ),
                 version,
+                versionLabel,
+                copyright: chapter?.copyright ?? '',
+                attributionUrl: chapter?.attributionUrl ?? '',
               },
             } as never);
           }}

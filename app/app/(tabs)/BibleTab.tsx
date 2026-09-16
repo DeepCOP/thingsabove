@@ -22,7 +22,7 @@ export default function BibleTab() {
   const lastScrollY = useRef(0);
   const isHeaderHidden = useRef(false);
 
-  const { loadingVersionId, version } = useBible();
+  const { loadingVersionId, versionLabel } = useBible();
 
   const animateHeader = (toValue: number) => {
     Animated.timing(headerTranslateY, {
@@ -89,7 +89,7 @@ export default function BibleTab() {
               <ActivityIndicator size="small" className="ml-2" />
             ) : (
               <>
-                <Text className="ml-2 font-semibold">{version}</Text>
+                <Text className="ml-2 font-semibold">{versionLabel}</Text>
                 <Ionicons
                   name="chevron-forward"
                   size={14}

@@ -419,3 +419,15 @@ import_map = "./functions/screen-plan-submission/deno.json"
 enabled = true
 verify_jwt = true
 entrypoint = "./functions/delete-account/index.ts"
+
+[functions.youversion]
+enabled = true
+# The handler also validates the signed-in user through Auth.getUser.
+verify_jwt = true
+entrypoint = "./functions/youversion/index.ts"
+
+[functions.esv]
+enabled = true
+# The handler also validates the signed-in user through Auth.getUser.
+verify_jwt = true
+entrypoint = "./functions/esv/index.ts"

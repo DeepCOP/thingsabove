@@ -1,5 +1,9 @@
 import { formatBibleVersionSize } from '@/src/lib/bibleVersionService';
 import { useBible } from '@/src/state/BibleContext';
+import { useAuth } from '@/src/state/AuthContext';
+import { YOUVERSION_ENABLED } from '@/src/lib/youVersionClient';
+import { ESV_ENABLED } from '@/src/lib/esvClient';
+import { BIBLE_SOURCE_LABELS } from '@/src/bible/sources';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import NetInfo from '@react-native-community/netinfo';
 import { useRouter } from 'expo-router';
@@ -13,6 +17,7 @@ export default function BibleVersionsScreen() {
   const colorScheme = useColorScheme();
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const { isGuest } = useAuth();
   const [isOffline, setIsOffline] = useState(false);
   const {
     installVersion,
@@ -22,6 +27,8 @@ export default function BibleVersionsScreen() {
     versions,
     versionsCatalogError,
     versionsCatalogLoading,
+    refreshVersionsCatalog,
+    readerError,
   } = useBible();
 
   useEffect(() => {
@@ -76,28 +83,42 @@ export default function BibleVersionsScreen() {
               Choose Your Translation
             </Text>
             <Text className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-              Installed versions can be opened right away. Other translations can be downloaded to
-              this device first.
+              Choose a downloaded translation or read an online version with an internet connection.
             </Text>
 
             {versionsCatalogLoading ? (
               <Text className="mt-4 text-xs text-gray-500 dark:text-gray-400">
-                Checking available downloads...
+                Checking available translations...
+              </Text>
+            ) : null}
+
+            {(YOUVERSION_ENABLED || ESV_ENABLED) && isGuest ? (
+              <Text className="mt-3 text-xs text-gray-500 dark:text-gray-400">
+                Sign in to see online translations.
               </Text>
             ) : null}
 
             {versionsCatalogError ? (
-              <Text className="mt-2 text-xs text-amber-600 dark:text-amber-400">
-                Unable to refresh the version catalog. Built-in versions are still available.
-              </Text>
+              <View className="mt-2 gap-2">
+                <Text className="text-xs text-amber-600 dark:text-amber-400">
+                  {versionsCatalogError}
+                </Text>
+                <TouchableOpacity
+                  onPress={() => void refreshVersionsCatalog()}
+                  disabled={versionsCatalogLoading}>
+                  <Text className="text-xs font-semibold text-blue-600 dark:text-blue-400">
+                    Try again
+                  </Text>
+                </TouchableOpacity>
+              </View>
             ) : null}
 
             {isOffline ? (
               <View className="mt-4 flex-row items-start rounded-2xl bg-amber-50 px-3 py-3 dark:bg-amber-950/30">
                 <Ionicons name="cloud-offline-outline" size={18} color="#d97706" />
                 <Text className="ml-3 flex-1 text-xs text-amber-700 dark:text-amber-300">
-                  You&apos;re offline. Downloaded versions are still available, but new installs are
-                  disabled until you reconnect.
+                  You&apos;re offline. Downloaded versions are available. Online reading and new
+                  downloads will be available when you reconnect.
                 </Text>
               </View>
             ) : null}
@@ -107,8 +128,8 @@ export default function BibleVersionsScreen() {
           const isVersionUnavailableOffline = isOffline && !entry.isInstalled;
           const isRowDisabled =
             isVersionUnavailableOffline ||
-            !entry.isInstalled ||
-            entry.isActive ||
+            (!entry.isInstalled && !entry.isOnline) ||
+            (entry.isActive && !readerError) ||
             loadingVersionId === entry.id;
           const isInstallDisabled = isOffline || entry.isDownloading;
 
@@ -137,12 +158,16 @@ export default function BibleVersionsScreen() {
                     {entry.label}
                   </Text>
                   <Text className="mt-1 text-[11px] text-gray-500 dark:text-gray-400">
-                    {formatBibleVersionSize(entry.sizeBytes)}
+                    {entry.isOnline
+                      ? `Online · ${BIBLE_SOURCE_LABELS[entry.source ?? 'offline']}`
+                      : formatBibleVersionSize(entry.sizeBytes)}
                   </Text>
 
                   {isVersionUnavailableOffline ? (
                     <Text className="mt-1 text-[11px] text-amber-600 dark:text-amber-400">
-                      Unavailable offline. Connect to the internet to download this version.
+                      {entry.isOnline
+                        ? 'Connect to the internet to read this translation.'
+                        : 'Connect to the internet to download this translation.'}
                     </Text>
                   ) : null}
 
@@ -160,7 +185,7 @@ export default function BibleVersionsScreen() {
                 </View>
 
                 <View className="items-end">
-                  {entry.isInstalled ? (
+                  {entry.isInstalled || entry.isOnline ? (
                     <Ionicons
                       name={entry.isActive ? 'checkmark-circle' : 'chevron-forward'}
                       size={18}

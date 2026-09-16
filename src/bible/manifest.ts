@@ -1,12 +1,11 @@
-import { normalizeBibleJson } from './books';
 import { supabase } from '@/src/lib/supabaseClient';
-import type { BibleJSON, BibleVersionId, BibleVersionManifestEntry, RawBibleJSON } from './types';
+import type { BibleVersionId, BibleVersionManifestEntry, RawBibleJSON } from './types';
 
 const BIBLE_VERSION_BUCKET = 'bible_versions';
 
 const loadKjvBible = async () => {
   const module = await import('../../assets/versions/KJV.json');
-  return normalizeBibleJson((module.default ?? module) as RawBibleJSON) as BibleJSON;
+  return (module.default ?? module) as RawBibleJSON;
 };
 
 export const BIBLE_VERSION_MANIFEST: Record<BibleVersionId, BibleVersionManifestEntry> = {

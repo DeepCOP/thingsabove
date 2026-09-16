@@ -1,11 +1,14 @@
 import { findBookInBible, getBibleDotComBookCode, getBookNameForId } from '@/src/bible/books';
 import ReaderBottomBar from '@/src/components/ReaderBottomBar';
+import BibleAttribution from '@/src/components/BibleAttribution';
 import ScriptureSelectionMenu from '@/src/components/ScriptureSelectionMenu';
+import { useBibleChapter } from '@/src/hooks/useBibleChapter';
 import { getBibleVerseHighlightKey, useAppStore } from '@/src/state/useAppStore';
 import * as Clipboard from 'expo-clipboard';
 import { useRouter } from 'expo-router';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { type SetStateAction, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
+  ActivityIndicator,
   Animated,
   ScrollView,
   Share,
@@ -17,16 +20,11 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useBible } from '../state/BibleContext';
 
+type SelectedVerse = { number: number; text: string };
+
 export default function BibleReaderView({ onScroll }: { onScroll: (...args: any[]) => void }) {
   const SCROLLvIEWBOTTOMPADDING = 80;
   const insets = useSafeAreaInsets();
-  const [selectedVerse, setSelectedVerse] = useState<
-    {
-      number: number;
-      text: string;
-    }[]
-  >([]);
-
   const [showMenu, setShowMenu] = useState(false);
   const [menuAnchor, setMenuAnchor] = useState({ x: 0, y: 0 });
   const [menuHeight, setMenuHeight] = useState(0);
@@ -41,7 +39,8 @@ export default function BibleReaderView({ onScroll }: { onScroll: (...args: any[
   const { width: screenWidth, height: screenHeight } = useWindowDimensions();
 
   const router = useRouter();
-  const { bible, version } = useBible();
+  const { adapter, books, version, versionLabel, loadingVersionId, readerError, retryReader } =
+    useBible();
   const contextMenuStyle = useMemo(() => {
     const menuWidth = 220;
     const horizontalMargin = 10;
@@ -72,40 +71,72 @@ export default function BibleReaderView({ onScroll }: { onScroll: (...args: any[
   ]);
 
   const currentBook = useMemo(
-    () => findBookInBible(bible, selectedBook.bookId) ?? bible.books[0],
-    [bible, selectedBook.bookId],
+    () => findBookInBible(books, selectedBook.bookId) ?? books[0],
+    [books, selectedBook.bookId],
   );
   const currentBookId = currentBook?.id ?? selectedBook.bookId;
-  const currentBookName = currentBook?.name ?? getBookNameForId(bible, currentBookId);
-  const currentBookIndex = currentBook
-    ? bible.books.findIndex((book) => book.id === currentBook.id)
-    : -1;
+  const currentBookName = currentBook?.name ?? getBookNameForId(books, currentBookId);
+  const currentBookIndex = currentBook ? books.findIndex((book) => book.id === currentBook.id) : -1;
   const chapterNumber = Number(selectedBook.chapter);
+  const {
+    chapter,
+    loading: chapterLoading,
+    error: chapterError,
+    retry: retryChapter,
+  } = useBibleChapter(currentBook?.id, chapterNumber);
+  const selectionScope = useMemo(
+    () => ({ adapter, bookId: currentBookId, chapterNumber }),
+    [adapter, chapterNumber, currentBookId],
+  );
+  const [selection, setSelection] = useState<{
+    scope: typeof selectionScope;
+    verses: SelectedVerse[];
+  }>({ scope: selectionScope, verses: [] });
+  const selectedVerse = useMemo(
+    () => (selection.scope === selectionScope ? selection.verses : []),
+    [selection, selectionScope],
+  );
+  const setSelectedVerse = useCallback(
+    (next: SetStateAction<SelectedVerse[]>) => {
+      setSelection((previous) => {
+        const previousVerses = previous.scope === selectionScope ? previous.verses : [];
+        return {
+          scope: selectionScope,
+          verses: typeof next === 'function' ? next(previousVerses) : next,
+        };
+      });
+    },
+    [selectionScope],
+  );
 
   useEffect(() => {
-    if (selectedBook.verseStart == null) {
+    setShowMenu(false);
+    didScrollRef.current = false;
+    versePositions.current = {};
+    scrollRef.current?.scrollTo({ y: 0, animated: false });
+  }, [selectionScope]);
+
+  useEffect(() => {
+    setShowMenu(false);
+    didScrollRef.current = false;
+  }, [selectedBook.verseEnd, selectedBook.verseStart]);
+
+  useEffect(() => {
+    if (!chapter || selectedBook.verseStart == null) {
       setSelectedVerse([]);
-      didScrollRef.current = false;
-      versePositions.current = {};
       return;
     }
 
-    const selectedChapterVerses =
-      currentBook?.chapters.find((chapter) => chapter.chapter === selectedBook.chapter)?.verses ??
-      [];
-
     const endVerse = selectedBook.verseEnd ?? selectedBook.verseStart;
-    const nextSelectedVerse = selectedChapterVerses
+    const nextSelectedVerse = chapter.verses
       .filter((entry) => entry.verse >= selectedBook.verseStart! && entry.verse <= endVerse)
       .map((entry) => ({ number: entry.verse, text: entry.text }));
 
     setSelectedVerse(nextSelectedVerse);
-    didScrollRef.current = false;
-    versePositions.current = {};
-  }, [currentBook, selectedBook.chapter, selectedBook.verseEnd, selectedBook.verseStart]);
+  }, [chapter, selectedBook.verseEnd, selectedBook.verseStart, setSelectedVerse]);
 
   useEffect(() => {
-    if (selectedBook.verseStart == null) {
+    if (!chapter || selectedBook.verseStart == null) {
       return;
     }
 
@@ -137,7 +168,7 @@ export default function BibleReaderView({ onScroll }: { onScroll: (...args: any[
     return () => {
       cancelled = true;
     };
-  }, [selectedBook.chapter, selectedBook.bookId, selectedBook.verseStart]);
+  }, [chapter, selectionScope, selectedBook.verseEnd, selectedBook.verseStart]);
 
   const formatVerseText = (verses: { number: number; text: string }[]) => {
     if (verses.length === 0) return '';
@@ -159,11 +190,14 @@ export default function BibleReaderView({ onScroll }: { onScroll: (...args: any[
 
     // Official Bible.com link
     const bookCode = getBibleDotComBookCode(currentBookId);
-    const link = bookCode
-      ? `${process.env.EXPO_PUBLIC_BASE_URL}/app/bible/12/${bookCode}.${selectedBook.chapter}.${ranges.join(',')}.${version}`
-      : '';
+    const link =
+      bookCode && adapter.sourceId === 'offline'
+        ? `${process.env.EXPO_PUBLIC_BASE_URL}/app/bible/12/${bookCode}.${selectedBook.chapter}.${ranges.join(',')}.${version}`
+        : '';
 
-    return link ? `${header}\n${body}\n${link}` : `${header}\n${body}`;
+    return [header, body, chapter?.copyright, chapter?.attributionUrl, link]
+      .filter(Boolean)
+      .join('\n');
   };
 
   const formatSelectedVerseTitle = () => {
@@ -190,7 +224,7 @@ export default function BibleReaderView({ onScroll }: { onScroll: (...args: any[
     // Push last range
     ranges.push(start === end ? `${start}` : `${start}-${end}`);
     // Construct header: "Luke 19:1-2,10-12,24 ASV"
-    const header = `${currentBookName} ${selectedBook.chapter}:${ranges.join(',')} ${version}`;
+    const header = `${currentBookName} ${selectedBook.chapter}:${ranges.join(',')} ${versionLabel}`;
     return { header, ranges, sorted };
   };
 
@@ -232,16 +266,32 @@ export default function BibleReaderView({ onScroll }: { onScroll: (...args: any[
       ],
     );
 
-  const chapters = currentBook?.chapters;
-  const chapterCount = chapters?.length || 0;
-
-  const verses = currentBook?.chapters.find((chapter) => chapter.chapter === chapterNumber)?.verses;
+  const chapterIndex = currentBook?.chapters.indexOf(chapterNumber) ?? -1;
+  const previousBook = books
+    .slice(0, currentBookIndex)
+    .reverse()
+    .find((book) => book.chapters.length);
+  const nextBook = books.slice(currentBookIndex + 1).find((book) => book.chapters.length);
+  const previousChapter =
+    currentBook && chapterIndex > 0
+      ? { bookId: currentBook.id, chapter: currentBook.chapters[chapterIndex - 1] }
+      : previousBook
+        ? {
+            bookId: previousBook.id,
+            chapter: previousBook.chapters[previousBook.chapters.length - 1],
+          }
+        : null;
+  const nextChapter =
+    currentBook && chapterIndex >= 0 && chapterIndex < currentBook.chapters.length - 1
+      ? { bookId: currentBook.id, chapter: currentBook.chapters[chapterIndex + 1] }
+      : nextBook
+        ? { bookId: nextBook.id, chapter: nextBook.chapters[0] }
+        : null;
+  const verses = chapter?.verses;
   const selectedVerseRange = getSelectedVerseRange();
-  const hasBibleChapter = currentBookIndex >= 0 && chapterCount > 0;
-  const isFirstBibleChapter = !hasBibleChapter || (currentBookIndex === 0 && chapterNumber <= 1);
-  const isLastBibleChapter =
-    !hasBibleChapter ||
-    (currentBookIndex === bible.books.length - 1 && chapterNumber >= chapterCount);
+  const hasBibleChapter = currentBookIndex >= 0 && chapterIndex >= 0;
+  const loading = chapterLoading || (books.length === 0 && Boolean(loadingVersionId));
+  const readingError = chapterError ?? readerError;
 
   return (
     <>
@@ -264,6 +314,20 @@ export default function BibleReaderView({ onScroll }: { onScroll: (...args: any[
           </View>
 
           {/* VERSES */}
+          {loading ? (
+            <ActivityIndicator accessibilityLabel="Loading chapter" className="my-6" />
+          ) : readingError ? (
+            <View className="items-center gap-3 py-6">
+              <Text className="text-center text-gray-500 dark:text-gray-400">{readingError}</Text>
+              <TouchableOpacity onPress={readerError ? retryReader : retryChapter}>
+                <Text className="font-semibold text-blue-600 dark:text-blue-400">Try again</Text>
+              </TouchableOpacity>
+            </View>
+          ) : !verses?.length ? (
+            <Text className="py-6 text-center text-gray-500 dark:text-gray-400">
+              This chapter is unavailable in this translation.
+            </Text>
+          ) : null}
           {verses?.map(({ verse, text }) => {
             const verseNumber = Number(verse);
             const selected = isVerseSelected(verseNumber);
@@ -319,26 +383,19 @@ export default function BibleReaderView({ onScroll }: { onScroll: (...args: any[
               </View>
             );
           })}
+          <BibleAttribution
+            copyright={chapter?.copyright}
+            attributionUrl={chapter?.attributionUrl}
+          />
         </Animated.ScrollView>
 
         <ReaderBottomBar
           leftAction={{
             icon: 'chevron-back',
-            disabled: isFirstBibleChapter,
+            disabled: !hasBibleChapter || !previousChapter,
             onPress: () => {
-              if (isFirstBibleChapter) return;
-
-              if (chapterNumber === 1) {
-                const previousBook =
-                  currentBookIndex > 0 ? bible.books[currentBookIndex - 1] : null;
-                if (previousBook) {
-                  const lastChapterNumber = previousBook.chapters.length || 1;
-                  setSelectedBook({ bookId: previousBook.id, chapter: lastChapterNumber });
-                  setSelectedVerse([]);
-                }
-                return;
-              }
-              setSelectedBook({ bookId: currentBookId, chapter: chapterNumber - 1 });
+              if (!hasBibleChapter || !previousChapter) return;
+              setSelectedBook(previousChapter);
               setSelectedVerse([]);
             },
           }}
@@ -348,26 +405,16 @@ export default function BibleReaderView({ onScroll }: { onScroll: (...args: any[
           }}
           rightAction={{
             icon: 'chevron-forward',
-            disabled: isLastBibleChapter,
+            disabled: !hasBibleChapter || !nextChapter,
             onPress: () => {
-              if (isLastBibleChapter) return;
-
-              if (chapterNumber === chapterCount) {
-                const nextBook =
-                  currentBookIndex >= 0 ? bible.books[currentBookIndex + 1] : undefined;
-                if (nextBook) {
-                  setSelectedBook({ bookId: nextBook.id, chapter: 1 });
-                  setSelectedVerse([]);
-                }
-                return;
-              }
-              setSelectedBook({ bookId: currentBookId, chapter: chapterNumber + 1 });
+              if (!hasBibleChapter || !nextChapter) return;
+              setSelectedBook(nextChapter);
               setSelectedVerse([]);
             },
           }}
         />
         <ScriptureSelectionMenu
-          visible={showMenu}
+          visible={showMenu && selectedVerse.length > 0}
           title={selectedVerse.length > 0 ? formatSelectedVerseTitle().header : ''}
           menuStyle={contextMenuStyle}
           notesDisabled={!selectedVerseRange}
@@ -390,15 +437,25 @@ export default function BibleReaderView({ onScroll }: { onScroll: (...args: any[
                 book: currentBookName,
                 chapter: String(chapterNumber),
                 verseNumber: String(selectedVerseRange.start.number),
-                verseText: selectedVerseRange.start.text,
+                verseText: [...selectedVerse]
+                  .sort((a, b) => a.number - b.number)
+                  .map((entry) => `[${entry.number}] ${entry.text}`)
+                  .join(' '),
                 selectionStart: String(selectedVerseRange.start.number),
                 selectionEnd: String(selectedVerseRange.end.number),
                 selectionVerses: [...selectedVerse]
                   .sort((a, b) => a.number - b.number)
                   .map((entry) => entry.number)
                   .join(','),
-                verseCount: String(verses?.length ?? 0),
+                verseCount: String(
+                  adapter.sourceId !== 'offline'
+                    ? Math.max(0, ...(verses ?? []).map((entry) => entry.verse))
+                    : (verses?.length ?? 0),
+                ),
                 version,
+                versionLabel,
+                copyright: chapter?.copyright ?? '',
+                attributionUrl: chapter?.attributionUrl ?? '',
               },
             } as never);
           }}

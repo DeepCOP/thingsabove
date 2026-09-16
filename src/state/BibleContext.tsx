@@ -1,23 +1,26 @@
-import { normalizeBibleJson } from '@/src/bible/books';
+import type { BibleBookMetadata, BibleReadingAdapter } from '@/src/bible/adapters/types';
 import {
+  BIBLE_VERSION_MANIFEST,
   DEFAULT_BIBLE_VERSION_ID,
   fetchBibleVersionCatalog,
   mergeBibleVersionCatalog,
 } from '@/src/bible/manifest';
 import type {
-  BibleJSON,
   BibleVersionId,
   BibleVersionInstallState,
   BibleVersionManifestEntry,
-  RawBibleJSON,
 } from '@/src/bible/types';
+import { createBibleReadingAdapter } from '@/src/lib/bibleReadingService';
+import { fetchYouVersionCatalog, requestYouVersion } from '@/src/lib/youVersionClient';
+import { fetchEsvCatalog, requestEsv } from '@/src/lib/esvClient';
+import { isOnlineBibleVersion } from '@/src/bible/sources';
 import {
   installBibleVersion,
   isBibleVersionInstalled,
-  loadBibleVersion,
   removeBibleVersion,
 } from '@/src/lib/bibleVersionService';
 import { useAppStore } from '@/src/state/useAppStore';
+import { useAuth } from '@/src/state/AuthContext';
 import {
   createContext,
   type ReactNode,
@@ -25,21 +28,26 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from 'react';
-import kjv from '../../assets/versions/KJV.json';
 
 type BibleVersionListItem = BibleVersionManifestEntry & {
   installState?: BibleVersionInstallState;
   isInstalled: boolean;
+  isOnline: boolean;
   isActive: boolean;
   isDownloading: boolean;
   canDelete: boolean;
 };
 
 type BibleContextType = {
-  bible: BibleJSON;
+  adapter: BibleReadingAdapter;
+  books: BibleBookMetadata[];
+  readerError: string | null;
+  retryReader: () => void;
   version: BibleVersionId;
+  versionLabel: string;
   setVersion: (versionId: BibleVersionId) => Promise<void>;
   installVersion: (versionId: BibleVersionId) => Promise<void>;
   removeVersion: (versionId: BibleVersionId) => Promise<void>;
@@ -48,21 +56,35 @@ type BibleContextType = {
   loadingVersionId: BibleVersionId | null;
   versionsCatalogLoading: boolean;
   versionsCatalogError: string | null;
+  refreshVersionsCatalog: () => Promise<void>;
   bookNames: string[];
 };
 
 const BibleContext = createContext<BibleContextType | null>(null);
-const defaultBible = normalizeBibleJson(kjv as RawBibleJSON);
+const defaultVersion = BIBLE_VERSION_MANIFEST[DEFAULT_BIBLE_VERSION_ID];
+const defaultAdapter = createBibleReadingAdapter(defaultVersion);
+const catalogSources = ['offline', 'youversion', 'esv'] as const;
 
 export function BibleProvider({ children }: { children: ReactNode }) {
+  const { session, loading: authLoading } = useAuth();
+  const userId = session?.user.id;
+  const catalogRequestId = useRef(0);
   const persistedVersion = useAppStore((state) => state.version);
   const setPersistedVersion = useAppStore((state) => state.setVersion);
   const bibleVersionStates = useAppStore((state) => state.bibleVersionStates);
   const setBibleVersionState = useAppStore((state) => state.setBibleVersionState);
   const clearBibleVersionState = useAppStore((state) => state.clearBibleVersionState);
-  const [bible, setBible] = useState<BibleJSON>(defaultBible);
-  const [version, setVersionState] = useState<BibleVersionId>(DEFAULT_BIBLE_VERSION_ID);
-  const [loadingVersionId, setLoadingVersionId] = useState<BibleVersionId | null>(null);
+  const [{ adapter, books }, setReader] = useState<{
+    adapter: BibleReadingAdapter;
+    books: BibleBookMetadata[];
+  }>({ adapter: defaultAdapter, books: [] });
+  const version = adapter.versionId;
+  const [loadingVersionId, setLoadingVersionId] = useState<BibleVersionId | null>(
+    DEFAULT_BIBLE_VERSION_ID,
+  );
+  const [readerError, setReaderError] = useState<string | null>(null);
+  const [readerAttempt, setReaderAttempt] = useState(0);
+  const retryReader = useCallback(() => setReaderAttempt((previous) => previous + 1), []);
   const [catalogVersions, setCatalogVersions] = useState<BibleVersionManifestEntry[]>([]);
   const [versionsCatalogLoading, setVersionsCatalogLoading] = useState(true);
   const [versionsCatalogError, setVersionsCatalogError] = useState<string | null>(null);
@@ -82,26 +104,41 @@ export function BibleProvider({ children }: { children: ReactNode }) {
   );
 
   const refreshVersionsCatalog = useCallback(async () => {
+    const requestId = ++catalogRequestId.current;
     setVersionsCatalogLoading(true);
 
-    try {
-      const remoteVersions = await fetchBibleVersionCatalog();
-      setCatalogVersions(remoteVersions);
-      setVersionsCatalogError(null);
-    } catch (error) {
-      setVersionsCatalogError(
-        error instanceof Error
-          ? error.message
-          : 'Unable to refresh the Bible version catalog right now.',
-      );
-    } finally {
-      setVersionsCatalogLoading(false);
-    }
-  }, []);
+    const results = await Promise.allSettled([
+      fetchBibleVersionCatalog(),
+      userId ? fetchYouVersionCatalog() : Promise.resolve([]),
+      userId ? fetchEsvCatalog() : Promise.resolve([]),
+    ]);
+    if (requestId !== catalogRequestId.current) return;
+    setCatalogVersions((previous) =>
+      results.flatMap((result, index) =>
+        result.status === 'fulfilled'
+          ? result.value
+          : previous.filter((entry) => (entry.source ?? 'offline') === catalogSources[index]),
+      ),
+    );
+    const errors = results.flatMap((result) =>
+      result.status === 'rejected'
+        ? [
+            result.reason instanceof Error
+              ? result.reason.message
+              : 'Unable to refresh the version catalog.',
+          ]
+        : [],
+    );
+    setVersionsCatalogError(errors.join(' ') || null);
+    setVersionsCatalogLoading(false);
+  }, [userId]);
 
   useEffect(() => {
-    void refreshVersionsCatalog();
-  }, [refreshVersionsCatalog]);
+    if (!authLoading) void refreshVersionsCatalog();
+    return () => {
+      catalogRequestId.current += 1;
+    };
+  }, [authLoading, refreshVersionsCatalog]);
 
   const isVersionInstalled = useCallback(
     (versionId: BibleVersionId) =>
@@ -109,47 +146,62 @@ export function BibleProvider({ children }: { children: ReactNode }) {
     [bibleVersionStates, versionMap],
   );
 
-  const hydrateVersion = useCallback(
-    async (versionId: BibleVersionId) => {
-      const selectedVersion = versionMap[versionId];
+  // The bundled reader can open while the remote download catalog is refreshing.
+  const versionToLoad =
+    isVersionInstalled(persistedVersion) ||
+    (userId && isOnlineBibleVersion(versionMap[persistedVersion]))
+      ? versionMap[persistedVersion]
+      : defaultVersion;
+  const installStateToLoad = bibleVersionStates[versionToLoad.id];
 
-      if (!selectedVersion) {
-        if (versionId !== DEFAULT_BIBLE_VERSION_ID) {
-          setBibleVersionState(versionId, {
-            status: 'not_downloaded',
-            localUri: undefined,
-            installedAt: undefined,
-            sizeBytes: undefined,
-            checksum: undefined,
-            error: 'This Bible version is no longer available.',
+  useEffect(() => {
+    if (!versionsCatalogLoading && !versionsCatalogError && versionToLoad.id !== persistedVersion) {
+      setPersistedVersion(DEFAULT_BIBLE_VERSION_ID);
+    }
+  }, [
+    persistedVersion,
+    setPersistedVersion,
+    versionToLoad.id,
+    versionsCatalogLoading,
+    versionsCatalogError,
+  ]);
+
+  useEffect(() => {
+    let cancelled = false;
+    const nextAdapter =
+      versionToLoad.id === DEFAULT_BIBLE_VERSION_ID
+        ? defaultAdapter
+        : createBibleReadingAdapter(versionToLoad, installStateToLoad, {
+            youVersion: requestYouVersion,
+            esv: requestEsv,
           });
-          setPersistedVersion(DEFAULT_BIBLE_VERSION_ID);
-        }
 
-        setBible(defaultBible);
-        setVersionState(DEFAULT_BIBLE_VERSION_ID);
-        setLoadingVersionId(null);
-        return;
-      }
+    setLoadingVersionId(versionToLoad.id);
+    setReaderError(null);
 
-      if (selectedVersion.isBundled) {
-        setBible(defaultBible);
-        setVersionState(selectedVersion.id);
-        setLoadingVersionId(null);
-        return;
-      }
-
-      setLoadingVersionId(versionId);
-
+    const loadReader = async () => {
       try {
-        const nextBible = await loadBibleVersion(selectedVersion, bibleVersionStates[versionId]);
-        setBible(nextBible);
-        setVersionState(selectedVersion.id);
+        const nextBooks = await nextAdapter.getBooks();
+        if (!cancelled) {
+          // Publish metadata and source together so labels cannot get ahead of text.
+          setReader({ adapter: nextAdapter, books: nextBooks });
+        }
       } catch (error) {
+        if (cancelled) return;
         const message =
           error instanceof Error ? error.message : 'Unable to load this Bible version.';
 
-        setBibleVersionState(versionId, {
+        if (versionToLoad.id === DEFAULT_BIBLE_VERSION_ID || isOnlineBibleVersion(versionToLoad)) {
+          if (isOnlineBibleVersion(versionToLoad)) {
+            // Keep the requested translation and error together; a network failure
+            // must not relabel old text or mark an online version as uninstalled.
+            setReader({ adapter: nextAdapter, books: [] });
+          }
+          setReaderError(message);
+          return;
+        }
+
+        setBibleVersionState(versionToLoad.id, {
           status: 'not_downloaded',
           localUri: undefined,
           installedAt: undefined,
@@ -158,36 +210,16 @@ export function BibleProvider({ children }: { children: ReactNode }) {
           error: `${message} Please download it again.`,
         });
         setPersistedVersion(DEFAULT_BIBLE_VERSION_ID);
-        setBible(defaultBible);
-        setVersionState(DEFAULT_BIBLE_VERSION_ID);
       } finally {
-        setLoadingVersionId(null);
+        if (!cancelled) setLoadingVersionId(null);
       }
-    },
-    [bibleVersionStates, setBibleVersionState, setPersistedVersion, versionMap],
-  );
+    };
 
-  useEffect(() => {
-    if (versionsCatalogLoading) {
-      return;
-    }
-
-    const nextVersion = isVersionInstalled(persistedVersion)
-      ? persistedVersion
-      : DEFAULT_BIBLE_VERSION_ID;
-
-    if (nextVersion !== persistedVersion) {
-      setPersistedVersion(DEFAULT_BIBLE_VERSION_ID);
-    }
-
-    void hydrateVersion(nextVersion);
-  }, [
-    hydrateVersion,
-    isVersionInstalled,
-    persistedVersion,
-    setPersistedVersion,
-    versionsCatalogLoading,
-  ]);
+    void loadReader();
+    return () => {
+      cancelled = true;
+    };
+  }, [installStateToLoad, readerAttempt, setBibleVersionState, setPersistedVersion, versionToLoad]);
 
   const setVersion = useCallback(
     async (versionId: BibleVersionId) => {
@@ -195,17 +227,30 @@ export function BibleProvider({ children }: { children: ReactNode }) {
         throw new Error(`${versionId} is not available right now.`);
       }
 
-      if (!isVersionInstalled(versionId)) {
+      if (isOnlineBibleVersion(versionMap[versionId]) && !userId) {
+        throw new Error('Sign in to read online translations.');
+      }
+      if (!isOnlineBibleVersion(versionMap[versionId]) && !isVersionInstalled(versionId)) {
         throw new Error(`${versionId} is not installed yet.`);
       }
 
       if (versionId === persistedVersion && versionId === version) {
+        if (readerError) retryReader();
         return;
       }
 
       setPersistedVersion(versionId);
     },
-    [isVersionInstalled, persistedVersion, setPersistedVersion, version, versionMap],
+    [
+      isVersionInstalled,
+      persistedVersion,
+      setPersistedVersion,
+      version,
+      versionMap,
+      readerError,
+      retryReader,
+      userId,
+    ],
   );
 
   const installVersion = useCallback(
@@ -213,6 +258,9 @@ export function BibleProvider({ children }: { children: ReactNode }) {
       const selectedVersion = versionMap[versionId];
       if (!selectedVersion) {
         throw new Error(`${versionId} is not available right now.`);
+      }
+      if (isOnlineBibleVersion(selectedVersion)) {
+        throw new Error('This translation is available for online reading only.');
       }
 
       if (isVersionInstalled(versionId)) {
@@ -269,14 +317,16 @@ export function BibleProvider({ children }: { children: ReactNode }) {
         .map((entry) => {
           const installState = bibleVersionStates[entry.id];
           const installed = isVersionInstalled(entry.id);
+          const isOnline = isOnlineBibleVersion(entry);
 
           return {
             ...entry,
             installState,
             isInstalled: installed,
+            isOnline,
             isActive: entry.id === version,
             isDownloading: installState?.status === 'downloading',
-            canDelete: installed && !entry.isBundled,
+            canDelete: installed && !entry.isBundled && !isOnline,
           };
         })
         .sort((a, b) => {
@@ -296,13 +346,17 @@ export function BibleProvider({ children }: { children: ReactNode }) {
     [availableVersions, bibleVersionStates, isVersionInstalled, version],
   );
 
-  const bookNames = useMemo(() => bible.books.map((book) => book.name), [bible.books]);
+  const bookNames = useMemo(() => books.map((book) => book.name), [books]);
 
   return (
     <BibleContext.Provider
       value={{
-        bible,
+        adapter,
+        books,
+        readerError,
+        retryReader,
         version,
+        versionLabel: versionMap[version]?.shortLabel ?? version,
         setVersion,
         installVersion,
         removeVersion,
@@ -311,6 +365,7 @@ export function BibleProvider({ children }: { children: ReactNode }) {
         loadingVersionId,
         versionsCatalogLoading,
         versionsCatalogError,
+        refreshVersionsCatalog,
         bookNames,
       }}>
       {children}
