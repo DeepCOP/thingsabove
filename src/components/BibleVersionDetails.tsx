@@ -94,7 +94,9 @@ export default function BibleVersionDetails({
       ? `https://www.bible.com/versions/${entry.providerBibleId}`
       : entry.source === 'esv'
         ? 'https://www.esv.org/'
-        : null;
+        : entry.source === 'apiBible'
+          ? 'https://docs.api.bible/'
+          : null;
 
   return (
     <ScrollView

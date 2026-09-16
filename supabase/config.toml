@@ -431,3 +431,9 @@ enabled = true
 # Public Bible reading for guests; the provider API key remains server-side.
 verify_jwt = false
 entrypoint = "./functions/esv/index.ts"
+
+[functions.api-bible]
+enabled = true
+# Public Bible reading for guests; the provider API key remains server-side.
+verify_jwt = false
+entrypoint = "./functions/api-bible/index.ts"

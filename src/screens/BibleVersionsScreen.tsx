@@ -27,11 +27,12 @@ type Props = {
   onRead: () => void;
 };
 
-const featured = ['NIV', 'NLT', 'ESV', 'NASB', 'CSB', 'KJV'];
+const featured = ['NIV', 'NLT', 'ESV', 'CSB', 'NKJV', 'KJV'];
 const adapterSections = [
   { key: 'offline', title: 'Offline' },
   { key: 'youversion', title: 'YouVersion' },
   { key: 'esv', title: 'ESV' },
+  { key: 'apiBible', title: 'API.Bible' },
 ] as const;
 const adapterFilters = [{ key: 'all', title: 'All' }, ...adapterSections] as const;
 type AdapterFilter = (typeof adapterFilters)[number]['key'];
@@ -407,9 +408,7 @@ export default function BibleVersionsScreen({ mode, onAddPress, onVersionPress, 
               <TouchableOpacity
                 accessibilityRole="button"
                 accessibilityLabel={`See all ${section.title} versions`}
-                onPress={() =>
-                  setAdapterFilter(section.key as 'offline' | 'youversion' | 'esv' | 'all')
-                }
+                onPress={() => setAdapterFilter(section.key as AdapterFilter)}
                 style={styles.seeAll}>
                 <Text style={styles.link}>See all {section.total} versions</Text>
                 <Ionicons name="chevron-forward" size={17} color={colors.blue} />

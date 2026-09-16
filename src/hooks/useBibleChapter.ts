@@ -1,6 +1,7 @@
 import type { BibleReadingAdapter } from '@/src/bible/adapters/types';
 import type { BibleChapter } from '@/src/bible/types';
 import { useBible } from '@/src/state/BibleContext';
+import { trackApiBibleView } from '@/src/lib/apiBibleViewTracking';
 import { useCallback, useEffect, useState } from 'react';
 
 type ChapterResult = {
@@ -70,6 +71,10 @@ export const useBibleChapter = (
     result.attempt === attempt
       ? result
       : null;
+
+  useEffect(() => {
+    trackApiBibleView(currentResult?.chapter?.fumsToken);
+  }, [currentResult?.chapter?.fumsToken]);
 
   return {
     chapter: currentResult?.chapter ?? null,

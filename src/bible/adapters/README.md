@@ -19,7 +19,7 @@ The offline adapter lazily loads and normalizes one bundled or installed JSON
 file, shares concurrent reads, and allows retry after a failed read. Download,
 installation, and removal still belong to `bibleVersionService`.
 
-`bibleReadingService` selects the offline, YouVersion, or ESV adapter. Online versions
+`bibleReadingService` selects the offline, YouVersion, ESV, or API.Bible adapter. Online versions
 are selectable without installation. They have a separate provider Bible ID and
 a stable `YOUVERSION_...` or `ESV_API` app ID; labels in the reader use the translation's
 abbreviation. Existing offline version IDs and annotation keys are unchanged.
@@ -64,14 +64,14 @@ before enabling them in production.
 Only metadata is cached for the adapter's lifetime. Chapter requests are shared
 while in flight and are not accumulated or downloaded for offline reading.
 Copyright appears in the reader, note previews, and copied/shared passages.
-No database migration is needed. Both online providers can be enabled together
-or independently. Guests can use both offline and online translations.
+No database migration is needed. Online providers can be enabled together or
+independently. Guests can use offline and online translations.
 
-Both Bible proxies are public endpoints: their entries in `supabase/config.toml`
+The online Bible proxies are public endpoints: their entries in `supabase/config.toml`
 set `verify_jwt = false`, and their handlers do not require an app session.
 Provider keys remain in Supabase secrets. Request validation, translation
 allowlists, response limits, and provider throttling still apply. The proxies do
-not add a separate per-user or per-IP quota. Redeploy **both** functions when
+not add a separate per-user or per-IP quota. Redeploy every enabled function when
 upgrading an existing deployment so the old session checks and gateway JWT
 requirement are removed. See [Supabase's public function configuration](https://supabase.com/docs/guides/functions/auth-headers).
 
@@ -137,3 +137,41 @@ production access, particularly for short books and standalone shared quotations
 
 No database migration is needed. Local tests use synthetic responses; deployment
 and live chapter retrieval still require verification with the project's API key.
+
+## API.Bible setup
+
+1. Create an account and API key in [API.Bible](https://api.bible/). The API key
+   must remain server-side. Make sure the account has access to every translation
+   you intend to show.
+2. Create a local `.env.api-bible.local` file (ignored by Git):
+
+   ```sh
+   API_BIBLE_API_KEY=...
+   # Optional: restrict the catalog to these API.Bible translation IDs.
+   API_BIBLE_BIBLE_IDS=
+   ```
+
+3. Configure the linked Supabase project and deploy the proxy:
+
+   ```sh
+   pnpm exec supabase secrets set --env-file .env.api-bible.local
+   pnpm exec supabase functions deploy api-bible
+   ```
+
+4. Set `EXPO_PUBLIC_API_BIBLE_ENABLED=true` in the app environment and restart
+   Expo or rebuild. Guests can browse, add, and read API.Bible translations;
+   this does not require an app account or an API.Bible account.
+
+The API.Bible adapter uses the server proxy for the Bible catalog, book index,
+and one HTML chapter at a time. It maps the provider's book and verse IDs to the
+same canonical keys the offline reader uses, so highlights, references, and
+notes stay attached to the selected reference. It returns plain selectable verse
+text, preserves the provider copyright, and does not persist chapter text for
+offline use.
+
+The proxy requests API.Bible's FUMS v3 token with each chapter. The app reports
+that token with an anonymous local device ID and a fresh session ID; it sends no
+account ID or other personal information. This supports API.Bible's web usage
+reporting requirement. Review [API.Bible licensing](https://docs.api.bible/quick-start/working-with-bibles/)
+and [FUMS guidance](https://docs.api.bible/guides/fair-use/) before enabling the
+provider in production.

@@ -10,6 +10,8 @@ export type BibleChapter = {
   verses: BibleVerse[];
   copyright?: string;
   attributionUrl?: string;
+  /** Opaque API.Bible fair-use token; never persisted with Scripture text. */
+  fumsToken?: string;
 };
 
 export type BibleBook = {
@@ -45,7 +47,7 @@ export type BibleVersionInstallState = {
 
 export type BibleVersionManifestEntry = {
   id: BibleVersionId;
-  source?: 'offline' | 'youversion' | 'esv';
+  source?: 'offline' | 'youversion' | 'esv' | 'apiBible';
   providerBibleId?: string;
   shortLabel: string;
   label: string;

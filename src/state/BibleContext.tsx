@@ -13,6 +13,7 @@ import type {
 import { createBibleReadingAdapter } from '@/src/lib/bibleReadingService';
 import { fetchYouVersionCatalog, requestYouVersion } from '@/src/lib/youVersionClient';
 import { fetchEsvCatalog, requestEsv } from '@/src/lib/esvClient';
+import { fetchApiBibleCatalog, requestApiBible } from '@/src/lib/apiBibleClient';
 import { isOnlineBibleVersion } from '@/src/bible/sources';
 import {
   installBibleVersion,
@@ -64,7 +65,7 @@ type BibleContextType = {
 const BibleContext = createContext<BibleContextType | null>(null);
 const defaultVersion = BIBLE_VERSION_MANIFEST[DEFAULT_BIBLE_VERSION_ID];
 const defaultAdapter = createBibleReadingAdapter(defaultVersion);
-const catalogSources = ['offline', 'youversion', 'esv'] as const;
+const catalogSources = ['offline', 'youversion', 'esv', 'apiBible'] as const;
 
 export function BibleProvider({ children }: { children: ReactNode }) {
   const catalogRequestId = useRef(0);
@@ -135,6 +136,7 @@ export function BibleProvider({ children }: { children: ReactNode }) {
       fetchBibleVersionCatalog(),
       fetchYouVersionCatalog(),
       fetchEsvCatalog(),
+      fetchApiBibleCatalog(),
     ]);
     if (requestId !== catalogRequestId.current) return;
     setCatalogVersions((previous) =>
@@ -211,6 +213,7 @@ export function BibleProvider({ children }: { children: ReactNode }) {
         : createBibleReadingAdapter(versionToLoad, installStateToLoad, {
             youVersion: requestYouVersion,
             esv: requestEsv,
+            apiBible: requestApiBible,
           });
 
     setLoadingVersionId(versionToLoad.id);

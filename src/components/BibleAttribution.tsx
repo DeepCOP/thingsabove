@@ -20,6 +20,14 @@ export default function BibleAttribution({
           className="mt-1 text-xs text-blue-600 underline dark:text-blue-400">
           ESV.org
         </Link>
+      ) : attributionUrl === 'https://docs.api.bible/' ? (
+        <Link
+          href="https://docs.api.bible/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-1 text-xs text-blue-600 underline dark:text-blue-400">
+          API.Bible
+        </Link>
       ) : null}
     </View>
   );

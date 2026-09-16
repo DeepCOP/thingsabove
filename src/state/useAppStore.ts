@@ -221,7 +221,7 @@ const normalizeSavedBibleVersion = (value: unknown): BibleVersionManifestEntry |
   const source = value.source ?? 'offline';
   if (
     !id ||
-    !['offline', 'youversion', 'esv'].includes(String(source)) ||
+    !['offline', 'youversion', 'esv', 'apiBible'].includes(String(source)) ||
     typeof value.shortLabel !== 'string' ||
     !value.shortLabel.trim() ||
     typeof value.label !== 'string' ||
