@@ -4,7 +4,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: '13.0.5';
+    PostgrestVersion: '14.5';
   };
   public: {
     Tables: {
@@ -468,7 +468,6 @@ export type Database = {
         Row: {
           author_id: string | null;
           completions: number | null;
-          content_mode: string;
           cover_image: string | null;
           created_at: string | null;
           description: string;
@@ -483,7 +482,6 @@ export type Database = {
         Insert: {
           author_id?: string | null;
           completions?: number | null;
-          content_mode?: string;
           cover_image?: string | null;
           created_at?: string | null;
           description: string;
@@ -498,7 +496,6 @@ export type Database = {
         Update: {
           author_id?: string | null;
           completions?: number | null;
-          content_mode?: string;
           cover_image?: string | null;
           created_at?: string | null;
           description?: string;
@@ -1937,6 +1934,10 @@ export type Database = {
         Args: { p_requester_id: string };
         Returns: undefined;
       };
+      delete_auth_user_with_diagnostics: {
+        Args: { p_user_id: string };
+        Returns: Json;
+      };
       ensure_day_items_exist: {
         Args: {
           p_day_id: string;
@@ -2076,10 +2077,6 @@ export type Database = {
       get_my_notifications: {
         Args: never;
         Returns: {
-          actor_avatar_url: string;
-          actor_first_name: string;
-          actor_id: string;
-          actor_last_name: string;
           body: string;
           created_at: string;
           data: Json;
@@ -2247,7 +2244,7 @@ export type Database = {
           is_urgent: boolean;
           prayer_count: number;
           scope: string;
-          testimony: string | null;
+          testimony: string;
           updated_at: string;
           user_id: string;
           viewer_has_prayed: boolean;
@@ -2280,7 +2277,7 @@ export type Database = {
           is_urgent: boolean;
           prayer_count: number;
           scope: string;
-          testimony: string | null;
+          testimony: string;
           updated_at: string;
           user_id: string;
           viewer_has_prayed: boolean;
@@ -2422,7 +2419,11 @@ export type Database = {
         Returns: undefined;
       };
       mark_prayer_request_answered: {
-        Args: { p_is_answered?: boolean; p_request_id: string; p_testimony?: string };
+        Args: {
+          p_is_answered?: boolean;
+          p_request_id: string;
+          p_testimony?: string;
+        };
         Returns: undefined;
       };
       normalize_church_text: { Args: { p_value: string }; Returns: string };
@@ -2435,6 +2436,7 @@ export type Database = {
         Returns: boolean;
       };
       plan_tags: { Args: never; Returns: string[] };
+      prune_old_read_notifications: { Args: never; Returns: number };
       publish_devotional_plan: {
         Args: { p_days: Json; p_plan_id: string };
         Returns: undefined;
@@ -2455,14 +2457,6 @@ export type Database = {
         Args: { p_day_offset: number; p_local_hour: number; p_timezone: string };
         Returns: string;
       };
-      resolve_church_invite_code: {
-        Args: { p_invite_code: string };
-        Returns: {
-          church_id: string;
-          invite_code: string;
-          invited_by: string;
-        }[];
-      };
       resolve_invite_code: {
         Args: { p_invite_code: string };
         Returns: {
@@ -2470,15 +2464,6 @@ export type Database = {
           group_id: string;
           invite_code: string;
           invite_type: string;
-          invited_by: string;
-          plan_id: string;
-        }[];
-      };
-      resolve_plan_group_invite_code: {
-        Args: { p_invite_code: string };
-        Returns: {
-          group_id: string;
-          invite_code: string;
           invited_by: string;
           plan_id: string;
         }[];
