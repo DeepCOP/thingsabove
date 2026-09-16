@@ -12,7 +12,8 @@
     "prettier-check": "prettier --check .",
     "format": "prettier --write .",
     "typecheck": "tsc --noEmit",
-    "test:bible-adapter": "node --test script/test-bible-adapter.cjs script/test-youversion-adapter.cjs script/test-youversion-proxy.cjs script/test-youversion-client.cjs script/test-esv-adapter.cjs script/test-esv-proxy.cjs"
+    "test:bible-adapter": "node --test script/test-bible-adapter.cjs script/test-youversion-adapter.cjs script/test-youversion-proxy.cjs script/test-youversion-client.cjs script/test-esv-adapter.cjs script/test-esv-proxy.cjs",
+    "test:bible-library": "node --test script/test-bible-version-library.cjs"
   },
   "dependencies": {
     "@expo-google-fonts/merriweather": "^0.4.2",

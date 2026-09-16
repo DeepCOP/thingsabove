@@ -42,9 +42,9 @@ abbreviation. Existing offline version IDs and annotation keys are unchanged.
 4. Set `EXPO_PUBLIC_YOUVERSION_ENABLED=true` in the app's local environment and
    restart Expo/rebuild. The app key stays in Supabase secrets and must never
    have an `EXPO_PUBLIC_` prefix.
-5. Sign in to this app and choose a translation marked **Online · YouVersion**.
-   This uses the app's existing account; YouVersion account linking is not needed
-   for reading. Existing highlights and notes continue to use this app's storage.
+5. Choose a translation marked **Online · YouVersion**. Guests can browse, add,
+   and read online versions without signing in or linking a YouVersion account.
+   Existing highlights and notes continue to use this app's storage.
 
 The YouVersion proxy uses the official `api.youversion.com/v1` REST API. The
 client follows catalog pagination, stores a separate numeric provider ID, and
@@ -65,7 +65,15 @@ Only metadata is cached for the adapter's lifetime. Chapter requests are shared
 while in flight and are not accumulated or downloaded for offline reading.
 Copyright appears in the reader, note previews, and copied/shared passages.
 No database migration is needed. Both online providers can be enabled together
-or independently. Guests retain access to offline translations.
+or independently. Guests can use both offline and online translations.
+
+Both Bible proxies are public endpoints: their entries in `supabase/config.toml`
+set `verify_jwt = false`, and their handlers do not require an app session.
+Provider keys remain in Supabase secrets. Request validation, translation
+allowlists, response limits, and provider throttling still apply. The proxies do
+not add a separate per-user or per-IP quota. Redeploy **both** functions when
+upgrading an existing deployment so the old session checks and gateway JWT
+requirement are removed. See [Supabase's public function configuration](https://supabase.com/docs/guides/functions/auth-headers).
 
 Fixture-based tests cover parsing, reference identities, retries, factory
 selection, catalog pagination, and proxy validation. Live access requires the
@@ -96,7 +104,8 @@ Run `pnpm run test:bible-adapter` for all adapter and proxy regression tests and
 
 4. Set `EXPO_PUBLIC_ESV_ENABLED=true` in the app's local environment and restart
    Expo/rebuild. This optional switch uses the same opt-in behavior as the other
-   online providers. Sign in and select **ESV**, marked **Online · ESV.org**.
+   online providers. Select **ESV**, marked **Online · ESV.org**; no sign-in is
+   required for browsing, adding, or reading.
 
 ESV offers one translation rather than a multi-translation catalog. Its app ID
 is `ESV_API`, so it stays distinct from downloaded ESV files or ESV editions

@@ -1,7 +1,6 @@
 type Dependencies = {
   appKey: string;
   allowedBibleIds?: string[];
-  authorize: (token: string) => Promise<boolean>;
   fetch: typeof fetch;
 };
 
@@ -62,15 +61,6 @@ const readJson = async (body: ReadableStream<Uint8Array> | null, limit: number) 
 export const createYouVersionHandler = (dependencies: Dependencies) => async (req: Request) => {
   if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: cors });
   if (req.method !== 'POST') return json({ error: 'Use POST for Bible requests.' }, 405);
-  const token = /^Bearer\s+(.+)$/i.exec(req.headers.get('authorization') ?? '')?.[1];
-  if (!token) return json({ error: 'Sign in to read online translations.' }, 401);
-  try {
-    if (!(await dependencies.authorize(token))) {
-      return json({ error: 'Sign in to read online translations.' }, 401);
-    }
-  } catch {
-    return json({ error: 'Unable to verify your session. Please try again.' }, 503);
-  }
   if (!dependencies.appKey) {
     return json({ error: 'YouVersion has not been configured on the server.' }, 503);
   }

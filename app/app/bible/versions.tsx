@@ -1,73 +1,173 @@
+import BibleVersionDetails from '@/src/components/BibleVersionDetails';
 import BibleVersionsScreen from '@/src/screens/BibleVersionsScreen';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { Stack } from 'expo-router';
-import { useState } from 'react';
-import { Modal, Pressable, Text, TouchableOpacity, useColorScheme, View } from 'react-native';
+import { Stack, useFocusEffect, useRouter } from 'expo-router';
+import { useCallback, useState } from 'react';
+import {
+  BackHandler,
+  Keyboard,
+  Modal,
+  Pressable,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  useColorScheme,
+  View,
+} from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
+type VersionsView = { name: 'library' | 'catalog' } | { name: 'details'; versionId: string };
 
 export default function BibleVersionsRoute() {
-  const colorScheme = useColorScheme();
+  const router = useRouter();
+  const insets = useSafeAreaInsets();
+  const dark = useColorScheme() === 'dark';
+  const [views, setViews] = useState<VersionsView[]>([{ name: 'library' }]);
   const [isInfoVisible, setIsInfoVisible] = useState(false);
+  const current = views[views.length - 1];
+  const listMode = views.some((view) => view.name === 'catalog') ? 'catalog' : 'library';
+  const background = dark ? '#090b0d' : '#ffffff';
+  const foreground = dark ? '#f6f7f9' : '#17202e';
+  const secondary = dark ? '#a8adb7' : '#626b79';
+  const leave = useCallback(() => {
+    if (router.canGoBack()) router.back();
+    else router.replace('/app/(tabs)/BibleTab');
+  }, [router]);
+  const goBack = useCallback(() => {
+    Keyboard.dismiss();
+    if (views.length > 1)
+      setViews((previous) => (previous.length > 1 ? previous.slice(0, -1) : previous));
+    else leave();
+  }, [leave, views.length]);
+  useFocusEffect(
+    useCallback(() => {
+      const subscription = BackHandler.addEventListener('hardwareBackPress', () => {
+        if (views.length <= 1) return false;
+        goBack();
+        return true;
+      });
+      return () => subscription.remove();
+    }, [goBack, views.length]),
+  );
 
   return (
-    <>
-      <Stack.Screen
-        options={{
-          title: 'Bible Versions',
-          headerShadowVisible: false,
-          headerRight: () => (
-            <TouchableOpacity
-              accessibilityRole="button"
-              accessibilityLabel="About Bible versions"
-              className="h-10 w-10 items-center justify-center"
-              onPress={() => setIsInfoVisible(true)}>
-              <Ionicons
-                name="information-circle-outline"
-                size={22}
-                color={colorScheme === 'dark' ? '#f5f5f5' : '#111827'}
-              />
-            </TouchableOpacity>
-          ),
-        }}
-      />
-      <BibleVersionsScreen />
-
+    <View
+      style={[
+        styles.page,
+        { backgroundColor: background, paddingTop: insets.top, paddingBottom: insets.bottom },
+      ]}>
+      <Stack.Screen options={{ headerShown: false, gestureEnabled: views.length === 1 }} />
+      <View style={styles.frame}>
+        <View style={styles.header}>
+          <TouchableOpacity
+            accessibilityRole="button"
+            accessibilityLabel="Back"
+            onPress={goBack}
+            style={styles.headerButton}>
+            <Ionicons name="chevron-back" size={29} color={foreground} />
+          </TouchableOpacity>
+          <Text accessibilityRole="header" style={[styles.title, { color: foreground }]}>
+            {current.name === 'library'
+              ? 'My Bible Versions'
+              : current.name === 'catalog'
+                ? 'Add Bible Version'
+                : 'Version Details'}
+          </Text>
+          <View style={styles.headerButton}>
+            {current.name === 'library' ? (
+              <TouchableOpacity
+                accessibilityRole="button"
+                accessibilityLabel="About Bible versions"
+                onPress={() => setIsInfoVisible(true)}
+                style={styles.headerButton}>
+                <Ionicons name="information-circle-outline" size={26} color={foreground} />
+              </TouchableOpacity>
+            ) : null}
+          </View>
+        </View>
+        <View style={[styles.body, current.name === 'details' && styles.hidden]}>
+          <BibleVersionsScreen
+            mode={listMode}
+            onAddPress={() => setViews([{ name: 'library' }, { name: 'catalog' }])}
+            onVersionPress={(versionId) => {
+              Keyboard.dismiss();
+              setViews((previous) =>
+                previous[previous.length - 1].name === 'details'
+                  ? previous
+                  : [...previous, { name: 'details', versionId }],
+              );
+            }}
+            onRead={leave}
+          />
+        </View>
+        {current.name === 'details' ? (
+          <BibleVersionDetails
+            key={current.versionId}
+            versionId={current.versionId}
+            onRemoved={goBack}
+            onRead={leave}
+          />
+        ) : null}
+      </View>
       <Modal
         visible={isInfoVisible}
         transparent
         animationType="fade"
         onRequestClose={() => setIsInfoVisible(false)}>
-        <Pressable
-          className="flex-1 items-center justify-center bg-black/40 px-6"
-          onPress={() => setIsInfoVisible(false)}>
+        <Pressable style={styles.scrim} onPress={() => setIsInfoVisible(false)}>
           <Pressable
-            className="w-full max-w-sm rounded-3xl border border-gray-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-950"
-            onPress={(e) => e.stopPropagation()}>
-            <View className="flex-row items-start justify-between">
-              <Text className="flex-1 pr-4 text-lg font-semibold text-primary dark:text-gray-100">
-                About Bible Versions
-              </Text>
+            style={[styles.info, { backgroundColor: dark ? '#151719' : '#ffffff' }]}
+            onPress={(event) => event.stopPropagation()}>
+            <View style={styles.infoHeader}>
+              <Text style={[styles.infoTitle, { color: foreground }]}>About Bible Versions</Text>
               <TouchableOpacity
                 accessibilityRole="button"
                 accessibilityLabel="Close version info"
-                className="-mr-1 -mt-1 h-8 w-8 items-center justify-center"
-                onPress={() => setIsInfoVisible(false)}>
-                <Ionicons
-                  name="close"
-                  size={20}
-                  color={colorScheme === 'dark' ? '#d4d4d8' : '#4b5563'}
-                />
+                onPress={() => setIsInfoVisible(false)}
+                style={styles.headerButton}>
+                <Ionicons name="close" size={23} color={secondary} />
               </TouchableOpacity>
             </View>
-
-            <Text className="mt-3 text-sm leading-6 text-gray-600 dark:text-gray-300">
-              Different Bible versions present the original text in different ways. Some stay closer
-              to the original wording, while others focus more on making the meaning clear and easy
-              to read. Feel free to choose the version that helps you understand the text best. If
-              you’re unsure which version to use, consider consulting the leaders at your church.
+            <Text style={[styles.infoText, { color: secondary }]}>
+              Keep the translations you use in My Bible Versions. Downloaded versions work offline,
+              and online versions stream text when you read. Adding a version saves it to your
+              library; select Read this version to use it in the reader.
+            </Text>
+            <Text style={[styles.infoText, { color: secondary }]}>
+              Different translations use different wording to convey the original text. Choose the
+              version that helps you understand it best. Your highlights and notes stay connected to
+              their Scripture references.
             </Text>
           </Pressable>
         </Pressable>
       </Modal>
-    </>
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  page: { flex: 1 },
+  frame: { flex: 1, width: '100%', maxWidth: 680, alignSelf: 'center' },
+  header: {
+    minHeight: 65,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 9,
+    paddingBottom: 5,
+  },
+  headerButton: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center' },
+  title: { flex: 1, fontSize: 20, fontWeight: '600', textAlign: 'center' },
+  body: { flex: 1 },
+  hidden: { display: 'none' },
+  scrim: {
+    flex: 1,
+    backgroundColor: '#00000099',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+  },
+  info: { width: '100%', maxWidth: 440, borderRadius: 22, padding: 20 },
+  infoHeader: { flexDirection: 'row', alignItems: 'center' },
+  infoTitle: { flex: 1, fontSize: 19, fontWeight: '600' },
+  infoText: { fontSize: 15, lineHeight: 23, marginTop: 12 },
+});
