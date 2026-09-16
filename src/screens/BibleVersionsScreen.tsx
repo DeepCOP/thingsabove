@@ -36,6 +36,7 @@ const adapterSections = [
 ] as const;
 const adapterFilters = [{ key: 'all', title: 'All' }, ...adapterSections] as const;
 type AdapterFilter = (typeof adapterFilters)[number]['key'];
+type ProviderSection = (typeof adapterSections)[number]['key'];
 
 export default function BibleVersionsScreen({ mode, onAddPress, onVersionPress, onRead }: Props) {
   const {
@@ -54,6 +55,7 @@ export default function BibleVersionsScreen({ mode, onAddPress, onVersionPress, 
   const [query, setQuery] = useState('');
   const [adapterFilter, setAdapterFilter] = useState<AdapterFilter>('all');
   const [modal, setModal] = useState<'providers' | null>(null);
+  const [providerSection, setProviderSection] = useState<ProviderSection | null>(null);
   const [optionsId, setOptionsId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const pending = useRef(new Set<string>());
@@ -277,8 +279,11 @@ export default function BibleVersionsScreen({ mode, onAddPress, onVersionPress, 
               {
                 <TouchableOpacity
                   accessibilityRole="button"
-                  accessibilityLabel={`About ${section.title} online versions`}
-                  onPress={() => setModal('providers')}
+                  accessibilityLabel={`About ${section.title}${section.key === 'offline' ? '' : ' online'} versions`}
+                  onPress={() => {
+                    setProviderSection(section.key as ProviderSection);
+                    setModal('providers');
+                  }}
                   style={styles.provider}>
                   <Ionicons name="information-circle-outline" size={20} color={colors.secondary} />
                 </TouchableOpacity>
@@ -436,12 +441,14 @@ export default function BibleVersionsScreen({ mode, onAddPress, onVersionPress, 
         animationType="fade"
         onRequestClose={() => {
           setModal(null);
+          setProviderSection(null);
           setOptionsId(null);
         }}>
         <Pressable
           style={styles.scrim}
           onPress={() => {
             setModal(null);
+            setProviderSection(null);
             setOptionsId(null);
           }}>
           <Pressable
@@ -450,7 +457,7 @@ export default function BibleVersionsScreen({ mode, onAddPress, onVersionPress, 
             <View style={styles.sheetHeader}>
               <Text style={[styles.sheetTitle, { color: colors.text }]}>
                 {modal === 'providers'
-                  ? adapterFilter === 'offline'
+                  ? providerSection === 'offline'
                     ? 'Offline Bible versions'
                     : 'Online Bible versions'
                   : optionEntry?.shortLabel}
@@ -460,6 +467,7 @@ export default function BibleVersionsScreen({ mode, onAddPress, onVersionPress, 
                 accessibilityLabel="Close"
                 onPress={() => {
                   setModal(null);
+                  setProviderSection(null);
                   setOptionsId(null);
                 }}
                 style={styles.iconButton}>
@@ -467,7 +475,7 @@ export default function BibleVersionsScreen({ mode, onAddPress, onVersionPress, 
               </TouchableOpacity>
             </View>
             {modal === 'providers' ? (
-              adapterFilter === 'offline' ? (
+              providerSection === 'offline' ? (
                 <Text style={[styles.modalBody, { color: colors.secondary }]}>
                   Add and download an offline version to your library to read it without an internet
                   connection.
