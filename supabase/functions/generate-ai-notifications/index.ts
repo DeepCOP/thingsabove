@@ -1,6 +1,6 @@
 import { serve } from 'https://deno.land/std/http/server.ts';
 import { GoogleGenerativeAI } from 'https://esm.sh/@google/generative-ai';
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { createClient, type SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const MODEL_NAME = 'gemini-2.5-flash';
 const PLANNER_LIMIT = 12;
@@ -9,6 +9,7 @@ const DEFAULT_NOTIFICATION_WINDOW_HOURS = 36;
 const MAX_NOTIFICATION_MESSAGE_LENGTH = 240;
 const RECENT_USER_CONTENT_WINDOW_DAYS = 7;
 const MAX_RECENT_USER_CONTENT_LENGTH = 500;
+const SCRIPTURE_NOTE_PARENT_BATCH_SIZE = 100;
 const RECENT_USER_CONTENT_SOURCES = [
   'devotional_plan_comments',
   'prayer_requests',
@@ -169,8 +170,6 @@ type QueryResult = {
   error: unknown;
 };
 
-type SupabaseClient = ReturnType<typeof createClient>;
-
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 function buildPlannerPrompt(firstName: string, timezone: string, context: unknown) {
@@ -243,7 +242,7 @@ function normalizeParentNote(parentNote: unknown) {
   return content ? { ...parentNoteRecord, content } : parentNoteRecord;
 }
 
-function normalizeRecentUserContentRows(rows: unknown) {
+function normalizeRecentUserContentRows(rows: unknown): Record<string, unknown>[] {
   if (!Array.isArray(rows)) return [];
 
   return rows.flatMap((row) => {
@@ -282,6 +281,49 @@ function getQueryRows(result: QueryResult, source: RecentUserContentSource, user
   };
 }
 
+async function loadScriptureNoteParents(
+  supabase: SupabaseClient,
+  userId: string,
+  comments: Record<string, unknown>[],
+) {
+  const parentIds = [
+    ...new Set(
+      comments
+        .map((comment) => comment.parent_note_id)
+        .filter((id): id is string => typeof id === 'string'),
+    ),
+  ];
+  const parentsById = new Map<string, Record<string, unknown>>();
+
+  // Resolve parents explicitly: recursive embeds depend on PostgREST's relationship cache.
+  // Batch IDs to keep query URLs bounded, without limiting the number of recent replies.
+  for (let offset = 0; offset < parentIds.length; offset += SCRIPTURE_NOTE_PARENT_BATCH_SIZE) {
+    try {
+      const { data, error } = await supabase
+        .from('scripture_notes')
+        .select('id, content, book, chapter, verse_start, verse_end, created_at')
+        .in('id', parentIds.slice(offset, offset + SCRIPTURE_NOTE_PARENT_BATCH_SIZE));
+
+      if (error) throw error;
+
+      for (const { id, ...parent } of data ?? []) {
+        parentsById.set(id, parent);
+      }
+    } catch (error) {
+      // Parent context is optional; keep the user's replies if a lookup fails.
+      console.warn('Failed to load parent scripture notes', userId, getPlannerErrorDetails(error));
+    }
+  }
+
+  return comments.map(({ parent_note_id, ...comment }) => ({
+    ...comment,
+    parent_note:
+      typeof parent_note_id === 'string'
+        ? (normalizeParentNote(parentsById.get(parent_note_id)) ?? null)
+        : null,
+  }));
+}
+
 async function loadRecentUserContent(
   supabase: SupabaseClient,
   userId: string,
@@ -313,9 +355,7 @@ async function loadRecentUserContent(
           .order('created_at', { ascending: false }),
         supabase
           .from('scripture_notes')
-          .select(
-            'content, book, chapter, verse_start, verse_end, created_at, parent_note:scripture_notes!scripture_notes_parent_note_id_fkey(content, book, chapter, verse_start, verse_end, created_at)',
-          )
+          .select('content, book, chapter, verse_start, verse_end, created_at, parent_note_id')
           .eq('user_id', userId)
           .not('parent_note_id', 'is', null)
           .gte('created_at', recentUserContentSince)
@@ -338,7 +378,11 @@ async function loadRecentUserContent(
       devotional_plan_comments: queryRows.devotional_plan_comments.items,
       prayer_requests: queryRows.prayer_requests.items,
       prayer_comments: queryRows.prayer_comments.items,
-      scripture_note_comments: queryRows.scripture_note_comments.items,
+      scripture_note_comments: await loadScriptureNoteParents(
+        supabase,
+        userId,
+        queryRows.scripture_note_comments.items,
+      ),
       unavailable_sources: RECENT_USER_CONTENT_SOURCES.filter(
         (source) => !queryRows[source].isAvailable,
       ),
@@ -349,8 +393,39 @@ async function loadRecentUserContent(
   }
 }
 
-function getErrorKind(error: unknown) {
-  return error instanceof Error ? error.name : typeof error;
+function getPlannerErrorDetails(error: unknown) {
+  const details: Record<string, string | number> = {
+    errorKind:
+      error instanceof Error
+        ? error.name === 'Error'
+          ? error.constructor.name
+          : error.name
+        : typeof error,
+  };
+  if (!error || typeof error !== 'object') return details;
+
+  const record = error as Record<string, unknown>;
+  if (typeof record.status === 'number' && Number.isFinite(record.status)) {
+    details.status = record.status;
+  }
+
+  const response = record.response as
+    | { promptFeedback?: { blockReason?: unknown }; candidates?: { finishReason?: unknown }[] }
+    | undefined;
+  const codes = {
+    code: record.code,
+    blockReason: response?.promptFeedback?.blockReason,
+    finishReason: response?.candidates?.[0]?.finishReason,
+  };
+
+  // SDK messages and response bodies can contain user content. Log only diagnostic codes.
+  for (const [key, value] of Object.entries(codes)) {
+    if (typeof value === 'string' && /^[A-Z0-9_]{1,64}$/.test(value)) {
+      details[key] = value;
+    }
+  }
+
+  return details;
 }
 
 function getLatestSendAtFromContext(context: Record<string, unknown>) {
@@ -537,6 +612,7 @@ serve(async () => {
     let plannedCount = 0;
 
     for (const [index, candidate] of candidates.entries()) {
+      let stage = 'load_context';
       try {
         if (index > 0) {
           await sleep(PLANNER_REQUEST_DELAY_MS);
@@ -555,6 +631,7 @@ serve(async () => {
         const latestSendAt = getLatestSendAtFromContext(plannerContext);
 
         const prompt = buildPlannerPrompt(firstName, timezone, plannerContext);
+        stage = 'generate_content';
         const result = await model.generateContent(`
 SYSTEM:
 ${SYSTEM_PROMPT}
@@ -563,6 +640,7 @@ USER:
 ${prompt}
 `);
 
+        stage = 'read_response';
         const rawResponse = result.response.text()?.trim();
         if (!rawResponse) {
           continue;
@@ -586,6 +664,7 @@ ${prompt}
           continue;
         }
 
+        stage = 'resolve_schedule';
         const { data: scheduledFor, error: scheduleError } = await supabase.rpc(
           'resolve_ai_trigger_schedule',
           {
@@ -602,6 +681,7 @@ ${prompt}
 
         const finalScheduledFor = constrainScheduledFor(scheduledFor, latestSendAt);
 
+        stage = 'insert_plan';
         const { error: insertError } = await supabase.from('ai_triggers').insert({
           user_id: candidate.user_id,
           trigger_reason: `AI planner selected ${decision.category}.`,
@@ -620,7 +700,8 @@ ${prompt}
         plannedCount += 1;
       } catch (candidateError) {
         console.error('Failed to plan notification for candidate', candidate.user_id, {
-          errorKind: getErrorKind(candidateError),
+          stage,
+          ...getPlannerErrorDetails(candidateError),
         });
       }
     }
