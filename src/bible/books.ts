@@ -193,13 +193,15 @@ export const getCanonicalBookIdByName = (value?: string | null) => {
   return canonicalBookIdByAlias.get(normalizeBookLookup(trimmed)) ?? null;
 };
 
-const getBibleBooks = (input: BibleJSON | BibleBook[]) =>
-  Array.isArray(input) ? input : input.books;
+type NamedBibleBook = Pick<BibleBook, 'id' | 'name'>;
 
-export const findBookInBible = (input: BibleJSON | BibleBook[], value?: string | null) => {
+export const findBookInBible = <T extends NamedBibleBook>(
+  input: { books: T[] } | T[],
+  value?: string | null,
+) => {
   if (!value) return undefined;
 
-  const books = getBibleBooks(input);
+  const books = Array.isArray(input) ? input : input.books;
   const normalizedValue = normalizeBookLookup(value);
   const canonicalBookId = getCanonicalBookIdByName(value);
 
@@ -219,7 +221,10 @@ export const findBookInBible = (input: BibleJSON | BibleBook[], value?: string |
   });
 };
 
-export const getBookNameForId = (input: BibleJSON | BibleBook[], bookId?: string | null) => {
+export const getBookNameForId = (
+  input: { books: NamedBibleBook[] } | NamedBibleBook[],
+  bookId?: string | null,
+) => {
   if (!bookId) return '';
   return findBookInBible(input, bookId)?.name ?? getCanonicalBookName(bookId);
 };

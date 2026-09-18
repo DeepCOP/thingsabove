@@ -1,4 +1,5 @@
 import { getCanonicalBookName } from '@/src/bible/books';
+import BibleAttribution from '@/src/components/BibleAttribution';
 import { useRealtimeScriptureNotes } from '@/src/hooks/useRealtimeScriptureNotes';
 import { useScriptureNotes } from '@/src/hooks/useScriptureNotes';
 import dayjs from '@/src/lib/dayjs';
@@ -46,6 +47,8 @@ type Props = {
   selectionVerses: number[];
   verseCount: number;
   version: string;
+  copyright?: string;
+  attributionUrl?: string;
 };
 
 const NOTE_TYPES: ScriptureNoteType[] = ['verse', 'section', 'chapter', 'book'];
@@ -68,6 +71,8 @@ export default function ScriptureNotesScreen({
   selectionVerses,
   verseCount,
   version,
+  copyright,
+  attributionUrl,
 }: Props) {
   const insets = useSafeAreaInsets();
   const colorScheme = useColorScheme();
@@ -258,6 +263,7 @@ export default function ScriptureNotesScreen({
                   <Text className="text-right mt-2 text-sm text-gray-500 dark:text-gray-300">
                     {selectedVerseReference} {version}
                   </Text>
+                  <BibleAttribution copyright={copyright} attributionUrl={attributionUrl} />
                 </View>
 
                 <View className="mt-4">

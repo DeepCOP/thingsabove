@@ -419,3 +419,21 @@ import_map = "./functions/screen-plan-submission/deno.json"
 enabled = true
 verify_jwt = true
 entrypoint = "./functions/delete-account/index.ts"
+
+[functions.youversion]
+enabled = true
+# Public Bible reading for guests; the provider app key remains server-side.
+verify_jwt = false
+entrypoint = "./functions/youversion/index.ts"
+
+[functions.esv]
+enabled = true
+# Public Bible reading for guests; the provider API key remains server-side.
+verify_jwt = false
+entrypoint = "./functions/esv/index.ts"
+
+[functions.api-bible]
+enabled = true
+# Public Bible reading for guests; the provider API key remains server-side.
+verify_jwt = false
+entrypoint = "./functions/api-bible/index.ts"

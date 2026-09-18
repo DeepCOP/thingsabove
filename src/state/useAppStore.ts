@@ -3,6 +3,7 @@ import type {
   BibleVersionId,
   BibleVersionInstallState,
   BibleVersionInstallStatus,
+  BibleVersionManifestEntry,
 } from '@/src/bible/types';
 import { DevotionalDays } from '@/src/types/types';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -57,6 +58,9 @@ type AppState = {
     patch: Partial<BibleVersionInstallState>,
   ) => void;
   clearBibleVersionState: (versionId: BibleVersionId) => void;
+  savedBibleVersions: Partial<Record<BibleVersionId, BibleVersionManifestEntry>>;
+  saveBibleVersion: (version: BibleVersionManifestEntry) => void;
+  forgetBibleVersion: (versionId: BibleVersionId) => void;
 
   isGrid: boolean;
   setIsGrid: (isGrid: boolean) => void;
@@ -87,6 +91,7 @@ type PersistedAppState = Pick<
   | 'sort'
   | 'version'
   | 'bibleVersionStates'
+  | 'savedBibleVersions'
   | 'selectedBook'
   | 'bibleVerseHighlights'
   | 'currentPlan'
@@ -105,6 +110,7 @@ const DEFAULT_PERSISTED_STATE: PersistedAppState = {
   sort: 'Recent',
   version: 'KJV',
   bibleVersionStates: {},
+  savedBibleVersions: {},
   selectedBook: DEFAULT_SELECTED_BOOK,
   bibleVerseHighlights: {},
   currentPlan: null,
@@ -172,13 +178,18 @@ const normalizeBibleVersionState = (value: unknown): BibleVersionInstallState | 
   }
 
   return {
-    status: value.status,
+    status: value.status === 'downloading' ? 'error' : value.status,
     localUri: typeof value.localUri === 'string' ? value.localUri : undefined,
     installedAt: typeof value.installedAt === 'string' ? value.installedAt : undefined,
     sizeBytes: toPositiveNumber(value.sizeBytes),
     checksum:
       typeof value.checksum === 'string' || value.checksum === null ? value.checksum : undefined,
-    error: typeof value.error === 'string' || value.error === null ? value.error : undefined,
+    error:
+      value.status === 'downloading'
+        ? 'Download interrupted. Please try again.'
+        : typeof value.error === 'string' || value.error === null
+          ? value.error
+          : undefined,
   };
 };
 
@@ -201,6 +212,54 @@ const normalizeBibleVersionStates = (
   });
 
   return Object.fromEntries(normalizedEntries);
+};
+
+// Persist catalog metadata only. Never persist a reader, bundled loader, or scripture content.
+const normalizeSavedBibleVersion = (value: unknown): BibleVersionManifestEntry | null => {
+  if (!isRecord(value)) return null;
+  const id = normalizeBibleVersionId(value.id);
+  const source = value.source ?? 'offline';
+  if (
+    !id ||
+    !['offline', 'youversion', 'esv', 'apiBible'].includes(String(source)) ||
+    typeof value.shortLabel !== 'string' ||
+    !value.shortLabel.trim() ||
+    typeof value.label !== 'string' ||
+    !value.label.trim() ||
+    (source !== 'offline' &&
+      (typeof value.providerBibleId !== 'string' || !value.providerBibleId.trim()))
+  ) {
+    return null;
+  }
+
+  return {
+    id,
+    source: source as BibleVersionManifestEntry['source'],
+    providerBibleId: typeof value.providerBibleId === 'string' ? value.providerBibleId : undefined,
+    shortLabel: value.shortLabel,
+    label: value.label,
+    description: typeof value.description === 'string' ? value.description : '',
+    language: typeof value.language === 'string' ? value.language : null,
+    sizeBytes: toPositiveNumber(value.sizeBytes, 0) ?? 0,
+    localFilename: typeof value.localFilename === 'string' ? value.localFilename : '',
+    isBundled: value.isBundled === true,
+    storagePath: typeof value.storagePath === 'string' ? value.storagePath : null,
+    downloadUrl: typeof value.downloadUrl === 'string' ? value.downloadUrl : null,
+    checksum: typeof value.checksum === 'string' ? value.checksum : null,
+    updatedAt: typeof value.updatedAt === 'string' ? value.updatedAt : null,
+  };
+};
+
+const normalizeSavedBibleVersions = (
+  value: unknown,
+): Partial<Record<BibleVersionId, BibleVersionManifestEntry>> => {
+  if (!isRecord(value)) return {};
+  return Object.fromEntries(
+    Object.values(value).flatMap((entry) => {
+      const normalized = normalizeSavedBibleVersion(entry);
+      return normalized ? [[normalized.id, normalized]] : [];
+    }),
+  );
 };
 
 const normalizeBibleVerseHighlights = (value: unknown): Record<string, BibleVerseHighlight> => {
@@ -245,6 +304,7 @@ const partializeAppState = (state: AppState): PersistedAppState => ({
   sort: state.sort,
   version: state.version,
   bibleVersionStates: state.bibleVersionStates,
+  savedBibleVersions: state.savedBibleVersions,
   selectedBook: state.selectedBook,
   bibleVerseHighlights: state.bibleVerseHighlights,
   currentPlan: state.currentPlan,
@@ -269,6 +329,7 @@ const migrateAppState = (persistedState: unknown): PersistedAppState => {
     sort: isSortOption(persistedState.sort) ? persistedState.sort : DEFAULT_PERSISTED_STATE.sort,
     version: normalizeBibleVersionId(persistedState.version) ?? DEFAULT_PERSISTED_STATE.version,
     bibleVersionStates: normalizeBibleVersionStates(persistedState.bibleVersionStates),
+    savedBibleVersions: normalizeSavedBibleVersions(persistedState.savedBibleVersions),
     selectedBook: normalizeSelectedBook(persistedState.selectedBook),
     bibleVerseHighlights: normalizeBibleVerseHighlights(persistedState.bibleVerseHighlights),
     currentPlan: hasOwn(persistedState, 'currentPlan')
@@ -280,7 +341,7 @@ const migrateAppState = (persistedState: unknown): PersistedAppState => {
 
 export const useAppStore = create<AppState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       hasCompletedOnboarding: DEFAULT_PERSISTED_STATE.hasCompletedOnboarding,
       completeOnboarding: () => set({ hasCompletedOnboarding: true }),
 
@@ -371,10 +432,27 @@ export const useAppStore = create<AppState>()(
           delete nextStates[versionId];
           return { bibleVersionStates: nextStates };
         }),
+      savedBibleVersions: DEFAULT_PERSISTED_STATE.savedBibleVersions,
+      saveBibleVersion: (version) => {
+        const metadata = normalizeSavedBibleVersion(version);
+        if (!metadata) return;
+        if (JSON.stringify(get().savedBibleVersions[metadata.id]) === JSON.stringify(metadata))
+          return;
+        set((state) => ({
+          savedBibleVersions: { ...state.savedBibleVersions, [metadata.id]: metadata },
+        }));
+      },
+      forgetBibleVersion: (versionId) =>
+        set((state) => {
+          if (!state.savedBibleVersions[versionId]) return state;
+          const nextVersions = { ...state.savedBibleVersions };
+          delete nextVersions[versionId];
+          return { savedBibleVersions: nextVersions };
+        }),
     }),
     {
       name: 'app-storage',
-      version: 4,
+      version: 5,
       storage: createJSONStorage(() => AsyncStorage),
       migrate: (persistedState) => migrateAppState(persistedState),
       merge: (persistedState, currentState) => ({

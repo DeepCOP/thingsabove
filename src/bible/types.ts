@@ -8,6 +8,10 @@ export type BibleVerse = {
 export type BibleChapter = {
   chapter: number;
   verses: BibleVerse[];
+  copyright?: string;
+  attributionUrl?: string;
+  /** Opaque API.Bible fair-use token; never persisted with Scripture text. */
+  fumsToken?: string;
 };
 
 export type BibleBook = {
@@ -43,6 +47,8 @@ export type BibleVersionInstallState = {
 
 export type BibleVersionManifestEntry = {
   id: BibleVersionId;
+  source?: 'offline' | 'youversion' | 'esv' | 'apiBible';
+  providerBibleId?: string;
   shortLabel: string;
   label: string;
   description: string;
@@ -54,5 +60,5 @@ export type BibleVersionManifestEntry = {
   downloadUrl?: string | null;
   checksum?: string | null;
   updatedAt?: string | null;
-  loadBundledJson?: () => Promise<BibleJSON>;
+  loadBundledJson?: () => Promise<RawBibleJSON>;
 };
