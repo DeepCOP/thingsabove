@@ -52,6 +52,8 @@ export type BibleVersionManifestEntry = {
   shortLabel: string;
   label: string;
   description: string;
+  copyright?: string;
+  attributionUrl?: string;
   language?: string | null;
   sizeBytes: number;
   localFilename: string;

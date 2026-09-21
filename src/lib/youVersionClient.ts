@@ -1,4 +1,4 @@
-import type { YouVersionRequest } from '@/src/bible/adapters/youversion';
+import { parseYouVersionCopyright, type YouVersionRequest } from '@/src/bible/adapters/youversion';
 import type { BibleVersionManifestEntry } from '@/src/bible/types';
 import { supabase } from './supabaseClient';
 
@@ -53,6 +53,33 @@ const invokeYouVersion = async (
 
 export const requestYouVersion: YouVersionRequest = invokeYouVersion;
 
+export type YouVersionAttribution = {
+  copyright: string;
+  attributionUrl: 'https://www.bible.com/';
+};
+
+export const fetchYouVersionAttribution = async (
+  bibleId: string,
+): Promise<YouVersionAttribution> => {
+  if (!/^[1-9]\d{0,9}$/.test(bibleId) || Number(bibleId) > 2147483647) {
+    throw new Error('Invalid YouVersion Bible identifier.');
+  }
+  const response = await invokeYouVersion({ action: 'metadata', bibleId });
+  const data = response.data;
+  if (
+    !data ||
+    typeof data !== 'object' ||
+    data.bibleId !== bibleId ||
+    typeof data.copyright !== 'string' ||
+    data.copyright.length > 20_000
+  ) {
+    throw new Error('YouVersion returned invalid attribution metadata.');
+  }
+  const copyright = parseYouVersionCopyright(data.copyright);
+  if (!copyright) throw new Error('YouVersion did not return a copyright notice for this Bible.');
+  return { copyright, attributionUrl: 'https://www.bible.com/' };
+};
+
 export const fetchYouVersionCatalog = async (): Promise<BibleVersionManifestEntry[]> => {
   if (!YOUVERSION_ENABLED) return [];
   const versions = new Map<string, BibleVersionManifestEntry>();
@@ -81,6 +108,10 @@ export const fetchYouVersionCatalog = async (): Promise<BibleVersionManifestEntr
       }
       const providerBibleId = String(entry.id);
       const id = `YOUVERSION_${providerBibleId}`;
+      const copyright =
+        typeof entry.copyright === 'string' && entry.copyright.length <= 20_000
+          ? parseYouVersionCopyright(entry.copyright)
+          : undefined;
       versions.set(id, {
         id,
         source: 'youversion',
@@ -88,6 +119,8 @@ export const fetchYouVersionCatalog = async (): Promise<BibleVersionManifestEntr
         shortLabel: entry.abbreviation,
         label: entry.title,
         description: 'Read online with YouVersion.',
+        copyright: copyright || undefined,
+        attributionUrl: 'https://www.bible.com/',
         language: typeof entry.language_tag === 'string' ? entry.language_tag : undefined,
         isBundled: false,
         sizeBytes: 0,

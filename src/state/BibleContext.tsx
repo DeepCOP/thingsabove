@@ -11,7 +11,12 @@ import type {
   BibleVersionManifestEntry,
 } from '@/src/bible/types';
 import { createBibleReadingAdapter } from '@/src/lib/bibleReadingService';
-import { fetchYouVersionCatalog, requestYouVersion } from '@/src/lib/youVersionClient';
+import {
+  fetchYouVersionAttribution,
+  fetchYouVersionCatalog,
+  requestYouVersion,
+  type YouVersionAttribution,
+} from '@/src/lib/youVersionClient';
 import { fetchEsvCatalog, requestEsv } from '@/src/lib/esvClient';
 import { fetchApiBibleCatalog, requestApiBible } from '@/src/lib/apiBibleClient';
 import { isOnlineBibleVersion } from '@/src/bible/sources';
@@ -60,6 +65,7 @@ type BibleContextType = {
   versionsCatalogLoading: boolean;
   versionsCatalogError: string | null;
   refreshVersionsCatalog: () => Promise<void>;
+  loadVersionAttribution: (versionId: BibleVersionId) => Promise<void>;
   bookNames: string[];
 };
 
@@ -82,6 +88,7 @@ export function BibleProvider({ children }: { children: ReactNode }) {
   const forgetBibleVersion = useAppStore((state) => state.forgetBibleVersion);
   const installationRequests = useRef(new Map<BibleVersionId, Promise<void>>());
   const removalRequests = useRef(new Map<BibleVersionId, Promise<void>>());
+  const attributionRequests = useRef(new Map<BibleVersionId, Promise<void>>());
   const [{ adapter, books }, setReader] = useState<{
     adapter: BibleReadingAdapter;
     books: BibleBookMetadata[];
@@ -94,6 +101,9 @@ export function BibleProvider({ children }: { children: ReactNode }) {
   const [readerAttempt, setReaderAttempt] = useState(0);
   const retryReader = useCallback(() => setReaderAttempt((previous) => previous + 1), []);
   const [catalogVersions, setCatalogVersions] = useState<BibleVersionManifestEntry[]>([]);
+  const [versionAttributions, setVersionAttributions] = useState<
+    Partial<Record<BibleVersionId, YouVersionAttribution>>
+  >({});
   const [versionsCatalogLoading, setVersionsCatalogLoading] = useState(true);
   const [versionsCatalogError, setVersionsCatalogError] = useState<string | null>(null);
 
@@ -119,10 +129,16 @@ export function BibleProvider({ children }: { children: ReactNode }) {
           ]
         : [],
     );
-    return mergeBibleVersionCatalog([...catalogVersions, ...saved, ...installedFallbacks]).filter(
-      (entry) => authenticatedUserId || !isOnlineBibleVersion(entry),
-    );
-  }, [authenticatedUserId, bibleVersionStates, catalogVersions, savedBibleVersions]);
+    return mergeBibleVersionCatalog([...catalogVersions, ...saved, ...installedFallbacks])
+      .map((entry) => ({ ...entry, ...versionAttributions[entry.id] }))
+      .filter((entry) => authenticatedUserId || !isOnlineBibleVersion(entry));
+  }, [
+    authenticatedUserId,
+    bibleVersionStates,
+    catalogVersions,
+    savedBibleVersions,
+    versionAttributions,
+  ]);
 
   const versionMap = useMemo(
     () =>
@@ -131,6 +147,30 @@ export function BibleProvider({ children }: { children: ReactNode }) {
         return acc;
       }, {}),
     [availableVersions],
+  );
+
+  const loadVersionAttribution = useCallback(
+    async (versionId: BibleVersionId) => {
+      const entry = versionMap[versionId];
+      if (!entry || entry.copyright || entry.source !== 'youversion' || !entry.providerBibleId) {
+        return;
+      }
+      const existing = attributionRequests.current.get(versionId);
+      if (existing) return existing;
+      const pending = fetchYouVersionAttribution(entry.providerBibleId)
+        .then((attribution) => {
+          setVersionAttributions((previous) => ({ ...previous, [versionId]: attribution }));
+          if (useAppStore.getState().savedBibleVersions[versionId]) {
+            saveBibleVersion({ ...entry, ...attribution });
+          }
+        })
+        .finally(() => {
+          attributionRequests.current.delete(versionId);
+        });
+      attributionRequests.current.set(versionId, pending);
+      return pending;
+    },
+    [saveBibleVersion, versionMap],
   );
 
   const refreshVersionsCatalog = useCallback(async () => {
@@ -470,6 +510,7 @@ export function BibleProvider({ children }: { children: ReactNode }) {
         versionsCatalogLoading,
         versionsCatalogError,
         refreshVersionsCatalog,
+        loadVersionAttribution,
         bookNames,
       }}>
       {children}

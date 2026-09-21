@@ -1,4 +1,5 @@
 import { BIBLE_SOURCE_LABELS } from '@/src/bible/sources';
+import BibleAttribution from '@/src/components/BibleAttribution';
 import BibleVersionCover from '@/src/components/BibleVersionCover';
 import { formatBibleVersionSize } from '@/src/lib/bibleVersionService';
 import { useBible } from '@/src/state/BibleContext';
@@ -27,8 +28,23 @@ export default function BibleVersionDetails({
   onRemoved,
   onRead,
 }: BibleVersionDetailsProps) {
-  const { versions, addVersion, removeVersion, setVersion, loadingVersionId } = useBible();
+  const {
+    versions,
+    addVersion,
+    removeVersion,
+    setVersion,
+    loadingVersionId,
+    loadVersionAttribution,
+  } = useBible();
   const entry = versions.find((version) => version.id === versionId);
+  const entryId = entry?.id;
+  const entryCopyright = entry?.copyright;
+
+  useEffect(() => {
+    if (!entryId || entryCopyright) return;
+    void loadVersionAttribution(entryId).catch(() => undefined);
+  }, [entryCopyright, entryId, loadVersionAttribution]);
+
   const dark = useColorScheme() === 'dark';
   const { isConnected, isInternetReachable } = useNetInfo();
   const isOffline = isConnected === false || isInternetReachable === false;
@@ -210,6 +226,7 @@ export default function BibleVersionDetails({
           {entry.description || entry.label}
         </Text>
       </View>
+      <BibleAttribution copyright={entry.copyright} attributionUrl={entry.attributionUrl} />
 
       <View style={styles.feature}>
         <Ionicons

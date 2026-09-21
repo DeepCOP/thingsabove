@@ -110,6 +110,7 @@ export const createApiBibleHandler = (dependencies: Dependencies) => async (req:
   let url: URL;
   if (body.action === 'catalog') {
     url = new URL('https://rest.api.bible/v1/bibles');
+    url.searchParams.set('include-full-details', 'true');
   } else if (body.action === 'books') {
     if (!isBibleId(body.bibleId)) return json({ error: 'Invalid Bible identifier.' }, 400);
     if (allowedIds.length && !allowedIds.includes(body.bibleId)) {

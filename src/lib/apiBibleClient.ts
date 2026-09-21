@@ -89,6 +89,11 @@ export const fetchApiBibleCatalog = async (): Promise<BibleVersionManifestEntry[
       shortLabel,
       label,
       description: shortText(entry?.description, 500) ?? 'Read online with API.Bible.',
+      copyright:
+        shortText(entry?.copyright, 20_000) ??
+        shortText(entry?.copyrightStatement, 20_000) ??
+        undefined,
+      attributionUrl: 'https://docs.api.bible/',
       language: languageName ?? undefined,
       isBundled: false,
       sizeBytes: 0,

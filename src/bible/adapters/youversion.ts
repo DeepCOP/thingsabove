@@ -5,6 +5,7 @@ import type { BibleBookMetadata, BibleReadingAdapter } from './types';
 
 export type YouVersionRequest = (
   request:
+    | { action: 'metadata'; bibleId: string }
     | { action: 'books'; bibleId: string }
     | { action: 'chapter'; bibleId: string; chapterId: string },
 ) => Promise<unknown>;
@@ -33,7 +34,7 @@ const record = (value: unknown): Record<string, unknown> => {
 
 const normalizeWhitespace = (value: string) => value.replace(/\s+/g, ' ').trim();
 
-const plainText = (value: string) => {
+export const parseYouVersionCopyright = (value: string) => {
   let result = '';
   const parser = new Parser(
     {
@@ -197,7 +198,8 @@ export const createYouVersionAdapter = (
           if (data.bibleId !== bibleId || !Array.isArray(data.books) || !data.books.length) {
             throw new Error('YouVersion returned an invalid book list.');
           }
-          const copyright = typeof data.copyright === 'string' ? plainText(data.copyright) : '';
+          const copyright =
+            typeof data.copyright === 'string' ? parseYouVersionCopyright(data.copyright) : '';
           if (!copyright) {
             throw new Error('YouVersion did not return the copyright notice for this Bible.');
           }

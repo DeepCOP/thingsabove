@@ -28,6 +28,14 @@ export default function BibleAttribution({
           className="mt-1 text-xs text-blue-600 underline dark:text-blue-400">
           API.Bible
         </Link>
+      ) : attributionUrl === 'https://www.bible.com/' ? (
+        <Link
+          href="https://www.bible.com/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-1 text-xs text-blue-600 underline dark:text-blue-400">
+          YouVersion
+        </Link>
       ) : null}
     </View>
   );

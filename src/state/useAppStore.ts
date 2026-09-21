@@ -239,6 +239,16 @@ const normalizeSavedBibleVersion = (value: unknown): BibleVersionManifestEntry |
     shortLabel: value.shortLabel,
     label: value.label,
     description: typeof value.description === 'string' ? value.description : '',
+    copyright:
+      typeof value.copyright === 'string' && value.copyright.trim().length <= 20_000
+        ? value.copyright.trim()
+        : undefined,
+    attributionUrl:
+      value.attributionUrl === 'https://www.esv.org/' ||
+      value.attributionUrl === 'https://docs.api.bible/' ||
+      value.attributionUrl === 'https://www.bible.com/'
+        ? value.attributionUrl
+        : undefined,
     language: typeof value.language === 'string' ? value.language : null,
     sizeBytes: toPositiveNumber(value.sizeBytes, 0) ?? 0,
     localFilename: typeof value.localFilename === 'string' ? value.localFilename : '',

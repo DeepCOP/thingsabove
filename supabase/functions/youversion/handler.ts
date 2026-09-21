@@ -121,7 +121,7 @@ export const createYouVersionHandler = (dependencies: Dependencies) => async (re
     url.searchParams.set('page_size', '99');
     // Leave all_available disabled: only return translations licensed to this app.
     if (typeof body.pageToken === 'string') url.searchParams.set('page_token', body.pageToken);
-  } else if (body.action === 'books' || body.action === 'chapter') {
+  } else if (body.action === 'metadata' || body.action === 'books' || body.action === 'chapter') {
     if (!isBibleId(body.bibleId)) return json({ error: 'Invalid Bible identifier.' }, 400);
     if (allowedIds.length && !allowedIds.includes(body.bibleId)) {
       return json({ error: 'This translation is not enabled for this app.' }, 403);
@@ -129,7 +129,7 @@ export const createYouVersionHandler = (dependencies: Dependencies) => async (re
     url.pathname += `/${body.bibleId}`;
     if (body.action === 'books') {
       url.pathname += '/index';
-    } else {
+    } else if (body.action === 'chapter') {
       if (
         typeof body.chapterId !== 'string' ||
         !/^[A-Z0-9]{3}\.[1-9]\d{0,2}$/.test(body.chapterId)
@@ -187,6 +187,22 @@ export const createYouVersionHandler = (dependencies: Dependencies) => async (re
   };
 
   try {
+    if (body.action === 'metadata') {
+      const metadata = await requestResource(url);
+      if (
+        String(metadata.id) !== body.bibleId ||
+        typeof metadata.copyright !== 'string' ||
+        !metadata.copyright.trim()
+      ) {
+        throw invalidResponse();
+      }
+      return json({
+        data: {
+          bibleId: body.bibleId,
+          copyright: metadata.copyright,
+        },
+      });
+    }
     if (body.action === 'books') {
       const metadataUrl = new URL(`https://api.youversion.com/v1/bibles/${body.bibleId}`);
       const results = await Promise.allSettled([
