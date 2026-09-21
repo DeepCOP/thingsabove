@@ -33,9 +33,11 @@ const invokeEsv = async (body: Parameters<EsvRequest>[0] | { action: 'catalog' }
           (Number.isFinite(seconds) ? Math.max(1, Math.min(seconds, 86400)) : 60) * 1000;
       }
       throw new Error(
-        typeof details?.error === 'string'
-          ? details.error
-          : 'Unable to connect to ESV. Please try again.',
+        response?.status === 401
+          ? 'Sign in to use online Bible versions.'
+          : typeof details?.error === 'string'
+            ? details.error
+            : 'Unable to connect to ESV. Please try again.',
       );
     }
     if (!data || typeof data !== 'object' || !('data' in data)) {

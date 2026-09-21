@@ -1,4 +1,5 @@
 import { esvBooks } from '../_shared/esvBooks.ts';
+import { getAuthenticatedUserId } from '../_shared/authenticatedUser.ts';
 import { checkRateLimit, getClientIp } from '../_shared/rateLimit.ts';
 
 type Dependencies = {
@@ -60,9 +61,19 @@ const readJson = async (body: ReadableStream<Uint8Array> | null, limit: number) 
 export const createEsvHandler = (dependencies: Dependencies) => async (req: Request) => {
   if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: cors });
   if (req.method !== 'POST') return json({ error: 'Use POST for Bible requests.' }, 405);
+  let authenticatedUserId: string | null;
+  try {
+    authenticatedUserId = await getAuthenticatedUserId(req);
+  } catch (error) {
+    console.error('ESV authentication check failed', error);
+    return json({ error: 'Unable to validate your session. Please try again.' }, 503);
+  }
+  if (!authenticatedUserId) {
+    return json({ error: 'Sign in to use online Bible versions.' }, 401);
+  }
   try {
     const allowed = await checkRateLimit({
-      key: `online-bible:${getClientIp(req) ?? 'unknown'}`,
+      key: `online-bible:${getClientIp(req) ?? `user:${authenticatedUserId}`}`,
       limit: 30,
       windowSeconds: 60,
     });

@@ -34,9 +34,11 @@ const invokeApiBible = async (body: Parameters<ApiBibleRequest>[0] | { action: '
           (Number.isFinite(seconds) ? Math.max(1, Math.min(seconds, 86_400)) : 60) * 1000;
       }
       throw new Error(
-        typeof details?.error === 'string'
-          ? details.error
-          : 'Unable to connect to API.Bible. Please try again.',
+        response?.status === 401
+          ? 'Sign in to use online Bible versions.'
+          : typeof details?.error === 'string'
+            ? details.error
+            : 'Unable to connect to API.Bible. Please try again.',
       );
     }
     if (!data || typeof data !== 'object' || !('data' in data)) {

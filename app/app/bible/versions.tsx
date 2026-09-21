@@ -130,8 +130,8 @@ export default function BibleVersionsRoute() {
             </View>
             <Text style={[styles.infoText, { color: secondary }]}>
               Keep the translations you use in My Bible Versions. Downloaded versions work offline,
-              and online versions stream text when you read. Adding a version saves it to your
-              library; select Read this version to use it in the reader.
+              and online versions stream text while you are signed in. Adding a version saves it to
+              your library; select Read this version to use it in the reader.
             </Text>
             <Text style={[styles.infoText, { color: secondary }]}>
               Different translations use different wording to convey the original text. Choose the

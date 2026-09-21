@@ -2,9 +2,11 @@ import { BIBLE_SOURCE_LABELS } from '@/src/bible/sources';
 import { matchesVersionSearch } from '@/src/bible/versionPresentation';
 import BibleVersionCover from '@/src/components/BibleVersionCover';
 import { formatBibleVersionSize } from '@/src/lib/bibleVersionService';
+import { useAuth } from '@/src/state/AuthContext';
 import { useBible, type BibleVersionListItem } from '@/src/state/BibleContext';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useNetInfo } from '@react-native-community/netinfo';
+import { useRouter } from 'expo-router';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
@@ -39,6 +41,9 @@ type AdapterFilter = (typeof adapterFilters)[number]['key'];
 type ProviderSection = (typeof adapterSections)[number]['key'];
 
 export default function BibleVersionsScreen({ mode, onAddPress, onVersionPress, onRead }: Props) {
+  const router = useRouter();
+  const { session } = useAuth();
+  const isGuest = !session;
   const {
     versions,
     setVersion,
@@ -58,6 +63,11 @@ export default function BibleVersionsScreen({ mode, onAddPress, onVersionPress, 
   const [providerSection, setProviderSection] = useState<ProviderSection | null>(null);
   const [optionsId, setOptionsId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  useEffect(() => {
+    if (isGuest && adapterFilter !== 'all' && adapterFilter !== 'offline') {
+      setAdapterFilter('all');
+    }
+  }, [adapterFilter, isGuest]);
   const pending = useRef(new Set<string>());
   const mounted = useRef(true);
   useEffect(() => {
@@ -117,6 +127,7 @@ export default function BibleVersionsScreen({ mode, onAddPress, onVersionPress, 
     mode === 'library'
       ? [{ key: 'library', title: '', data: versions.filter((entry) => entry.isAdded), total: 0 }]
       : adapterSections
+          .filter((section) => !isGuest || section.key === 'offline')
           .filter((section) => adapterFilter === 'all' || section.key === adapterFilter)
           .map((section) => {
             const entries = sortedMatches.filter(
@@ -218,7 +229,16 @@ export default function BibleVersionsScreen({ mode, onAddPress, onVersionPress, 
                             : `Filter by ${filter.title}`
                         }
                         accessibilityState={{ selected }}
-                        onPress={() => setAdapterFilter(filter.key)}
+                        onPress={() => {
+                          if (isGuest && filter.key !== 'all' && filter.key !== 'offline') {
+                            router.push({
+                              pathname: '/app/signin',
+                              params: { returnTo: '/app/bible/versions' },
+                            });
+                            return;
+                          }
+                          setAdapterFilter(filter.key);
+                        }}
                         style={[
                           styles.filterChip,
                           {
@@ -244,6 +264,24 @@ export default function BibleVersionsScreen({ mode, onAddPress, onVersionPress, 
                 You are offline. Downloaded versions are ready to read; online versions need an
                 internet connection.
               </Text>
+            ) : null}
+            {isGuest ? (
+              <View style={[styles.noticeBox, { borderColor: colors.border }]}>
+                <Text style={[styles.noticeText, { color: colors.secondary }]}>
+                  Sign in to browse, add, and read online Bible versions. Downloaded versions remain
+                  available without an account.
+                </Text>
+                <TouchableOpacity
+                  accessibilityRole="button"
+                  onPress={() =>
+                    router.push({
+                      pathname: '/app/signin',
+                      params: { returnTo: '/app/bible/versions' },
+                    })
+                  }>
+                  <Text style={styles.link}>Sign in</Text>
+                </TouchableOpacity>
+              </View>
             ) : null}
             {error ? (
               <Text accessibilityRole="alert" style={[styles.notice, { color: colors.error }]}>
@@ -483,8 +521,8 @@ export default function BibleVersionsScreen({ mode, onAddPress, onVersionPress, 
               ) : (
                 <Text style={[styles.modalBody, { color: colors.secondary }]}>
                   Add an online version to your library to read it without downloading the full
-                  Bible. An internet connection is required to read. Your highlights and notes
-                  remain available across versions.
+                  Bible. Sign-in and an internet connection are required to read. Your highlights
+                  and notes remain available across versions.
                   {providers.length ? ` Available providers: ${providers.join(', ')}.` : ''}
                 </Text>
               )
