@@ -1,3 +1,5 @@
+import { checkRateLimit, getClientIp } from '../_shared/rateLimit.ts';
+
 type Dependencies = {
   appKey: string;
   allowedBibleIds?: string[];
@@ -61,6 +63,19 @@ const readJson = async (body: ReadableStream<Uint8Array> | null, limit: number) 
 export const createYouVersionHandler = (dependencies: Dependencies) => async (req: Request) => {
   if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: cors });
   if (req.method !== 'POST') return json({ error: 'Use POST for Bible requests.' }, 405);
+  try {
+    const allowed = await checkRateLimit({
+      key: `online-bible:${getClientIp(req) ?? 'unknown'}`,
+      limit: 30,
+      windowSeconds: 60,
+    });
+    if (!allowed) {
+      return json({ error: 'Too many requests.' }, 429, { 'Retry-After': '60' });
+    }
+  } catch (error) {
+    console.error('YouVersion rate-limit check failed', error);
+    return json({ error: 'Unable to validate the request limit. Please try again.' }, 503);
+  }
   if (!dependencies.appKey) {
     return json({ error: 'YouVersion has not been configured on the server.' }, 503);
   }
