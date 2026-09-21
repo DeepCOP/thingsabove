@@ -3,6 +3,7 @@ import ReaderBottomBar from '@/src/components/ReaderBottomBar';
 import BibleAttribution from '@/src/components/BibleAttribution';
 import ScriptureSelectionMenu from '@/src/components/ScriptureSelectionMenu';
 import { useBibleChapter } from '@/src/hooks/useBibleChapter';
+import { stageScriptureNotesChapter } from '@/src/lib/scriptureNotesChapterHandoff';
 import { getBibleVerseHighlightKey, useAppStore } from '@/src/state/useAppStore';
 import * as Clipboard from 'expo-clipboard';
 import { useRouter } from 'expo-router';
@@ -427,9 +428,10 @@ export default function BibleReaderView({ onScroll }: { onScroll: (...args: any[
           }}
           onMenuLayout={(event) => setMenuHeight(event.nativeEvent.layout.height)}
           onOpenNotes={() => {
-            if (!selectedVerseRange) return;
+            if (!selectedVerseRange || !chapter) return;
 
             setShowMenu(false);
+            stageScriptureNotesChapter({ adapter, bookId: currentBookId, chapterNumber }, chapter);
             router.push({
               pathname: '/app/scripture_notes',
               params: {

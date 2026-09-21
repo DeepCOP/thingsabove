@@ -1,9 +1,13 @@
 import { findBookInBible, getCanonicalBookIdByName, getBookNameForId } from '@/src/bible/books';
 import ScriptureNotesScreen from '@/src/screens/ScriptureNotesScreen';
 import { useBibleChapter } from '@/src/hooks/useBibleChapter';
+import {
+  clearScriptureNotesChapter,
+  getScriptureNotesChapter,
+} from '@/src/lib/scriptureNotesChapterHandoff';
 import { useBible } from '@/src/state/BibleContext';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
 
 const getParam = (value: string | string[] | undefined) =>
@@ -67,15 +71,26 @@ export default function ScriptureNotes() {
   );
   const bookId = resolvedBook?.id ?? getCanonicalBookIdByName(bookIdParam || book) ?? '';
   const bookName = (resolvedBook?.name ?? getBookNameForId(reader.books, bookId)) || book;
+  const handoffScope = useMemo(
+    () => ({ adapter: reader.adapter, bookId, chapterNumber: chapter }),
+    [bookId, chapter, reader.adapter],
+  );
+  const [handoffChapter] = useState(() => getScriptureNotesChapter(handoffScope));
+  useEffect(() => {
+    if (handoffChapter) clearScriptureNotesChapter(handoffScope);
+  }, [handoffChapter, handoffScope]);
   const {
-    chapter: chapterData,
-    loading,
-    error,
+    chapter: fetchedChapter,
+    loading: fetchLoading,
+    error: fetchError,
     retry,
   } = useBibleChapter(bookId, chapter, {
-    adapter: reader.adapter,
-    enabled: version === reader.adapter.versionId && selectionStart > 0,
+    adapter: handoffScope.adapter,
+    enabled: !handoffChapter && version === reader.adapter.versionId && selectionStart > 0,
   });
+  const chapterData = handoffChapter ?? fetchedChapter;
+  const loading = !handoffChapter && fetchLoading;
+  const error = handoffChapter ? null : fetchError;
 
   const selectedText = useMemo(() => {
     if (!chapter || selectionStart <= 0 || !bookId) return verseText;

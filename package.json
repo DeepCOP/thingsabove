@@ -11,7 +11,8 @@
     "lint": "expo lint",
     "prettier-check": "prettier --check .",
     "format": "prettier --write .",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test:scripture-notes-handoff": "node --test script/test-scripture-notes-chapter-handoff.cjs"
   },
   "dependencies": {
     "@expo-google-fonts/merriweather": "^0.4.2",
