@@ -419,3 +419,21 @@ import_map = "./functions/screen-plan-submission/deno.json"
 enabled = true
 verify_jwt = true
 entrypoint = "./functions/delete-account/index.ts"
+
+[functions.youversion]
+enabled = true
+# Online Bible reading requires an authenticated Supabase user.
+verify_jwt = true
+entrypoint = "./functions/youversion/index.ts"
+
+[functions.esv]
+enabled = true
+# Online Bible reading requires an authenticated Supabase user.
+verify_jwt = true
+entrypoint = "./functions/esv/index.ts"
+
+[functions.api-bible]
+enabled = true
+# Online Bible reading requires an authenticated Supabase user.
+verify_jwt = true
+entrypoint = "./functions/api-bible/index.ts"

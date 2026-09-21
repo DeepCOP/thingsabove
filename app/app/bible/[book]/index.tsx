@@ -2,7 +2,7 @@ import { useAppStore } from '@/src/state/useAppStore';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useBible } from '@/src/state/BibleContext';
 
@@ -12,7 +12,7 @@ export default function BibleBooksChapters() {
     book?: string | string[];
   }>();
   const routeBookId = Array.isArray(params.book) ? params.book[0] : params.book;
-  const { bible } = useBible();
+  const { books, loadingVersionId, readerError, retryReader } = useBible();
   const setSelectedBook = useAppStore((s) => s.setSelectedBook);
   const selectedBookId = useAppStore((s) => s.selectedBook.bookId);
 
@@ -39,8 +39,17 @@ export default function BibleBooksChapters() {
       <ScrollView
         className="flex-1 bg-white dark:bg-black px-4 py-4"
         style={{ marginBottom: insets.bottom + 5 }}>
-        {bible.books.map((book) => {
-          const chapterCount = book.chapters.length;
+        {books.length === 0 && loadingVersionId ? (
+          <ActivityIndicator accessibilityLabel="Loading books" className="my-6" />
+        ) : readerError ? (
+          <View className="items-center gap-3 py-6">
+            <Text className="text-center text-gray-500 dark:text-gray-400">{readerError}</Text>
+            <TouchableOpacity onPress={retryReader}>
+              <Text className="font-semibold text-blue-600 dark:text-blue-400">Try again</Text>
+            </TouchableOpacity>
+          </View>
+        ) : null}
+        {books.map((book) => {
           const isOpen = expandedBook === book.id;
 
           return (
@@ -59,7 +68,7 @@ export default function BibleBooksChapters() {
               {/* CHAPTER LIST */}
               {isOpen && (
                 <View className="flex-row flex-wrap px-3 py-3">
-                  {Array.from({ length: chapterCount }, (_, i) => i + 1).map((ch) => (
+                  {book.chapters.map((ch) => (
                     <TouchableOpacity
                       key={ch}
                       onPress={() => {

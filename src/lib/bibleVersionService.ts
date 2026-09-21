@@ -1,11 +1,10 @@
-import { normalizeBibleJson } from '@/src/bible/books';
 import type {
-  BibleJSON,
   BibleVersionInstallState,
   BibleVersionManifestEntry,
   RawBibleJSON,
 } from '@/src/bible/types';
 import { Directory, File, Paths } from 'expo-file-system';
+import { isOnlineBibleVersion } from '@/src/bible/sources';
 
 const versionsDirectory = new Directory(Paths.document, 'bible-versions');
 
@@ -20,11 +19,13 @@ export const isBibleVersionInstalled = (
   version?: BibleVersionManifestEntry | null,
   state?: BibleVersionInstallState,
 ) =>
-  version
+  version && !isOnlineBibleVersion(version)
     ? version.isBundled || (state?.status === 'downloaded' && Boolean(state.localUri))
     : false;
 
 export const installBibleVersion = async (version: BibleVersionManifestEntry) => {
+  if (isOnlineBibleVersion(version))
+    throw new Error('This translation is available for online reading only.');
   if (version.isBundled) {
     return {
       localUri: undefined,
@@ -51,16 +52,19 @@ export const installBibleVersion = async (version: BibleVersionManifestEntry) =>
   };
 };
 
+/** Reads the raw file payload; the offline reading adapter normalizes it. */
 export const loadBibleVersion = async (
   version: BibleVersionManifestEntry,
   state?: BibleVersionInstallState,
-): Promise<BibleJSON> => {
+): Promise<RawBibleJSON> => {
+  if (isOnlineBibleVersion(version))
+    throw new Error('Online translations must be opened through their reading adapter.');
   if (version.isBundled) {
     if (!version.loadBundledJson) {
       throw new Error(`No bundled loader configured for ${version.id}.`);
     }
 
-    return normalizeBibleJson(await version.loadBundledJson());
+    return version.loadBundledJson();
   }
 
   if (!state?.localUri) {
@@ -72,10 +76,11 @@ export const loadBibleVersion = async (
     throw new Error(`${version.id} is missing from device storage.`);
   }
 
-  return normalizeBibleJson(JSON.parse(await file.text()) as RawBibleJSON);
+  return JSON.parse(await file.text()) as RawBibleJSON;
 };
 
 export const removeBibleVersion = async (version: BibleVersionManifestEntry) => {
+  if (isOnlineBibleVersion(version)) return;
   if (version.isBundled) {
     return;
   }
