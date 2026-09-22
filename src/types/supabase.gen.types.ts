@@ -2530,6 +2530,20 @@ export type Database = {
           isSetofReturn: true;
         };
       };
+      search_users_by_name: {
+        Args: { p_limit?: number; p_query: string };
+        Returns: {
+          avatar_url: string | null;
+          church_id: string | null;
+          church_name: string | null;
+          first_name: string;
+          friendship_status: string | null;
+          id: string;
+          last_name: string;
+          receiver_id: string | null;
+          requester_id: string | null;
+        }[];
+      };
       send_friend_request: {
         Args: { p_receiver_id: string };
         Returns: undefined;

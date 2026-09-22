@@ -4,6 +4,7 @@ import {
   fetchPendingFriendRequests,
   fetchUserFriends,
   getUserByEmail,
+  searchUsersByName,
 } from '@/src/api/queries';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
@@ -36,11 +37,31 @@ export function useAddFriend() {
   return useMutation({
     mutationFn: async ({ friendId }: { friendId: string; userId: string }) =>
       await addFriend({ receiver_id: friendId }),
-    onSuccess: (_data, variables) => {
-      qc.invalidateQueries({ queryKey: ['friends', variables.userId] });
-      qc.invalidateQueries({ queryKey: ['friendship', variables.userId, variables.friendId] });
-      qc.invalidateQueries({ queryKey: ['get_user_by_email'] });
+    onSuccess: async (_data, variables) => {
+      await Promise.all([
+        qc.invalidateQueries({ queryKey: ['friends', variables.userId] }),
+        qc.invalidateQueries({
+          queryKey: ['friendship', variables.userId, variables.friendId],
+        }),
+        qc.invalidateQueries({ queryKey: ['get_user_by_email'] }),
+        qc.invalidateQueries({ queryKey: ['search_users_by_name'] }),
+      ]);
     },
+  });
+}
+
+export function useSearchUsersByName({
+  query,
+  userId,
+}: {
+  query: string;
+  userId: string | undefined;
+}) {
+  return useQuery({
+    queryKey: ['search_users_by_name', query, userId],
+    enabled: query.length >= 2 && !!userId,
+    staleTime: 0,
+    queryFn: async () => await searchUsersByName(query),
   });
 }
 

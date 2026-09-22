@@ -1,41 +1,55 @@
-import { useAddFriend, useGetUserByEmail } from '@/src/hooks/useFriends';
+import { useAddFriend, useSearchUsersByName } from '@/src/hooks/useFriends';
 import { buildFriendInviteMessage } from '@/src/lib/planShare';
 import AddFriendScreen from '@/src/screens/AddFriendScreen';
 import { useAuth } from '@/src/state/AuthContext';
-import { isValidEmail, useDebounce } from '@/src/utils';
+import { useDebounce } from '@/src/utils';
+import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Share } from 'react-native';
+import { Alert, Share } from 'react-native';
 
 export default function AddFriend() {
   const { session } = useAuth();
-  const userId = session?.user?.id!;
+  const router = useRouter();
+  const userId = session?.user?.id;
 
-  const [email, setEmail] = useState('');
-  const debouncedEmail = useDebounce(email.trim(), 500);
+  const [searchQuery, setSearchQuery] = useState('');
+  const normalizedQuery = searchQuery.trim().replace(/\s+/g, ' ');
+  const debouncedQuery = useDebounce(normalizedQuery, 400);
+  const isSearchReady = debouncedQuery.length >= 2 && debouncedQuery === normalizedQuery;
 
-  const isEmailValid = isValidEmail(debouncedEmail.trim());
-
-  const userQuery = useGetUserByEmail({
-    query: isEmailValid ? debouncedEmail : '',
+  const usersQuery = useSearchUsersByName({
+    query: debouncedQuery,
     userId,
   });
 
   const addFriend = useAddFriend();
+  const isSearching =
+    normalizedQuery.length >= 2 &&
+    (!isSearchReady || usersQuery.isLoading || usersQuery.isFetching);
 
   return (
     <AddFriendScreen
-      email={email}
-      onEmailChange={setEmail}
-      isEmailValid={isEmailValid}
-      user={userQuery.data}
-      isSearching={userQuery.isLoading}
+      query={searchQuery}
+      onQueryChange={setSearchQuery}
+      results={isSearchReady && !usersQuery.error ? (usersQuery.data ?? []) : []}
+      isSearchReady={isSearchReady}
+      isSearching={isSearching}
+      searchError={isSearchReady ? usersQuery.error?.message : undefined}
       isAdding={addFriend.isPending}
-      onAddFriend={(friendId) =>
-        addFriend.mutate({
-          friendId,
-          userId,
-        })
-      }
+      addingFriendId={addFriend.isPending ? addFriend.variables?.friendId : undefined}
+      onAddFriend={(friendId) => {
+        if (!userId) return;
+
+        addFriend.mutate(
+          { friendId, userId },
+          {
+            onError: (error) => {
+              Alert.alert('Unable to send friend request', error.message);
+            },
+          },
+        );
+      }}
+      onOpenProfile={(profileUserId) => router.push(`/app/profile/${profileUserId}`)}
       onShareInviteLink={() => Share.share({ message: buildFriendInviteMessage() })}
     />
   );

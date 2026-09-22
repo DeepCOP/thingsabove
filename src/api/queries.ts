@@ -6,6 +6,7 @@ import {
   ProfileLocation,
   ProfilesUpdate,
   ProfileWithChurch,
+  UserSearchResult,
 } from '../types/types';
 
 export type PlanCursor = {
@@ -325,6 +326,17 @@ export const getUserByEmail = async (email: string) => {
     throw error;
   }
   return data;
+};
+
+export const searchUsersByName = async (query: string): Promise<UserSearchResult[]> => {
+  const { data, error } = await supabase.rpc('search_users_by_name', {
+    p_query: query,
+    p_limit: 20,
+  });
+
+  if (error) throw error;
+
+  return data ?? [];
 };
 
 export const fetchPendingFriendRequests = async () => {

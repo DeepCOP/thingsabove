@@ -17,6 +17,9 @@ export type Friendship = Pick<
   'requester_id' | 'receiver_id' | 'status'
 >;
 
+export type UserSearchResult =
+  Database['public']['Functions']['search_users_by_name']['Returns'][number];
+
 export type Church = Database['public']['Tables']['churches']['Row'];
 
 export type ChurchInsert = Database['public']['Tables']['churches']['Insert'];
