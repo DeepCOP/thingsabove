@@ -39,12 +39,12 @@ abbreviation. Existing offline version IDs and annotation keys are unchanged.
    pnpm exec supabase functions deploy youversion
    ```
 
-4. Set `EXPO_PUBLIC_YOUVERSION_ENABLED=true` in the app's local environment and
-   restart Expo/rebuild. The app key stays in Supabase secrets and must never
-   have an `EXPO_PUBLIC_` prefix.
-5. Sign in to the app and choose a translation marked **Online · YouVersion**.
+4. Sign in to the app and choose a translation marked **Online · YouVersion**.
    No separate YouVersion account link is required. Existing highlights and
    notes continue to use this app's storage.
+
+The app key stays in Supabase secrets and must never have an `EXPO_PUBLIC_`
+prefix.
 
 The YouVersion proxy uses the official `api.youversion.com/v1` REST API. The
 client follows catalog pagination, stores a separate numeric provider ID, and
@@ -102,9 +102,7 @@ Run `pnpm run test:bible-adapter` for all adapter and proxy regression tests and
    pnpm exec supabase functions deploy esv
    ```
 
-4. Set `EXPO_PUBLIC_ESV_ENABLED=true` in the app's local environment and restart
-   Expo/rebuild. This optional switch uses the same opt-in behavior as the other
-   online providers. Sign in, then select **ESV**, marked **Online · ESV.org**.
+4. Sign in, then select **ESV**, marked **Online · ESV.org**.
 
 ESV offers one translation rather than a multi-translation catalog. Its app ID
 is `ESV_API`, so it stays distinct from downloaded ESV files or ESV editions
@@ -158,9 +156,8 @@ live chapter retrieval still require verification with the project's API key.
    pnpm exec supabase functions deploy api-bible
    ```
 
-4. Set `EXPO_PUBLIC_API_BIBLE_ENABLED=true` in the app environment and restart
-   Expo or rebuild. Signed-in app users can browse, add, and read API.Bible
-   translations; no separate API.Bible account is required.
+4. Signed-in app users can browse, add, and read API.Bible translations; no
+   separate API.Bible account is required.
 
 The API.Bible adapter uses the server proxy for the Bible catalog, book index,
 and one HTML chapter at a time. It maps the provider's book and verse IDs to the

@@ -2,7 +2,6 @@ import { parseYouVersionCopyright, type YouVersionRequest } from '@/src/bible/ad
 import type { BibleVersionManifestEntry } from '@/src/bible/types';
 import { supabase } from './supabaseClient';
 
-export const YOUVERSION_ENABLED = process.env.EXPO_PUBLIC_YOUVERSION_ENABLED === 'true';
 let retryAfter = 0;
 
 const invokeYouVersion = async (
@@ -81,7 +80,6 @@ export const fetchYouVersionAttribution = async (
 };
 
 export const fetchYouVersionCatalog = async (): Promise<BibleVersionManifestEntry[]> => {
-  if (!YOUVERSION_ENABLED) return [];
   const versions = new Map<string, BibleVersionManifestEntry>();
   const pageTokens = new Set<string>();
   let pageToken: string | undefined;
