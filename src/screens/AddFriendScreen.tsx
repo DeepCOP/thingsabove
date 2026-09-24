@@ -163,7 +163,7 @@ export default function AddFriendScreen({
     <View className="flex-1 bg-white px-4 pt-6 dark:bg-black">
       <Text className="text-xl font-bold text-gray-900 dark:text-white">Add Friend</Text>
       <Text className="mt-1 text-sm leading-5 text-gray-600 dark:text-gray-400">
-        Search by first name, last name, or email, send a friend request.
+        Search by name or email to send a friend request.
       </Text>
 
       <View className="mt-4 flex-row items-center rounded-xl bg-gray-100 px-4 dark:bg-neutral-900">

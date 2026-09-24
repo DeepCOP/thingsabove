@@ -32,18 +32,24 @@ as $$
     ) as term
   ),
   search_input as (
-    select
-      term,
+    select term
+    from normalized_search_input
+  ),
+  search_pieces as (
+    select distinct
+      s.term,
+      parts.piece,
       replace(
         replace(
-          replace(term, '\', '\\'),
+          replace(parts.piece, '\', '\\'),
           '%',
           '\%'
         ),
         '_',
         '\_'
       ) as pattern
-    from normalized_search_input
+    from search_input s
+    cross join lateral regexp_split_to_table(s.term, ' ') as parts(piece)
   )
   select
     p.id,
@@ -57,6 +63,23 @@ as $$
     f.receiver_id
   from public.profiles p
   cross join search_input s
+  cross join lateral (
+    select
+      count(*) filter (
+        where lower(p.first_name) like ('%' || sp.pattern || '%') escape '\'
+          or lower(p.last_name) like ('%' || sp.pattern || '%') escape '\'
+      ) as matched_piece_count,
+      count(*) filter (
+        where lower(p.first_name) = sp.piece
+          or lower(p.last_name) = sp.piece
+      ) as exact_piece_count,
+      count(*) filter (
+        where strpos(lower(p.first_name), sp.piece) = 1
+          or strpos(lower(p.last_name), sp.piece) = 1
+      ) as prefix_piece_count
+    from search_pieces sp
+    where sp.term = s.term
+  ) score
   left join public.churches c on c.id = p.church_id
   left join public.friends f
     on (
@@ -67,19 +90,21 @@ as $$
     and p.id <> auth.uid()
     and length(s.term) >= 2
     and (
-      lower(p.first_name) like ('%' || s.pattern || '%') escape '\'
-      or lower(p.last_name) like ('%' || s.pattern || '%') escape '\'
-      or p.email = s.term
+      p.email = s.term
+      or score.matched_piece_count > 0
     )
   order by
     case
       when lower(p.first_name) = s.term
         or lower(p.last_name) = s.term
+        or lower(concat_ws(' ', p.first_name, p.last_name)) = s.term
+        or lower(concat_ws(' ', p.last_name, p.first_name)) = s.term
         or p.email = s.term then 0
-      when strpos(lower(p.first_name), s.term) = 1
-        or strpos(lower(p.last_name), s.term) = 1 then 1
-      else 2
+      else 1
     end,
+    score.matched_piece_count desc,
+    score.exact_piece_count desc,
+    score.prefix_piece_count desc,
     lower(p.first_name),
     lower(p.last_name),
     p.id
