@@ -2,7 +2,6 @@ import type { ApiBibleRequest } from '@/src/bible/adapters/apiBible';
 import type { BibleVersionManifestEntry } from '@/src/bible/types';
 import { supabase } from './supabaseClient';
 
-export const API_BIBLE_ENABLED = process.env.EXPO_PUBLIC_API_BIBLE_ENABLED === 'true';
 let retryAfter = 0;
 
 const invokeApiBible = async (body: Parameters<ApiBibleRequest>[0] | { action: 'catalog' }) => {
@@ -64,7 +63,6 @@ const shortText = (value: unknown, maxLength = 200) =>
 export const requestApiBible: ApiBibleRequest = invokeApiBible;
 
 export const fetchApiBibleCatalog = async (): Promise<BibleVersionManifestEntry[]> => {
-  if (!API_BIBLE_ENABLED) return [];
   const response = await invokeApiBible({ action: 'catalog' });
   if (!Array.isArray(response.data))
     throw new Error('API.Bible returned an invalid version catalog.');

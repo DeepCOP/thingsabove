@@ -2,7 +2,6 @@ import type { EsvRequest } from '@/src/bible/adapters/esv';
 import type { BibleVersionManifestEntry } from '@/src/bible/types';
 import { supabase } from './supabaseClient';
 
-export const ESV_ENABLED = process.env.EXPO_PUBLIC_ESV_ENABLED === 'true';
 const ESV_COPYRIGHT =
   'Scripture quotations are from the ESV\u00ae Bible (The Holy Bible, English Standard Version\u00ae), \u00a9 2001 by Crossway, a publishing ministry of Good News Publishers. Used by permission. All rights reserved.';
 let retryAfter = 0;
@@ -54,7 +53,6 @@ const invokeEsv = async (body: Parameters<EsvRequest>[0] | { action: 'catalog' }
 export const requestEsv: EsvRequest = invokeEsv;
 
 export const fetchEsvCatalog = async (): Promise<BibleVersionManifestEntry[]> => {
-  if (!ESV_ENABLED) return [];
   const response = await invokeEsv({ action: 'catalog' });
   if (
     !Array.isArray(response.data) ||
