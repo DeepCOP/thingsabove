@@ -20,7 +20,7 @@ Notifications.setNotificationHandler({
 function openRouteFromResponse(response: Notifications.NotificationResponse | null) {
   if (!response || response.actionIdentifier !== Notifications.DEFAULT_ACTION_IDENTIFIER) return;
 
-  router.push(getRouteFromNotificationResponse(response) as Href);
+  router.push(getRouteFromNotificationResponse(response) as Href, { withAnchor: true });
   Notifications.clearLastNotificationResponse();
 }
 
@@ -77,7 +77,7 @@ export async function registerForPushNotificationsAsync(): Promise<string | null
   return token;
 }
 
-export function usePushNotifications() {
+export function usePushNotifications(isNavigationReady = true) {
   const { session } = useAuth();
 
   const [expoPushToken, setExpoPushToken] = useState<string>();
@@ -88,6 +88,8 @@ export function usePushNotifications() {
       setExpoPushToken(undefined);
       return;
     }
+
+    if (!isNavigationReady) return;
 
     const notificationListener = Notifications.addNotificationReceivedListener(setNotification);
     const responseListener =
@@ -105,7 +107,7 @@ export function usePushNotifications() {
       notificationListener.remove();
       responseListener.remove();
     };
-  }, [session?.user?.id]);
+  }, [isNavigationReady, session?.user?.id]);
 
   return {
     expoPushToken,

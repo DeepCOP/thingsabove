@@ -74,7 +74,6 @@ function RootLayoutContent() {
   const friendsQuery = useFriends(session?.user.id);
   const pendingFriendsQuery = usePendingFriendRequests(session?.user.id);
 
-  usePushNotifications();
   useUserLocation();
   const handleNotificationsNew = useCallback(() => {
     notificationsQuery.refetch();
@@ -102,6 +101,9 @@ function RootLayoutContent() {
     OpenSansSemiBoldItalic: OpenSans_600SemiBold_Italic,
     OpenSansBoldItalic: OpenSans_700Bold_Italic,
   });
+  const isAppReady = loaded && !loading && hasHydratedAppStore;
+
+  usePushNotifications(isAppReady);
 
   useEffect(() => {
     const unsubscribeHydrate = useAppStore.persist.onHydrate(() => {
@@ -146,12 +148,12 @@ function RootLayoutContent() {
   }, []);
 
   useEffect(() => {
-    if (loaded && !loading && hasHydratedAppStore) {
+    if (isAppReady) {
       SplashScreen.hideAsync();
     }
-  }, [hasHydratedAppStore, loaded, loading]);
+  }, [isAppReady]);
 
-  if (!loaded || loading || !hasHydratedAppStore) return null;
+  if (!isAppReady) return null;
 
   return (
     <>
