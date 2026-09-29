@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import { StyleSheet } from 'react-native';
 
 import { useAuth } from '@/src/state/AuthContext';
+import { usePushNotifications } from '@/src/hooks/usePushNotifications';
 import { useAppStore } from '@/src/state/useAppStore';
 
 const APP_HOME = '/app/(tabs)/PlansTab' as Href;
@@ -36,6 +37,14 @@ export default function AppLayout() {
     : pathname === '/app/onboarding' && !isCheckingPendingAuthRedirect
       ? APP_HOME
       : null;
+  const isNotificationNavigationReady =
+    hasCompletedOnboarding &&
+    !isCheckingPendingAuthRedirect &&
+    !onboardingRedirect &&
+    pathname !== '/app' &&
+    pathname !== '/app/onboarding';
+
+  usePushNotifications(isNotificationNavigationReady);
 
   useEffect(() => {
     if (!userId) {

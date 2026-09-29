@@ -79,9 +79,16 @@ export async function registerForPushNotificationsAsync(): Promise<string | null
 
 export function usePushNotifications(isNavigationReady = true) {
   const { session } = useAuth();
+  const lastNotificationResponse = Notifications.useLastNotificationResponse();
 
   const [expoPushToken, setExpoPushToken] = useState<string>();
   const [notification, setNotification] = useState<Notifications.Notification>();
+
+  useEffect(() => {
+    if (!session?.user?.id || !isNavigationReady || !lastNotificationResponse) return;
+
+    openRouteFromResponse(lastNotificationResponse);
+  }, [isNavigationReady, lastNotificationResponse, session?.user?.id]);
 
   useEffect(() => {
     if (!session?.user?.id) {
@@ -89,13 +96,7 @@ export function usePushNotifications(isNavigationReady = true) {
       return;
     }
 
-    if (!isNavigationReady) return;
-
     const notificationListener = Notifications.addNotificationReceivedListener(setNotification);
-    const responseListener =
-      Notifications.addNotificationResponseReceivedListener(openRouteFromResponse);
-
-    openRouteFromResponse(Notifications.getLastNotificationResponse());
 
     registerForPushNotificationsAsync().then(async (token) => {
       if (!token) return;
@@ -105,9 +106,8 @@ export function usePushNotifications(isNavigationReady = true) {
 
     return () => {
       notificationListener.remove();
-      responseListener.remove();
     };
-  }, [isNavigationReady, session?.user?.id]);
+  }, [session?.user?.id]);
 
   return {
     expoPushToken,

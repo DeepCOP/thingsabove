@@ -26,7 +26,6 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { useFriends, usePendingFriendRequests } from '@/src/hooks/useFriends';
 import { useLastSeenTracker } from '@/src/hooks/useLastSeen';
 import { useNotifications } from '@/src/hooks/useNotifications';
-import { usePushNotifications } from '@/src/hooks/usePushNotifications';
 import { useRealtimeFriends } from '@/src/hooks/useRealtimeFriends';
 import { useRealtimeNotifications } from '@/src/hooks/useRealtimeNotifications';
 import { useThemePreference } from '@/src/hooks/useThemePreference';
@@ -102,8 +101,6 @@ function RootLayoutContent() {
     OpenSansBoldItalic: OpenSans_700Bold_Italic,
   });
   const isAppReady = loaded && !loading && hasHydratedAppStore;
-
-  usePushNotifications(isAppReady);
 
   useEffect(() => {
     const unsubscribeHydrate = useAppStore.persist.onHydrate(() => {
