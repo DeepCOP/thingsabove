@@ -154,7 +154,7 @@ If you need a full reset (destructive), use `pnpx supabase db reset --linked`.
 pnpx supabase secrets set --env-file .env
 ```
 
-5. Create Vault secrets for cron jobs.5
+5. Create Vault secrets for cron jobs.
 Run in the Supabase SQL editor:
 ```
 select vault.create_secret('project_url', 'https://YOUR_PROJECT_ID.supabase.co');
