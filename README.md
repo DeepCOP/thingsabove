@@ -63,7 +63,6 @@ Devotionals, Bible text, user content, and received push notification bodies kee
 
 For development, translation catalogs live in `src/i18n/locales/{en,zh-Hans}/{app,bible,community,plans}.json`. Use `useTranslation('plans')` (or the appropriate namespace) and `t('startPlan')` for UI text. Add matching keys, interpolation placeholders, and plural variants to both languages.
 
-Run `pnpm run check:translations` to verify both catalogs and all static translation references.
 
 ## Push Notifications Setup
 
