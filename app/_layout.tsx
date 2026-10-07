@@ -26,7 +26,6 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { useFriends, usePendingFriendRequests } from '@/src/hooks/useFriends';
 import { useLastSeenTracker } from '@/src/hooks/useLastSeen';
 import { useNotifications } from '@/src/hooks/useNotifications';
-import { usePushNotifications } from '@/src/hooks/usePushNotifications';
 import { useRealtimeFriends } from '@/src/hooks/useRealtimeFriends';
 import { useRealtimeNotifications } from '@/src/hooks/useRealtimeNotifications';
 import { useThemePreference } from '@/src/hooks/useThemePreference';
@@ -74,7 +73,6 @@ function RootLayoutContent() {
   const friendsQuery = useFriends(session?.user.id);
   const pendingFriendsQuery = usePendingFriendRequests(session?.user.id);
 
-  usePushNotifications();
   useUserLocation();
   const handleNotificationsNew = useCallback(() => {
     notificationsQuery.refetch();
@@ -102,6 +100,7 @@ function RootLayoutContent() {
     OpenSansSemiBoldItalic: OpenSans_600SemiBold_Italic,
     OpenSansBoldItalic: OpenSans_700Bold_Italic,
   });
+  const isAppReady = loaded && !loading && hasHydratedAppStore;
 
   useEffect(() => {
     const unsubscribeHydrate = useAppStore.persist.onHydrate(() => {
@@ -146,12 +145,12 @@ function RootLayoutContent() {
   }, []);
 
   useEffect(() => {
-    if (loaded && !loading && hasHydratedAppStore) {
+    if (isAppReady) {
       SplashScreen.hideAsync();
     }
-  }, [hasHydratedAppStore, loaded, loading]);
+  }, [isAppReady]);
 
-  if (!loaded || loading || !hasHydratedAppStore) return null;
+  if (!isAppReady) return null;
 
   return (
     <>

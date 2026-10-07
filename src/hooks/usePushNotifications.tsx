@@ -20,7 +20,7 @@ Notifications.setNotificationHandler({
 function openRouteFromResponse(response: Notifications.NotificationResponse | null) {
   if (!response || response.actionIdentifier !== Notifications.DEFAULT_ACTION_IDENTIFIER) return;
 
-  router.push(getRouteFromNotificationResponse(response) as Href);
+  router.push(getRouteFromNotificationResponse(response) as Href, { withAnchor: true });
   Notifications.clearLastNotificationResponse();
 }
 
@@ -77,11 +77,18 @@ export async function registerForPushNotificationsAsync(): Promise<string | null
   return token;
 }
 
-export function usePushNotifications() {
+export function usePushNotifications(isNavigationReady = true) {
   const { session } = useAuth();
+  const lastNotificationResponse = Notifications.useLastNotificationResponse();
 
   const [expoPushToken, setExpoPushToken] = useState<string>();
   const [notification, setNotification] = useState<Notifications.Notification>();
+
+  useEffect(() => {
+    if (!session?.user?.id || !isNavigationReady || !lastNotificationResponse) return;
+
+    openRouteFromResponse(lastNotificationResponse);
+  }, [isNavigationReady, lastNotificationResponse, session?.user?.id]);
 
   useEffect(() => {
     if (!session?.user?.id) {
@@ -90,10 +97,6 @@ export function usePushNotifications() {
     }
 
     const notificationListener = Notifications.addNotificationReceivedListener(setNotification);
-    const responseListener =
-      Notifications.addNotificationResponseReceivedListener(openRouteFromResponse);
-
-    openRouteFromResponse(Notifications.getLastNotificationResponse());
 
     registerForPushNotificationsAsync().then(async (token) => {
       if (!token) return;
@@ -103,7 +106,6 @@ export function usePushNotifications() {
 
     return () => {
       notificationListener.remove();
-      responseListener.remove();
     };
   }, [session?.user?.id]);
 
