@@ -1,4 +1,5 @@
 import { findBookInBible, getBibleDotComBookCode, getBookNameForId } from '@/src/bible/books';
+import { localizeBibleError } from '@/src/bible/versionPresentation';
 import ReaderBottomBar from '@/src/components/ReaderBottomBar';
 import BibleAttribution from '@/src/components/BibleAttribution';
 import ScriptureSelectionMenu from '@/src/components/ScriptureSelectionMenu';
@@ -8,6 +9,7 @@ import { getBibleVerseHighlightKey, useAppStore } from '@/src/state/useAppStore'
 import * as Clipboard from 'expo-clipboard';
 import { useRouter } from 'expo-router';
 import { type SetStateAction, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
   Animated,
@@ -24,6 +26,7 @@ import { useBible } from '../state/BibleContext';
 type SelectedVerse = { number: number; text: string };
 
 export default function BibleReaderView({ onScroll }: { onScroll: (...args: any[]) => void }) {
+  const { t, i18n } = useTranslation('bible');
   const SCROLLvIEWBOTTOMPADDING = 80;
   const insets = useSafeAreaInsets();
   const [showMenu, setShowMenu] = useState(false);
@@ -77,6 +80,9 @@ export default function BibleReaderView({ onScroll }: { onScroll: (...args: any[
   );
   const currentBookId = currentBook?.id ?? selectedBook.bookId;
   const currentBookName = currentBook?.name ?? getBookNameForId(books, currentBookId);
+  const displayedBookName = i18n.resolvedLanguage?.startsWith('zh')
+    ? t(`books.${currentBookId}`, { defaultValue: currentBookName })
+    : currentBookName;
   const currentBookIndex = currentBook ? books.findIndex((book) => book.id === currentBook.id) : -1;
   const chapterNumber = Number(selectedBook.chapter);
   const {
@@ -305,7 +311,7 @@ export default function BibleReaderView({ onScroll }: { onScroll: (...args: any[
           contentContainerStyle={{ paddingBottom: insets.bottom + SCROLLvIEWBOTTOMPADDING }}>
           <View className="justify-center items-center pb-16 gap-4">
             <Text className="text-center text-primary dark:text-gray-100 text-lg pt-28 font-MerriWeather300Light">
-              {currentBookName}
+              {displayedBookName}
             </Text>
 
             {/* BIG CHAPTER NUMBER */}
@@ -316,17 +322,21 @@ export default function BibleReaderView({ onScroll }: { onScroll: (...args: any[
 
           {/* VERSES */}
           {loading ? (
-            <ActivityIndicator accessibilityLabel="Loading chapter" className="my-6" />
+            <ActivityIndicator accessibilityLabel={t('loadingChapter')} className="my-6" />
           ) : readingError ? (
             <View className="items-center gap-3 py-6">
-              <Text className="text-center text-gray-500 dark:text-gray-400">{readingError}</Text>
+              <Text className="text-center text-gray-500 dark:text-gray-400">
+                {localizeBibleError(readingError, t, i18n.resolvedLanguage)}
+              </Text>
               <TouchableOpacity onPress={readerError ? retryReader : retryChapter}>
-                <Text className="font-semibold text-blue-600 dark:text-blue-400">Try again</Text>
+                <Text className="font-semibold text-blue-600 dark:text-blue-400">
+                  {t('tryAgain')}
+                </Text>
               </TouchableOpacity>
             </View>
           ) : !verses?.length ? (
             <Text className="py-6 text-center text-gray-500 dark:text-gray-400">
-              This chapter is unavailable in this translation.
+              {t('chapterUnavailable')}
             </Text>
           ) : null}
           {verses?.map(({ verse, text }) => {
@@ -401,7 +411,7 @@ export default function BibleReaderView({ onScroll }: { onScroll: (...args: any[
             },
           }}
           centerAction={{
-            label: `${currentBookName} ${selectedBook.chapter}`,
+            label: `${displayedBookName} ${selectedBook.chapter}`,
             onPress: () => router.push(`/app/bible/${currentBookId}`),
           }}
           rightAction={{

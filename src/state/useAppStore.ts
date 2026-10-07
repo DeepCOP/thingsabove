@@ -1,4 +1,5 @@
 import { DEFAULT_BOOK_ID, getCanonicalBookIdByName } from '@/src/bible/books';
+import { isLanguagePreference, type LanguagePreference } from '@/src/i18n/languages';
 import type {
   BibleVersionId,
   BibleVersionInstallState,
@@ -45,6 +46,9 @@ type AppState = {
   hasCompletedOnboarding: boolean;
   completeOnboarding: () => void;
 
+  language: LanguagePreference;
+  setLanguage: (language: LanguagePreference) => void;
+
   missedDays: DevotionalDays[] | null;
   setMissedDays: (days: DevotionalDays[]) => void;
   reflectAndShareRequest: ReflectAndShareRequest | null;
@@ -87,6 +91,7 @@ type PersistedAppState = Pick<
   AppState,
   | 'user'
   | 'hasCompletedOnboarding'
+  | 'language'
   | 'isGrid'
   | 'sort'
   | 'version'
@@ -106,6 +111,7 @@ const DEFAULT_SELECTED_BOOK: SelectedBibleBook = {
 const DEFAULT_PERSISTED_STATE: PersistedAppState = {
   user: null,
   hasCompletedOnboarding: false,
+  language: 'system',
   isGrid: false,
   sort: 'Recent',
   version: 'KJV',
@@ -310,6 +316,7 @@ const normalizeBibleVerseHighlights = (value: unknown): Record<string, BibleVers
 const partializeAppState = (state: AppState): PersistedAppState => ({
   user: state.user,
   hasCompletedOnboarding: state.hasCompletedOnboarding,
+  language: state.language,
   isGrid: state.isGrid,
   sort: state.sort,
   version: state.version,
@@ -332,6 +339,9 @@ const migrateAppState = (persistedState: unknown): PersistedAppState => {
       typeof persistedState.hasCompletedOnboarding === 'boolean'
         ? persistedState.hasCompletedOnboarding
         : DEFAULT_PERSISTED_STATE.hasCompletedOnboarding,
+    language: isLanguagePreference(persistedState.language)
+      ? persistedState.language
+      : DEFAULT_PERSISTED_STATE.language,
     isGrid:
       typeof persistedState.isGrid === 'boolean'
         ? persistedState.isGrid
@@ -354,6 +364,9 @@ export const useAppStore = create<AppState>()(
     (set, get) => ({
       hasCompletedOnboarding: DEFAULT_PERSISTED_STATE.hasCompletedOnboarding,
       completeOnboarding: () => set({ hasCompletedOnboarding: true }),
+
+      language: DEFAULT_PERSISTED_STATE.language,
+      setLanguage: (language) => set({ language }),
 
       missedDays: null,
       setMissedDays: (days) => set({ missedDays: days }),

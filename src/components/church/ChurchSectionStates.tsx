@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Text, TouchableOpacity, View } from 'react-native';
 
 type SkeletonBlockProps = {
@@ -106,6 +107,7 @@ export function ChurchSectionErrorCard({
   description,
   onRetry,
 }: ChurchSectionErrorCardProps) {
+  const { t } = useTranslation('community');
   return (
     <View className="rounded-2xl border border-red-200 bg-red-50 p-4 dark:border-red-950/60 dark:bg-red-950/20">
       <Text className="font-semibold text-red-800 dark:text-red-300">{title}</Text>
@@ -114,7 +116,7 @@ export function ChurchSectionErrorCard({
         <TouchableOpacity
           className="mt-4 self-start rounded-full bg-black px-4 py-2 dark:bg-white"
           onPress={onRetry}>
-          <Text className="font-semibold text-white dark:text-black">Retry</Text>
+          <Text className="font-semibold text-white dark:text-black">{t('retry')}</Text>
         </TouchableOpacity>
       ) : null}
     </View>

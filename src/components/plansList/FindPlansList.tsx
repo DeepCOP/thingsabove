@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { GridCard, ListCard } from '@/src/components/DevoCard';
 import LoadingSpinner from '@/src/components/LoadingSpinner';
 import { usePlans } from '@/src/hooks/useDevotionalPlans';
@@ -10,6 +11,7 @@ import { useMemo, useState } from 'react';
 import { FlatList, Text, useColorScheme, View } from 'react-native';
 
 export default function FindPlansList({ selectedTags = [] }: { selectedTags?: string[] }) {
+  const { t } = useTranslation('plans');
   const { plansQuery } = usePlans(selectedTags);
   const colorScheme = useColorScheme();
   const { session } = useAuth();
@@ -82,12 +84,10 @@ export default function FindPlansList({ selectedTags = [] }: { selectedTags?: st
             />
           </View>
           <Text className="text-lg font-semibold text-gray-900 dark:text-white mb-2 text-center">
-            {selectedTags.length ? 'No plans match these tags' : 'No plans found'}
+            {selectedTags.length ? t('noTagMatches') : t('noPlans')}
           </Text>
           <Text className="text-center text-gray-600 dark:text-gray-400">
-            {selectedTags.length
-              ? 'Try another tag or clear the filter.'
-              : 'Try searching for a topic or check back later.'}
+            {selectedTags.length ? t('clearFilterHint') : t('noPlansHint')}
           </Text>
         </View>
       </View>

@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next';
+import 'dayjs/locale/zh-cn';
 import dayjs, { type Dayjs } from '@/src/lib/dayjs';
 import { Ionicons } from '@expo/vector-icons';
 import { Text, TouchableOpacity, View } from 'react-native';
@@ -21,8 +23,10 @@ export default function DaysPicker({
   day_number,
   isActive,
 }: Props) {
+  const { t, i18n } = useTranslation('plans');
   return (
     <TouchableOpacity
+      accessibilityLabel={t('dayNumber', { day: day_number })}
       onPress={() => {
         if (setSelectedDayNumber) {
           setSelectedDayNumber(day_number);
@@ -54,6 +58,7 @@ export default function DaysPicker({
           ? dayjs(startDate)
               .startOf('day')
               .add(day_number - 1, 'day')
+              .locale(i18n.resolvedLanguage?.startsWith('zh') ? 'zh-cn' : 'en')
               .format('ddd')
           : day_number}
       </Text>
@@ -62,6 +67,7 @@ export default function DaysPicker({
         {dayjs(startDate)
           .startOf('day')
           .add(day_number - 1, 'day')
+          .locale(i18n.resolvedLanguage?.startsWith('zh') ? 'zh-cn' : 'en')
           .format('MMM DD')}
       </Text>
     </TouchableOpacity>

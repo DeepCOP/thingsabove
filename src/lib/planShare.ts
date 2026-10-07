@@ -1,3 +1,4 @@
+import i18n from '@/src/i18n';
 import * as ExpoLinking from 'expo-linking';
 
 const trimTrailingSlash = (value: string) => value.replace(/\/+$/, '');
@@ -62,12 +63,14 @@ export const buildPlanInvitationMessage = ({
     invitedBy,
     inviteCode,
   });
-  const formattedPlanTitle = planTitle?.trim() ? `"${planTitle.trim()}"` : 'this devotional plan';
+  const formattedPlanTitle = planTitle?.trim()
+    ? i18n.t('sharePlanTitle', { ns: 'community', title: planTitle.trim() })
+    : i18n.t('shareThisPlan', { ns: 'community' });
 
   return [
     inviterName
-      ? `Join me on this devotional 🙏\n${formattedPlanTitle}\n\n• ${inviterName}`
-      : `You are invited to read ${formattedPlanTitle} on ThingsAbove.`,
+      ? i18n.t('planInviteNamed', { ns: 'community', plan: formattedPlanTitle, name: inviterName })
+      : i18n.t('planInvite', { ns: 'community', plan: formattedPlanTitle }),
     invitationUrl,
   ].join('\n\n');
 };
@@ -78,8 +81,8 @@ export const buildFriendInviteMessage = () => {
   const invitationUrl = buildFriendInviteUrl();
 
   return [
-    'Join me on ThingsAbove.',
-    "Create your account and let's connect there.",
+    i18n.t('friendInviteJoin', { ns: 'community' }),
+    i18n.t('friendInviteConnect', { ns: 'community' }),
     invitationUrl,
   ].join('\n\n');
 };

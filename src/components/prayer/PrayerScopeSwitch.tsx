@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { PrayerScope } from '@/src/types/types';
 import { Text, TouchableOpacity, View } from 'react-native';
 
@@ -8,6 +9,7 @@ type Props = {
 };
 
 export default function PrayerScopeSwitch({ hasChurch, scope, onChange }: Props) {
+  const { t } = useTranslation('community');
   return (
     <View className="rounded-full bg-gray-100 p-1 dark:bg-neutral-900">
       <View className="flex-row">
@@ -20,7 +22,7 @@ export default function PrayerScopeSwitch({ hasChurch, scope, onChange }: Props)
                 ? 'text-gray-900 dark:text-white'
                 : 'text-gray-500 dark:text-gray-400'
             }`}>
-            Public
+            {t('public')}
           </Text>
         </TouchableOpacity>
 
@@ -35,7 +37,7 @@ export default function PrayerScopeSwitch({ hasChurch, scope, onChange }: Props)
                   ? 'text-gray-500 dark:text-gray-400'
                   : 'text-gray-400 dark:text-gray-500'
             }`}>
-            My Church
+            {t('myChurch')}
           </Text>
         </TouchableOpacity>
       </View>

@@ -1,3 +1,4 @@
+import i18n from '@/src/i18n';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Alert } from 'react-native';
 import {
@@ -14,6 +15,23 @@ import {
 import { getProfile } from '../api/queries';
 import type { AppleIdentityFullName, NativeIdentityProfile, OAuthProvider } from '../lib/authOAuth';
 import { SignUpAboutDetailsInput, SignUpProfileInput, UpdateProfileInput } from '../types/types';
+
+const localizeAuthError = (error: Error) => {
+  const code = (error as Error & { code?: string }).code;
+  if (code === 'invalid_credentials' || error.message === 'Invalid login credentials') {
+    return i18n.t('plans:profileErrorsCredentials');
+  }
+  if (code === 'email_not_confirmed' || error.message === 'Email not confirmed') {
+    return i18n.t('plans:profileErrorsEmailNotConfirmed');
+  }
+  if (code === 'user_already_exists' || error.message === 'User already registered') {
+    return i18n.t('plans:profileErrorsUserRegistered');
+  }
+  if (code === 'over_request_rate_limit' || code === 'over_email_send_rate_limit') {
+    return i18n.t('plans:profileErrorsRateLimit');
+  }
+  return error.message;
+};
 
 export const useProfile = (userId: string | undefined) => {
   // Placeholder for future profile-related hooks
@@ -76,7 +94,7 @@ export const useSignUpUser = () => {
   return useMutation({
     mutationFn: async (params: SignUpProfileInput) => signUpUser(params),
     onError: (error) => {
-      Alert.alert('Sign Up Error', error.message);
+      Alert.alert(i18n.t('plans:profileErrorsSignUp'), localizeAuthError(error));
     },
   });
 };
@@ -87,7 +105,7 @@ export const useSignInUserWithPassword = () => {
       return signInUserWithPassword(params.email, params.password);
     },
     onError: (error) => {
-      Alert.alert('Sign In Error', error.message);
+      Alert.alert(i18n.t('plans:profileErrorsSignIn'), localizeAuthError(error));
     },
   });
 };
@@ -98,7 +116,7 @@ export const useSignInUserWithOAuth = () => {
       return signInUserWithOAuth(params.provider);
     },
     onError: (error) => {
-      Alert.alert('OAuth Sign In Error', error.message);
+      Alert.alert(i18n.t('plans:profileErrorsOAuth'), localizeAuthError(error));
     },
   });
 };
@@ -112,7 +130,7 @@ export const useSignInUserWithAppleIdToken = () => {
       return signInUserWithAppleIdToken(params);
     },
     onError: (error) => {
-      Alert.alert('Apple Sign In Error', error.message);
+      Alert.alert(i18n.t('plans:profileErrorsApple'), localizeAuthError(error));
     },
   });
 };
@@ -126,7 +144,7 @@ export const useSignInUserWithGoogleIdToken = () => {
       return signInUserWithGoogleIdToken(params);
     },
     onError: (error) => {
-      Alert.alert('Google Sign In Error', error.message);
+      Alert.alert(i18n.t('plans:profileErrorsGoogle'), localizeAuthError(error));
     },
   });
 };

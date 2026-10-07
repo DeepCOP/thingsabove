@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import AuthProviderButtons from '@/src/components/AuthProviderButtons';
 import { useSignUpUser } from '@/src/hooks/useProfile';
 import {
@@ -25,6 +26,7 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function SignUp() {
+  const { t } = useTranslation('app');
   const router = useRouter();
   const redirectSearchParams = useLocalSearchParams<AuthRedirectSearchParams>();
   const insets = useSafeAreaInsets();
@@ -71,32 +73,29 @@ export default function SignUp() {
 
   function handleSignUp() {
     if (!trimmedEmail || !password || !confirmPassword || !trimmedFirstName || !trimmedLastName) {
-      Alert.alert('Missing fields', 'Please fill in all required fields.');
+      Alert.alert(t('missingFields'), t('fillRequiredFields'));
       return;
     }
 
     if (!isEmailValid) {
-      Alert.alert('Invalid email', 'Please enter a valid email address.');
+      Alert.alert(t('invalidEmail'), t('enterValidEmail'));
       return;
     }
     if (!isFirstNameValid || !isLastNameValid) {
       Alert.alert(
-        'Invalid name',
-        `First and last name must be between ${MIN_NAME_LENGTH} and ${MAX_NAME_LENGTH} characters.`,
+        t('invalidName'),
+        t('nameLength', { min: MIN_NAME_LENGTH, max: MAX_NAME_LENGTH }),
       );
       return;
     }
 
     if (!isPasswordValid) {
-      Alert.alert(
-        'Invalid password',
-        `Password must be at least ${MIN_PASSWORD_LENGTH} characters.`,
-      );
+      Alert.alert(t('invalidPassword'), t('passwordLength', { count: MIN_PASSWORD_LENGTH }));
       return;
     }
 
     if (password !== confirmPassword) {
-      Alert.alert('Password mismatch', 'Passwords do not match.');
+      Alert.alert(t('passwordMismatch'), t('passwordsDoNotMatch'));
       return;
     }
     signUpWithEmail.mutate(
@@ -144,23 +143,20 @@ export default function SignUp() {
                 paddingBottom: 32,
               }}>
               <Text className="mb-6 text-2xl font-semibold text-gray-900 dark:text-white">
-                Create Your Account
+                {t('createYourAccount')}
               </Text>
 
               <AuthProviderButtons
                 buttonLabels={{
-                  apple: 'Sign Up with Apple',
-                  google: 'Sign Up with Google',
+                  apple: t('signUpApple'),
+                  google: t('signUpGoogle'),
                 }}
-                dividerLabel="or sign up with email"
+                dividerLabel={t('emailSignUpDivider')}
                 nativeAppleButtonType="signUp"
                 onBeforeStart={() => {
                   if (acceptedPolicies) return true;
 
-                  Alert.alert(
-                    'Accept policies',
-                    'Please agree to the Terms of Service and Statement of Faith before continuing.',
-                  );
+                  Alert.alert(t('acceptPolicies'), t('acceptPoliciesDescription'));
                   return false;
                 }}
                 onSuccess={() => {
@@ -170,26 +166,26 @@ export default function SignUp() {
               />
 
               <Input
-                label="First Name"
+                label={t('firstName')}
                 value={firstName}
                 onChangeText={setFirstName}
                 maxLength={MAX_NAME_LENGTH}
                 errorMessage={
                   firstName && !isFirstNameValid
-                    ? `First name must be ${MIN_NAME_LENGTH}-${MAX_NAME_LENGTH} characters.`
+                    ? t('firstNameLength', { min: MIN_NAME_LENGTH, max: MAX_NAME_LENGTH })
                     : ''
                 }
                 style={{ color: colorScheme === 'dark' ? '#F5F5F5' : '#424242' }}
                 placeholderTextColor={colorScheme === 'dark' ? '#F5F5F5' : '#424242'}
               />
               <Input
-                label="Last Name"
+                label={t('lastName')}
                 value={lastName}
                 onChangeText={setLastName}
                 maxLength={MAX_NAME_LENGTH}
                 errorMessage={
                   lastName && !isLastNameValid
-                    ? `Last name must be ${MIN_NAME_LENGTH}-${MAX_NAME_LENGTH} characters.`
+                    ? t('lastNameLength', { min: MIN_NAME_LENGTH, max: MAX_NAME_LENGTH })
                     : ''
                 }
                 style={{ color: colorScheme === 'dark' ? '#F5F5F5' : '#424242' }}
@@ -197,18 +193,18 @@ export default function SignUp() {
               />
 
               <Input
-                label="Email"
+                label={t('email')}
                 value={email}
                 onChangeText={setEmail}
                 autoCapitalize="none"
                 autoCorrect={false}
                 keyboardType="email-address"
-                errorMessage={trimmedEmail && !isEmailValid ? 'Enter a valid email address.' : ''}
+                errorMessage={trimmedEmail && !isEmailValid ? t('enterValidEmailShort') : ''}
                 style={{ color: colorScheme === 'dark' ? '#F5F5F5' : '#424242' }}
                 placeholderTextColor={colorScheme === 'dark' ? '#F5F5F5' : '#424242'}
               />
               <Input
-                label="Password"
+                label={t('password')}
                 secureTextEntry={!showPassword}
                 value={password}
                 onChangeText={setPassword}
@@ -216,13 +212,15 @@ export default function SignUp() {
                 autoCorrect={false}
                 errorMessage={
                   password && !isPasswordValid
-                    ? `Password must be at least ${MIN_PASSWORD_LENGTH} characters.`
+                    ? t('passwordLength', { count: MIN_PASSWORD_LENGTH })
                     : ''
                 }
                 style={{ color: colorScheme === 'dark' ? '#F5F5F5' : '#424242' }}
                 placeholderTextColor={colorScheme === 'dark' ? '#F5F5F5' : '#424242'}
                 rightIcon={
-                  <TouchableOpacity onPress={() => setShowPassword((prev) => !prev)}>
+                  <TouchableOpacity
+                    accessibilityLabel={t(showPassword ? 'hidePassword' : 'showPassword')}
+                    onPress={() => setShowPassword((prev) => !prev)}>
                     <Ionicons
                       name={showPassword ? 'eye-off-outline' : 'eye-outline'}
                       size={20}
@@ -232,19 +230,21 @@ export default function SignUp() {
                 }
               />
               <Input
-                label="Confirm Password"
+                label={t('confirmPassword')}
                 secureTextEntry={!showConfirmPassword}
                 value={confirmPassword}
                 onChangeText={setConfirmPassword}
                 autoCapitalize="none"
                 autoCorrect={false}
                 errorMessage={
-                  confirmPassword && password !== confirmPassword ? 'Passwords do not match.' : ''
+                  confirmPassword && password !== confirmPassword ? t('passwordsDoNotMatch') : ''
                 }
                 style={{ color: colorScheme === 'dark' ? '#F5F5F5' : '#424242' }}
                 placeholderTextColor={colorScheme === 'dark' ? '#F5F5F5' : '#424242'}
                 rightIcon={
-                  <TouchableOpacity onPress={() => setShowConfirmPassword((prev) => !prev)}>
+                  <TouchableOpacity
+                    accessibilityLabel={t(showConfirmPassword ? 'hidePassword' : 'showPassword')}
+                    onPress={() => setShowConfirmPassword((prev) => !prev)}>
                     <Ionicons
                       name={showConfirmPassword ? 'eye-off-outline' : 'eye-outline'}
                       size={20}
@@ -270,22 +270,22 @@ export default function SignUp() {
                 </TouchableOpacity>
 
                 <Text className="flex-1 text-sm leading-6 text-gray-700 dark:text-gray-300">
-                  I agree to the{' '}
+                  {t('agreeTo')}{' '}
                   <Text
                     className="underline"
                     onPress={() =>
                       openExternalUrl(`${process.env.EXPO_PUBLIC_WEB_INTERFACE_URL}/terms`)
                     }>
-                    Terms of Service
+                    {t('termsOfService')}
                   </Text>{' '}
-                  and{' '}
+                  {t('and')}{' '}
                   <Text
                     className="underline"
                     onPress={async () => {
                       const url = `${process.env.EXPO_PUBLIC_WEB_INTERFACE_URL}/statement-of-faith`;
                       await openExternalUrl(url);
                     }}>
-                    Statement of Faith
+                    {t('statementOfFaith')}
                   </Text>
                   .
                 </Text>
@@ -306,7 +306,7 @@ export default function SignUp() {
                 <Text
                   className="text-center font-bold text-white dark:text-black"
                   style={{ opacity: isDisabled ? 0.6 : 1 }}>
-                  Sign Up
+                  {t('signUp')}
                 </Text>
               </TouchableOpacity>
             </View>

@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import BottomSheet, {
   BottomSheetBackdrop,
   BottomSheetTextInput,
@@ -13,14 +14,15 @@ type Props = {
 };
 
 const REPORT_REASONS = [
-  'Inappropriate content',
-  'Spam or misleading',
-  'Hate or abusive content',
-  'Copyright issue',
-  'Other',
+  { value: 'Inappropriate content', label: 'reportInappropriate' },
+  { value: 'Spam or misleading', label: 'reportSpam' },
+  { value: 'Hate or abusive content', label: 'reportHate' },
+  { value: 'Copyright issue', label: 'reportCopyright' },
+  { value: 'Other', label: 'reportOther' },
 ];
 
 const ReportPlanSheet = forwardRef<BottomSheet, Props>(({ planId }, ref) => {
+  const { t } = useTranslation('plans');
   const snapPoints = useMemo(() => ['50%'], []);
   const [reason, setReason] = useState('');
   const [customReason, setCustomReason] = useState('');
@@ -49,28 +51,28 @@ const ReportPlanSheet = forwardRef<BottomSheet, Props>(({ planId }, ref) => {
         />
       )}>
       <BottomSheetView className="px-4 py-3">
-        <Text className="text-lg font-bold mb-3 dark:text-white">Report this plan</Text>
+        <Text className="text-lg font-bold mb-3 dark:text-white">{t('reportPlan')}</Text>
 
         {REPORT_REASONS.map((r) => (
           <TouchableOpacity
-            key={r}
+            key={r.value}
             className={`py-3 px-3 rounded-lg mb-2 ${
-              reason === r ? 'bg-red-100 dark:bg-red-900' : 'bg-gray-100 dark:bg-neutral-800'
+              reason === r.value ? 'bg-red-100 dark:bg-red-900' : 'bg-gray-100 dark:bg-neutral-800'
             }`}
             onPress={() => {
-              if (reason === r) {
+              if (reason === r.value) {
                 setReason('');
               } else {
-                setReason(r);
+                setReason(r.value);
               }
             }}>
-            <Text className="dark:text-white">{r}</Text>
+            <Text className="dark:text-white">{t(r.label)}</Text>
           </TouchableOpacity>
         ))}
 
         {reason === 'Other' && (
           <BottomSheetTextInput
-            placeholder="Describe the issue"
+            placeholder={t('describeIssue')}
             placeholderTextColor="#888"
             className="border rounded-lg p-3 mt-2 dark:text-white dark:border-neutral-700"
             multiline
@@ -98,7 +100,7 @@ const ReportPlanSheet = forwardRef<BottomSheet, Props>(({ planId }, ref) => {
               },
             });
           }}>
-          <Text className="text-center text-white font-semibold">Submit Report</Text>
+          <Text className="text-center text-white font-semibold">{t('submitReport')}</Text>
         </TouchableOpacity>
       </BottomSheetView>
     </BottomSheet>

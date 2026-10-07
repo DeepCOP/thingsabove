@@ -13,8 +13,12 @@ export function resolveAppLanguage(
   if (preference !== 'system') return preference;
 
   for (const tag of deviceLanguageTags) {
-    const language = tag.toLowerCase().split(/[-_]/)[0];
-    if (language === 'zh') return 'zh-Hans';
+    const normalized = tag.toLowerCase().replace(/_/g, '-');
+    const language = normalized.split('-')[0];
+    if (language === 'zh') {
+      if (/-(hant|tw|hk|mo)(-|$)/.test(normalized)) continue;
+      return 'zh-Hans';
+    }
     if (language === 'en') return 'en';
   }
 

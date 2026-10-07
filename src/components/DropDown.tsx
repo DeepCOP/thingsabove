@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
 import { Modal, Text, TouchableOpacity, View } from 'react-native';
@@ -9,6 +10,7 @@ export default function Dropdown({
   onChange: (v: string) => void;
   options: string[];
 }) {
+  const { t } = useTranslation('plans');
   const [open, setOpen] = useState(false);
 
   return (
@@ -17,7 +19,7 @@ export default function Dropdown({
       <TouchableOpacity
         onPress={() => setOpen(true)}
         className="flex-row items-center bg-white dark:bg-neutral-900 px-3 py-2 rounded-full shadow">
-        <Text className="text-gray-800 dark:text-gray-200 mr-2">Sort</Text>
+        <Text className="text-gray-800 dark:text-gray-200 mr-2">{t('sort')}</Text>
         <Ionicons name="swap-vertical" size={18} color="#555" />
       </TouchableOpacity>
 
@@ -36,7 +38,9 @@ export default function Dropdown({
                   onChange(op);
                   setOpen(false);
                 }}>
-                <Text className="text-gray-900 dark:text-gray-200">{op}</Text>
+                <Text className="text-gray-900 dark:text-gray-200">
+                  {op === 'Recent' ? t('sortRecent') : op === 'Trending' ? t('sortTrending') : op}
+                </Text>
               </TouchableOpacity>
             ))}
           </View>

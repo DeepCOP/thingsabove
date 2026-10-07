@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { GridCard, ListCard } from '@/src/components/DevoCard';
 import LoadingSpinner from '@/src/components/LoadingSpinner';
 import { useSavedPlans, useToggleSavedPlan } from '@/src/hooks/useSavedPlans';
@@ -10,6 +11,7 @@ import { useMemo, useState } from 'react';
 import { FlatList, Text, useColorScheme, View } from 'react-native';
 
 export default function SavedPlansList({ selectedTags = [] }: { selectedTags?: string[] }) {
+  const { t } = useTranslation('plans');
   const colorScheme = useColorScheme();
   const { sort, isGrid } = useAppStore();
   const { session } = useAuth();
@@ -81,17 +83,17 @@ export default function SavedPlansList({ selectedTags = [] }: { selectedTags?: s
         </View>
         <Text className="text-lg font-semibold text-gray-900 dark:text-white mb-2 text-center">
           {hasSelectedTags
-            ? 'No saved plans match these tags'
+            ? t('noSavedTagMatches')
             : session?.user?.id
-              ? 'No saved plans yet'
-              : 'Sign in to save plans'}
+              ? t('noSavedPlans')
+              : t('signInToSave')}
         </Text>
         <Text className="text-center text-gray-600 dark:text-gray-400">
           {hasSelectedTags
-            ? 'Try another tag or clear the filter.'
+            ? t('clearFilterHint')
             : session?.user?.id
-              ? 'Save a plan to read later.'
-              : 'Create an account to keep your saved plans in sync.'}
+              ? t('noSavedPlansHint')
+              : t('signInToSaveHint')}
         </Text>
       </View>
     </View>

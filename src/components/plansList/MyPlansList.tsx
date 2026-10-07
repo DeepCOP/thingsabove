@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { GridCard, ListCard } from '@/src/components/DevoCard';
 import LoadingSpinner from '@/src/components/LoadingSpinner';
 import { useMyPlanProgressPlans } from '@/src/hooks/usePlanProgress';
@@ -26,6 +27,7 @@ export default function MyPlansList({
   showSaveButton?: boolean;
   selectedTags?: string[];
 }) {
+  const { t } = useTranslation('plans');
   const { session, loading: sessionLoading } = useAuth();
   const myPlansQuery = useMyPlanProgressPlans(session?.user?.id);
   const colorScheme = useColorScheme();
@@ -110,28 +112,28 @@ export default function MyPlansList({
         {selectedTags.length > 0 ? (
           <>
             <Text className="text-lg font-semibold text-gray-900 dark:text-white mb-2 text-center">
-              No plans match these tags
+              {t('noTagMatches')}
             </Text>
             <Text className="text-center text-gray-600 dark:text-gray-400">
-              Try another tag or clear the filter.
+              {t('clearFilterHint')}
             </Text>
           </>
         ) : mode === 'completed' ? (
           <>
             <Text className="text-lg font-semibold text-gray-900 dark:text-white mb-2 text-center">
-              No completed plans yet
+              {t('noCompletedPlans')}
             </Text>
             <Text className="text-center text-gray-600 dark:text-gray-400">
-              Finish a plan and it will appear here.
+              {t('noCompletedPlansHint')}
             </Text>
           </>
         ) : (
           <>
             <Text className="text-lg font-semibold text-gray-900 dark:text-white mb-2 text-center">
-              You don&apos;t have any plans yet
+              {t('noMyPlans')}
             </Text>
             <Text className="text-center text-gray-600 dark:text-gray-400">
-              Find a plan to start your first streak.
+              {t('noMyPlansHint')}
             </Text>
           </>
         )}
@@ -151,20 +153,22 @@ export default function MyPlansList({
             />
           </View>
           <Text className="text-lg font-semibold text-gray-900 dark:text-white mb-2 text-center">
-            Sign in to view your plans
+            {t('signInForPlans')}
           </Text>
           <Text className="text-center text-gray-600 dark:text-gray-400 mb-6">
-            Save progress, track streaks, and pick up right where you left off.
+            {t('signInForPlansHint')}
           </Text>
           <TouchableOpacity
             onPress={() => router.push('/app/signin')}
             className="w-full bg-black dark:bg-white py-3 rounded-xl mb-3">
-            <Text className="text-center text-white dark:text-black font-semibold">Sign In</Text>
+            <Text className="text-center text-white dark:text-black font-semibold">
+              {t('signIn')}
+            </Text>
           </TouchableOpacity>
           <TouchableOpacity
             onPress={() => router.push('/app/signup')}
             className="w-full border border-black dark:border-white py-3 rounded-xl">
-            <Text className="text-center font-semibold dark:text-white">Create Account</Text>
+            <Text className="text-center font-semibold dark:text-white">{t('createAccount')}</Text>
           </TouchableOpacity>
         </View>
       </View>

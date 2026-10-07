@@ -1,5 +1,6 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import type { ComponentProps } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Animated, Text, TouchableOpacity, View } from 'react-native';
 
 type ReaderBottomBarSideAction = {
@@ -34,6 +35,7 @@ export default function ReaderBottomBar({
   centerAction,
   rightAction,
 }: ReaderBottomBarProps) {
+  const { t } = useTranslation('bible');
   const renderSideAction = (action: ReaderBottomBarSideAction, side: 'left' | 'right') => {
     const disabled = action.disabled || !action.onPress;
     const isComplete = action.variant === 'complete';
@@ -43,6 +45,8 @@ export default function ReaderBottomBar({
 
     return (
       <TouchableOpacity
+        accessibilityRole="button"
+        accessibilityLabel={t(isComplete ? 'complete' : side === 'left' ? 'previous' : 'next')}
         className={className}
         disabled={disabled}
         style={{ opacity: disabled ? 0.35 : 1 }}
@@ -69,6 +73,8 @@ export default function ReaderBottomBar({
       <View className="flex-row bg-black py-3 px-3 rounded-full items-center justify-between gap-6">
         {renderSideAction(leftAction, 'left')}
         <TouchableOpacity
+          accessibilityRole="button"
+          accessibilityLabel={centerAction.label || t('selectReference')}
           className="py-2 px-2 border border-white rounded-full items-center justify-center"
           disabled={centerDisabled}
           onPress={centerAction.onPress}>

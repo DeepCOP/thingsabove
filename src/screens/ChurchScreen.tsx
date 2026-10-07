@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import ChurchActionsCard from '@/src/components/church/ChurchActionsCard';
 import ChurchHeroCard from '@/src/components/church/ChurchHeroCard';
 import ChurchMembersPreview from '@/src/components/church/ChurchMembersPreview';
@@ -37,6 +38,7 @@ const getInviterName = (firstName?: string | null, lastName?: string | null) => 
 };
 
 export default function ChurchScreen({ churchId }: Props) {
+  const { t } = useTranslation('community');
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { session } = useAuth();
@@ -87,7 +89,7 @@ export default function ChurchScreen({ churchId }: Props) {
       });
     } catch (error) {
       console.error('Error sharing church invitation:', error);
-      Alert.alert('Unable to share invite link', 'Please try again.');
+      Alert.alert(t('shareInviteError'), t('pleaseTryAgain'));
     } finally {
       setIsSharingInvite(false);
     }
@@ -101,7 +103,7 @@ export default function ChurchScreen({ churchId }: Props) {
         membersQuery.refetch();
       },
       onError: () => {
-        Alert.alert('Unable to join church', 'Please try again.');
+        Alert.alert(t('joinChurchError'), t('pleaseTryAgain'));
       },
     });
   };
@@ -113,11 +115,11 @@ export default function ChurchScreen({ churchId }: Props) {
 
     if (currentChurchName && viewerChurchId !== churchId) {
       Alert.alert(
-        'Join this church?',
-        `Joining ${church.name} will update the church on your profile from ${currentChurchName}.`,
+        t('joinChurchConfirm'),
+        t('churchSwitchDescription', { church: church.name, currentChurch: currentChurchName }),
         [
-          { text: 'Cancel', style: 'cancel' },
-          { text: 'Join Church', onPress: joinChurch },
+          { text: t('cancel'), style: 'cancel' },
+          { text: t('joinChurch'), onPress: joinChurch },
         ],
       );
       return;
@@ -154,8 +156,8 @@ export default function ChurchScreen({ churchId }: Props) {
           <ChurchHeroCardSkeleton />
         ) : churchQuery.error ? (
           <ChurchSectionErrorCard
-            title="Unable to load church details"
-            description="We could not load the church information right now."
+            title={t('churchDetailsError')}
+            description={t('churchDetailsUnavailable')}
             onRetry={() => churchQuery.refetch()}
           />
         ) : church ? (
@@ -166,8 +168,8 @@ export default function ChurchScreen({ churchId }: Props) {
           />
         ) : (
           <ChurchSectionErrorCard
-            title="Church not found"
-            description="This church could not be found."
+            title={t('churchNotFound')}
+            description={t('churchNotFoundDescription')}
           />
         )}
       </View>
@@ -177,8 +179,8 @@ export default function ChurchScreen({ churchId }: Props) {
           <ChurchStatGridSkeleton />
         ) : analyticsQuery.error ? (
           <ChurchSectionErrorCard
-            title="Unable to load church stats"
-            description="We could not load the church stats right now."
+            title={t('churchStatsError')}
+            description={t('churchStatsUnavailable')}
             onRetry={() => analyticsQuery.refetch()}
           />
         ) : stats ? (
@@ -191,8 +193,8 @@ export default function ChurchScreen({ churchId }: Props) {
           <ChurchCardSkeleton rows={2} />
         ) : analyticsQuery.error ? (
           <ChurchSectionErrorCard
-            title="Unable to load the snapshot"
-            description="The church snapshot is unavailable right now."
+            title={t('snapshotError')}
+            description={t('snapshotUnavailable')}
             onRetry={() => analyticsQuery.refetch()}
           />
         ) : stats ? (
@@ -205,8 +207,8 @@ export default function ChurchScreen({ churchId }: Props) {
           <ChurchTopPlansListSkeleton />
         ) : analyticsQuery.error ? (
           <ChurchSectionErrorCard
-            title="Unable to load top devotionals"
-            description="We could not load the top devotional activity right now."
+            title={t('topDevotionalsError')}
+            description={t('topDevotionalsUnavailable')}
             onRetry={() => analyticsQuery.refetch()}
           />
         ) : (
@@ -219,8 +221,8 @@ export default function ChurchScreen({ churchId }: Props) {
           <ChurchMembersPreviewSkeleton />
         ) : membersQuery.error ? (
           <ChurchSectionErrorCard
-            title="Unable to load members"
-            description="We could not load the member preview right now."
+            title={t('membersError')}
+            description={t('membersPreviewUnavailable')}
             onRetry={() => membersQuery.refetch()}
           />
         ) : (
@@ -237,8 +239,8 @@ export default function ChurchScreen({ churchId }: Props) {
           <ChurchCardSkeleton rows={2} />
         ) : analyticsQuery.error ? (
           <ChurchSectionErrorCard
-            title="Unable to load recent activity"
-            description="Recent church activity is unavailable right now."
+            title={t('recentActivityError')}
+            description={t('recentActivityUnavailable')}
             onRetry={() => analyticsQuery.refetch()}
           />
         ) : stats ? (
@@ -251,8 +253,8 @@ export default function ChurchScreen({ churchId }: Props) {
           <ChurchCardSkeleton rows={3} />
         ) : churchQuery.error ? (
           <ChurchSectionErrorCard
-            title="Unable to load church actions"
-            description="The church actions are unavailable right now."
+            title={t('churchActionsError')}
+            description={t('churchActionsUnavailable')}
             onRetry={() => churchQuery.refetch()}
           />
         ) : church ? (

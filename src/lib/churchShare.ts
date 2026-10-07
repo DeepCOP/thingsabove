@@ -1,3 +1,4 @@
+import i18n from '@/src/i18n';
 import * as ExpoLinking from 'expo-linking';
 import { Church } from '../types/types';
 
@@ -44,7 +45,10 @@ export const buildChurchInvitationUrl = ({
 };
 
 export const buildChurchShareMessage = (church: Church) => {
-  const lines = [`Come join us at ${church.name} on ThingsAbove.`, buildChurchShareUrl(church.id)];
+  const lines = [
+    i18n.t('churchShareJoin', { ns: 'community', church: church.name }),
+    buildChurchShareUrl(church.id),
+  ];
 
   if (church.address) {
     lines.splice(1, 0, church.address);
@@ -76,8 +80,8 @@ export const buildChurchInvitationMessage = ({
 
   const lines = [
     inviterName
-      ? `${inviterName} invited you to join ${church.name} on ThingsAbove.`
-      : `You are invited to join ${church.name} on ThingsAbove.`,
+      ? i18n.t('churchInviteNamed', { ns: 'community', name: inviterName, church: church.name })
+      : i18n.t('churchInvite', { ns: 'community', church: church.name }),
     invitationUrl,
   ];
 

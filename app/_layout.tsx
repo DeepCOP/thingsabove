@@ -30,6 +30,7 @@ import { useRealtimeFriends } from '@/src/hooks/useRealtimeFriends';
 import { useRealtimeNotifications } from '@/src/hooks/useRealtimeNotifications';
 import { useThemePreference } from '@/src/hooks/useThemePreference';
 import { useUserLocation } from '@/src/hooks/useUserLocation';
+import LanguageProvider from '@/src/i18n/LanguageProvider';
 import { mutationQueue } from '@/src/lib/mutationQueue';
 import { QueryProviderWrapper } from '@/src/lib/queryClient';
 import { supabase } from '@/src/lib/supabaseClient';
@@ -51,9 +52,11 @@ export default function RootLayout() {
           <AuthProvider>
             <QueryProviderWrapper>
               <BottomSheetModalProvider>
-                <BibleProvider>
-                  <RootLayoutContent />
-                </BibleProvider>
+                <LanguageProvider>
+                  <BibleProvider>
+                    <RootLayoutContent />
+                  </BibleProvider>
+                </LanguageProvider>
               </BottomSheetModalProvider>
             </QueryProviderWrapper>
           </AuthProvider>

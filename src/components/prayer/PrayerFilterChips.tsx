@@ -1,12 +1,6 @@
+import { useTranslation } from 'react-i18next';
 import { PrayerFilter } from '@/src/types/types';
 import { Text, TouchableOpacity, View } from 'react-native';
-
-const FILTERS: { label: string; value: PrayerFilter }[] = [
-  { label: 'All', value: 'all' },
-  { label: 'Mine', value: 'mine' },
-  { label: 'Urgent', value: 'urgent' },
-  { label: 'Answered', value: 'answered' },
-];
 
 type Props = {
   filter: PrayerFilter;
@@ -14,6 +8,14 @@ type Props = {
 };
 
 export default function PrayerFilterChips({ filter, onChange }: Props) {
+  const { t } = useTranslation('community');
+  const FILTERS: { label: string; value: PrayerFilter }[] = [
+    { label: t('all'), value: 'all' },
+    { label: t('mine'), value: 'mine' },
+    { label: t('urgent'), value: 'urgent' },
+    { label: t('answered'), value: 'answered' },
+  ];
+
   return (
     <View className="flex-row flex-wrap gap-2">
       {FILTERS.map((item) => {

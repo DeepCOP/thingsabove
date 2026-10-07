@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { useAppStore } from '@/src/state/useAppStore';
 import { Ionicons } from '@expo/vector-icons';
 import { useRef, useState } from 'react';
@@ -23,32 +24,30 @@ type OnboardingStep = {
 
 const steps: OnboardingStep[] = [
   {
-    eyebrow: 'Welcome to Things Above',
-    title: 'Build a daily rhythm with Scripture.',
-    description:
-      'Find devotionals, follow reading plans, and return to the Word with a path that is simple to keep.',
+    eyebrow: 'onboardingWelcome',
+    title: 'onboardingRhythmTitle',
+    description: 'onboardingRhythmDescription',
     icon: 'book-outline',
-    bullets: ['Discover plans that fit your season', 'Read Scripture alongside each devotional'],
+    bullets: ['onboardingDiscover', 'onboardingScripture'],
   },
   {
-    eyebrow: 'Stay on course',
-    title: 'Keep your walk visible.',
-    description:
-      'Track your progress, return to unfinished days, and let each small act of faithfulness gather momentum.',
+    eyebrow: 'onboardingCourse',
+    title: 'onboardingProgressTitle',
+    description: 'onboardingProgressDescription',
     icon: 'trail-sign-outline',
-    bullets: ['See where you are in every plan', 'Pick up again without losing your place'],
+    bullets: ['onboardingTrack', 'onboardingResume'],
   },
   {
-    eyebrow: 'Grow together',
-    title: 'Faith is steadier in community.',
-    description:
-      'Invite friends, pray for one another, and walk through devotionals together instead of alone.',
+    eyebrow: 'onboardingTogether',
+    title: 'onboardingCommunityTitle',
+    description: 'onboardingCommunityDescription',
     icon: 'people-outline',
-    bullets: ['Share plans with friends', 'Carry prayer requests with your community'],
+    bullets: ['onboardingShare', 'onboardingPrayer'],
   },
 ];
 
 export default function Onboarding() {
+  const { t } = useTranslation('app');
   const colorScheme = useColorScheme();
   const { width } = useWindowDimensions();
   const pagerRef = useRef<ScrollView>(null);
@@ -84,10 +83,12 @@ export default function Onboarding() {
       <View className="flex-1 py-4">
         <View className="flex-row items-center justify-between px-6">
           <Text className="text-sm font-semibold text-gray-500 dark:text-gray-400">
-            {stepIndex + 1} of {steps.length}
+            {t('onboardingStep', { current: stepIndex + 1, total: steps.length })}
           </Text>
           <TouchableOpacity onPress={finishOnboarding} accessibilityRole="button">
-            <Text className="text-sm font-semibold text-gray-500 dark:text-gray-400">Skip</Text>
+            <Text className="text-sm font-semibold text-gray-500 dark:text-gray-400">
+              {t('skip')}
+            </Text>
           </TouchableOpacity>
         </View>
 
@@ -110,13 +111,13 @@ export default function Onboarding() {
               </View>
 
               <Text className="mb-3 text-center text-sm font-semibold uppercase tracking-[2px] text-gray-500 dark:text-gray-400">
-                {step.eyebrow}
+                {t(step.eyebrow)}
               </Text>
               <Text className="mb-4 text-center font-MerriWeather700Bold text-3xl leading-10 text-gray-900 dark:text-white">
-                {step.title}
+                {t(step.title)}
               </Text>
               <Text className="max-w-sm text-center text-base leading-7 text-gray-600 dark:text-gray-300">
-                {step.description}
+                {t(step.description)}
               </Text>
 
               <View className="mt-8 w-full max-w-sm gap-3">
@@ -132,7 +133,7 @@ export default function Onboarding() {
                       />
                     </View>
                     <Text className="flex-1 text-sm font-semibold text-gray-800 dark:text-gray-100">
-                      {bullet}
+                      {t(bullet)}
                     </Text>
                   </View>
                 ))}
@@ -160,7 +161,7 @@ export default function Onboarding() {
             onPress={handlePrimaryAction}
             accessibilityRole="button">
             <Text className="text-center text-base font-bold text-white dark:text-black">
-              {isLastStep ? 'Get Started' : 'Next'}
+              {isLastStep ? t('getStarted') : t('next')}
             </Text>
           </TouchableOpacity>
         </View>

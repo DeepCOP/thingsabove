@@ -1,9 +1,11 @@
+import { useTranslation } from 'react-i18next';
 import { getAuthRedirectParams, type AuthRedirectSearchParams } from '@/src/lib/authRedirects';
 import { Ionicons } from '@expo/vector-icons';
 import { Href, useLocalSearchParams, useRouter } from 'expo-router';
 import { Text, TouchableOpacity, useColorScheme, View } from 'react-native';
 
 export default function ConfirmEmailScreen() {
+  const { t } = useTranslation('app');
   const router = useRouter();
   const colorScheme = useColorScheme();
   const searchParams = useLocalSearchParams<{ email?: string } & AuthRedirectSearchParams>();
@@ -22,16 +24,16 @@ export default function ConfirmEmailScreen() {
         </View>
 
         <Text className="text-2xl font-bold text-gray-900 dark:text-white text-center">
-          Confirm Your Email
+          {t('confirmYourEmail')}
         </Text>
         <Text className="text-gray-600 dark:text-gray-300 text-center mt-3">
-          We sent a confirmation link to
+          {t('confirmationSent')}
         </Text>
         <Text className="text-gray-900 dark:text-white text-center font-semibold mt-1">
-          {email || 'your email address'}
+          {email || t('yourEmailAddress')}
         </Text>
         <Text className="text-gray-600 dark:text-gray-300 text-center mt-3">
-          Verify your email, then sign in to continue.
+          {t('verifyEmailDescription')}
         </Text>
 
         <TouchableOpacity
@@ -42,7 +44,9 @@ export default function ConfirmEmailScreen() {
               params: authRedirectParams,
             } as Href)
           }>
-          <Text className="text-center font-bold text-white dark:text-black">Go to Sign In</Text>
+          <Text className="text-center font-bold text-white dark:text-black">
+            {t('goToSignIn')}
+          </Text>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -54,7 +58,7 @@ export default function ConfirmEmailScreen() {
             } as Href)
           }>
           <Text className="text-blue-600 dark:text-blue-400 font-semibold">
-            Use a different email
+            {t('differentEmail')}
           </Text>
         </TouchableOpacity>
       </View>

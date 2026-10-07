@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { GridCard, ListCard } from '@/src/components/DevoCard';
 import LoadingSpinner from '@/src/components/LoadingSpinner';
 import { useMyDevotionalPlans } from '@/src/hooks/useDevotionalPlans';
@@ -49,6 +50,7 @@ const toPrivatePlanCardItem = (plan: GetMyDevotionalPlans[number]): PrivatePlanC
 });
 
 export default function PrivatePlansList({ selectedTags = [] }: { selectedTags?: string[] }) {
+  const { t } = useTranslation('plans');
   const colorScheme = useColorScheme();
   const { sort, isGrid } = useAppStore();
   const { session } = useAuth();
@@ -97,23 +99,25 @@ export default function PrivatePlansList({ selectedTags = [] }: { selectedTags?:
         </View>
         <Text className="mb-2 text-center text-lg font-semibold text-gray-900 dark:text-white">
           {hasSelectedTags
-            ? 'No invite-only plans match these tags'
+            ? t('noPrivateTagMatches')
             : session?.user?.id
-              ? 'No invite-only plans yet'
-              : 'Sign in to view invite-only plans'}
+              ? t('noPrivatePlans')
+              : t('signInForPrivatePlans')}
         </Text>
         <Text className="text-center text-gray-600 dark:text-gray-400">
           {hasSelectedTags
-            ? 'Try another tag or clear the filter.'
+            ? t('clearFilterHint')
             : session?.user?.id
-              ? 'Invite-only plans you publish will show up here so you can open and share them.'
-              : 'Your authored invite-only plans will appear here after you sign in.'}
+              ? t('noPrivatePlansHint')
+              : t('signInForPrivatePlansHint')}
         </Text>
         {!session?.user?.id && (
           <TouchableOpacity
             onPress={() => router.push('/app/signin')}
             className="mt-6 w-full rounded-xl bg-black py-3 dark:bg-white">
-            <Text className="text-center font-semibold text-white dark:text-black">Sign In</Text>
+            <Text className="text-center font-semibold text-white dark:text-black">
+              {t('signIn')}
+            </Text>
           </TouchableOpacity>
         )}
       </View>

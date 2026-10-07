@@ -55,6 +55,16 @@ pnpm start
 
 Follow the Expo prompts to run on a device or simulator. Push notifications require a physical device.
 
+## App Language
+
+Menus, screen labels, and buttons support English and Simplified Chinese. Choose **Settings > Language** or use the language selector on the signed-out **Profile** screen: **English**, **简体中文**, or **Follow device language**. The default follows the device language, with English as the fallback. Your preference is saved locally, and bundled translations work offline.
+
+Devotionals, Bible text, user content, and received push notification bodies keep their source languages. Native system and authentication dialogs follow device settings.
+
+For development, translation catalogs live in `src/i18n/locales/{en,zh-Hans}/{app,bible,community,plans}.json`. Use `useTranslation('plans')` (or the appropriate namespace) and `t('startPlan')` for UI text. Add matching keys, interpolation placeholders, and plural variants to both languages.
+
+Run `pnpm run check:translations` to verify both catalogs and all static translation references.
+
 ## Push Notifications Setup
 
 1. Ensure Expo Notifications is configured in `app.config.js` (the `expo-notifications` plugin and a valid `extra.eas.projectId` are required).
@@ -145,7 +155,7 @@ If you need a full reset (destructive), use `pnpx supabase db reset --linked`.
 pnpx supabase secrets set --env-file .env
 ```
 
-5. Create Vault secrets for cron jobs.
+5. Create Vault secrets for cron jobs.5
 Run in the Supabase SQL editor:
 ```
 select vault.create_secret('project_url', 'https://YOUR_PROJECT_ID.supabase.co');

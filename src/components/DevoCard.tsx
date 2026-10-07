@@ -1,5 +1,6 @@
 /* -------------------- LIST VIEW CARD --------------------- */
 
+import { useTranslation } from 'react-i18next';
 import PlanCoverImage from '@/src/components/PlanCoverImage';
 import PlanVisibilityBadge from '@/src/components/PlanVisibilityBadge';
 import Stat from '@/src/components/Stat';
@@ -23,6 +24,7 @@ export function ListCard({
   isSaved?: boolean;
   onToggleSave?: () => void;
 }) {
+  const { t } = useTranslation('plans');
   const percentageCompletion = ((item.completed_days ?? 0) / (item?.total_days ?? 1)) * 100;
   const helpfulCount = item.helpful_count ?? 0;
   const isHelpfulMarkedByMe = item.user_reaction === 'helpful';
@@ -49,6 +51,7 @@ export function ListCard({
             </Text>
             {onToggleSave && (
               <Pressable
+                accessibilityLabel={isSaved ? t('unsavePlan') : t('savePlan')}
                 onPress={(event) => {
                   event.stopPropagation?.();
                   onToggleSave();
@@ -65,7 +68,9 @@ export function ListCard({
           </View>
 
           <View className="mt-1 flex-row items-center gap-2">
-            <Text className="text-sm text-gray-600 dark:text-gray-200">{item.total_days} Days</Text>
+            <Text className="text-sm text-gray-600 dark:text-gray-200">
+              {t('days', { count: item.total_days ?? 0 })}
+            </Text>
             <PlanVisibilityBadge visibility={item.visibility} />
           </View>
 
@@ -73,7 +78,7 @@ export function ListCard({
           <View className="flex-row items-center gap-4 mt-2">
             <Stat
               icon="heart"
-              label="Helpful"
+              label={t('helpful')}
               iconColor={isHelpfulMarkedByMe ? '#EAB308' : '#9CA3AF'}
               count={helpfulCount}
             />
@@ -115,6 +120,7 @@ export function GridCard({
   isSaved?: boolean;
   onToggleSave?: () => void;
 }) {
+  const { t } = useTranslation('plans');
   const percentageCompletion = ((item.completed_days ?? 0) / (item?.total_days ?? 1)) * 100;
   const helpfulCount = item.helpful_count ?? 0;
   const isHelpfulMarkedByMe = item.user_reaction === 'helpful';
@@ -140,6 +146,7 @@ export function GridCard({
         </Text>
         {onToggleSave && (
           <Pressable
+            accessibilityLabel={isSaved ? t('unsavePlan') : t('savePlan')}
             onPress={(event) => {
               event.stopPropagation?.();
               onToggleSave();
@@ -156,14 +163,16 @@ export function GridCard({
       </View>
 
       <View className="mt-1 flex-row items-center gap-2">
-        <Text className="text-sm text-gray-600 dark:text-gray-200">{item.total_days} Days</Text>
+        <Text className="text-sm text-gray-600 dark:text-gray-200">
+          {t('days', { count: item.total_days ?? 0 })}
+        </Text>
         <PlanVisibilityBadge visibility={item.visibility} />
       </View>
       {/* Icons Row */}
       <View className="flex-row items-center gap-4 mt-2">
         <Stat
           icon="heart"
-          label="Helpful"
+          label={t('helpful')}
           iconColor={isHelpfulMarkedByMe ? '#EAB308' : '#9CA3AF'}
           count={helpfulCount}
         />

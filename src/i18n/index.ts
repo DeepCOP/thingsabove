@@ -1,5 +1,5 @@
 import { getLocales } from 'expo-localization';
-import i18n from 'i18next';
+import { createInstance } from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import { resolveAppLanguage, SUPPORTED_LANGUAGES } from './languages';
 import enApp from './locales/en/app.json';
@@ -11,7 +11,7 @@ import zhBible from './locales/zh-Hans/bible.json';
 import zhCommunity from './locales/zh-Hans/community.json';
 import zhPlans from './locales/zh-Hans/plans.json';
 
-// Bundle UI translations so language switching also works offline.
+const i18n = createInstance();
 void i18n.use(initReactI18next).init({
   resources: {
     en: { app: enApp, bible: enBible, community: enCommunity, plans: enPlans },

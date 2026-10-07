@@ -1,3 +1,4 @@
+import i18n from '@/src/i18n';
 import {
   ProfileWithChurch,
   SignUpAboutDetailsInput,
@@ -105,27 +106,27 @@ export const validateProfileDetailsForm = (
   const lastName = values.lastName.trim();
 
   if (firstName.length < MIN_NAME_LENGTH || firstName.length > MAX_NAME_LENGTH) {
-    errors.firstName = `First name must be ${MIN_NAME_LENGTH}-${MAX_NAME_LENGTH} characters.`;
+    errors.firstName = i18n.t('firstNameLength', { min: MIN_NAME_LENGTH, max: MAX_NAME_LENGTH });
   }
 
   if (lastName.length < MIN_NAME_LENGTH || lastName.length > MAX_NAME_LENGTH) {
-    errors.lastName = `Last name must be ${MIN_NAME_LENGTH}-${MAX_NAME_LENGTH} characters.`;
+    errors.lastName = i18n.t('lastNameLength', { min: MIN_NAME_LENGTH, max: MAX_NAME_LENGTH });
   }
 
   if (values.bio.trim().length > MAX_BIO_LENGTH) {
-    errors.bio = `Bio or favorite verse must be ${MAX_BIO_LENGTH} characters or fewer.`;
+    errors.bio = i18n.t('bioLength', { count: MAX_BIO_LENGTH });
   }
 
   if (hasYearBelievedInput && !isValidYear(yearBelieved)) {
-    errors.yearBelieved = `Enter a valid year between ${MIN_YEAR} and ${CURRENT_YEAR}.`;
+    errors.yearBelieved = i18n.t('yearRange', { min: MIN_YEAR, max: CURRENT_YEAR });
   }
 
   if (hasYearBaptizedInput && !isValidYear(yearBaptized)) {
-    errors.yearBaptized = `Enter a valid year between ${MIN_YEAR} and ${CURRENT_YEAR}.`;
+    errors.yearBaptized = i18n.t('yearRange', { min: MIN_YEAR, max: CURRENT_YEAR });
   }
 
   if (yearBelieved !== null && yearBaptized !== null && yearBaptized < yearBelieved) {
-    errors.yearBaptized = 'Year baptized cannot be earlier than year believed.';
+    errors.yearBaptized = i18n.t('baptismBeforeBelief');
   }
 
   const hasChurchId = Boolean(values.churchId);
@@ -134,21 +135,23 @@ export const validateProfileDetailsForm = (
     hasChurchId || hasChurchName || Boolean(churchAddress) || Boolean(churchWebsiteUrl);
 
   if (hasChurchDetails && !hasChurchName && !hasChurchId) {
-    errors.churchName = 'Enter your church name.';
+    errors.churchName = i18n.t('enterChurchName');
   }
 
   if (churchName.length > MAX_CHURCH_NAME_LENGTH) {
-    errors.churchName = `Church name must be ${MAX_CHURCH_NAME_LENGTH} characters or fewer.`;
+    errors.churchName = i18n.t('churchNameLength', { count: MAX_CHURCH_NAME_LENGTH });
   }
 
   if (churchAddress.length > MAX_CHURCH_ADDRESS_LENGTH) {
-    errors.churchAddress = `Church address must be ${MAX_CHURCH_ADDRESS_LENGTH} characters or fewer.`;
+    errors.churchAddress = i18n.t('churchAddressLength', { count: MAX_CHURCH_ADDRESS_LENGTH });
   }
 
   if (churchWebsiteUrl.length > MAX_CHURCH_WEBSITE_URL_LENGTH) {
-    errors.churchWebsiteUrl = `Church website URL must be ${MAX_CHURCH_WEBSITE_URL_LENGTH} characters or fewer.`;
+    errors.churchWebsiteUrl = i18n.t('churchWebsiteLength', {
+      count: MAX_CHURCH_WEBSITE_URL_LENGTH,
+    });
   } else if (churchWebsiteUrl && !isValidWebsiteUrl(values.churchWebsiteUrl)) {
-    errors.churchWebsiteUrl = 'Enter a valid church website URL.';
+    errors.churchWebsiteUrl = i18n.t('invalidChurchWebsite');
   }
 
   return errors;
@@ -156,6 +159,20 @@ export const validateProfileDetailsForm = (
 
 export const hasProfileDetailsErrors = (errors: ProfileDetailsFormErrors) =>
   Object.values(errors).some(Boolean);
+
+export const relocalizeProfileDetailsFormErrors = (
+  errors: ProfileDetailsFormErrors,
+  values: ProfileDetailsFormValues,
+): ProfileDetailsFormErrors => {
+  if (!hasProfileDetailsErrors(errors)) return errors;
+
+  const translatedErrors = validateProfileDetailsForm(values);
+  const visibleErrors: ProfileDetailsFormErrors = {};
+  for (const key of Object.keys(errors) as (keyof ProfileDetailsFormValues)[]) {
+    if (translatedErrors[key]) visibleErrors[key] = translatedErrors[key];
+  }
+  return visibleErrors;
+};
 
 export const toUpdateProfileInput = (values: ProfileDetailsFormValues): UpdateProfileInput => {
   const normalizedWebsiteUrl = normalizeWebsiteUrl(values.churchWebsiteUrl);
