@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { ProgressBar } from '@/src/components/ProgressBar';
 import ProfileIdentityRow from '@/src/components/ProfileIdentityRow';
 import { PlanGroupMember, PlanProgress } from '@/src/types/types';
@@ -21,6 +22,7 @@ export default function ParticipantsScreen({
   onRefresh,
   onInvite,
 }: Props) {
+  const { t } = useTranslation('plans');
   const insets = useSafeAreaInsets();
 
   return (
@@ -44,7 +46,7 @@ export default function ParticipantsScreen({
                   first_name={item.profiles.first_name}
                   last_name={item.profiles.last_name}
                   size={40}
-                  subtitle={`${completed} / ${totalDays} days completed`}
+                  subtitle={t('completedDays', { completed, total: totalDays })}
                   subtitleClassName="mt-0.5 text-xs text-gray-700 dark:text-neutral-200"
                   titleClassName="font-semibold dark:text-white"
                   uri={item.profiles.avatar_url}
@@ -62,7 +64,9 @@ export default function ParticipantsScreen({
       <TouchableOpacity
         onPress={onInvite}
         className="bg-black dark:bg-white py-4 rounded-full mt-4 mb-6">
-        <Text className="text-white dark:text-black text-center font-semibold">Invite others</Text>
+        <Text className="text-white dark:text-black text-center font-semibold">
+          {t('inviteOthers')}
+        </Text>
       </TouchableOpacity>
     </View>
   );

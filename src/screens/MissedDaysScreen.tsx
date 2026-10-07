@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next';
+import 'dayjs/locale/zh-cn';
 import dayjs from '@/src/lib/dayjs';
 import { Ionicons } from '@expo/vector-icons';
 import { FlatList, Text, TouchableOpacity, useColorScheme, View } from 'react-native';
@@ -20,11 +22,12 @@ export default function MissedDaysScreen({
   createdAt,
   onToggleDay,
 }: Props) {
+  const { t, i18n } = useTranslation('plans');
   const colorScheme = useColorScheme();
   if (!missedDays.length) {
     return (
       <View className="flex-1 justify-center items-center">
-        <Text className="text-gray-500 dark:text-gray-400">No missed days! 🎉</Text>
+        <Text className="text-gray-500 dark:text-gray-400">{t('noMissedDays')}</Text>
       </View>
     );
   }
@@ -54,7 +57,8 @@ export default function MissedDaysScreen({
               {dayjs(createdAt)
                 .startOf('day')
                 .add(item.day_number - 1, 'day')
-                .format('MMMM DD, YYYY')}
+                .locale(i18n.resolvedLanguage?.startsWith('zh') ? 'zh-cn' : 'en')
+                .format(i18n.resolvedLanguage?.startsWith('zh') ? 'YYYY年M月D日' : 'MMMM DD, YYYY')}
             </Text>
           </View>
         );

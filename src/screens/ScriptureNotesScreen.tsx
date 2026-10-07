@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { getCanonicalBookName } from '@/src/bible/books';
 import BibleAttribution from '@/src/components/BibleAttribution';
 import { useRealtimeScriptureNotes } from '@/src/hooks/useRealtimeScriptureNotes';
@@ -74,6 +75,7 @@ export default function ScriptureNotesScreen({
   copyright,
   attributionUrl,
 }: Props) {
+  const { t, i18n } = useTranslation('community');
   const insets = useSafeAreaInsets();
   const colorScheme = useColorScheme();
   const { session } = useAuth();
@@ -135,9 +137,9 @@ export default function ScriptureNotesScreen({
 
     return {
       verse: {
-        tabLabel: 'Verse',
-        helper: `Discussion on ${book} ${chapter}:${verse.number}`,
-        heading: `Verse Notes`,
+        tabLabel: t('verse'),
+        helper: t('discussionReference', { reference: `${book} ${chapter}:${verse.number}` }),
+        heading: t('verseNotes'),
         reference: `${book} ${chapter}:${verse.number}`,
         context: {
           noteType: 'verse',
@@ -150,9 +152,11 @@ export default function ScriptureNotesScreen({
         },
       },
       section: {
-        tabLabel: 'Section',
-        helper: `Discussion on ${book} ${chapter}:${sectionStart}-${sectionEnd}`,
-        heading: `Section Notes`,
+        tabLabel: t('section'),
+        helper: t('discussionReference', {
+          reference: `${book} ${chapter}:${sectionStart}-${sectionEnd}`,
+        }),
+        heading: t('sectionNotes'),
         reference: `${book} ${chapter}:${sectionStart}-${sectionEnd}`,
         context: {
           noteType: 'section',
@@ -165,9 +169,9 @@ export default function ScriptureNotesScreen({
         },
       },
       chapter: {
-        tabLabel: 'Chapter',
-        helper: `Discussion on ${book} ${chapter}`,
-        heading: `Chapter Notes`,
+        tabLabel: t('chapter'),
+        helper: t('discussionReference', { reference: `${book} ${chapter}` }),
+        heading: t('chapterNotes'),
         reference: `${book} ${chapter}`,
         context: {
           noteType: 'chapter',
@@ -180,9 +184,9 @@ export default function ScriptureNotesScreen({
         },
       },
       book: {
-        tabLabel: 'Book',
-        helper: `Discussion on ${book}`,
-        heading: `Book Notes`,
+        tabLabel: t('book'),
+        helper: t('discussionReference', { reference: book }),
+        heading: t('bookNotes'),
         reference: `${book}`,
         context: {
           noteType: 'book',
@@ -195,7 +199,7 @@ export default function ScriptureNotesScreen({
         },
       },
     };
-  }, [book, bookId, chapter, verse, verseCount]);
+  }, [book, bookId, chapter, verse, verseCount, t]);
 
   const activeScope = scopes?.[activeType] ?? null;
   const { notesQuery, notes, addNote, toggleHelpful } = useScriptureNotes(
@@ -235,7 +239,7 @@ export default function ScriptureNotesScreen({
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       <View className="flex-1 bg-white dark:bg-black" style={{ paddingTop: insets.top + 4 }}>
         <View className="flex-row items-center justify-between px-4 pb-3 border-b border-gray-200 dark:border-neutral-800">
-          <TouchableOpacity onPress={onClose} className="p-1 -ml-1">
+          <TouchableOpacity accessibilityLabel={t('back')} onPress={onClose} className="p-1 -ml-1">
             <Ionicons
               name="chevron-back"
               size={26}
@@ -243,7 +247,9 @@ export default function ScriptureNotesScreen({
             />
           </TouchableOpacity>
 
-          <Text className="text-xl font-bold text-primary dark:text-white">Scripture Notes</Text>
+          <Text className="text-xl font-bold text-primary dark:text-white">
+            {t('scriptureNotes')}
+          </Text>
 
           <View className="w-6" />
         </View>
@@ -294,8 +300,7 @@ export default function ScriptureNotesScreen({
                 </View>
 
                 <Text className="mt-3 text-sm text-gray-600 dark:text-gray-300">
-                  {activeScope?.helper ??
-                    'Join the conversation at different levels of this passage.'}
+                  {activeScope?.helper ?? t('notesDescription')}
                 </Text>
 
                 <View className="mt-2 mb-3 p-3 rounded-xl border border-gray-200 dark:border-neutral-700 bg-gray-50 dark:bg-neutral-900">
@@ -310,11 +315,9 @@ export default function ScriptureNotesScreen({
                   </View>
                 ) : topLevelNotes.length === 0 ? (
                   <View className="pt-8 items-center">
-                    <Text className="text-gray-500 dark:text-gray-300">
-                      No notes yet in this scope.
-                    </Text>
+                    <Text className="text-gray-500 dark:text-gray-300">{t('noNotes')}</Text>
                     <Text className="text-gray-500 dark:text-gray-300 text-xs mt-1">
-                      Be the first to post one.
+                      {t('firstNote')}
                     </Text>
                   </View>
                 ) : (
@@ -328,7 +331,10 @@ export default function ScriptureNotesScreen({
                         last_name={note.last_name}
                         name={`${note.first_name} ${note.last_name?.[0] ? `${note.last_name[0]}.` : ''}`.trim()}
                         size={34}
-                        subtitle={dayjs(note.created_at).format('MMM D, YYYY')}
+                        subtitle={new Date(note.created_at).toLocaleDateString(
+                          i18n.resolvedLanguage ?? 'en',
+                          { month: 'short', day: 'numeric', year: 'numeric' },
+                        )}
                         subtitleClassName="text-xs text-gray-500 dark:text-gray-300"
                         titleClassName="font-semibold text-primary dark:text-gray-100"
                         uri={note.avatar_url}
@@ -378,7 +384,7 @@ export default function ScriptureNotesScreen({
                             color={colorScheme === 'dark' ? '#cbd5e1' : '#6b7280'}
                           />
                           <Text className="ml-1 text-sm text-gray-500 dark:text-gray-300">
-                            Reply
+                            {t('reply')}
                           </Text>
                         </TouchableOpacity>
                       </View>
@@ -393,7 +399,10 @@ export default function ScriptureNotesScreen({
                             last_name={reply.last_name}
                             name={`${reply.first_name} ${reply.last_name?.[0] ? `${reply.last_name[0]}.` : ''}`.trim()}
                             size={30}
-                            subtitle={dayjs(reply.created_at).format('MMM D, YYYY')}
+                            subtitle={new Date(reply.created_at).toLocaleDateString(
+                              i18n.resolvedLanguage ?? 'en',
+                              { month: 'short', day: 'numeric', year: 'numeric' },
+                            )}
                             subtitleClassName="text-xs text-gray-500 dark:text-gray-300"
                             titleClassName="font-semibold text-primary dark:text-gray-100"
                             uri={reply.avatar_url}
@@ -444,7 +453,7 @@ export default function ScriptureNotesScreen({
                         <LoadingSpinner size="small" />
                       ) : (
                         <Text className="text-sm font-semibold text-gray-700 dark:text-gray-200">
-                          Load more notes
+                          {t('loadMoreNotes')}
                         </Text>
                       )}
                     </TouchableOpacity>
@@ -462,10 +471,12 @@ export default function ScriptureNotesScreen({
               {replyTo && (
                 <View className="mb-2 px-3 py-2 rounded-xl bg-blue-50 dark:bg-blue-950/40 flex-row items-center justify-between">
                   <Text className="text-xs text-blue-700 dark:text-blue-200">
-                    Replying to {replyTo.first_name}
+                    {t('replyingTo', { name: replyTo.first_name })}
                   </Text>
 
-                  <TouchableOpacity onPress={() => setReplyTo(null)}>
+                  <TouchableOpacity
+                    accessibilityLabel={t('cancel')}
+                    onPress={() => setReplyTo(null)}>
                     <Ionicons
                       name="close"
                       size={16}
@@ -482,7 +493,9 @@ export default function ScriptureNotesScreen({
                     setDraft(value);
                     if (submitError) setSubmitError('');
                   }}
-                  placeholder={replyTo ? `Reply to ${replyTo.first_name}...` : 'Add your note...'}
+                  placeholder={
+                    replyTo ? t('replyPlaceholder', { name: replyTo.first_name }) : t('addNote')
+                  }
                   placeholderTextColor={colorScheme === 'dark' ? '#9ca3af' : '#6b7280'}
                   multiline
                   maxLength={500}
@@ -504,7 +517,8 @@ export default function ScriptureNotesScreen({
                           setReplyTo(null);
                         },
                         onError: (error) => {
-                          setSubmitError(error.message ?? 'Unable to post note.');
+                          console.error('Unable to post note:', error);
+                          setSubmitError(t('postNoteError'));
                         },
                       },
                     );
@@ -514,14 +528,14 @@ export default function ScriptureNotesScreen({
                   {addNote.isPending ? (
                     <LoadingSpinner size="small" />
                   ) : (
-                    <Text className="text-white font-semibold">Post</Text>
+                    <Text className="text-white font-semibold">{t('post')}</Text>
                   )}
                 </TouchableOpacity>
               </View>
 
               {!session && (
                 <Text className="text-xs text-amber-600 dark:text-amber-400 mt-2">
-                  Sign in to post, reply, and mark notes as helpful.
+                  {t('signInForNotes')}
                 </Text>
               )}
 
@@ -535,7 +549,7 @@ export default function ScriptureNotesScreen({
         ) : (
           <View className="flex-1 items-center justify-center px-8">
             <Text className="text-gray-600 dark:text-gray-300 text-center">
-              Select a verse to open scripture notes.
+              {t('selectVerseForNotes')}
             </Text>
           </View>
         )}

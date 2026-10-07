@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import DaysPicker from '@/src/components/DaysPicker';
 import dayjs, { type Dayjs } from '@/src/lib/dayjs';
 import { Ionicons } from '@expo/vector-icons';
@@ -19,6 +20,7 @@ export default function PickStartDateScreen({
   onSelectDate,
   onNext,
 }: Props) {
+  const { t } = useTranslation('plans');
   const insets = useSafeAreaInsets();
   const colorScheme = useColorScheme();
   const startDate = dayjs().startOf('day');
@@ -38,7 +40,7 @@ export default function PickStartDateScreen({
       {/* CONTENT */}
       <View className="px-4 mt-6 items-center w-full">
         <Text className="dark:text-white text-xl font-bold mb-6 text-center">
-          When do you want to start this plan?
+          {t('pickStartDate')}
         </Text>
 
         <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mb-5">
@@ -62,7 +64,7 @@ export default function PickStartDateScreen({
         </ScrollView>
 
         <Text className="text-gray-700 dark:text-gray-200 text-sm mt-6 text-center">
-          Starting on a future date gives participants time to accept your invitation.
+          {t('futureStartHint')}
         </Text>
       </View>
 
@@ -72,6 +74,7 @@ export default function PickStartDateScreen({
         style={{ paddingBottom: insets.bottom + 5 }}>
         <TouchableOpacity
           onPress={onNext}
+          accessibilityLabel={t('next')}
           className="w-14 h-14 rounded-full bg-black dark:bg-white items-center justify-center">
           <Ionicons
             name="arrow-forward"

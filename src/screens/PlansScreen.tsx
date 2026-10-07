@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import Dropdown from '@/src/components/DropDown';
 import { MyPlansToggle } from '@/src/components/MyPlansToggle';
 import PlanTagFilterChips from '@/src/components/PlanTagFilterChips';
@@ -53,6 +54,7 @@ export default function PlansScreen({
   onLogin,
   onContribute,
 }: Props) {
+  const { t } = useTranslation('plans');
   const colorScheme = useColorScheme();
   const insets = useSafeAreaInsets();
   const notificationLabel = notificationCount > 99 ? '99+' : String(notificationCount);
@@ -176,7 +178,7 @@ export default function PlansScreen({
         onPress={onContribute}
         className="absolute bottom-4 right-4 flex-row items-center gap-1 rounded-full px-4 py-2">
         <Text className="text-xs font-bold text-gray-800 underline dark:text-gray-300">
-          Have a plan you&apos;d like to contribute?
+          {t('contributePrompt')}
         </Text>
         <Ionicons name="arrow-forward" color={colorScheme === 'dark' ? '#fff' : '#000'} />
       </TouchableOpacity>

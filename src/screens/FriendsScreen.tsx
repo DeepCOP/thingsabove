@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import LoadingSpinner from '@/src/components/LoadingSpinner';
 import ProfileIdentityRow from '@/src/components/ProfileIdentityRow';
 import { Ionicons } from '@expo/vector-icons';
@@ -26,6 +27,7 @@ export default function FriendsScreen({
   onAddFriend,
   onFriendRequests,
 }: Props) {
+  const { t } = useTranslation('community');
   const insets = useSafeAreaInsets();
   const colorScheme = useColorScheme();
   const primaryActionColor = colorScheme === 'dark' ? '#000000' : '#ffffff';
@@ -42,9 +44,11 @@ export default function FriendsScreen({
   return (
     <View className="flex-1 bg-white px-4 dark:bg-black" style={{ paddingBottom: insets.bottom }}>
       <View className="mt-6 rounded-2xl border border-gray-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-950">
-        <Text className="text-lg font-semibold text-gray-900 dark:text-white">Your Friends</Text>
+        <Text className="text-lg font-semibold text-gray-900 dark:text-white">
+          {t('yourFriends')}
+        </Text>
         <Text className="mt-2 text-sm leading-6 text-gray-600 dark:text-gray-400">
-          See who you are connected with on ThingsAbove and add more friends from here.
+          {t('friendsDescription')}
         </Text>
 
         <View className="mt-4 flex-row gap-3">
@@ -52,7 +56,7 @@ export default function FriendsScreen({
             className="flex-1 flex-row items-center justify-center rounded-full bg-black px-4 py-3 dark:bg-white"
             onPress={onAddFriend}>
             <Ionicons name="person-add-outline" size={18} color={primaryActionColor} />
-            <Text className="ml-2 font-semibold text-white dark:text-black">Add Friend</Text>
+            <Text className="ml-2 font-semibold text-white dark:text-black">{t('addFriend')}</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -60,7 +64,7 @@ export default function FriendsScreen({
             onPress={onFriendRequests}>
             <Ionicons name="mail-open-outline" size={18} color={accentColor} />
             <Text className="ml-2 font-semibold text-blue-600 dark:text-blue-400">
-              Requests{pendingCount > 0 ? ` (${pendingCount})` : ''}
+              {pendingCount > 0 ? t('requestsWithCount', { count: pendingCount }) : t('requests')}
             </Text>
           </TouchableOpacity>
         </View>
@@ -69,7 +73,7 @@ export default function FriendsScreen({
       {friends.length > 0 ? (
         <>
           <Text className="mt-6 mb-3 text-sm text-gray-500 dark:text-gray-400">
-            {friends.length} Friend{friends.length === 1 ? '' : 's'}
+            {t('friendCount', { count: friends.length })}
           </Text>
 
           <FlatList
@@ -83,9 +87,9 @@ export default function FriendsScreen({
                   <ProfileIdentityRow
                     first_name={item.first_name}
                     last_name={item.last_name}
-                    name={fullName || 'Unknown user'}
+                    name={fullName || t('unknownUser')}
                     size={42}
-                    subtitle="Friend"
+                    subtitle={t('friend')}
                     subtitleClassName="mt-1 text-xs text-gray-500 dark:text-gray-400"
                     titleClassName="font-semibold text-gray-900 dark:text-white"
                     uri={item.avatar_url}
@@ -101,16 +105,16 @@ export default function FriendsScreen({
         <View className="flex-1 items-center justify-center px-6">
           <Ionicons name="people-outline" size={32} color="#9ca3af" />
           <Text className="mt-4 text-lg font-semibold text-gray-900 dark:text-white">
-            No friends yet
+            {t('noFriends')}
           </Text>
           <Text className="mt-2 text-center text-sm leading-6 text-gray-600 dark:text-gray-400">
-            Start building your circle on ThingsAbove by adding your first friend.
+            {t('noFriendsDescription')}
           </Text>
 
           <TouchableOpacity
             className="mt-6 rounded-full bg-black px-6 py-4 dark:bg-white"
             onPress={onAddFriend}>
-            <Text className="font-semibold text-white dark:text-black">Add Friend</Text>
+            <Text className="font-semibold text-white dark:text-black">{t('addFriend')}</Text>
           </TouchableOpacity>
         </View>
       )}
