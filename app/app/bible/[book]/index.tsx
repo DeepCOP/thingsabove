@@ -66,9 +66,9 @@ export default function BibleBooksChapters() {
                 onPress={() => toggleBook(book.id)}
                 className="flex-row justify-between items-center bg-gray-100 dark:bg-neutral-900 px-4 py-3 rounded-lg">
                 <Text className="text-lg font-semibold text-gray-900 dark:text-gray-200">
-                  {i18n.resolvedLanguage?.startsWith('zh')
-                    ? t(`books.${book.id}`, { defaultValue: book.name })
-                    : book.name}
+                  {i18n.resolvedLanguage?.startsWith('en')
+                    ? book.name
+                    : t(`books.${book.id}`, { defaultValue: book.name })}
                 </Text>
 
                 <Ionicons name={isOpen ? 'chevron-up' : 'chevron-down'} size={22} color="#6b7280" />

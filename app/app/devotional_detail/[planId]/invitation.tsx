@@ -1,10 +1,9 @@
 import { useTranslation } from 'react-i18next';
-import 'dayjs/locale/zh-cn';
 import LoadingSpinner from '@/src/components/LoadingSpinner';
 import { useAcceptPlanInvite, useDeclinePlanInvite } from '@/src/hooks/useInviteFriends';
 import { usePlanGroupInvitation, usePlanGroupInvitationMembers } from '@/src/hooks/usePlanGroup';
 import { useMyPlanProgressPlans } from '@/src/hooks/usePlanProgress';
-import dayjs from '@/src/lib/dayjs';
+import dayjs, { formatShortDate } from '@/src/lib/dayjs';
 import PlanInvitationScreen from '@/src/screens/PlanInvitationScreen';
 import { useAuth } from '@/src/state/AuthContext';
 import Ionicons from '@expo/vector-icons/Ionicons';
@@ -77,9 +76,7 @@ export default function PlanInvitation() {
     diffDays > 0
       ? t('startsInDays', {
           count: diffDays,
-          date: startDate
-            .locale(i18n.resolvedLanguage?.startsWith('zh') ? 'zh-cn' : 'en')
-            .format('MMM DD'),
+          date: formatShortDate(startDate, i18n.resolvedLanguage),
         })
       : diffDays === 0
         ? t('startsToday')

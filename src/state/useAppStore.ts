@@ -7,7 +7,6 @@ import type {
   BibleVersionManifestEntry,
 } from '@/src/bible/types';
 import { DevotionalDays } from '@/src/types/types';
-import { isLanguagePreference, type LanguagePreference } from '@/src/i18n/languages';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
@@ -86,8 +85,6 @@ type AppState = {
 
   theme: ThemeMode;
   setTheme: (t: ThemeMode) => void;
-  language: LanguagePreference;
-  setLanguage: (language: LanguagePreference) => void;
 };
 
 type PersistedAppState = Pick<
@@ -104,7 +101,6 @@ type PersistedAppState = Pick<
   | 'bibleVerseHighlights'
   | 'currentPlan'
   | 'theme'
-  | 'language'
 >;
 
 const DEFAULT_SELECTED_BOOK: SelectedBibleBook = {
@@ -125,7 +121,6 @@ const DEFAULT_PERSISTED_STATE: PersistedAppState = {
   bibleVerseHighlights: {},
   currentPlan: null,
   theme: 'system',
-  language: 'system',
 };
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
@@ -331,7 +326,6 @@ const partializeAppState = (state: AppState): PersistedAppState => ({
   bibleVerseHighlights: state.bibleVerseHighlights,
   currentPlan: state.currentPlan,
   theme: state.theme,
-  language: state.language,
 });
 
 const migrateAppState = (persistedState: unknown): PersistedAppState => {
@@ -362,9 +356,6 @@ const migrateAppState = (persistedState: unknown): PersistedAppState => {
       ? persistedState.currentPlan
       : DEFAULT_PERSISTED_STATE.currentPlan,
     theme: isThemeMode(persistedState.theme) ? persistedState.theme : DEFAULT_PERSISTED_STATE.theme,
-    language: isLanguagePreference(persistedState.language)
-      ? persistedState.language
-      : DEFAULT_PERSISTED_STATE.language,
   };
 };
 
@@ -443,8 +434,6 @@ export const useAppStore = create<AppState>()(
 
       theme: DEFAULT_PERSISTED_STATE.theme,
       setTheme: (theme) => set({ theme }),
-      language: DEFAULT_PERSISTED_STATE.language,
-      setLanguage: (language) => set({ language }),
 
       version: DEFAULT_PERSISTED_STATE.version,
       setVersion: (version) => set({ version }),

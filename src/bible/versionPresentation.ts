@@ -9,7 +9,7 @@ export const localizeBibleError = (
   fallback: 'loadError' | 'actionError' = 'loadError',
 ) => {
   if (!message) return '';
-  if (!language?.startsWith('zh')) return message;
+  if (!language || language.startsWith('en')) return message;
   if (message.includes('Please download it again.')) return t('downloadError');
   if (message === 'Sign in to use online Bible versions.') return t('signInError');
   if (message === 'This translation is available for online reading only.')

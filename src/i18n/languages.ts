@@ -1,10 +1,10 @@
-export const SUPPORTED_LANGUAGES = ['en', 'zh-Hans'] as const;
+export const SUPPORTED_LANGUAGES = ['en', 'es', 'pt', 'zh-Hans', 'zh-Hant'] as const;
 
 export type AppLanguage = (typeof SUPPORTED_LANGUAGES)[number];
 export type LanguagePreference = AppLanguage | 'system';
 
 export const isLanguagePreference = (value: unknown): value is LanguagePreference =>
-  value === 'system' || value === 'en' || value === 'zh-Hans';
+  value === 'system' || SUPPORTED_LANGUAGES.some((language) => language === value);
 
 export function resolveAppLanguage(
   preference: LanguagePreference,
@@ -12,15 +12,18 @@ export function resolveAppLanguage(
 ): AppLanguage {
   if (preference !== 'system') return preference;
 
-  for (const tag of deviceLanguageTags) {
-    const normalized = tag.toLowerCase().replace(/_/g, '-');
-    const language = normalized.split('-')[0];
-    if (language === 'zh') {
-      if (/-(hant|tw|hk|mo)(-|$)/.test(normalized)) continue;
-      return 'zh-Hans';
-    }
-    if (language === 'en') return 'en';
+  const normalized = deviceLanguageTags[0]?.trim().toLowerCase().replace(/_/g, '-') ?? '';
+  const subtags = normalized.split('-');
+  const language = subtags[0];
+  if (language === 'zh') {
+    if (subtags.includes('hant')) return 'zh-Hant';
+    if (subtags.includes('hans')) return 'zh-Hans';
+    if (subtags.some((subtag) => ['tw', 'hk', 'mo'].includes(subtag))) return 'zh-Hant';
+    return 'zh-Hans';
   }
+  if (language === 'es') return 'es';
+  if (language === 'pt') return 'pt';
+  if (language === 'en') return 'en';
 
   return 'en';
 }

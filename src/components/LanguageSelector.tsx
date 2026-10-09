@@ -9,7 +9,10 @@ export default function LanguageSelector() {
   const options = [
     { value: 'system', label: t('followDeviceLanguage') },
     { value: 'en', label: 'English' },
+    { value: 'es', label: 'Español' },
+    { value: 'pt', label: 'Português' },
     { value: 'zh-Hans', label: '简体中文' },
+    { value: 'zh-Hant', label: '繁體中文' },
   ] as const;
 
   return (

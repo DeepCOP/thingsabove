@@ -8,12 +8,15 @@ import {
 } from '@/src/hooks/useProfile';
 import ProfileScreen from '@/src/screens/Profile';
 import { useAuth } from '@/src/state/AuthContext';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { useRouter } from 'expo-router';
+import { useColorScheme } from 'nativewind';
 import { Text, TouchableOpacity, View } from 'react-native';
 
 export default function App() {
   const { t } = useTranslation('app');
   const { session, signOut } = useAuth();
+  const { colorScheme } = useColorScheme();
   const router = useRouter();
   const profileQuery = useProfile(session?.user?.id);
   const updateProfile = useUpdateProfile(session?.user?.id);
@@ -44,6 +47,16 @@ export default function App() {
     />
   ) : (
     <View className="flex-1 items-center justify-center px-6 bg-white dark:bg-black">
+      <View
+        accessibilityElementsHidden
+        importantForAccessibility="no-hide-descendants"
+        className="mb-5 h-16 w-16 items-center justify-center rounded-full bg-gray-100 dark:bg-neutral-900">
+        <Ionicons
+          name="person-outline"
+          size={30}
+          color={colorScheme === 'dark' ? '#f9fafb' : '#111827'}
+        />
+      </View>
       <Text className="text-2xl font-semibold mb-2 dark:text-white">{t('welcome')}</Text>
 
       <Text className="text-center text-gray-600 dark:text-gray-400 mb-6">

@@ -80,9 +80,9 @@ export default function BibleReaderView({ onScroll }: { onScroll: (...args: any[
   );
   const currentBookId = currentBook?.id ?? selectedBook.bookId;
   const currentBookName = currentBook?.name ?? getBookNameForId(books, currentBookId);
-  const displayedBookName = i18n.resolvedLanguage?.startsWith('zh')
-    ? t(`books.${currentBookId}`, { defaultValue: currentBookName })
-    : currentBookName;
+  const displayedBookName = i18n.resolvedLanguage?.startsWith('en')
+    ? currentBookName
+    : t(`books.${currentBookId}`, { defaultValue: currentBookName });
   const currentBookIndex = currentBook ? books.findIndex((book) => book.id === currentBook.id) : -1;
   const chapterNumber = Number(selectedBook.chapter);
   const {

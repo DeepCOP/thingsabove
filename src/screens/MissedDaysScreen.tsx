@@ -1,6 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import 'dayjs/locale/zh-cn';
-import dayjs from '@/src/lib/dayjs';
+import dayjs, { formatLongDate } from '@/src/lib/dayjs';
 import { Ionicons } from '@expo/vector-icons';
 import { FlatList, Text, TouchableOpacity, useColorScheme, View } from 'react-native';
 
@@ -54,11 +53,12 @@ export default function MissedDaysScreen({
             </TouchableOpacity>
 
             <Text className="text-gray-900 font-semibold dark:text-gray-100">
-              {dayjs(createdAt)
-                .startOf('day')
-                .add(item.day_number - 1, 'day')
-                .locale(i18n.resolvedLanguage?.startsWith('zh') ? 'zh-cn' : 'en')
-                .format(i18n.resolvedLanguage?.startsWith('zh') ? 'YYYY年M月D日' : 'MMMM DD, YYYY')}
+              {formatLongDate(
+                dayjs(createdAt)
+                  .startOf('day')
+                  .add(item.day_number - 1, 'day'),
+                i18n.resolvedLanguage,
+              )}
             </Text>
           </View>
         );
