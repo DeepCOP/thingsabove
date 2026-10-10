@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { GridCard, ListCard } from '@/src/components/DevoCard';
 import LoadingSpinner from '@/src/components/LoadingSpinner';
+import PlansSignInPrompt from '@/src/components/plansList/PlansSignInPrompt';
 import { useSavedPlans, useToggleSavedPlan } from '@/src/hooks/useSavedPlans';
 import { useAuth } from '@/src/state/AuthContext';
 import { useAppStore } from '@/src/state/useAppStore';
@@ -14,8 +15,8 @@ export default function SavedPlansList({ selectedTags = [] }: { selectedTags?: s
   const { t } = useTranslation('plans');
   const colorScheme = useColorScheme();
   const { sort, isGrid } = useAppStore();
-  const { session } = useAuth();
-  const hasSelectedTags = !!session?.user?.id && selectedTags.length > 0;
+  const { session, loading: sessionLoading } = useAuth();
+  const hasSelectedTags = selectedTags.length > 0;
   const savedPlansQuery = useSavedPlans(session?.user?.id);
   const { toggleSavedPlan } = useToggleSavedPlan(session?.user?.id);
   const [refreshing, setRefreshing] = useState(false);
@@ -82,28 +83,20 @@ export default function SavedPlansList({ selectedTags = [] }: { selectedTags?: s
           />
         </View>
         <Text className="text-lg font-semibold text-gray-900 dark:text-white mb-2 text-center">
-          {hasSelectedTags
-            ? t('noSavedTagMatches')
-            : session?.user?.id
-              ? t('noSavedPlans')
-              : t('signInToSave')}
+          {hasSelectedTags ? t('noSavedTagMatches') : t('noSavedPlans')}
         </Text>
         <Text className="text-center text-gray-600 dark:text-gray-400">
-          {hasSelectedTags
-            ? t('clearFilterHint')
-            : session?.user?.id
-              ? t('noSavedPlansHint')
-              : t('signInToSaveHint')}
+          {hasSelectedTags ? t('clearFilterHint') : t('noSavedPlansHint')}
         </Text>
       </View>
     </View>
   );
 
-  if (!session?.user?.id) {
-    return <EmptySavedPlans />;
+  if (!session && !sessionLoading) {
+    return <PlansSignInPrompt title={t('signInToSave')} hint={t('signInToSaveHint')} />;
   }
 
-  if (savedPlansQuery.isLoading) {
+  if (savedPlansQuery.isLoading || sessionLoading) {
     return <LoadingSpinner />;
   }
 

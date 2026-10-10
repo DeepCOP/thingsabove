@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { GridCard, ListCard } from '@/src/components/DevoCard';
 import LoadingSpinner from '@/src/components/LoadingSpinner';
+import PlansSignInPrompt from '@/src/components/plansList/PlansSignInPrompt';
 import { useMyDevotionalPlans } from '@/src/hooks/useDevotionalPlans';
 import { useAuth } from '@/src/state/AuthContext';
 import { useAppStore } from '@/src/state/useAppStore';
@@ -9,7 +10,7 @@ import { planMatchesSelectedTags } from '@/src/utils/planTags';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useMemo, useState } from 'react';
-import { FlatList, Text, TouchableOpacity, useColorScheme, View } from 'react-native';
+import { FlatList, Text, useColorScheme, View } from 'react-native';
 
 type PrivatePlanCardItem = {
   author_id: string | null;
@@ -53,8 +54,8 @@ export default function PrivatePlansList({ selectedTags = [] }: { selectedTags?:
   const { t } = useTranslation('plans');
   const colorScheme = useColorScheme();
   const { sort, isGrid } = useAppStore();
-  const { session } = useAuth();
-  const hasSelectedTags = !!session?.user?.id && selectedTags.length > 0;
+  const { session, loading: sessionLoading } = useAuth();
+  const hasSelectedTags = selectedTags.length > 0;
   const myDevotionalPlansQuery = useMyDevotionalPlans(session?.user?.id);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -98,37 +99,22 @@ export default function PrivatePlansList({ selectedTags = [] }: { selectedTags?:
           />
         </View>
         <Text className="mb-2 text-center text-lg font-semibold text-gray-900 dark:text-white">
-          {hasSelectedTags
-            ? t('noPrivateTagMatches')
-            : session?.user?.id
-              ? t('noPrivatePlans')
-              : t('signInForPrivatePlans')}
+          {hasSelectedTags ? t('noPrivateTagMatches') : t('noPrivatePlans')}
         </Text>
         <Text className="text-center text-gray-600 dark:text-gray-400">
-          {hasSelectedTags
-            ? t('clearFilterHint')
-            : session?.user?.id
-              ? t('noPrivatePlansHint')
-              : t('signInForPrivatePlansHint')}
+          {hasSelectedTags ? t('clearFilterHint') : t('noPrivatePlansHint')}
         </Text>
-        {!session?.user?.id && (
-          <TouchableOpacity
-            onPress={() => router.push('/app/signin')}
-            className="mt-6 w-full rounded-xl bg-black py-3 dark:bg-white">
-            <Text className="text-center font-semibold text-white dark:text-black">
-              {t('signIn')}
-            </Text>
-          </TouchableOpacity>
-        )}
       </View>
     </View>
   );
 
-  if (!session?.user?.id) {
-    return <EmptyPrivatePlans />;
+  if (!session && !sessionLoading) {
+    return (
+      <PlansSignInPrompt title={t('signInForPrivatePlans')} hint={t('signInForPrivatePlansHint')} />
+    );
   }
 
-  if (myDevotionalPlansQuery.isLoading) {
+  if (myDevotionalPlansQuery.isLoading || sessionLoading) {
     return <LoadingSpinner />;
   }
 
