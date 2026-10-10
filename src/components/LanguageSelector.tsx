@@ -13,6 +13,12 @@ export default function LanguageSelector() {
     { value: 'pt', label: 'Português' },
     { value: 'zh-Hans', label: '简体中文' },
     { value: 'zh-Hant', label: '繁體中文' },
+    { value: 'fr', label: 'Français' },
+    { value: 'id', label: 'Bahasa Indonesia' },
+    { value: 'ko', label: '한국어' },
+    { value: 'fil', label: 'Filipino (Tagalog)' },
+    { value: 'sw', label: 'Kiswahili' },
+    { value: 'hi', label: 'हिन्दी' },
   ] as const;
 
   return (

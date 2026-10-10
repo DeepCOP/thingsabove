@@ -11,7 +11,7 @@ import { useAuth } from '@/src/state/AuthContext';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useRouter } from 'expo-router';
 import { useColorScheme } from 'nativewind';
-import { Text, TouchableOpacity, View } from 'react-native';
+import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
 export default function App() {
   const { t } = useTranslation('app');
@@ -46,7 +46,15 @@ export default function App() {
       handleDeleteAvatar={deleteAvatar.mutate}
     />
   ) : (
-    <View className="flex-1 items-center justify-center px-6 bg-white dark:bg-black">
+    <ScrollView
+      className="flex-1 bg-white dark:bg-black"
+      contentContainerStyle={{
+        flexGrow: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingHorizontal: 24,
+        paddingVertical: 32,
+      }}>
       <View
         accessibilityElementsHidden
         importantForAccessibility="no-hide-descendants"
@@ -77,6 +85,6 @@ export default function App() {
       <View className="mt-8 w-full">
         <LanguageSelector />
       </View>
-    </View>
+    </ScrollView>
   );
 }

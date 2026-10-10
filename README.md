@@ -57,11 +57,10 @@ Follow the Expo prompts to run on a device or simulator. Push notifications requ
 
 ## App Language
 
-Menus, screen labels, and buttons support English, Spanish, Portuguese, Simplified Chinese, and Traditional Chinese. Choose **Settings > Language** or use the language selector on the signed-out **Profile** screen. The default follows the device's primary language; unsupported device languages use English. Your preference is saved locally, and bundled translations work offline.
+Menus, screen labels, and buttons support English, Spanish, Portuguese, Simplified and Traditional Chinese, French, Indonesian, Korean, Filipino (Tagalog), Swahili, and Hindi. Choose **Settings > Language** or use the language selector on the signed-out **Profile** screen. The default follows the device's primary language; unsupported device languages use English. Your preference is saved locally, and bundled translations work offline.
 
 Devotionals, Bible text, user content, and received push notification bodies keep their source languages. Native system and authentication dialogs follow device settings.
 
-For development, translation catalogs live in `src/i18n/locales/{en,es,pt,zh-Hans,zh-Hant}/{app,bible,community,plans}.json`. Use `useTranslation('plans')` (or the appropriate namespace) and `t('startPlan')` for UI text. Add matching keys, interpolation placeholders, and plural variants to every language, then run `pnpm run check:translations`.
 
 
 ## Push Notifications Setup

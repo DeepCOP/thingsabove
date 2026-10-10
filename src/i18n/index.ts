@@ -10,10 +10,34 @@ import esApp from './locales/es/app.json';
 import esBible from './locales/es/bible.json';
 import esCommunity from './locales/es/community.json';
 import esPlans from './locales/es/plans.json';
+import filApp from './locales/fil/app.json';
+import filBible from './locales/fil/bible.json';
+import filCommunity from './locales/fil/community.json';
+import filPlans from './locales/fil/plans.json';
+import frApp from './locales/fr/app.json';
+import frBible from './locales/fr/bible.json';
+import frCommunity from './locales/fr/community.json';
+import frPlans from './locales/fr/plans.json';
+import hiApp from './locales/hi/app.json';
+import hiBible from './locales/hi/bible.json';
+import hiCommunity from './locales/hi/community.json';
+import hiPlans from './locales/hi/plans.json';
+import idApp from './locales/id/app.json';
+import idBible from './locales/id/bible.json';
+import idCommunity from './locales/id/community.json';
+import idPlans from './locales/id/plans.json';
+import koApp from './locales/ko/app.json';
+import koBible from './locales/ko/bible.json';
+import koCommunity from './locales/ko/community.json';
+import koPlans from './locales/ko/plans.json';
 import ptApp from './locales/pt/app.json';
 import ptBible from './locales/pt/bible.json';
 import ptCommunity from './locales/pt/community.json';
 import ptPlans from './locales/pt/plans.json';
+import swApp from './locales/sw/app.json';
+import swBible from './locales/sw/bible.json';
+import swCommunity from './locales/sw/community.json';
+import swPlans from './locales/sw/plans.json';
 import zhApp from './locales/zh-Hans/app.json';
 import zhBible from './locales/zh-Hans/bible.json';
 import zhCommunity from './locales/zh-Hans/community.json';
@@ -36,6 +60,12 @@ void i18n.use(initReactI18next).init({
       community: zhHantCommunity,
       plans: zhHantPlans,
     },
+    fr: { app: frApp, bible: frBible, community: frCommunity, plans: frPlans },
+    id: { app: idApp, bible: idBible, community: idCommunity, plans: idPlans },
+    ko: { app: koApp, bible: koBible, community: koCommunity, plans: koPlans },
+    fil: { app: filApp, bible: filBible, community: filCommunity, plans: filPlans },
+    sw: { app: swApp, bible: swBible, community: swCommunity, plans: swPlans },
+    hi: { app: hiApp, bible: hiBible, community: hiCommunity, plans: hiPlans },
   },
   lng: resolveAppLanguage(
     'system',

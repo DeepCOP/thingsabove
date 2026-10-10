@@ -1,4 +1,16 @@
-export const SUPPORTED_LANGUAGES = ['en', 'es', 'pt', 'zh-Hans', 'zh-Hant'] as const;
+export const SUPPORTED_LANGUAGES = [
+  'en',
+  'es',
+  'pt',
+  'zh-Hans',
+  'zh-Hant',
+  'fr',
+  'id',
+  'ko',
+  'fil',
+  'sw',
+  'hi',
+] as const;
 
 export type AppLanguage = (typeof SUPPORTED_LANGUAGES)[number];
 export type LanguagePreference = AppLanguage | 'system';
@@ -22,7 +34,13 @@ export function resolveAppLanguage(
     return 'zh-Hans';
   }
   if (language === 'es') return 'es';
+  if (language === 'fil' || language === 'tl') return 'fil';
+  if (language === 'fr') return 'fr';
+  if (language === 'hi') return 'hi';
+  if (language === 'id' || language === 'in') return 'id';
+  if (language === 'ko') return 'ko';
   if (language === 'pt') return 'pt';
+  if (language === 'sw') return 'sw';
   if (language === 'en') return 'en';
 
   return 'en';
