@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import {
   useSignInUserWithAppleIdToken,
   useSignInUserWithGoogleIdToken,
@@ -38,11 +39,11 @@ type AuthProviderButtonsProps = {
 
 const PROVIDERS: {
   provider: OAuthProvider;
-  label: string;
+  labelKey: string;
   icon: keyof typeof Ionicons.glyphMap;
 }[] = [
-  { provider: 'google', label: 'Continue with Google', icon: 'logo-google' },
-  { provider: 'apple', label: 'Continue with Apple', icon: 'logo-apple' },
+  { provider: 'google', labelKey: 'continueGoogle', icon: 'logo-google' },
+  { provider: 'apple', labelKey: 'continueApple', icon: 'logo-apple' },
 ];
 
 const GOOGLE_G_MARK = require('../../assets/images/google-g.svg');
@@ -62,6 +63,7 @@ export default function AuthProviderButtons({
   onSuccess,
   returnTo,
 }: AuthProviderButtonsProps) {
+  const { t } = useTranslation('app');
   const colorScheme = useColorScheme();
   const { width: windowWidth } = useWindowDimensions();
   const signInWithOAuth = useSignInUserWithOAuth();
@@ -78,8 +80,8 @@ export default function AuthProviderButtons({
   const googleButtonBackgroundColor = colorScheme === 'dark' ? '#131314' : '#FFFFFF';
   const googleButtonBorderColor = colorScheme === 'dark' ? '#8E918F' : '#747775';
   const googleButtonTextColor = colorScheme === 'dark' ? '#E3E3E3' : '#1F1F1F';
-  const googleButtonLabel = buttonLabels?.google ?? 'Continue with Google';
-  const appleButtonLabel = buttonLabels?.apple ?? 'Continue with Apple';
+  const googleButtonLabel = buttonLabels?.google ?? t('continueGoogle');
+  const appleButtonLabel = buttonLabels?.apple ?? t('continueApple');
   const authProviderButtonWidth = Math.max(192, Math.min(windowWidth - 48, 312));
   const visibleProviders = PROVIDERS.filter(
     ({ provider }) =>
@@ -169,26 +171,17 @@ export default function AuthProviderButtons({
     const iosUrlScheme = process.env.EXPO_PUBLIC_GOOGLE_IOS_URL_SCHEME?.trim();
 
     if (!webClientId) {
-      Alert.alert(
-        'Google Sign In Error',
-        'Missing EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID. Add your Google web client ID and rebuild the app.',
-      );
+      Alert.alert(t('googleSignInError'), t('googleWebClientMissing'));
       return;
     }
 
     if (Platform.OS === 'ios' && !iosClientId) {
-      Alert.alert(
-        'Google Sign In Error',
-        'Missing EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID. Add your Google iOS client ID and rebuild the app.',
-      );
+      Alert.alert(t('googleSignInError'), t('googleIosClientMissing'));
       return;
     }
 
     if (Platform.OS === 'ios' && !iosUrlScheme) {
-      Alert.alert(
-        'Google Sign In Error',
-        'Missing EXPO_PUBLIC_GOOGLE_IOS_URL_SCHEME. Add the reversed iOS client ID URL scheme and rebuild the app.',
-      );
+      Alert.alert(t('googleSignInError'), t('googleIosSchemeMissing'));
       return;
     }
 
@@ -201,7 +194,7 @@ export default function AuthProviderButtons({
       }
 
       if (!response.data.idToken) {
-        Alert.alert('Google Sign In Error', 'No Google identity token was returned.');
+        Alert.alert(t('googleSignInError'), t('googleTokenMissing'));
         return;
       }
 
@@ -235,17 +228,14 @@ export default function AuthProviderButtons({
         }
 
         if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
-          Alert.alert(
-            'Google Sign In Error',
-            'Google Play Services is not available or needs to be updated.',
-          );
+          Alert.alert(t('googleSignInError'), t('googlePlayServicesError'));
           return;
         }
       }
 
       Alert.alert(
-        'Google Sign In Error',
-        error instanceof Error ? error.message : 'Unable to start Google sign in.',
+        t('googleSignInError'),
+        error instanceof Error ? error.message : t('googleSignInUnavailable'),
       );
       console.error('Google Sign In Error:', error);
     }
@@ -274,14 +264,14 @@ export default function AuthProviderButtons({
       }
 
       Alert.alert(
-        'Apple Sign In Error',
-        error instanceof Error ? error.message : 'Unable to start Apple sign in.',
+        t('appleSignInError'),
+        error instanceof Error ? error.message : t('appleSignInUnavailable'),
       );
       return;
     }
 
     if (!credential.identityToken) {
-      Alert.alert('Apple Sign In Error', 'No Apple identity token was returned.');
+      Alert.alert(t('appleSignInError'), t('appleTokenMissing'));
       return;
     }
 
@@ -374,10 +364,10 @@ export default function AuthProviderButtons({
           </TouchableOpacity>
         ) : null}
 
-        {visibleProviders.map(({ provider, label, icon }) => {
+        {visibleProviders.map(({ provider, labelKey, icon }) => {
           const isProviderBusy = isBusy && signInWithOAuth.variables?.provider === provider;
           const isDisabled = disabled || isBusy;
-          const providerLabel = buttonLabels?.[provider] ?? label;
+          const providerLabel = buttonLabels?.[provider] ?? t(labelKey);
 
           return (
             <TouchableOpacity

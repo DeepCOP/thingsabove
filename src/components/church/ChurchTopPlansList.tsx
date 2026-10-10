@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { ChurchTopPlan } from '@/src/types/types';
 import { Ionicons } from '@expo/vector-icons';
 import { Text, TouchableOpacity, View } from 'react-native';
@@ -8,13 +9,16 @@ type Props = {
 };
 
 export default function ChurchTopPlansList({ plans, onPlanPress }: Props) {
+  const { t } = useTranslation('community');
   return (
     <View className="rounded-2xl border border-gray-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-950">
-      <Text className="text-lg font-semibold text-gray-900 dark:text-white">Top Devotionals</Text>
+      <Text className="text-lg font-semibold text-gray-900 dark:text-white">
+        {t('topDevotionals')}
+      </Text>
 
       {plans.length === 0 ? (
         <Text className="mt-3 text-sm text-gray-500 dark:text-gray-400">
-          No devotional activity yet for this church.
+          {t('noChurchDevotionalActivity')}
         </Text>
       ) : (
         <View className="mt-3 gap-3">
@@ -30,7 +34,7 @@ export default function ChurchTopPlansList({ plans, onPlanPress }: Props) {
                 <View className="flex-1">
                   <Text className="font-medium text-gray-900 dark:text-white">{plan.title}</Text>
                   <Text className="text-sm text-gray-500 dark:text-gray-400">
-                    {plan.starters} started - {plan.completions} completed
+                    {t('planActivity', { starters: plan.starters, completions: plan.completions })}
                   </Text>
                 </View>
               </View>

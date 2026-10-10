@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Input } from '@rneui/themed';
 import React, { useState } from 'react';
 import {
@@ -24,6 +25,7 @@ AppState.addEventListener('change', (state) => {
 });
 
 export default function Auth() {
+  const { t } = useTranslation('app');
   const [email, setEmail] = useState('');
   const colorScheme = useColorScheme();
   const [firstName, setFirstName] = useState('');
@@ -64,7 +66,7 @@ export default function Auth() {
     <View style={styles.container}>
       <View style={[styles.verticallySpaced, styles.mt20]}>
         <Input
-          label="First Name"
+          label={t('firstName')}
           leftIcon={{ type: 'font-awesome', name: 'envelope' }}
           onChangeText={(text) => setFirstName(text)}
           value={firstName}
@@ -75,7 +77,7 @@ export default function Auth() {
       </View>
       <View style={[styles.verticallySpaced, styles.mt20]}>
         <Input
-          label="Last Name"
+          label={t('lastName')}
           leftIcon={{ type: 'font-awesome', name: 'envelope' }}
           onChangeText={(text) => setLastName(text)}
           value={lastName}
@@ -86,7 +88,7 @@ export default function Auth() {
       </View>
       <View style={[styles.verticallySpaced, styles.mt20]}>
         <Input
-          label="Email"
+          label={t('email')}
           leftIcon={{ type: 'font-awesome', name: 'envelope' }}
           onChangeText={(text) => setEmail(text)}
           value={email}
@@ -96,12 +98,12 @@ export default function Auth() {
       </View>
       <View style={styles.verticallySpaced}>
         <Input
-          label="Password"
+          label={t('password')}
           leftIcon={{ type: 'font-awesome', name: 'lock' }}
           onChangeText={(text) => setPassword(text)}
           value={password}
           secureTextEntry={true}
-          placeholder="Password"
+          placeholder={t('password')}
           autoCapitalize={'none'}
         />
       </View>
@@ -110,7 +112,7 @@ export default function Auth() {
           className="bg-indigo-700  p-2 items-center"
           disabled={loading}
           onPress={() => signInWithEmail()}>
-          <Text className="text-white font-bold text-lg">Sign In</Text>
+          <Text className="text-white font-bold text-lg">{t('signIn')}</Text>
         </TouchableOpacity>
       </View>
       <View style={styles.verticallySpaced}>
@@ -118,7 +120,7 @@ export default function Auth() {
           className="bg-indigo-700  p-2 items-center"
           disabled={loading}
           onPress={() => signUpWithEmail()}>
-          <Text className="text-white font-bold text-lg">Sign Up</Text>
+          <Text className="text-white font-bold text-lg">{t('signUp')}</Text>
         </TouchableOpacity>
       </View>
     </View>

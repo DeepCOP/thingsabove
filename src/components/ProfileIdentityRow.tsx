@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { useRouter } from 'expo-router';
 import { ReactNode } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
@@ -54,9 +55,10 @@ export default function ProfileIdentityRow({
   activeOpacity = 0.7,
   children,
 }: Props) {
+  const { t } = useTranslation('community');
   const router = useRouter();
   const fallbackName = [first_name, last_name].filter(Boolean).join(' ').trim();
-  const displayName = name?.trim() || fallbackName || 'Unknown user';
+  const displayName = name?.trim() || fallbackName || t('unknownUser');
   const hasSubtitle = subtitle !== undefined && subtitle !== null && subtitle !== '';
   const handlePress =
     onPress ??

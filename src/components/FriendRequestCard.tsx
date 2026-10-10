@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import LoadingSpinner from '@/src/components/LoadingSpinner';
 import ProfileIdentityRow from '@/src/components/ProfileIdentityRow';
 import { Text, TouchableOpacity, View } from 'react-native';
@@ -37,6 +38,7 @@ export default function FriendRequestCard({
   isAccepting,
   isDeclining,
 }: Props) {
+  const { t } = useTranslation('community');
   return (
     <View className="flex-row items-center p-3 mb-3 rounded-xl bg-gray-100 dark:bg-neutral-900">
       <ProfileIdentityRow
@@ -44,7 +46,7 @@ export default function FriendRequestCard({
         first_name={first_name}
         last_name={last_name}
         size={34}
-        subtitle={mode === 'receiver' ? 'Sent you a friend request' : statusText}
+        subtitle={mode === 'receiver' ? t('friendRequestReceived') : statusText}
         subtitleClassName="text-xs text-gray-500"
         titleClassName="font-semibold dark:text-white"
         uri={avatar_url}
@@ -60,7 +62,7 @@ export default function FriendRequestCard({
           {isAdding ? (
             <LoadingSpinner size="small" />
           ) : (
-            <Text className="text-white dark:text-black font-semibold">Add</Text>
+            <Text className="text-white dark:text-black font-semibold">{t('add')}</Text>
           )}
         </TouchableOpacity>
       )}
@@ -75,7 +77,7 @@ export default function FriendRequestCard({
             {isDeclining ? (
               <LoadingSpinner size="small" />
             ) : (
-              <Text className="text-black dark:text-white text-sm">Decline</Text>
+              <Text className="text-black dark:text-white text-sm">{t('decline')}</Text>
             )}
           </TouchableOpacity>
 
@@ -86,7 +88,9 @@ export default function FriendRequestCard({
             {isAccepting ? (
               <LoadingSpinner size="small" />
             ) : (
-              <Text className="text-white dark:text-black text-sm font-semibold">Accept</Text>
+              <Text className="text-white dark:text-black text-sm font-semibold">
+                {t('accept')}
+              </Text>
             )}
           </TouchableOpacity>
         </View>

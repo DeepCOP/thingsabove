@@ -7,6 +7,7 @@ import { useIsFocused } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { Alert } from 'react-native';
+import { useTranslation } from 'react-i18next';
 
 type PlanInviteNotificationData = {
   group_id: string;
@@ -111,6 +112,7 @@ function parseGroupDayCompletedNotificationData(
 }
 
 export default function NotificationsTab() {
+  const { t } = useTranslation('app');
   const router = useRouter();
   const isFocused = useIsFocused();
   const { session } = useAuth();
@@ -167,10 +169,7 @@ export default function NotificationsTab() {
   ]);
 
   function showUnsupportedNotificationAlert() {
-    Alert.alert(
-      'Notification not supported',
-      'This notification type is not supported in this app version yet.',
-    );
+    Alert.alert(t('notificationUnsupported'), t('notificationUnsupportedDescription'));
   }
 
   function handleNotificationPress(item: AppNotification) {
@@ -184,10 +183,7 @@ export default function NotificationsTab() {
         const data = parsePlanInviteNotificationData(item.data);
 
         if (!data) {
-          Alert.alert(
-            'Notification unavailable',
-            'This invitation is missing details and cannot be opened right now.',
-          );
+          Alert.alert(t('notificationUnavailable'), t('invitationNotificationMissingDetails'));
           return;
         }
 
@@ -205,10 +201,7 @@ export default function NotificationsTab() {
         const data = parseGroupDayCompletedNotificationData(item.data);
 
         if (!data) {
-          Alert.alert(
-            'Notification unavailable',
-            'This group plan update is missing details and cannot be opened right now.',
-          );
+          Alert.alert(t('notificationUnavailable'), t('groupNotificationMissingDetails'));
           return;
         }
 
@@ -231,10 +224,7 @@ export default function NotificationsTab() {
         const data = parsePrayerEncouragementNotificationData(item.data);
 
         if (!data) {
-          Alert.alert(
-            'Notification unavailable',
-            'This prayer encouragement is missing details and cannot be opened right now.',
-          );
+          Alert.alert(t('notificationUnavailable'), t('prayerNotificationMissingDetails'));
           return;
         }
 

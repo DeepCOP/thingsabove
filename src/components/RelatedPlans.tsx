@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { RelatedPlanSkeleton } from '@/src/components/PlanSkeleton';
 import PlanCoverImage from '@/src/components/PlanCoverImage';
 import { useRouter } from 'expo-router';
@@ -6,6 +7,7 @@ import { useRelatedPlans } from '../hooks/useDevotionalPlans';
 import { DevotionalPlan } from '../types/types';
 
 export function RelatedPlansSection({ plan }: { plan: DevotionalPlan | undefined | null }) {
+  const { t } = useTranslation('plans');
   const tags = plan?.tags ? plan.tags : [];
   const { data, isLoading } = useRelatedPlans(tags, plan?.id || '');
   const router = useRouter();
@@ -14,7 +16,7 @@ export function RelatedPlansSection({ plan }: { plan: DevotionalPlan | undefined
 
   return (
     <View className="mt-10 px-4">
-      <Text className="text-2xl font-bold mb-4 dark:text-white">Related Plans</Text>
+      <Text className="text-2xl font-bold mb-4 dark:text-white">{t('relatedPlans')}</Text>
 
       <View style={{ width: '100%' }}>
         {isLoading ? (
@@ -27,7 +29,7 @@ export function RelatedPlansSection({ plan }: { plan: DevotionalPlan | undefined
           />
         ) : noResults ? (
           <Text className="text-gray-600 dark:text-gray-400 text-base px-2">
-            No related plans found.
+            {t('noRelatedPlans')}
           </Text>
         ) : (
           <FlatList
@@ -42,7 +44,7 @@ export function RelatedPlansSection({ plan }: { plan: DevotionalPlan | undefined
                 onPress={() => router.push(`/app/devotional_detail/${item?.id}`)}>
                 <PlanCoverImage uri={item.cover_image} className="h-28 w-full rounded-xl" />
                 <Text className="mt-2 text-gray-700 dark:text-gray-300 font-semibold">
-                  {item.total_days} Days
+                  {t('days', { count: item.total_days ?? 0 })}
                 </Text>
                 <Text className="text-gray-900 dark:text-gray-100" numberOfLines={2}>
                   {item.title}

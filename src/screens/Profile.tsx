@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
 import { UseMutateFunction } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
@@ -18,6 +19,7 @@ import {
   ProfileDetailsFormErrors,
   buildProfileDetailsFormValues,
   hasProfileDetailsErrors,
+  relocalizeProfileDetailsFormErrors,
   toUpdateProfileInput,
   validateProfileDetailsForm,
 } from '../profileDetails';
@@ -59,6 +61,7 @@ export default function ProfileScreen({
   deleting?: boolean;
   handleDeleteAvatar: (filePath: string) => void;
 }) {
+  const { t } = useTranslation('app');
   const colorScheme = useColorScheme();
   const insets = useSafeAreaInsets();
   const router = useRouter();
@@ -92,6 +95,10 @@ export default function ProfileScreen({
     }
   }, [hasAboutDetails]);
 
+  useEffect(() => {
+    setDetailsErrors((current) => relocalizeProfileDetailsFormErrors(current, detailsForm));
+  }, [detailsForm, t]);
+
   const onSaveDetails = () => {
     const nextErrors = validateProfileDetailsForm(detailsForm);
     setDetailsErrors(nextErrors);
@@ -112,7 +119,7 @@ export default function ProfileScreen({
       await onSignOut();
     } catch (error) {
       setIsSigningOut(false);
-      Alert.alert('Log out failed', error instanceof Error ? error.message : 'Please try again.');
+      Alert.alert(t('signOutFailed'), error instanceof Error ? error.message : t('pleaseTryAgain'));
     }
   };
 
@@ -128,7 +135,9 @@ export default function ProfileScreen({
               <View
                 pointerEvents="none"
                 className="absolute top-0 bottom-0 left-0 right-0 items-center justify-center">
-                <Text className="text-center text-lg font-semibold dark:text-white">Profile</Text>
+                <Text className="text-center text-lg font-semibold dark:text-white">
+                  {t('profile')}
+                </Text>
               </View>
 
               <View className="flex-row justify-end items-center">
@@ -166,7 +175,7 @@ export default function ProfileScreen({
                   className="h-12 flex-1 items-center justify-center rounded-full bg-black px-4 dark:bg-white"
                   onPress={onPrayerBoard}>
                   <Text className="text-center font-semibold text-white dark:text-black">
-                    Prayer Board
+                    {t('prayerBoard')}
                   </Text>
                 </TouchableOpacity>
 
@@ -180,7 +189,7 @@ export default function ProfileScreen({
                   }>
                   <Ionicons name="people-outline" size={16} color={actionColor} />
                   <Text className="ml-2 text-sm font-semibold text-blue-600 dark:text-blue-400">
-                    Friends
+                    {t('friends')}
                   </Text>
                 </TouchableOpacity>
               </View>
@@ -195,14 +204,16 @@ export default function ProfileScreen({
             <View className="mt-4 px-6">
               <View className="rounded-2xl border border-gray-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-950">
                 <View className="flex-row items-center justify-between">
-                  <Text className="text-lg font-semibold text-gray-900 dark:text-white">About</Text>
+                  <Text className="text-lg font-semibold text-gray-900 dark:text-white">
+                    {t('about')}
+                  </Text>
                   {!showDetailsForm ? (
                     hasAboutDetails ? (
                       <TouchableOpacity
                         onPress={() => setShowDetailsForm(true)}
                         disabled={updating}>
                         <Text className="text-sm font-medium text-blue-600 dark:text-blue-400">
-                          Edit
+                          {t('edit')}
                         </Text>
                       </TouchableOpacity>
                     ) : (
@@ -210,7 +221,7 @@ export default function ProfileScreen({
                         onPress={() => setShowDetailsForm(true)}
                         disabled={updating}>
                         <Text className="text-sm font-medium text-blue-600 dark:text-blue-400">
-                          Add About Info
+                          {t('addAboutInfo')}
                         </Text>
                       </TouchableOpacity>
                     )
@@ -243,12 +254,12 @@ export default function ProfileScreen({
                           setDetailsErrors({});
                           setShowDetailsForm(false);
                         }}>
-                        <Text className="text-gray-500">Cancel</Text>
+                        <Text className="text-gray-500">{t('cancel')}</Text>
                       </TouchableOpacity>
 
                       <TouchableOpacity onPress={onSaveDetails} disabled={updating}>
                         <Text className="font-semibold text-blue-600 dark:text-blue-400">
-                          {updating ? 'Saving...' : 'Save'}
+                          {updating ? t('saving') : t('save')}
                         </Text>
                       </TouchableOpacity>
                     </View>
@@ -257,25 +268,25 @@ export default function ProfileScreen({
                   <View className="mt-4 space-y-4">
                     <View>
                       <Text className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">
-                        Year You Believed
+                        {t('yearBelieved')}
                       </Text>
                       <Text className="mt-1 text-base text-gray-900 dark:text-white">
-                        {profile?.year_believed ? String(profile.year_believed) : 'Not provided'}
+                        {profile?.year_believed ? String(profile.year_believed) : t('notProvided')}
                       </Text>
                     </View>
 
                     <View>
                       <Text className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">
-                        Year You Were Baptized
+                        {t('yearBaptized')}
                       </Text>
                       <Text className="mt-1 text-base text-gray-900 dark:text-white">
-                        {profile?.year_baptized ? String(profile.year_baptized) : 'Not provided'}
+                        {profile?.year_baptized ? String(profile.year_baptized) : t('notProvided')}
                       </Text>
                     </View>
 
                     <View>
                       <Text className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">
-                        Church
+                        {t('church')}
                       </Text>
                       {linkedChurchId ? (
                         <TouchableOpacity
@@ -308,7 +319,7 @@ export default function ProfileScreen({
                       ) : (
                         <>
                           <Text className="mt-1 text-base text-gray-900 dark:text-white">
-                            {churchName || 'Not provided'}
+                            {churchName || t('notProvided')}
                           </Text>
                           {churchAddress ? (
                             <Text className="mt-1 text-sm text-gray-600 dark:text-gray-400">
@@ -330,10 +341,10 @@ export default function ProfileScreen({
                       <Ionicons name="book-outline" size={24} color={actionColor} />
                     </View>
                     <Text className="text-base font-semibold text-gray-900 dark:text-white">
-                      Share a little about your faith journey
+                      {t('faithJourney')}
                     </Text>
                     <Text className="mt-1 text-center text-sm text-gray-600 dark:text-gray-400">
-                      Add your bio, church, or favorite verse.
+                      {t('faithJourneyDescription')}
                     </Text>
                     <TouchableOpacity
                       className="mt-4 flex-row items-center rounded-full border border-blue-600 px-4 py-2"
@@ -341,7 +352,7 @@ export default function ProfileScreen({
                       disabled={updating}>
                       <Ionicons name="add" size={16} color={actionColor} />
                       <Text className="ml-1 text-sm font-semibold text-blue-600 dark:text-blue-400">
-                        Add About Info
+                        {t('addAboutInfo')}
                       </Text>
                     </TouchableOpacity>
                   </View>
@@ -350,7 +361,7 @@ export default function ProfileScreen({
             </View>
 
             <View className="mt-10 px-4 border-b border-gray-500">
-              <Text className="mb-4 text-lg font-semibold dark:text-white">Your Plans</Text>
+              <Text className="mb-4 text-lg font-semibold dark:text-white">{t('yourPlans')}</Text>
             </View>
           </>
         }
@@ -361,15 +372,15 @@ export default function ProfileScreen({
         onPress={() => {
           if (isSigningOut) return;
 
-          Alert.alert('Log out', 'Are you sure you want to log out?', [
-            { text: 'Cancel', style: 'cancel' },
-            { text: 'Log out', style: 'destructive', onPress: handleSignOut },
+          Alert.alert(t('logOut'), t('logOutConfirmation'), [
+            { text: t('cancel'), style: 'cancel' },
+            { text: t('logOut'), style: 'destructive', onPress: handleSignOut },
           ]);
         }}
         className="absolute bottom-0 left-0 right-0 flex-row items-center justify-between border-t border-gray-200 bg-white px-4 py-5 dark:border-neutral-800 dark:bg-black"
         style={{ opacity: isSigningOut ? 0.7 : 1 }}>
         <Text className="text-base text-red-600">
-          {isSigningOut ? 'Logging out...' : 'Log Out'}
+          {isSigningOut ? t('loggingOut') : t('logOutButton')}
         </Text>
         {isSigningOut ? (
           <ActivityIndicator color="#dc2626" />

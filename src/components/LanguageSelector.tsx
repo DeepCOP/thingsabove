@@ -1,0 +1,46 @@
+import { useAppStore } from '@/src/state/useAppStore';
+import { useTranslation } from 'react-i18next';
+import { Text, TouchableOpacity, View } from 'react-native';
+
+export default function LanguageSelector() {
+  const { t } = useTranslation('app');
+  const language = useAppStore((state) => state.language);
+  const setLanguage = useAppStore((state) => state.setLanguage);
+  const options = [
+    { value: 'system', label: t('followDeviceLanguage') },
+    { value: 'en', label: 'English' },
+    { value: 'es', label: 'Español' },
+    { value: 'pt', label: 'Português' },
+    { value: 'zh-Hans', label: '简体中文' },
+    { value: 'zh-Hant', label: '繁體中文' },
+    { value: 'fr', label: 'Français' },
+    { value: 'id', label: 'Bahasa Indonesia' },
+    { value: 'ko', label: '한국어' },
+    { value: 'fil', label: 'Filipino (Tagalog)' },
+    { value: 'sw', label: 'Kiswahili' },
+    { value: 'hi', label: 'हिन्दी' },
+  ] as const;
+
+  return (
+    <View className="mb-8">
+      <Text className="mb-3 text-lg font-semibold text-gray-900 dark:text-white">
+        {t('language')}
+      </Text>
+      <View accessibilityRole="radiogroup">
+        {options.map((option) => (
+          <TouchableOpacity
+            key={option.value}
+            accessibilityRole="radio"
+            accessibilityState={{ checked: language === option.value }}
+            onPress={() => setLanguage(option.value)}
+            className="flex-row items-center justify-between border-b border-gray-200 py-3 dark:border-neutral-800">
+            <Text className="text-gray-900 dark:text-white">{option.label}</Text>
+            {language === option.value ? (
+              <Text className="text-xs font-semibold text-blue-500">{t('active')}</Text>
+            ) : null}
+          </TouchableOpacity>
+        ))}
+      </View>
+    </View>
+  );
+}

@@ -1,8 +1,9 @@
+import { useTranslation } from 'react-i18next';
 import LoadingSpinner from '@/src/components/LoadingSpinner';
 import { useAcceptPlanInvite, useDeclinePlanInvite } from '@/src/hooks/useInviteFriends';
 import { usePlanGroupInvitation, usePlanGroupInvitationMembers } from '@/src/hooks/usePlanGroup';
 import { useMyPlanProgressPlans } from '@/src/hooks/usePlanProgress';
-import dayjs from '@/src/lib/dayjs';
+import dayjs, { formatShortDate } from '@/src/lib/dayjs';
 import PlanInvitationScreen from '@/src/screens/PlanInvitationScreen';
 import { useAuth } from '@/src/state/AuthContext';
 import Ionicons from '@expo/vector-icons/Ionicons';
@@ -11,6 +12,7 @@ import React from 'react';
 import { Text, TouchableOpacity, View, useColorScheme } from 'react-native';
 
 export default function PlanInvitation() {
+  const { t, i18n } = useTranslation('plans');
   const { groupId, invitedBy, planId } = useLocalSearchParams<{
     groupId: string;
     invitedBy?: string;
@@ -49,10 +51,10 @@ export default function PlanInvitation() {
     return (
       <View className="flex-1 items-center justify-center bg-white px-6 dark:bg-black">
         <Text className="text-lg font-semibold text-gray-900 dark:text-white">
-          Unable to load invitation
+          {t('loadInvitationError')}
         </Text>
         <Text className="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
-          This invitation may be unavailable, expired, or the group could not be found.
+          {t('loadInvitationErrorHint')}
         </Text>
         <TouchableOpacity
           className="mt-5 rounded-full bg-black px-5 py-3 dark:bg-white"
@@ -60,7 +62,7 @@ export default function PlanInvitation() {
             planGroupQuery.refetch();
             planGroupMembersQuery.refetch();
           }}>
-          <Text className="font-semibold text-white dark:text-black">Try again</Text>
+          <Text className="font-semibold text-white dark:text-black">{t('tryAgain')}</Text>
         </TouchableOpacity>
       </View>
     );
@@ -72,21 +74,24 @@ export default function PlanInvitation() {
   const diffDays = startDate.diff(today, 'day');
   const startDateLabel =
     diffDays > 0
-      ? `Starts in ${diffDays} days (${startDate.format('MMM DD')})`
+      ? t('startsInDays', {
+          count: diffDays,
+          date: formatShortDate(startDate, i18n.resolvedLanguage),
+        })
       : diffDays === 0
-        ? 'Starts today'
-        : `Started ${Math.abs(diffDays)} days ago`;
+        ? t('startsToday')
+        : t('startedDaysAgo', { count: Math.abs(diffDays) });
 
   return (
     <>
       <Stack.Screen
         options={{
-          title: 'Invitation',
+          title: t('invitation'),
           headerBackVisible: false,
           headerLeft: () => (
             <TouchableOpacity
               accessibilityRole="button"
-              accessibilityLabel="Leave invitation"
+              accessibilityLabel={t('leaveInvitation')}
               className="h-10 w-10 items-center justify-center"
               onPress={handleLeaveInvitation}>
               <Ionicons

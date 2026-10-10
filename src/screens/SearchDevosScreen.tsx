@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { ListCard } from '@/src/components/DevoCard';
 import { useSavedPlans, useToggleSavedPlan } from '@/src/hooks/useSavedPlans';
 import { useAuth } from '@/src/state/AuthContext';
@@ -27,6 +28,7 @@ export default function SearchDevosScreen({
   onLoadMore,
   isFetchingNextPage,
 }: Props) {
+  const { t } = useTranslation('plans');
   const colorScheme = useColorScheme();
   const { session } = useAuth();
   const router = useRouter();
@@ -45,7 +47,7 @@ export default function SearchDevosScreen({
       <View className="flex-row items-center bg-white dark:bg-neutral-900 px-4 py-2 rounded-full mb-4 shadow">
         <Ionicons name="search" size={20} color={colorScheme === 'dark' ? '#fff' : '#222'} />
         <TextInput
-          placeholder="Search devotionals..."
+          placeholder={t('searchPlaceholder')}
           value={search}
           onChangeText={onChangeSearch}
           className="ml-2 flex-1 text-gray-900 dark:text-gray-100"
@@ -59,7 +61,7 @@ export default function SearchDevosScreen({
       {isOffline && (
         <View className="items-center py-20">
           <Ionicons name="cloud-offline-outline" size={40} color="#999" />
-          <Text className="text-gray-500 mt-2">You&apos;re offline</Text>
+          <Text className="text-gray-500 mt-2">{t('offline')}</Text>
         </View>
       )}
 
@@ -67,7 +69,7 @@ export default function SearchDevosScreen({
       {!isOffline && search.length === 0 && (
         <View className="items-center py-20">
           <Ionicons name="book-outline" size={40} color="#aaa" />
-          <Text className="text-gray-500 mt-2">Search devotionals...</Text>
+          <Text className="text-gray-500 mt-2">{t('searchPlaceholder')}</Text>
         </View>
       )}
 
@@ -75,7 +77,7 @@ export default function SearchDevosScreen({
       {!isOffline && search.length > 0 && data.length === 0 && !isLoading && (
         <View className="items-center py-20">
           <Ionicons name="alert-circle-outline" size={40} color="#aaa" />
-          <Text className="text-gray-500 mt-2">No results found</Text>
+          <Text className="text-gray-500 mt-2">{t('noResults')}</Text>
         </View>
       )}
 

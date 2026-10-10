@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useRef, useState } from 'react';
 import {
@@ -27,6 +28,7 @@ export default function PlanTagFilterChips({
   onToggleTag,
   onClear,
 }: Props) {
+  const { t } = useTranslation('plans');
   const colorScheme = useColorScheme();
   const scrollViewRef = useRef<ScrollView | null>(null);
   const [containerWidth, setContainerWidth] = useState(0);
@@ -79,7 +81,7 @@ export default function PlanTagFilterChips({
             className={`text-sm font-semibold ${
               hasSelectedTags ? 'text-gray-700 dark:text-gray-200' : 'text-white dark:text-black'
             }`}>
-            All
+            {t('all')}
           </Text>
         </TouchableOpacity>
 
@@ -118,7 +120,7 @@ export default function PlanTagFilterChips({
       {canScrollLeft && (
         <TouchableOpacity
           accessibilityRole="button"
-          accessibilityLabel="Scroll tags to the start"
+          accessibilityLabel={t('scrollTagsStart')}
           onPress={handleScrollToStart}
           className="absolute left-0 rounded-full bg-black/10 p-1 dark:bg-white/10"
           style={{ top: '50%', transform: [{ translateY: -12 }] }}>
@@ -128,7 +130,7 @@ export default function PlanTagFilterChips({
       {canScrollRight && (
         <TouchableOpacity
           accessibilityRole="button"
-          accessibilityLabel="Scroll tags to the end"
+          accessibilityLabel={t('scrollTagsEnd')}
           onPress={handleScrollToEnd}
           className="absolute right-0 rounded-full bg-black/10 p-1 dark:bg-white/10"
           style={{ top: '50%', transform: [{ translateY: -12 }] }}>

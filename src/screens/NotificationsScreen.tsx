@@ -1,5 +1,5 @@
+import { useTranslation } from 'react-i18next';
 import LoadingSpinner from '@/src/components/LoadingSpinner';
-import dayjs from '@/src/lib/dayjs';
 import { AppNotification } from '@/src/types/notifications';
 import { Ionicons } from '@expo/vector-icons';
 import { FlatList, Modal, Pressable, ScrollView, Text, TouchableOpacity, View } from 'react-native';
@@ -24,7 +24,14 @@ export default function NotificationsScreen({
   onPress,
   onRetry,
 }: Props) {
+  const { t, i18n } = useTranslation('app');
   const insets = useSafeAreaInsets();
+  const formatDate = (value: string) =>
+    new Date(value).toLocaleDateString(i18n.resolvedLanguage, {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    });
 
   if (isLoading) {
     return <LoadingSpinner />;
@@ -35,16 +42,18 @@ export default function NotificationsScreen({
       <View className="flex-1 items-center justify-center bg-white px-6 dark:bg-black">
         <Ionicons name="alert-circle-outline" size={50} color="#ef4444" />
         <Text className="mt-4 text-lg font-semibold text-gray-900 dark:text-white">
-          Unable to load notifications
+          {t('notificationsLoadError')}
         </Text>
         <Text className="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
-          We could not load your notifications right now.
+          {t('notificationsLoadErrorDescription')}
         </Text>
         {onRetry ? (
           <TouchableOpacity
             className="mt-5 rounded-full bg-black px-5 py-3 dark:bg-white"
             onPress={onRetry}>
-            <Text className="font-semibold text-white dark:text-black">Try again</Text>
+            <Text className="font-semibold text-white dark:text-black">
+              {t('tryAgainLowercase')}
+            </Text>
           </TouchableOpacity>
         ) : null}
       </View>
@@ -55,7 +64,7 @@ export default function NotificationsScreen({
     return (
       <View className="flex-1 items-center justify-center bg-white px-6 dark:bg-black">
         <Ionicons name="notifications" size={50} color="gray" />
-        <Text className="text-gray-700 dark:text-gray-200">No notifications</Text>
+        <Text className="text-gray-700 dark:text-gray-200">{t('noNotifications')}</Text>
       </View>
     );
   }
@@ -74,7 +83,7 @@ export default function NotificationsScreen({
             <View className="flex-row items-start justify-between gap-3">
               <Text className="flex-1 pr-2 text-white font-semibold">{item.title}</Text>
               <Text className="shrink-0 pt-0.5 text-right text-xs text-gray-200">
-                {dayjs(item.created_at).format('DD/MM/YYYY')}
+                {formatDate(item.created_at)}
               </Text>
             </View>
 
@@ -93,18 +102,18 @@ export default function NotificationsScreen({
             <View className="mb-4 flex-row items-start justify-between gap-3">
               <View className="flex-1">
                 <Text className="text-lg font-semibold text-gray-950 dark:text-white">
-                  {messageNotification?.title || 'Notification'}
+                  {messageNotification?.title || t('notification')}
                 </Text>
                 {messageNotification?.created_at ? (
                   <Text className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                    {dayjs(messageNotification.created_at).format('DD/MM/YYYY')}
+                    {formatDate(messageNotification.created_at)}
                   </Text>
                 ) : null}
               </View>
 
               <TouchableOpacity
                 accessibilityRole="button"
-                accessibilityLabel="Close"
+                accessibilityLabel={t('close')}
                 className="rounded-full bg-gray-100 p-2 dark:bg-neutral-800"
                 onPress={onCloseMessage}>
                 <Ionicons name="close" size={18} color="#9ca3af" />
@@ -113,7 +122,7 @@ export default function NotificationsScreen({
 
             <ScrollView>
               <Text className="text-base leading-6 text-gray-700 dark:text-gray-200">
-                {messageNotification?.body || 'No message available.'}
+                {messageNotification?.body || t('noMessage')}
               </Text>
             </ScrollView>
           </Pressable>

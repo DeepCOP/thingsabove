@@ -55,6 +55,14 @@ pnpm start
 
 Follow the Expo prompts to run on a device or simulator. Push notifications require a physical device.
 
+## App Language
+
+Menus, screen labels, and buttons support English, Spanish, Portuguese, Simplified and Traditional Chinese, French, Indonesian, Korean, Filipino (Tagalog), Swahili, and Hindi. Choose **Settings > Language** or use the language selector on the signed-out **Profile** screen. The default follows the device's primary language; unsupported device languages use English. Your preference is saved locally, and bundled translations work offline.
+
+Devotionals, Bible text, user content, and received push notification bodies keep their source languages. Native system and authentication dialogs follow device settings.
+
+
+
 ## Push Notifications Setup
 
 1. Ensure Expo Notifications is configured in `app.config.js` (the `expo-notifications` plugin and a valid `extra.eas.projectId` are required).

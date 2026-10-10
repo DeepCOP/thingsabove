@@ -1,3 +1,4 @@
+import i18n from '@/src/i18n';
 import { useAuth } from '@/src/state/AuthContext';
 import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
@@ -27,7 +28,7 @@ function openRouteFromResponse(response: Notifications.NotificationResponse | nu
 export async function registerForPushNotificationsAsync(): Promise<string | null> {
   // 1️⃣ Physical device check
   if (!Device.isDevice) {
-    Alert.alert('Unsupported device', 'Push notifications require a physical device.');
+    Alert.alert(i18n.t('unsupportedDevice'), i18n.t('physicalDeviceRequired'));
     return null;
   }
 
@@ -52,7 +53,7 @@ export async function registerForPushNotificationsAsync(): Promise<string | null
   }
 
   if (finalStatus !== 'granted') {
-    Alert.alert('Notifications disabled', 'Please enable notifications in system settings.');
+    Alert.alert(i18n.t('notificationsDisabled'), i18n.t('enableNotifications'));
     return null;
   }
 

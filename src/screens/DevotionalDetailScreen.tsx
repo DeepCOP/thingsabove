@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import LoadingSpinner from '@/src/components/LoadingSpinner';
 import PlanPreviewSection from '@/src/components/PlanPreviewSection';
 import PlanCoverImage from '@/src/components/PlanCoverImage';
@@ -72,6 +73,7 @@ export default function DevotionalDetailScreen({
   isSaved,
   onToggleSave,
 }: Props) {
+  const { t } = useTranslation('plans');
   const bottomSheetRef = useRef<BottomSheet>(null);
   const insets = useSafeAreaInsets();
   const colorScheme = useColorScheme();
@@ -79,7 +81,7 @@ export default function DevotionalDetailScreen({
   const { isGuest } = useAuth();
   const resolvedTopInset = insets.top;
   const startButtonLabel =
-    isPrivatePlan && !canStartPlan && hasActivePlanProgress ? 'Continue Plan' : 'Start Plan';
+    isPrivatePlan && !canStartPlan && hasActivePlanProgress ? t('continuePlan') : t('startPlan');
   const isStartButtonDisabled =
     isStartingSoloPlan || (isPrivatePlan && !canStartPlan && !hasActivePlanProgress);
   const scrollBottomPadding = insets.bottom + 112;
@@ -103,7 +105,7 @@ export default function DevotionalDetailScreen({
     return (
       <View className="flex-1 items-center justify-center p-4">
         <Text className="text-center text-gray-700 dark:text-gray-300">
-          This devotional could not be found.
+          {t('devotionalNotFound')}
         </Text>
       </View>
     );
@@ -125,7 +127,7 @@ export default function DevotionalDetailScreen({
           {(plan?.completions ?? 0) > 0 && (
             <View className="absolute bottom-0 left-0 right-0 bg-black/50 py-2 rounded-b-2xl">
               <Text className="text-center text-white font-semibold">
-                {plan?.completions} completions
+                {t('completions', { count: plan?.completions ?? 0 })}
               </Text>
             </View>
           )}
@@ -137,15 +139,15 @@ export default function DevotionalDetailScreen({
           </Text>
 
           <View className="flex-row items-center gap-2 mt-2">
-            <Text className="text-gray-600 dark:text-gray-300">{plan?.total_days} Days</Text>
+            <Text className="text-gray-600 dark:text-gray-300">
+              {t('days', { count: plan?.total_days ?? 0 })}
+            </Text>
             <PlanVisibilityBadge visibility={isPrivatePlan ? 'private' : null} />
           </View>
 
           {isPrivatePlan && (
             <Text className="mt-3 text-sm leading-6 text-gray-600 dark:text-gray-300">
-              {canStartPlan
-                ? 'Only people you invite can join this plan.'
-                : 'You can keep reading through the invite-only plan invitation you already joined.'}
+              {canStartPlan ? t('privateJoinHint') : t('privateContinueHint')}
             </Text>
           )}
         </View>
@@ -180,7 +182,7 @@ export default function DevotionalDetailScreen({
               className={
                 isSaved ? 'text-gray-900 dark:text-gray-100' : 'text-gray-500 dark:text-gray-400'
               }>
-              {isSaved ? 'Saved' : 'Save'}
+              {isSaved ? t('saved') : t('save')}
             </Text>
           </TouchableOpacity>
 
@@ -188,7 +190,7 @@ export default function DevotionalDetailScreen({
             className="flex-row items-start gap-1 justify-center"
             onPress={onReportPress}>
             <Ionicons name="flag-outline" size={18} color="red" />
-            <Text className="text-red-600">Report</Text>
+            <Text className="text-red-600">{t('report')}</Text>
           </TouchableOpacity>
         </View>
 

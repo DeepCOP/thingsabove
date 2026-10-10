@@ -1,4 +1,5 @@
-import dayjs, { type Dayjs } from '@/src/lib/dayjs';
+import { useTranslation } from 'react-i18next';
+import dayjs, { formatShortDate, getDayjsLocale, type Dayjs } from '@/src/lib/dayjs';
 import { Ionicons } from '@expo/vector-icons';
 import { Text, TouchableOpacity, View } from 'react-native';
 
@@ -21,8 +22,10 @@ export default function DaysPicker({
   day_number,
   isActive,
 }: Props) {
+  const { t, i18n } = useTranslation('plans');
   return (
     <TouchableOpacity
+      accessibilityLabel={t('dayNumber', { day: day_number })}
       onPress={() => {
         if (setSelectedDayNumber) {
           setSelectedDayNumber(day_number);
@@ -54,15 +57,18 @@ export default function DaysPicker({
           ? dayjs(startDate)
               .startOf('day')
               .add(day_number - 1, 'day')
+              .locale(getDayjsLocale(i18n.resolvedLanguage))
               .format('ddd')
           : day_number}
       </Text>
       <Text
         className={`text-xs ${isCurrentDay ? 'text-white dark:text-gray-800 bg-black dark:bg-white px-2 font-semibold rounded-full' : 'text-gray-500'} dark:text-gray-400 `}>
-        {dayjs(startDate)
-          .startOf('day')
-          .add(day_number - 1, 'day')
-          .format('MMM DD')}
+        {formatShortDate(
+          dayjs(startDate)
+            .startOf('day')
+            .add(day_number - 1, 'day'),
+          i18n.resolvedLanguage,
+        )}
       </Text>
     </TouchableOpacity>
   );

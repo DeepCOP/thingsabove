@@ -1,8 +1,10 @@
+import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
 import { useColorScheme } from 'react-native';
 
 export default function AuthLayout() {
+  const { t } = useTranslation('app');
   const colorScheme = useColorScheme();
 
   return (
@@ -16,7 +18,7 @@ export default function AuthLayout() {
       <Tabs.Screen
         name="signin"
         options={{
-          title: 'Sign In',
+          title: t('signIn'),
           tabBarIcon: ({ focused, color, size }) => {
             return (
               <Ionicons
@@ -32,7 +34,7 @@ export default function AuthLayout() {
       <Tabs.Screen
         name="signup"
         options={{
-          title: 'Sign Up',
+          title: t('signUp'),
 
           tabBarIcon: ({ focused, color }) => {
             return (

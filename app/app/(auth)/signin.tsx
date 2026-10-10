@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import AuthProviderButtons from '@/src/components/AuthProviderButtons';
 import { useSignInUserWithPassword } from '@/src/hooks/useProfile';
 import { AuthRedirectSearchParams, getAuthRedirectReturnTo } from '@/src/lib/authRedirects';
@@ -19,6 +20,7 @@ import {
 } from 'react-native';
 
 export default function SignIn() {
+  const { t } = useTranslation('app');
   const router = useRouter();
   const searchParams = useLocalSearchParams<AuthRedirectSearchParams>();
   const [email, setEmail] = useState('');
@@ -78,14 +80,14 @@ export default function SignIn() {
           keyboardShouldPersistTaps="handled"
           automaticallyAdjustKeyboardInsets>
           <AuthProviderButtons
-            dividerLabel="or sign in with email"
+            dividerLabel={t('emailSignInDivider')}
             nativeAppleButtonType="continue"
             onSuccess={redirectAfterSignIn}
             returnTo={authReturnTo}
           />
 
           <Input
-            label="Email"
+            label={t('email')}
             value={email}
             onChangeText={setEmail}
             style={{ color: colorScheme === 'dark' ? '#F5F5F5' : '#424242' }}
@@ -93,12 +95,14 @@ export default function SignIn() {
           />
           <Input
             style={{ color: colorScheme === 'dark' ? '#F5F5F5' : '#424242' }}
-            label="Password"
+            label={t('password')}
             secureTextEntry={!showPassword}
             value={password}
             onChangeText={setPassword}
             rightIcon={
-              <TouchableOpacity onPress={() => setShowPassword((prev) => !prev)}>
+              <TouchableOpacity
+                accessibilityLabel={t(showPassword ? 'hidePassword' : 'showPassword')}
+                onPress={() => setShowPassword((prev) => !prev)}>
                 <Ionicons
                   name={showPassword ? 'eye-off-outline' : 'eye-outline'}
                   size={20}
@@ -113,7 +117,7 @@ export default function SignIn() {
               openExternalUrl(`${process.env.EXPO_PUBLIC_WEB_INTERFACE_URL}/auth/forgot-password`)
             }>
             <Text className="text-blue-600 dark:text-blue-400 font-semibold">
-              Forget your password?
+              {t('forgotPassword')}
             </Text>
           </TouchableOpacity>
 
@@ -126,7 +130,7 @@ export default function SignIn() {
             <Text
               className="text-white dark:text-black text-center font-bold"
               style={{ opacity: isDisabled ? 0.6 : 1 }}>
-              Sign In
+              {t('signIn')}
             </Text>
           </TouchableOpacity>
         </ScrollView>

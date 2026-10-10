@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import LoadingSpinner from '@/src/components/LoadingSpinner';
 import { FlatList, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -21,6 +22,7 @@ export default function AcceptFriendRequestsScreen({
   isAccepting,
   isDeclining,
 }: Props) {
+  const { t } = useTranslation('community');
   const insets = useSafeAreaInsets();
 
   if (isLoading) {
@@ -33,7 +35,7 @@ export default function AcceptFriendRequestsScreen({
 
   return (
     <View className="flex-1 bg-white dark:bg-black px-4" style={{ paddingBottom: insets.bottom }}>
-      <Text className="text-xl font-bold dark:text-white mb-4">Friend Requests</Text>
+      <Text className="text-xl font-bold dark:text-white mb-4">{t('friendRequests')}</Text>
 
       <FlatList
         data={data}
@@ -52,7 +54,7 @@ export default function AcceptFriendRequestsScreen({
           />
         )}
         ListEmptyComponent={
-          <Text className="text-gray-500 text-center mt-10">No pending friend requests</Text>
+          <Text className="text-gray-500 text-center mt-10">{t('noFriendRequests')}</Text>
         }
       />
     </View>

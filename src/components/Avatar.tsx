@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
 import { UseMutateFunction } from '@tanstack/react-query';
 import * as ImagePicker from 'expo-image-picker';
@@ -42,6 +43,7 @@ export default function Avatar({
   profile,
   handleDeleteAvatar,
 }: Props) {
+  const { t } = useTranslation('app');
   const avatarSize = { height: size, width: size };
   const { session } = useAuth();
 
@@ -61,10 +63,10 @@ export default function Avatar({
   }
 
   const confirmRemoveAvatar = () => {
-    Alert.alert('Remove avatar', 'Are you sure you want to remove your profile picture?', [
-      { text: 'Cancel', style: 'cancel' },
+    Alert.alert(t('removeAvatar'), t('removeAvatarConfirmation'), [
+      { text: t('cancel'), style: 'cancel' },
       {
-        text: 'Remove',
+        text: t('remove'),
         style: 'destructive',
         onPress: async () => {
           const filePath = profile?.avatar_url?.split('/').pop() ?? '';

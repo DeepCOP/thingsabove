@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Text, View } from 'react-native';
 
@@ -14,6 +15,7 @@ export default function PlanVisibilityBadge({
   textClassName = '',
   iconSize = 12,
 }: Props) {
+  const { t } = useTranslation('plans');
   if (visibility !== 'private') {
     return null;
   }
@@ -31,7 +33,7 @@ export default function PlanVisibilityBadge({
         className={['text-[10px] font-semibold text-amber-700 dark:text-amber-200', textClassName]
           .filter(Boolean)
           .join(' ')}>
-        Invite Only
+        {t('inviteOnly')}
       </Text>
     </View>
   );

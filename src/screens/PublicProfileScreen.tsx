@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import UserAvatar from '@/src/components/UserAvatar';
 import { Friendship, ProfileWithChurch } from '@/src/types/types';
 import { Ionicons } from '@expo/vector-icons';
@@ -51,10 +52,11 @@ export default function PublicProfileScreen({
   onAcceptFriendRequest,
   onDeclineFriendRequest,
 }: Props) {
+  const { t } = useTranslation('community');
   const insets = useSafeAreaInsets();
   const colorScheme = useColorScheme();
   const displayBio = profile.bio?.trim() ?? '';
-  const churchName = profile.church?.name ?? 'Not provided';
+  const churchName = profile.church?.name ?? t('notProvided');
   const churchAddress = profile.church?.address ?? '';
   const churchWebsite = profile.church?.website_url ?? '';
   const hasAboutDetails = Boolean(
@@ -77,16 +79,16 @@ export default function PublicProfileScreen({
   const secondaryActionColor = isAcceptedFriendship ? '#16a34a' : '#6b7280';
   const friendActionIconColor = isPrimaryFriendAction ? primaryActionColor : secondaryActionColor;
   const friendActionLabel = isAddingFriend
-    ? 'Sending...'
+    ? t('sending')
     : isFriendshipLoading
-      ? 'Checking...'
+      ? t('checking')
       : isAcceptedFriendship
-        ? 'Friends'
+        ? t('friends')
         : isPendingFriendship
           ? isIncomingFriendRequest
-            ? 'Request Pending'
-            : 'Request Sent'
-          : 'Add Friend';
+            ? t('requestPending')
+            : t('requestSent')
+          : t('addFriend');
   const friendActionLabelClassName = isPrimaryFriendAction
     ? 'text-white dark:text-black'
     : isAcceptedFriendship
@@ -112,7 +114,7 @@ export default function PublicProfileScreen({
 
         {isCurrentUser ? (
           <Text className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-            This is your public profile
+            {t('ownPublicProfile')}
           </Text>
         ) : null}
 
@@ -120,7 +122,7 @@ export default function PublicProfileScreen({
           isIncomingFriendRequest && onAcceptFriendRequest && onDeclineFriendRequest ? (
             <View className="mt-4 items-center">
               <Text className="text-sm text-gray-600 dark:text-gray-300">
-                {profile.first_name} sent you a friend request
+                {t('namedFriendRequest', { name: profile.first_name })}
               </Text>
 
               <View className="mt-3 flex-row gap-3">
@@ -134,7 +136,7 @@ export default function PublicProfileScreen({
                     <Ionicons color="#6b7280" name="close-circle-outline" size={18} />
                   )}
                   <Text className="ml-2 font-semibold text-gray-600 dark:text-gray-300">
-                    Decline
+                    {t('decline')}
                   </Text>
                 </TouchableOpacity>
 
@@ -151,7 +153,9 @@ export default function PublicProfileScreen({
                       size={18}
                     />
                   )}
-                  <Text className="ml-2 font-semibold text-white dark:text-black">Accept</Text>
+                  <Text className="ml-2 font-semibold text-white dark:text-black">
+                    {t('accept')}
+                  </Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -195,22 +199,22 @@ export default function PublicProfileScreen({
 
       <View className="mt-6 px-6">
         <View className="rounded-2xl border border-gray-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-950">
-          <Text className="text-lg font-semibold text-gray-900 dark:text-white">About</Text>
+          <Text className="text-lg font-semibold text-gray-900 dark:text-white">{t('about')}</Text>
 
           {hasAboutDetails ? (
             <View className="mt-4">
               <DetailRow
-                label="Year Believed"
-                value={profile.year_believed ? String(profile.year_believed) : 'Not provided'}
+                label={t('yearBelieved')}
+                value={profile.year_believed ? String(profile.year_believed) : t('notProvided')}
               />
               <DetailRow
-                label="Year Baptized"
-                value={profile.year_baptized ? String(profile.year_baptized) : 'Not provided'}
+                label={t('yearBaptized')}
+                value={profile.year_baptized ? String(profile.year_baptized) : t('notProvided')}
               />
 
               <View>
                 <Text className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">
-                  Church
+                  {t('church')}
                 </Text>
 
                 {canOpenChurch && onOpenChurch ? (
@@ -251,7 +255,7 @@ export default function PublicProfileScreen({
           ) : (
             <View className="mt-4 rounded-2xl border border-gray-200 bg-gray-50 px-4 py-6 dark:border-neutral-800 dark:bg-neutral-900">
               <Text className="text-center text-sm text-gray-600 dark:text-gray-400">
-                No additional profile details yet.
+                {t('noProfileDetails')}
               </Text>
             </View>
           )}

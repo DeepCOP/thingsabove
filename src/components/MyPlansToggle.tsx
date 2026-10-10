@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useRef, useState } from 'react';
 import {
@@ -22,14 +23,15 @@ type Props = {
 };
 
 const tabs: Tab[] = [
-  { key: 'find-plans', label: 'Find Plans' },
-  { key: 'my-plans', label: 'My Plans' },
-  { key: 'saved-plans', label: 'Saved' },
-  { key: 'completed-plans', label: 'Completed' },
-  { key: 'private-plans', label: 'Invite Only' },
+  { key: 'find-plans', label: 'tabsFindPlans' },
+  { key: 'my-plans', label: 'tabsMyPlans' },
+  { key: 'saved-plans', label: 'saved' },
+  { key: 'completed-plans', label: 'tabsCompleted' },
+  { key: 'private-plans', label: 'inviteOnly' },
 ];
 
 export function MyPlansToggle({ activeTab, onChange }: Props) {
+  const { t } = useTranslation('plans');
   const scrollViewRef = useRef<ScrollView | null>(null);
   const [containerWidth, setContainerWidth] = useState(0);
   const [contentWidth, setContentWidth] = useState(0);
@@ -89,7 +91,7 @@ export function MyPlansToggle({ activeTab, onChange }: Props) {
                   className={`text-center font-semibold text-sm ${
                     isActive ? 'text-black' : 'text-gray-400'
                   }`}>
-                  {tab.label}
+                  {t(tab.label)}
                 </Text>
               </TouchableOpacity>
             );
@@ -99,7 +101,7 @@ export function MyPlansToggle({ activeTab, onChange }: Props) {
       {canScrollLeft && (
         <TouchableOpacity
           accessibilityRole="button"
-          accessibilityLabel="Scroll tabs to the start"
+          accessibilityLabel={t('scrollTabsStart')}
           onPress={handleScrollToStart}
           className="absolute left-2 rounded-full bg-white/10 p-1"
           style={{ top: '50%', transform: [{ translateY: -12 }] }}>
@@ -109,7 +111,7 @@ export function MyPlansToggle({ activeTab, onChange }: Props) {
       {canScrollRight && (
         <TouchableOpacity
           accessibilityRole="button"
-          accessibilityLabel="Scroll tabs to the end"
+          accessibilityLabel={t('scrollTabsEnd')}
           onPress={handleScrollToEnd}
           className="absolute right-2 rounded-full bg-white/10 p-1"
           style={{ top: '50%', transform: [{ translateY: -12 }] }}>

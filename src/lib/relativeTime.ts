@@ -1,3 +1,5 @@
+import i18n from '@/src/i18n';
+
 const TIME_UNITS = [
   { maxSeconds: 60, secondsPerUnit: 1, label: 's' },
   { maxSeconds: 60 * 60, secondsPerUnit: 60, label: 'm' },
@@ -19,16 +21,22 @@ export function formatRelativeTime(value: string | Date) {
   const absoluteSeconds = Math.abs(diffInSeconds);
 
   if (absoluteSeconds < 10) {
-    return isPast ? 'just now' : 'soon';
+    return i18n.t(isPast ? 'justNow' : 'soon');
   }
 
   for (const unit of TIME_UNITS) {
     if (absoluteSeconds < unit.maxSeconds) {
       const valueInUnit = Math.max(1, Math.round(absoluteSeconds / unit.secondsPerUnit));
-      return isPast ? `${valueInUnit}${unit.label} ago` : `in ${valueInUnit}${unit.label}`;
+      return i18n.t(isPast ? 'relativePast' : 'relativeFuture', {
+        value: valueInUnit,
+        unit: i18n.t(`timeUnit_${unit.label}`),
+      });
     }
   }
 
   const years = Math.max(1, Math.round(absoluteSeconds / (60 * 60 * 24 * 365)));
-  return isPast ? `${years}y ago` : `in ${years}y`;
+  return i18n.t(isPast ? 'relativePast' : 'relativeFuture', {
+    value: years,
+    unit: i18n.t('timeUnit_y'),
+  });
 }
