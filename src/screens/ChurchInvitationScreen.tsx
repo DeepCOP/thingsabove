@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import UserAvatar from '@/src/components/UserAvatar';
 import { Church, ProfileWithChurch } from '@/src/types/types';
 import { Text, TouchableOpacity, View } from 'react-native';
@@ -19,7 +20,7 @@ type Props = {
 
 const getDisplayName = (firstName?: string | null, lastName?: string | null) => {
   const value = [firstName, lastName].filter(Boolean).join(' ').trim();
-  return value || 'A church member';
+  return value;
 };
 
 export default function ChurchInvitationScreen({
@@ -35,8 +36,10 @@ export default function ChurchInvitationScreen({
   onInviterPress,
   onOpenChurch,
 }: Props) {
+  const { t } = useTranslation('community');
   const insets = useSafeAreaInsets();
-  const inviterName = getDisplayName(inviter?.first_name, inviter?.last_name);
+  const inviterName =
+    getDisplayName(inviter?.first_name, inviter?.last_name) || t('churchMemberInviter');
   const currentChurchName = viewerProfile?.church?.name;
   const isSwitchingChurch =
     Boolean(currentChurchName) &&
@@ -62,8 +65,7 @@ export default function ChurchInvitationScreen({
       </View>
 
       <Text className="mb-6 text-center text-lg text-gray-900 dark:text-white">
-        <Text className="font-semibold">{inviter ? inviterName : 'Someone'}</Text> shared this
-        church with you.
+        {t('churchSharedInvitation', { name: inviter ? inviterName : t('someone') })}
       </Text>
 
       <View className="mb-8 rounded-2xl bg-neutral-100 p-4 dark:bg-neutral-900">
@@ -85,7 +87,10 @@ export default function ChurchInvitationScreen({
       {isSwitchingChurch && !hasAccepted && !isGuest && (
         <View className="mb-6 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 dark:border-amber-900 dark:bg-amber-950/30">
           <Text className="text-sm leading-6 text-amber-900 dark:text-amber-200">
-            Joining {church.name} will update the church on your profile from {currentChurchName}.
+            {t('churchSwitchDescription', {
+              church: church.name,
+              currentChurch: currentChurchName,
+            })}
           </Text>
         </View>
       )}
@@ -93,14 +98,14 @@ export default function ChurchInvitationScreen({
       {hasAccepted ? (
         <View style={{ paddingBottom: insets.bottom + 20 }}>
           <Text className="rounded-full bg-gray-200 py-3 text-center text-lg text-gray-900 dark:bg-neutral-700 dark:text-white">
-            You are part of this church
+            {t('joinedChurch')}
           </Text>
 
           <TouchableOpacity
             onPress={onOpenChurch}
             className="mt-4 rounded-full bg-black py-4 dark:bg-white">
             <Text className="text-center text-lg font-semibold text-white dark:text-black">
-              Open Church
+              {t('openChurch')}
             </Text>
           </TouchableOpacity>
         </View>
@@ -110,7 +115,7 @@ export default function ChurchInvitationScreen({
             onPress={onSignIn}
             className="mb-3 rounded-full bg-black py-4 dark:bg-white">
             <Text className="text-center text-lg font-semibold text-white dark:text-black">
-              Sign In To Join
+              {t('signInToJoin')}
             </Text>
           </TouchableOpacity>
 
@@ -118,7 +123,7 @@ export default function ChurchInvitationScreen({
             onPress={onCreateAccount}
             className="rounded-full bg-gray-200 py-4 dark:bg-neutral-700">
             <Text className="text-center text-lg text-gray-900 dark:text-white">
-              Create Account
+              {t('createAccount')}
             </Text>
           </TouchableOpacity>
         </View>
@@ -129,7 +134,7 @@ export default function ChurchInvitationScreen({
             disabled={isAccepting}
             className="mb-3 rounded-full bg-black py-4 dark:bg-white">
             <Text className="text-center text-lg font-semibold text-white dark:text-black">
-              {isAccepting ? 'Joining...' : 'Join Church'}
+              {isAccepting ? t('joining') : t('joinChurch')}
             </Text>
           </TouchableOpacity>
         </View>

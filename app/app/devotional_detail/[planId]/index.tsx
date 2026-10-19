@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { useFetchDevotionalPlanById } from '@/src/hooks/useDevotionalPlans';
 import {
   useDayItemTemplates,
@@ -17,6 +18,7 @@ import { Href, Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { Alert, Platform, useColorScheme } from 'react-native';
 
 export default function DevotionalDetail() {
+  const { t } = useTranslation('plans');
   const { planId } = useLocalSearchParams<{ planId: string }>();
   const reportSheetRef = useRef<BottomSheet>(null);
   const { isGuest, session } = useAuth();
@@ -130,8 +132,8 @@ export default function DevotionalDetail() {
         onSuccess: (progress) => router.push(`/app/plan_progress/${progress.id}`),
         onError: (error) => {
           Alert.alert(
-            'Could not start plan',
-            error instanceof Error ? error.message : 'Please try again.',
+            t('couldNotStart'),
+            error instanceof Error ? error.message : t('pleaseTryAgain'),
           );
         },
       },

@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import PlanCoverImage from '@/src/components/PlanCoverImage';
 import { RelatedPlansSection } from '@/src/components/RelatedPlans';
 import { Ionicons } from '@expo/vector-icons';
@@ -28,6 +29,7 @@ export default function PlanCompleteScreen({
   onShare,
   onRate,
 }: Props) {
+  const { t } = useTranslation('plans');
   const colorScheme = useColorScheme();
   const hasRating = currentRating > 0;
   return (
@@ -38,7 +40,9 @@ export default function PlanCompleteScreen({
           <Ionicons name="arrow-back" size={24} color={colorScheme === 'dark' ? '#fff' : '#000'} />
         </TouchableOpacity>
 
-        <Text className="text-lg font-semibold text-gray-800 dark:text-white">Plan Complete</Text>
+        <Text className="text-lg font-semibold text-gray-800 dark:text-white">
+          {t('planComplete')}
+        </Text>
 
         <TouchableOpacity onPress={onShare}>
           <Ionicons
@@ -60,13 +64,14 @@ export default function PlanCompleteScreen({
       {animationComplete ? (
         <View className="mx-4 mt-6 bg-gray-300 dark:bg-neutral-900 rounded-2xl py-6 items-center">
           <Text className="text-lg font-semibold mb-3 text-gray-800 dark:text-white">
-            {hasRating ? 'You rated this Plan' : 'Rate this Plan'}
+            {hasRating ? t('ratedPlan') : t('ratePlan')}
           </Text>
 
           <View className="flex-row gap-2">
             {[1, 2, 3, 4, 5].map((i) => (
               <TouchableOpacity
                 key={i}
+                accessibilityLabel={t('rateStars', { count: i })}
                 onPress={() => onRate(i)}
                 disabled={ratingLoading || ratingSaving}>
                 <Ionicons
@@ -79,7 +84,9 @@ export default function PlanCompleteScreen({
           </View>
 
           {ratingSaving && (
-            <Text className="text-xs text-gray-500 dark:text-gray-400 mt-3">Saving rating...</Text>
+            <Text className="text-xs text-gray-500 dark:text-gray-400 mt-3">
+              {t('savingRating')}
+            </Text>
           )}
         </View>
       ) : (
@@ -100,7 +107,7 @@ export default function PlanCompleteScreen({
           onPress={onFindMorePlans}
           className="bg-black dark:bg-white py-4 rounded-full">
           <Text className="text-white dark:text-black text-center font-semibold">
-            Find More Plans
+            {t('findMorePlans')}
           </Text>
         </TouchableOpacity>
       </View>

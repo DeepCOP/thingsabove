@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import ProfileIdentityRow from '@/src/components/ProfileIdentityRow';
 import { formatRelativeTime } from '@/src/lib/relativeTime';
 import { PrayerRequestDetail, PrayerRequestFeedItem } from '@/src/types/types';
@@ -17,32 +18,27 @@ type Props = {
   answering?: boolean;
 };
 
-function getScopeLabel(item: PrayerItem) {
-  if (item.scope === 'church') {
-    return item.church_name ? item.church_name : 'My Church';
-  }
-
-  return item.church_name ? item.church_name : 'Public';
-}
-
 export default function PrayerRequestCard({
   item,
   onPress,
   onTogglePraying,
   onEncourage,
   onMarkAnswered,
-  markAnsweredLabel = 'Answered',
+  markAnsweredLabel,
   answering,
 }: Props) {
+  const { t } = useTranslation('community');
   const displayName = getDisplayName({
     firstName: item.author_first_name,
     lastName: item.author_last_name,
+    fallbackLabel: t('member'),
   });
   const avatarName = getAvatarNameParts({
     firstName: item.author_first_name,
     lastName: item.author_last_name,
+    fallbackLabel: t('member'),
   });
-  const scopeLabel = getScopeLabel(item);
+  const scopeLabel = item.church_name || (item.scope === 'church' ? t('myChurch') : t('public'));
 
   return (
     <View className="rounded-3xl border border-gray-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-950">
@@ -64,13 +60,15 @@ export default function PrayerRequestCard({
 
               {item.is_urgent ? (
                 <View className="rounded-full bg-red-50 px-2 py-1 dark:bg-red-950/40">
-                  <Text className="text-xs text-red-700 dark:text-red-300">Urgent</Text>
+                  <Text className="text-xs text-red-700 dark:text-red-300">{t('urgent')}</Text>
                 </View>
               ) : null}
 
               {item.is_answered ? (
                 <View className="rounded-full bg-emerald-50 px-2 py-1 dark:bg-emerald-950/40">
-                  <Text className="text-xs text-emerald-700 dark:text-emerald-300">Answered</Text>
+                  <Text className="text-xs text-emerald-700 dark:text-emerald-300">
+                    {t('answered')}
+                  </Text>
                 </View>
               ) : null}
             </>
@@ -90,7 +88,7 @@ export default function PrayerRequestCard({
         {item.is_answered && item.testimony ? (
           <View className="mt-4 rounded-3xl bg-emerald-50 p-4 dark:bg-emerald-950/30">
             <Text className="text-xs font-semibold uppercase tracking-wide text-emerald-700 dark:text-emerald-300">
-              Testimony
+              {t('testimony')}
             </Text>
             <Text
               className="mt-2 text-sm leading-6 text-emerald-900 dark:text-emerald-100"
@@ -102,7 +100,9 @@ export default function PrayerRequestCard({
 
         <View className="mt-4 flex-row flex-wrap items-center gap-2">
           <View className="rounded-full bg-blue-50 px-2 py-1 dark:bg-blue-950/40">
-            <Text className="text-xs text-blue-700 dark:text-blue-300">{item.category}</Text>
+            <Text className="text-xs text-blue-700 dark:text-blue-300">
+              {t(`prayerCategory${item.category}`, { defaultValue: item.category })}
+            </Text>
           </View>
         </View>
       </TouchableOpacity>
@@ -113,7 +113,7 @@ export default function PrayerRequestCard({
             🙏
           </Text>
           <Text className="text-sm text-gray-600 dark:text-gray-400">
-            {item.viewer_has_prayed ? `Praying ${item.prayer_count}` : `Pray ${item.prayer_count}`}
+            {t(item.viewer_has_prayed ? 'prayingCount' : 'prayCount', { count: item.prayer_count })}
           </Text>
         </TouchableOpacity>
 
@@ -127,7 +127,9 @@ export default function PrayerRequestCard({
             color={item.allow_comments ? '#6b7280' : '#9ca3af'}
           />
           <Text className="text-sm text-gray-600 dark:text-gray-400">
-            {item.allow_comments ? `Encourage ${item.encouragement_count}` : 'Replies Off'}
+            {item.allow_comments
+              ? t('encourageCount', { count: item.encouragement_count })
+              : t('repliesOff')}
           </Text>
         </TouchableOpacity>
 
@@ -135,13 +137,15 @@ export default function PrayerRequestCard({
           <TouchableOpacity className="flex-row items-center gap-2" onPress={onMarkAnswered}>
             <Ionicons name="checkmark-circle-outline" size={18} color="#16a34a" />
             <Text className="text-sm font-medium text-emerald-600 dark:text-emerald-400">
-              {answering ? 'Saving...' : markAnsweredLabel}
+              {answering ? t('saving') : (markAnsweredLabel ?? t('answered'))}
             </Text>
           </TouchableOpacity>
         ) : (
           <TouchableOpacity className="flex-row items-center gap-2" onPress={onPress}>
             <Ionicons name="arrow-forward" size={18} color="#2563eb" />
-            <Text className="text-sm font-medium text-blue-600 dark:text-blue-400">View</Text>
+            <Text className="text-sm font-medium text-blue-600 dark:text-blue-400">
+              {t('view')}
+            </Text>
           </TouchableOpacity>
         )}
       </View>

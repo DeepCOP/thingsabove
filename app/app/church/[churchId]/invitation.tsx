@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import ChurchHeader from '@/src/components/church/ChurchHeader';
 import LoadingSpinner from '@/src/components/LoadingSpinner';
 import { useChurch } from '@/src/hooks/useChurch';
@@ -9,6 +10,7 @@ import { Href, Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { Text, TouchableOpacity, View } from 'react-native';
 
 export default function ChurchInvitationRoute() {
+  const { t } = useTranslation('community');
   const { churchId, invitedBy } = useLocalSearchParams<{ churchId: string; invitedBy?: string }>();
   const router = useRouter();
   const { session, isGuest } = useAuth();
@@ -17,7 +19,7 @@ export default function ChurchInvitationRoute() {
   const inviterQuery = useProfile(invitedBy);
   const viewerProfileQuery = useProfile(session?.user?.id);
   const acceptMutation = useAcceptChurchInvite(churchId, session?.user?.id);
-  const headerTitle = churchQuery.data?.name ?? 'Church Invitation';
+  const headerTitle = churchQuery.data?.name ?? t('churchInvitation');
 
   const handleBackPress = () => {
     if (router.canGoBack()) {
@@ -52,15 +54,15 @@ export default function ChurchInvitationRoute() {
           <ChurchHeader title={headerTitle} onBackPress={handleBackPress} />
           <View className="flex-1 items-center justify-center px-6">
             <Text className="text-lg font-semibold text-gray-900 dark:text-white">
-              Unable to load invitation
+              {t('invitationError')}
             </Text>
             <Text className="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
-              Please try opening the invite again.
+              {t('invitationRetry')}
             </Text>
             <TouchableOpacity
               className="mt-5 rounded-full bg-black px-5 py-3 dark:bg-white"
               onPress={() => router.replace('/app' as Href)}>
-              <Text className="font-semibold text-white dark:text-black">Go home</Text>
+              <Text className="font-semibold text-white dark:text-black">{t('goHome')}</Text>
             </TouchableOpacity>
           </View>
         </View>

@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { ChurchStats } from '@/src/types/types';
 import { Text, View } from 'react-native';
 
@@ -6,11 +7,12 @@ type Props = {
 };
 
 export default function ChurchStatGrid({ stats }: Props) {
+  const { t } = useTranslation('community');
   const cards = [
-    { label: 'Members', value: String(stats.memberCount) },
-    { label: 'Active Plans', value: String(stats.activePlansCount) },
-    { label: 'Completed', value: String(stats.completedPlansCount) },
-    { label: 'Top Plan', value: stats.topPlan?.title ?? 'N/A' },
+    { label: t('members'), value: String(stats.memberCount) },
+    { label: t('activePlans'), value: String(stats.activePlansCount) },
+    { label: t('completed'), value: String(stats.completedPlansCount) },
+    { label: t('topPlan'), value: stats.topPlan?.title ?? t('notAvailable') },
   ];
 
   return (

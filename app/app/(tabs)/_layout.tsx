@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
 import React from 'react';
@@ -5,6 +6,7 @@ import { useColorScheme } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function TabLayout() {
+  const { t } = useTranslation('app');
   const insets = useSafeAreaInsets();
   const colorScheme = useColorScheme();
 
@@ -33,7 +35,7 @@ export default function TabLayout() {
         <Tabs.Screen
           name="PlansTab"
           options={{
-            title: 'Devotionals',
+            title: t('devotionals'),
             headerShown: false,
 
             tabBarIcon: ({ focused, color, size }) => {
@@ -46,7 +48,7 @@ export default function TabLayout() {
         <Tabs.Screen
           name="BibleTab"
           options={{
-            title: 'Bible',
+            title: t('bible'),
 
             headerShown: false,
 
@@ -60,7 +62,7 @@ export default function TabLayout() {
         <Tabs.Screen
           name="CommunityTab"
           options={{
-            title: 'Community',
+            title: t('community'),
             headerShown: false,
             tabBarIcon: ({ focused, color, size }) => {
               return (
@@ -76,7 +78,7 @@ export default function TabLayout() {
         <Tabs.Screen
           name="ProfileTab"
           options={{
-            title: 'Profile',
+            title: t('profile'),
             headerShown: false,
             tabBarIcon: ({ focused, color, size }) => {
               return (

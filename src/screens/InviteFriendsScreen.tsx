@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
 import {
   ActivityIndicator,
@@ -45,6 +46,7 @@ export default function InviteFriendsScreen({
   onShareInviteLink,
   onAddFriend,
 }: Props) {
+  const { t } = useTranslation('plans');
   const insets = useSafeAreaInsets();
   const colorScheme = useColorScheme();
   const submitIndicatorColor = colorScheme === 'dark' ? '#000000' : '#ffffff';
@@ -74,10 +76,10 @@ export default function InviteFriendsScreen({
     <View className="flex-1 bg-white dark:bg-black px-4" style={{ paddingBottom: insets.bottom }}>
       <View className="mt-6 rounded-2xl border border-gray-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-950">
         <Text className="text-lg font-semibold text-gray-900 dark:text-white">
-          Invite friends to this plan
+          {t('inviteFriendsTitle')}
         </Text>
         <Text className="mt-2 text-sm leading-6 text-gray-600 dark:text-gray-400">
-          Invite friends, or share a group plan invitation link
+          {t('inviteFriendsHint')}
         </Text>
       </View>
 
@@ -85,12 +87,12 @@ export default function InviteFriendsScreen({
         <>
           <View className="flex-row gap-5 mt-6 mb-4 border-b border-gray-300 dark:border-gray-700">
             <TouchableOpacity onPress={onSelectAll} className="py-3 mb-4">
-              <Text className="text-gray-700 dark:text-gray-200">Select All</Text>
+              <Text className="text-gray-700 dark:text-gray-200">{t('selectAll')}</Text>
             </TouchableOpacity>
 
             {selected.length > 0 && (
               <TouchableOpacity onPress={onClearSelection} className="py-3 mb-4">
-                <Text className="text-gray-700 dark:text-gray-200">Select None</Text>
+                <Text className="text-gray-700 dark:text-gray-200">{t('selectNone')}</Text>
               </TouchableOpacity>
             )}
           </View>
@@ -141,7 +143,7 @@ export default function InviteFriendsScreen({
             onPress={onShareInviteLink}
             className="mt-3 mb-6 rounded-full border border-gray-300 py-4 dark:border-neutral-700">
             {renderButtonContent({
-              label: 'Share Invite Link',
+              label: t('shareInviteLink'),
               loading: isSharing,
               indicatorColor: shareIndicatorColor,
               textClassName: 'text-center font-semibold text-gray-900 dark:text-white',
@@ -152,10 +154,10 @@ export default function InviteFriendsScreen({
         <View className="flex-1 items-center justify-center">
           <Ionicons name="people-outline" size={32} color="#9ca3af" />
           <Text className="mt-4 text-lg font-semibold text-gray-900 dark:text-white">
-            No friends ready to invite
+            {t('noFriendsToInvite')}
           </Text>
           <Text className="mt-2 text-center text-sm leading-6 text-gray-600 dark:text-gray-400">
-            Add friends, start the plan now, or share a group plan invitation link.
+            {t('noFriendsHint')}
           </Text>
 
           <TouchableOpacity
@@ -175,7 +177,7 @@ export default function InviteFriendsScreen({
             onPress={onShareInviteLink}
             className="mt-3 rounded-full border border-gray-300 px-6 py-4 dark:border-neutral-700">
             {renderButtonContent({
-              label: 'Share Invite Link',
+              label: t('shareInviteLink'),
               loading: isSharing,
               indicatorColor: shareIndicatorColor,
               textClassName: 'font-semibold text-gray-900 dark:text-white',
@@ -186,7 +188,7 @@ export default function InviteFriendsScreen({
             disabled={isAnyActionPending}
             onPress={onAddFriend}
             className="mt-3 rounded-full border border-gray-300 px-6 py-4 dark:border-neutral-700">
-            <Text className="font-semibold text-gray-900 dark:text-white">Add Friends</Text>
+            <Text className="font-semibold text-gray-900 dark:text-white">{t('addFriends')}</Text>
           </TouchableOpacity>
         </View>
       )}

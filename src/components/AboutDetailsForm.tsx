@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { searchChurches } from '@/src/api/queries';
 import FormRestrictionText from '@/src/components/FormRestrictionText';
 import {
@@ -36,6 +37,7 @@ export default function AboutDetailsForm({
   disabled?: boolean;
   showNameFields?: boolean;
 }) {
+  const { t } = useTranslation('app');
   const colorScheme = useColorScheme();
   const textColor = colorScheme === 'dark' ? '#F5F5F5' : '#424242';
   const placeholderColor =
@@ -70,14 +72,12 @@ export default function AboutDetailsForm({
         .then((results) => {
           if (!isActive) return;
           setChurchResults(results);
-          setChurchSearchError(
-            results.length === 0 ? 'No churches found. You can enter details below.' : null,
-          );
+          setChurchSearchError(results.length === 0 ? 'noChurchesFound' : null);
         })
         .catch(() => {
           if (!isActive) return;
           setChurchResults([]);
-          setChurchSearchError('Unable to search churches right now.');
+          setChurchSearchError('churchSearchError');
         })
         .finally(() => {
           if (isActive) {
@@ -106,33 +106,35 @@ export default function AboutDetailsForm({
   return (
     <View>
       <View className="px-2 pt-2">
-        <Text className="mb-3 text-lg font-semibold text-gray-900 dark:text-white">About You</Text>
+        <Text className="mb-3 text-lg font-semibold text-gray-900 dark:text-white">
+          {t('aboutYou')}
+        </Text>
       </View>
 
       {showNameFields ? (
         <>
           <Input
-            label="First Name"
+            label={t('firstName')}
             value={values.firstName}
             onChangeText={(firstName) => onChange({ firstName })}
             editable={!disabled}
             autoCapitalize="words"
             errorMessage={errors?.firstName}
             style={{ color: textColor }}
-            placeholder="First name"
+            placeholder={t('firstNamePlaceholder')}
             placeholderTextColor={placeholderColor}
             maxLength={MAX_NAME_LENGTH}
           />
 
           <Input
-            label="Last Name"
+            label={t('lastName')}
             value={values.lastName}
             onChangeText={(lastName) => onChange({ lastName })}
             editable={!disabled}
             autoCapitalize="words"
             errorMessage={errors?.lastName}
             style={{ color: textColor }}
-            placeholder="Last name"
+            placeholder={t('lastNamePlaceholder')}
             placeholderTextColor={placeholderColor}
             maxLength={MAX_NAME_LENGTH}
           />
@@ -140,13 +142,13 @@ export default function AboutDetailsForm({
       ) : null}
 
       <Input
-        label="Bio or Favorite Verse"
+        label={t('bioOrVerse')}
         value={values.bio}
         onChangeText={(bio) => onChange({ bio })}
         editable={!disabled}
         errorMessage={errors?.bio}
         style={{ color: textColor }}
-        placeholder="Share a short bio or your favorite verse"
+        placeholder={t('bioPlaceholder')}
         placeholderTextColor={placeholderColor}
         maxLength={MAX_BIO_LENGTH}
         multiline
@@ -154,7 +156,7 @@ export default function AboutDetailsForm({
       />
 
       <Input
-        label="Year You Believed"
+        label={t('yearBelieved')}
         value={values.yearBelieved}
         onChangeText={(yearBelieved) => onChange({ yearBelieved })}
         editable={!disabled}
@@ -167,7 +169,7 @@ export default function AboutDetailsForm({
       />
 
       <Input
-        label="Year You Were Baptized"
+        label={t('yearBaptized')}
         value={values.yearBaptized}
         onChangeText={(yearBaptized) => onChange({ yearBaptized })}
         editable={!disabled}
@@ -180,11 +182,13 @@ export default function AboutDetailsForm({
       />
 
       <View className="px-2 pt-2">
-        <Text className="mb-3 text-lg font-semibold text-gray-900 dark:text-white">Church</Text>
+        <Text className="mb-3 text-lg font-semibold text-gray-900 dark:text-white">
+          {t('church')}
+        </Text>
       </View>
 
       <Input
-        label="Search and select your church"
+        label={t('searchChurch')}
         value={churchQuery}
         onChangeText={(nextQuery) => {
           setChurchQuery(nextQuery);
@@ -195,11 +199,11 @@ export default function AboutDetailsForm({
         editable={canEditChurch}
         autoCapitalize="words"
         style={{ color: textColor }}
-        placeholder="Type a name or address, then tap a result"
+        placeholder={t('churchSearchPlaceholder')}
         placeholderTextColor={placeholderColor}
       />
       <FormRestrictionText className="-mt-4 mb-4">
-        Enter at least {MIN_CHURCH_QUERY_LENGTH} characters to search.
+        {t('minChurchSearch', { count: MIN_CHURCH_QUERY_LENGTH })}
       </FormRestrictionText>
 
       {isSearchingChurches ? (
@@ -210,7 +214,7 @@ export default function AboutDetailsForm({
 
       {churchSearchError ? (
         <Text className="-mt-2 mb-3 px-3 text-sm text-gray-600 dark:text-gray-400">
-          {churchSearchError}
+          {t(churchSearchError)}
         </Text>
       ) : null}
 
@@ -240,7 +244,7 @@ export default function AboutDetailsForm({
       ) : null}
 
       <Input
-        label="Church Name"
+        label={t('churchName')}
         value={values.churchName}
         onChangeText={(churchName) => onChange({ churchId: null, churchName })}
         editable={canEditChurch}
@@ -251,10 +255,10 @@ export default function AboutDetailsForm({
         maxLength={MAX_CHURCH_NAME_LENGTH}
       />
       <FormRestrictionText className="-mt-4 mb-4">
-        Required when adding church details manually. Up to {MAX_CHURCH_NAME_LENGTH} characters.
+        {t('manualChurchName', { count: MAX_CHURCH_NAME_LENGTH })}
       </FormRestrictionText>
       <Input
-        label="Church Address"
+        label={t('churchAddress')}
         value={values.churchAddress}
         onChangeText={(churchAddress) => onChange({ churchId: null, churchAddress })}
         editable={canEditChurch}
@@ -265,7 +269,7 @@ export default function AboutDetailsForm({
         maxLength={MAX_CHURCH_ADDRESS_LENGTH}
       />
       <Input
-        label="Church Website URL"
+        label={t('churchWebsite')}
         value={values.churchWebsiteUrl}
         onChangeText={(churchWebsiteUrl) => onChange({ churchId: null, churchWebsiteUrl })}
         editable={canEditChurch}

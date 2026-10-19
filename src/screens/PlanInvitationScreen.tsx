@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Image, Text, TouchableOpacity, View } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -47,6 +48,7 @@ export default function PlanInvitationScreen({
   onContinue,
   onDecline,
 }: Props) {
+  const { t } = useTranslation('plans');
   const insets = useSafeAreaInsets();
   const inviterName = [firstName, lastName].filter(Boolean).join(' ').trim();
   const isBusy = isAccepting || isDeclining;
@@ -64,7 +66,7 @@ export default function PlanInvitationScreen({
 
         {/* Invitation text */}
         <Text className="text-center dark:text-white text-lg mb-6">
-          <Text className="font-semibold">{inviterName}</Text> wants to read this plan with you.
+          {t('invitationMessage', { name: inviterName })}
         </Text>
 
         {/* Plan Card */}
@@ -77,12 +79,14 @@ export default function PlanInvitationScreen({
 
           <Text className="dark:text-white text-lg font-semibold mt-3">{planTitle}</Text>
           <View className="mb-3 mt-1 flex-row items-center gap-2">
-            <Text className="dark:text-gray-400 text-sm">{totalDays} Days</Text>
+            <Text className="dark:text-gray-400 text-sm">
+              {t('days', { count: totalDays ?? 0 })}
+            </Text>
             <PlanVisibilityBadge visibility={isPrivatePlan ? 'private' : null} />
           </View>
 
           {/* Participants */}
-          <Text className="dark:text-gray-400 text-sm mb-1">Participants</Text>
+          <Text className="dark:text-gray-400 text-sm mb-1">{t('participants')}</Text>
           <View className="flex-row mb-3">
             {members?.slice(0, 3).map((m) => (
               <View
@@ -113,7 +117,7 @@ export default function PlanInvitationScreen({
               <ActivityIndicator color="#9ca3af" />
             ) : (
               <Text className="text-center font-semibold text-lg dark:text-black text-white">
-                ACCEPT
+                {t('accept')}
               </Text>
             )}
           </TouchableOpacity>
@@ -125,7 +129,7 @@ export default function PlanInvitationScreen({
             {isDeclining ? (
               <ActivityIndicator color="#6b7280" />
             ) : (
-              <Text className="text-center text-lg dark:text-white">DECLINE</Text>
+              <Text className="text-center text-lg dark:text-white">{t('decline')}</Text>
             )}
           </TouchableOpacity>
         </View>
@@ -140,7 +144,7 @@ export default function PlanInvitationScreen({
             ) : (
               <Text
                 className={`text-center text-lg font-semibold ${!onContinue ? 'text-gray-600 dark:text-gray-300' : 'text-white dark:text-black'}`}>
-                Continue to Plan
+                {t('continueToPlan')}
               </Text>
             )}
           </TouchableOpacity>

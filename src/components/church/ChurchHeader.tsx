@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
 import { Text, TouchableOpacity, View, useColorScheme } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -8,6 +9,7 @@ type ChurchHeaderProps = {
 };
 
 export default function ChurchHeader({ title, onBackPress }: ChurchHeaderProps) {
+  const { t } = useTranslation('community');
   const colorScheme = useColorScheme();
   const insets = useSafeAreaInsets();
   const isDark = colorScheme === 'dark';
@@ -19,7 +21,7 @@ export default function ChurchHeader({ title, onBackPress }: ChurchHeaderProps) 
       style={{ paddingTop: insets.top + 8 }}>
       <View className="relative flex-row items-center justify-center">
         <TouchableOpacity
-          accessibilityLabel="Go back"
+          accessibilityLabel={t('back')}
           accessibilityRole="button"
           className="absolute left-0 z-10 h-10 w-10 items-center justify-center rounded-full bg-gray-100 dark:bg-neutral-900"
           onPress={onBackPress}>

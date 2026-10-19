@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { useComments } from '@/src/hooks/useComments';
 import { formatRelativeTime } from '@/src/lib/relativeTime';
 import { useAuth } from '@/src/state/AuthContext';
@@ -50,6 +51,7 @@ const DayCommentsFooterContext = createContext<DayCommentsFooterContextValue | n
 const DayCommentsFooter = memo(function DayCommentsFooter({
   animatedFooterPosition,
 }: BottomSheetFooterProps) {
+  const { t } = useTranslation('plans');
   const context = useContext(DayCommentsFooterContext);
 
   if (!context) {
@@ -79,10 +81,14 @@ const DayCommentsFooter = memo(function DayCommentsFooter({
       <View className="border-t border-gray-200 px-4 pt-2 dark:border-neutral-800 dark:bg-black">
         {editingCommentId && (
           <View className="mb-3 flex-row items-center justify-between">
-            <Text className="text-sm text-gray-600 dark:text-gray-300">Editing {entryLabel}</Text>
+            <Text className="text-sm text-gray-600 dark:text-gray-300">
+              {t('editingEntry', { entry: entryLabel })}
+            </Text>
 
             <TouchableOpacity onPress={onCancel}>
-              <Text className="text-sm font-medium text-gray-800 dark:text-gray-200">Cancel</Text>
+              <Text className="text-sm font-medium text-gray-800 dark:text-gray-200">
+                {t('cancel')}
+              </Text>
             </TouchableOpacity>
           </View>
         )}
@@ -104,7 +110,7 @@ const DayCommentsFooter = memo(function DayCommentsFooter({
               <LoadingSpinner size="small" />
             ) : (
               <Text className="text-white dark:text-black">
-                {editingCommentId ? 'Save' : 'Send'}
+                {editingCommentId ? t('save') : t('send')}
               </Text>
             )}
           </TouchableOpacity>
@@ -122,16 +128,21 @@ const DayCommentsBottomSheet = forwardRef<BottomSheet, Props>(
       dayId,
       group_id,
       isDoneLoading = false,
-      title = 'Reflect & Share',
-      entryLabel = 'comment',
-      inputPlaceholder = 'Share your thoughts...',
-      emptyMessage = "Share your thoughts based on today's reading.",
+      title: titleProp,
+      entryLabel: entryLabelProp,
+      inputPlaceholder: inputPlaceholderProp,
+      emptyMessage: emptyMessageProp,
       doneAccessibilityLabel,
       onDone,
       onEntryCreated,
     },
     ref,
   ) => {
+    const { t } = useTranslation('plans');
+    const title = titleProp ?? t('reflectAndShare');
+    const entryLabel = entryLabelProp ?? t('comment');
+    const inputPlaceholder = inputPlaceholderProp ?? t('shareThoughts');
+    const emptyMessage = emptyMessageProp ?? t('emptyComments');
     const snapPoints = useMemo(() => ['80%'], []);
     const EditingComposerInset = 160;
     const DefaultComposerInset = 116;
@@ -190,20 +201,24 @@ const DayCommentsBottomSheet = forwardRef<BottomSheet, Props>(
     ]);
 
     const handleDelete = (comment: PlanDayComment) => {
-      Alert.alert(`Delete ${entryLabel}?`, `This will permanently remove your ${entryLabel}.`, [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: () => {
-            if (editingCommentId === comment.id) {
-              resetComposer();
-            }
+      Alert.alert(
+        t('deleteEntryTitle', { entry: entryLabel }),
+        t('deleteEntryMessage', { entry: entryLabel }),
+        [
+          { text: t('cancel'), style: 'cancel' },
+          {
+            text: t('delete'),
+            style: 'destructive',
+            onPress: () => {
+              if (editingCommentId === comment.id) {
+                resetComposer();
+              }
 
-            deleteComment.mutate({ commentId: comment.id });
+              deleteComment.mutate({ commentId: comment.id });
+            },
           },
-        },
-      ]);
+        ],
+      );
     };
 
     const handleDone = () => {
@@ -281,7 +296,7 @@ const DayCommentsBottomSheet = forwardRef<BottomSheet, Props>(
 
                 <TouchableOpacity
                   accessibilityRole="button"
-                  accessibilityLabel={doneAccessibilityLabel ?? `Mark ${title} complete`}
+                  accessibilityLabel={doneAccessibilityLabel ?? t('markComplete', { title })}
                   disabled={!canMarkDone || isDoneLoading || isSubmitting}
                   onPress={handleDone}
                   className={`min-w-16 rounded-full px-3 py-2 ${
@@ -295,7 +310,7 @@ const DayCommentsBottomSheet = forwardRef<BottomSheet, Props>(
                         ? 'text-white dark:text-black'
                         : 'text-gray-400 dark:text-gray-500'
                     }`}>
-                    Done
+                    {t('done')}
                   </Text>
                 </TouchableOpacity>
               </View>
@@ -336,7 +351,7 @@ const DayCommentsBottomSheet = forwardRef<BottomSheet, Props>(
                         <View className="flex-row items-center gap-3">
                           {isEditing && (
                             <Text className="text-xs text-blue-200 dark:text-blue-200">
-                              Editing
+                              {t('editing')}
                             </Text>
                           )}
 

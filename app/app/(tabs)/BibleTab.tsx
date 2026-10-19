@@ -2,6 +2,7 @@ import BibleReaderView from '@/src/screens/BibleReaderViewScreen';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useRouter } from 'expo-router';
 import { useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
   Animated,
@@ -15,6 +16,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useBible } from '@/src/state/BibleContext';
 
 export default function BibleTab() {
+  const { t } = useTranslation('bible');
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const headerHeight = 90;
@@ -80,13 +82,19 @@ export default function BibleTab() {
         className="bg-white dark:bg-black">
         <View className="mr-2 flex-1 flex-row items-center justify-end">
           <TouchableOpacity
+            accessibilityRole="button"
+            accessibilityLabel={t('chooseVersion', { version: versionLabel })}
             onPress={() => router.push('/app/bible/versions')}
             disabled={Boolean(loadingVersionId)}
             style={{ opacity: loadingVersionId ? 0.7 : 1 }}
             className="mr-1 flex-row items-center rounded-full bg-blue-100 px-3 py-1.5">
             <Ionicons name="globe-outline" size={16} />
             {loadingVersionId ? (
-              <ActivityIndicator size="small" className="ml-2" />
+              <ActivityIndicator
+                accessibilityLabel={t('loadingVersions')}
+                size="small"
+                className="ml-2"
+              />
             ) : (
               <>
                 <Text className="ml-2 font-semibold">{versionLabel}</Text>

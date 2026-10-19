@@ -6,8 +6,10 @@ import { useDebounce } from '@/src/utils';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Alert, Share } from 'react-native';
+import { useTranslation } from 'react-i18next';
 
 export default function AddFriend() {
+  const { t } = useTranslation('community');
   const { session } = useAuth();
   const router = useRouter();
   const userId = session?.user?.id;
@@ -44,7 +46,7 @@ export default function AddFriend() {
           { friendId, userId },
           {
             onError: (error) => {
-              Alert.alert('Unable to send friend request', error.message);
+              Alert.alert(t('sendFriendError'), error.message);
             },
           },
         );

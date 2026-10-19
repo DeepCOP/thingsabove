@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import PrayerEmptyState from '@/src/components/prayer/PrayerEmptyState';
 import PrayerFilterChips from '@/src/components/prayer/PrayerFilterChips';
 import PrayerRequestCard from '@/src/components/prayer/PrayerRequestCard';
@@ -9,7 +10,6 @@ import { PrayerFilter, PrayerScope } from '@/src/types/types';
 import { useRouter } from 'expo-router';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { RefreshControl, ScrollView, Text, TouchableOpacity, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import LoadingSpinner from '@/src/components/LoadingSpinner';
 
 type PrayerBoardScreenProps = {
@@ -47,12 +47,12 @@ export default function PrayerBoardScreen({
   fixedFilter,
   initialFilter = 'all',
   emptyStateCopy,
-  newRequestLabel = 'New Prayer Request',
-  loadMoreLabel = 'Load More Requests',
+  newRequestLabel,
+  loadMoreLabel,
 }: PrayerBoardScreenProps = {}) {
+  const { t } = useTranslation('community');
   const { session } = useAuth();
   const router = useRouter();
-  const insets = useSafeAreaInsets();
   const [filter, setFilter] = useState<PrayerFilter>(fixedFilter ?? initialFilter);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const activeFilter = fixedFilter ?? filter;
@@ -79,42 +79,38 @@ export default function PrayerBoardScreen({
   const emptyCopy = useMemo(() => {
     if (scope === 'church') {
       return {
-        title: 'No church prayer requests yet',
+        title: t('noChurchPrayerRequests'),
         description:
-          activeFilter === 'mine'
-            ? 'You have not posted to your church board yet. Share a prayer need with your church community.'
-            : 'Your church board is quiet right now. Start the first request and invite others to pray with you.',
+          activeFilter === 'mine' ? t('noChurchPrayersMine') : t('noChurchPrayersDescription'),
       };
     }
 
     if (activeFilter === 'mine') {
       return {
-        title: 'No prayer requests from you yet',
-        description:
-          'When you share a prayer request, it will appear here so you can track prayers and encouragements.',
+        title: t('noMyPrayerRequests'),
+        description: t('noMyPrayersDescription'),
       };
     }
 
     if (activeFilter === 'urgent') {
       return {
-        title: 'No urgent requests right now',
-        description: 'There are no urgent prayer requests in this view at the moment.',
+        title: t('noUrgentRequests'),
+        description: t('noUrgentDescription'),
       };
     }
 
     if (activeFilter === 'answered') {
       return {
-        title: 'No answered requests yet',
-        description:
-          'Answered prayer requests will show up here as people share what God has done.',
+        title: t('noAnsweredRequests'),
+        description: t('noAnsweredDescription'),
       };
     }
 
     return {
-      title: 'No prayer requests yet',
-      description: 'Start the conversation with a prayer request that others can carry with you.',
+      title: t('noPrayerRequests'),
+      description: t('noPrayersDescription'),
     };
-  }, [activeFilter, scope]);
+  }, [activeFilter, scope, t]);
 
   const resolvedEmptyCopy = emptyStateCopy ?? emptyCopy;
 
@@ -150,9 +146,9 @@ export default function PrayerBoardScreen({
           <View className="mt-4">
             <PrayerEmptyState
               icon="people-outline"
-              title="Join your church prayer board"
-              description="Add your church in Profile to unlock church-only prayer requests and support your local community."
-              ctaLabel="Open Profile"
+              title={t('joinChurchPrayerBoard')}
+              description={t('joinChurchPrayerDescription')}
+              ctaLabel={t('openProfile')}
               onCta={() => router.navigate('/app/(tabs)/ProfileTab')}
             />
           </View>
@@ -170,9 +166,9 @@ export default function PrayerBoardScreen({
               ) : boardQuery.isError && boardItems.length === 0 ? (
                 <PrayerEmptyState
                   icon="alert-circle-outline"
-                  title="Unable to load the prayer board"
-                  description="Pull to refresh or try again in a moment."
-                  ctaLabel="Try Again"
+                  title={t('prayerBoardError')}
+                  description={t('prayerBoardRetry')}
+                  ctaLabel={t('tryAgainCaps')}
                   onCta={() => boardQuery.refetch()}
                 />
               ) : boardItems.length > 0 ? (
@@ -202,14 +198,14 @@ export default function PrayerBoardScreen({
                             })
                         : undefined
                     }
-                    markAnsweredLabel="Praise"
+                    markAnsweredLabel={t('praise')}
                   />
                 ))
               ) : (
                 <PrayerEmptyState
                   title={resolvedEmptyCopy.title}
                   description={resolvedEmptyCopy.description}
-                  ctaLabel={newRequestLabel}
+                  ctaLabel={newRequestLabel ?? t('newPrayerRequest')}
                   onCta={() => router.push('/app/prayer/new')}
                 />
               )}
@@ -223,7 +219,7 @@ export default function PrayerBoardScreen({
                       className="rounded-full border border-gray-300 px-5 py-3 dark:border-neutral-700"
                       onPress={() => boardQuery.fetchNextPage()}>
                       <Text className="font-medium text-gray-900 dark:text-white">
-                        {loadMoreLabel}
+                        {loadMoreLabel ?? t('loadMoreRequests')}
                       </Text>
                     </TouchableOpacity>
                   )}
@@ -241,7 +237,7 @@ export default function PrayerBoardScreen({
           className="rounded-full bg-black px-6 py-4 dark:bg-white"
           onPress={() => router.push('/app/prayer/new')}>
           <Text className="text-center font-semibold text-white dark:text-black">
-            {newRequestLabel}
+            {newRequestLabel ?? t('newPrayerRequest')}
           </Text>
         </TouchableOpacity>
       </View>

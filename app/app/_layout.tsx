@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import LoadingSpinner from '@/src/components/LoadingSpinner';
 import { consumePendingOAuthReturnTo } from '@/src/lib/oauthReturnTo';
 import { useTheme } from '@react-navigation/native';
@@ -15,6 +16,7 @@ const APP_ONBOARDING = '/app/onboarding' as Href;
 const getRoutePathname = (href: string) => href.split('?')[0] ?? href;
 
 export default function AppLayout() {
+  const { t } = useTranslation('app');
   const { session } = useAuth();
   const { colors } = useTheme();
   const pathname = usePathname();
@@ -111,22 +113,25 @@ export default function AppLayout() {
         <Stack.Screen name="about-details" options={{ headerShown: false }} />
         <Stack.Screen name="bible/[book]/index" />
         <Stack.Screen name="scripture_notes/index" options={{ headerShown: false }} />
-        <Stack.Screen name="search/devotionals/index" options={{ title: 'search devotionals' }} />
+        <Stack.Screen name="search/devotionals/index" options={{ title: t('searchDevotionals') }} />
         <Stack.Screen name="devotional_detail/[planId]/index" options={{ title: '' }} />
-        <Stack.Screen name="devotional_detail/[planId]/invite" options={{ title: 'Invitation' }} />
+        <Stack.Screen
+          name="devotional_detail/[planId]/invite"
+          options={{ title: t('invitation') }}
+        />
         <Stack.Screen
           name="church/[churchId]/invitation"
-          options={{ title: 'Church Invitation' }}
+          options={{ title: t('churchInvitation') }}
         />
-        <Stack.Screen name="invite/[code]" options={{ title: 'Invitation' }} />
+        <Stack.Screen name="invite/[code]" options={{ title: t('invitation') }} />
         <Stack.Protected guard={session == null}>
           <Stack.Screen name="(auth)" options={{ presentation: 'modal', headerShown: false }} />
-          <Stack.Screen name="confirm-email" options={{ title: 'Confirm Email' }} />
+          <Stack.Screen name="confirm-email" options={{ title: t('confirmEmail') }} />
         </Stack.Protected>
         <Stack.Protected guard={session != null}>
           <Stack.Screen
             name="plan_progress/[progressId]/index"
-            options={{ title: 'plan progress' }}
+            options={{ title: t('planProgress') }}
           />
           <Stack.Screen
             name="plan_progress/[progressId]/plan-complete/index"
@@ -138,33 +143,33 @@ export default function AppLayout() {
           />
           <Stack.Screen
             name="devotional_detail/[planId]/start-date"
-            options={{ title: 'plan info' }}
+            options={{ title: t('planInfo') }}
           />
           <Stack.Screen
             name="devotional_detail/[planId]/invite-friends"
-            options={{ title: 'Select Friends To Invite' }}
+            options={{ title: t('selectFriends') }}
           />
           <Stack.Screen
             name="devotional_detail/[planId]/participants"
-            options={{ title: 'Participants' }}
+            options={{ title: t('participants') }}
           />
-          <Stack.Screen name="church/[churchId]/index" options={{ title: 'My Church' }} />
-          <Stack.Screen name="church/[churchId]/members" options={{ title: 'Members' }} />
+          <Stack.Screen name="church/[churchId]/index" options={{ title: t('myChurch') }} />
+          <Stack.Screen name="church/[churchId]/members" options={{ title: t('members') }} />
           <Stack.Screen
             name="devotional_detail/[planId]/invitation"
-            options={{ title: 'Invitation' }}
+            options={{ title: t('invitation') }}
           />
           <Stack.Screen
             name="plan_progress/[progressId]/missedDays/index"
-            options={{ title: 'Missed Days' }}
+            options={{ title: t('missedDays') }}
           />
-          <Stack.Screen name="profile/[userId]" options={{ title: 'Profile' }} />
-          <Stack.Screen name="add_friend/index" options={{ title: 'Add Friend' }} />
-          <Stack.Screen name="accept_friend/index" options={{ title: 'Friend Requests' }} />
-          <Stack.Screen name="prayer/new" options={{ title: 'New Prayer Request' }} />
-          <Stack.Screen name="prayer/[requestId]" options={{ title: 'Prayer Request' }} />
-          <Stack.Screen name="settings/index" options={{ title: 'Settings' }} />
-          <Stack.Screen name="notifications/index" options={{ title: 'Notifications' }} />
+          <Stack.Screen name="profile/[userId]" options={{ title: t('profile') }} />
+          <Stack.Screen name="add_friend/index" options={{ title: t('addFriend') }} />
+          <Stack.Screen name="accept_friend/index" options={{ title: t('friendRequests') }} />
+          <Stack.Screen name="prayer/new" options={{ title: t('newPrayerRequest') }} />
+          <Stack.Screen name="prayer/[requestId]" options={{ title: t('prayerRequest') }} />
+          <Stack.Screen name="settings/index" options={{ title: t('settings') }} />
+          <Stack.Screen name="notifications/index" options={{ title: t('notifications') }} />
         </Stack.Protected>
       </Stack>
       {onboardingRedirect ? <Redirect href={onboardingRedirect} /> : null}

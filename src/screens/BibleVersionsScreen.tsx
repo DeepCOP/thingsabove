@@ -1,5 +1,5 @@
 import { BIBLE_SOURCE_LABELS } from '@/src/bible/sources';
-import { matchesVersionSearch } from '@/src/bible/versionPresentation';
+import { localizeBibleError, matchesVersionSearch } from '@/src/bible/versionPresentation';
 import BibleVersionCover from '@/src/components/BibleVersionCover';
 import { formatBibleVersionSize } from '@/src/lib/bibleVersionService';
 import { useAuth } from '@/src/state/AuthContext';
@@ -8,6 +8,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { useNetInfo } from '@react-native-community/netinfo';
 import { useRouter } from 'expo-router';
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
   Modal,
@@ -41,6 +42,9 @@ type AdapterFilter = (typeof adapterFilters)[number]['key'];
 type ProviderSection = (typeof adapterSections)[number]['key'];
 
 export default function BibleVersionsScreen({ mode, onAddPress, onVersionPress, onRead }: Props) {
+  const { t, i18n } = useTranslation('bible');
+  const filterTitle = (filter: (typeof adapterFilters)[number]) =>
+    filter.key === 'all' ? t('all') : filter.key === 'offline' ? t('offline') : filter.title;
   const router = useRouter();
   const { session } = useAuth();
   const isGuest = !session;
@@ -95,7 +99,7 @@ export default function BibleVersionsScreen({ mode, onAddPress, onVersionPress, 
       await operation();
       if (mounted.current) after?.();
     } catch (cause) {
-      if (mounted.current) setError(cause instanceof Error ? cause.message : 'Please try again.');
+      if (mounted.current) setError(cause instanceof Error ? cause.message : t('pleaseTryAgain'));
     } finally {
       pending.current.delete(id);
       if (mounted.current) setBusyIds(new Set(pending.current));
@@ -136,6 +140,7 @@ export default function BibleVersionsScreen({ mode, onAddPress, onVersionPress, 
             const showAll = adapterFilter !== 'all' || Boolean(query.trim());
             return {
               ...section,
+              title: filterTitle(section),
               data: showAll ? entries : entries.slice(0, 6),
               total: entries.length,
             };
@@ -155,11 +160,11 @@ export default function BibleVersionsScreen({ mode, onAddPress, onVersionPress, 
       <Text numberOfLines={1} style={[styles.statusText, { color: colors.secondary }]}>
         {entry.isOnline ? (
           <>
-            <Text style={{ color: colors.blue }}>Online</Text>
+            <Text style={{ color: colors.blue }}>{t('online')}</Text>
             {` · ${BIBLE_SOURCE_LABELS[entry.source ?? 'offline']}`}
           </>
         ) : (
-          `${formatBibleVersionSize(entry.installState?.sizeBytes ?? entry.sizeBytes)} · ${entry.isInstalled ? 'Downloaded' : 'Download'}`
+          `${formatBibleVersionSize(entry.installState?.sizeBytes ?? entry.sizeBytes)} · ${t(entry.isInstalled ? 'downloaded' : 'download')}`
         )}
       </Text>
     </View>
@@ -179,10 +184,7 @@ export default function BibleVersionsScreen({ mode, onAddPress, onVersionPress, 
         ListHeaderComponent={
           <>
             {mode === 'library' ? (
-              <Text style={[styles.intro, { color: colors.secondary }]}>
-                Choose and manage the Bible versions you want to use. Versions may be downloaded for
-                offline use or added from online sources.
-              </Text>
+              <Text style={[styles.intro, { color: colors.secondary }]}>{t('libraryIntro')}</Text>
             ) : (
               <>
                 <View
@@ -192,8 +194,8 @@ export default function BibleVersionsScreen({ mode, onAddPress, onVersionPress, 
                   ]}>
                   <Ionicons name="search-outline" size={22} color={colors.secondary} />
                   <TextInput
-                    accessibilityLabel="Search Bible versions"
-                    placeholder="Search versions (e.g. ESV, NIV, Chinese)"
+                    accessibilityLabel={t('searchLabel')}
+                    placeholder={t('searchPlaceholder')}
                     placeholderTextColor={colors.secondary}
                     value={query}
                     onChangeText={setQuery}
@@ -205,7 +207,7 @@ export default function BibleVersionsScreen({ mode, onAddPress, onVersionPress, 
                   {query ? (
                     <TouchableOpacity
                       accessibilityRole="button"
-                      accessibilityLabel="Clear search"
+                      accessibilityLabel={t('clearSearch')}
                       onPress={() => setQuery('')}
                       style={styles.clearSearch}>
                       <Ionicons name="close-circle" size={19} color={colors.secondary} />
@@ -225,8 +227,8 @@ export default function BibleVersionsScreen({ mode, onAddPress, onVersionPress, 
                         accessibilityRole="button"
                         accessibilityLabel={
                           filter.key === 'all'
-                            ? 'Show all Bible versions'
-                            : `Filter by ${filter.title}`
+                            ? t('showAllVersions')
+                            : t('filterBy', { provider: filterTitle(filter) })
                         }
                         accessibilityState={{ selected }}
                         onPress={() => {
@@ -251,7 +253,7 @@ export default function BibleVersionsScreen({ mode, onAddPress, onVersionPress, 
                             styles.filterLabel,
                             { color: selected ? '#ffffff' : colors.text },
                           ]}>
-                          {filter.title}
+                          {filterTitle(filter)}
                         </Text>
                       </TouchableOpacity>
                     );
@@ -260,16 +262,12 @@ export default function BibleVersionsScreen({ mode, onAddPress, onVersionPress, 
               </>
             )}
             {offline ? (
-              <Text style={[styles.notice, { color: colors.secondary }]}>
-                You are offline. Downloaded versions are ready to read; online versions need an
-                internet connection.
-              </Text>
+              <Text style={[styles.notice, { color: colors.secondary }]}>{t('offlineNotice')}</Text>
             ) : null}
             {isGuest ? (
               <View style={[styles.noticeBox, { borderColor: colors.border }]}>
                 <Text style={[styles.noticeText, { color: colors.secondary }]}>
-                  Sign in to browse, add, and read online Bible versions. Downloaded versions remain
-                  available without an account.
+                  {t('guestNotice')}
                 </Text>
                 <TouchableOpacity
                   accessibilityRole="button"
@@ -279,25 +277,25 @@ export default function BibleVersionsScreen({ mode, onAddPress, onVersionPress, 
                       params: { returnTo: '/app/bible/versions' },
                     })
                   }>
-                  <Text style={styles.link}>Sign in</Text>
+                  <Text style={styles.link}>{t('signIn')}</Text>
                 </TouchableOpacity>
               </View>
             ) : null}
             {error ? (
               <Text accessibilityRole="alert" style={[styles.notice, { color: colors.error }]}>
-                {error}
+                {localizeBibleError(error, t, i18n.resolvedLanguage, 'actionError')}
               </Text>
             ) : null}
             {mode === 'catalog' && versionsCatalogError ? (
               <View style={[styles.noticeBox, { borderColor: colors.border }]}>
                 <Text style={[styles.noticeText, { color: colors.secondary }]}>
-                  Some versions could not be loaded. You can still use your saved versions.
+                  {t('catalogError')}
                 </Text>
                 <TouchableOpacity
                   accessibilityRole="button"
                   disabled={versionsCatalogLoading}
                   onPress={() => void refreshVersionsCatalog()}>
-                  <Text style={styles.link}>Retry</Text>
+                  <Text style={styles.link}>{t('retry')}</Text>
                 </TouchableOpacity>
               </View>
             ) : null}
@@ -305,7 +303,7 @@ export default function BibleVersionsScreen({ mode, onAddPress, onVersionPress, 
               <ActivityIndicator
                 style={{ marginBottom: 14 }}
                 color={colors.blue}
-                accessibilityLabel="Loading versions"
+                accessibilityLabel={t('loadingVersions')}
               />
             ) : null}
           </>
@@ -317,7 +315,11 @@ export default function BibleVersionsScreen({ mode, onAddPress, onVersionPress, 
               {
                 <TouchableOpacity
                   accessibilityRole="button"
-                  accessibilityLabel={`About ${section.title}${section.key === 'offline' ? '' : ' online'} versions`}
+                  accessibilityLabel={
+                    section.key === 'offline'
+                      ? t('aboutOfflineVersions')
+                      : t('aboutProviderVersions', { provider: section.title })
+                  }
                   onPress={() => {
                     setProviderSection(section.key as ProviderSection);
                     setModal('providers');
@@ -338,9 +340,9 @@ export default function BibleVersionsScreen({ mode, onAddPress, onVersionPress, 
               ]}>
               <TouchableOpacity
                 accessibilityRole="button"
-                accessibilityLabel={
-                  entry.isOnline ? `${entry.label}, version details` : `Read ${entry.label}`
-                }
+                accessibilityLabel={t(entry.isOnline ? 'versionDetailsLabel' : 'readVersionLabel', {
+                  version: entry.label,
+                })}
                 disabled={busy(entry)}
                 onPress={() => (entry.isOnline ? onVersionPress(entry.id) : read(entry))}
                 style={{ flex: 1 }}>
@@ -348,7 +350,7 @@ export default function BibleVersionsScreen({ mode, onAddPress, onVersionPress, 
                   <Text style={[styles.libraryAbbr, { color: colors.text }]}>
                     {entry.shortLabel}
                   </Text>
-                  {entry.isActive ? <Text style={styles.active}>Current</Text> : null}
+                  {entry.isActive ? <Text style={styles.active}>{t('current')}</Text> : null}
                 </View>
                 <Text style={[styles.libraryName, { color: colors.text }]}>{entry.label}</Text>
                 {status(entry)}
@@ -358,7 +360,7 @@ export default function BibleVersionsScreen({ mode, onAddPress, onVersionPress, 
               ) : entry.isOnline ? (
                 <TouchableOpacity
                   accessibilityRole="button"
-                  accessibilityLabel={`Details for ${entry.label}`}
+                  accessibilityLabel={t('detailsFor', { version: entry.label })}
                   onPress={() => onVersionPress(entry.id)}
                   style={styles.iconButton}>
                   <Ionicons name="chevron-forward" size={23} color={colors.secondary} />
@@ -368,7 +370,7 @@ export default function BibleVersionsScreen({ mode, onAddPress, onVersionPress, 
                   <Ionicons name="checkmark-circle" size={30} color="#2fca70" />
                   <TouchableOpacity
                     accessibilityRole="button"
-                    accessibilityLabel={`Manage ${entry.label}`}
+                    accessibilityLabel={t('manageVersion', { version: entry.label })}
                     onPress={() => setOptionsId(entry.id)}
                     style={styles.iconButton}>
                     <Ionicons name="ellipsis-vertical" size={22} color={colors.secondary} />
@@ -384,7 +386,7 @@ export default function BibleVersionsScreen({ mode, onAddPress, onVersionPress, 
               ]}>
               <TouchableOpacity
                 accessibilityRole="button"
-                accessibilityLabel={`Details for ${entry.label}`}
+                accessibilityLabel={t('detailsFor', { version: entry.label })}
                 onPress={() => onVersionPress(entry.id)}
                 style={styles.catalogBody}>
                 <BibleVersionCover version={entry} />
@@ -402,8 +404,10 @@ export default function BibleVersionsScreen({ mode, onAddPress, onVersionPress, 
                 accessibilityRole="button"
                 accessibilityLabel={
                   entry.isAdded
-                    ? `${entry.label} added`
-                    : `${entry.isOnline ? 'Add' : 'Download'} ${entry.label}`
+                    ? t('versionAdded', { version: entry.label })
+                    : t(entry.isOnline ? 'addVersionLabel' : 'downloadVersionLabel', {
+                        version: entry.label,
+                      })
                 }
                 accessibilityState={{
                   disabled: entry.isAdded || busy(entry) || (offline && !entry.isOnline),
@@ -428,7 +432,7 @@ export default function BibleVersionsScreen({ mode, onAddPress, onVersionPress, 
                   />
                 )}
                 <Text style={[styles.addLabel, { color: entry.isAdded ? colors.text : '#ffffff' }]}>
-                  {entry.isAdded ? 'Added' : entry.isDownloading ? 'Loading' : 'Add'}
+                  {t(entry.isAdded ? 'added' : entry.isDownloading ? 'loading' : 'add')}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -439,21 +443,21 @@ export default function BibleVersionsScreen({ mode, onAddPress, onVersionPress, 
             {!section.data.length ? (
               <Text style={[styles.empty, { color: colors.secondary }]}>
                 {mode === 'library'
-                  ? 'Add a Bible version to start your library.'
+                  ? t('emptyLibrary')
                   : query.trim()
-                    ? 'No versions match this search.'
+                    ? t('noSearchResults')
                     : versionsCatalogLoading
-                      ? 'Loading available versions…'
-                      : 'No versions are available here right now.'}
+                      ? t('loadingAvailableVersions')
+                      : t('noVersions')}
               </Text>
             ) : null}
             {section.total > section.data.length ? (
               <TouchableOpacity
                 accessibilityRole="button"
-                accessibilityLabel={`See all ${section.title} versions`}
+                accessibilityLabel={t('seeProviderVersions', { provider: section.title })}
                 onPress={() => setAdapterFilter(section.key as AdapterFilter)}
                 style={styles.seeAll}>
-                <Text style={styles.link}>See all {section.total} versions</Text>
+                <Text style={styles.link}>{t('seeAllVersions', { count: section.total })}</Text>
                 <Ionicons name="chevron-forward" size={17} color={colors.blue} />
               </TouchableOpacity>
             ) : null}
@@ -467,7 +471,7 @@ export default function BibleVersionsScreen({ mode, onAddPress, onVersionPress, 
               activeOpacity={0.8}
               style={styles.primaryButton}>
               <Ionicons name="add" size={26} color="#ffffff" />
-              <Text style={styles.primaryText}>Add Bible Version</Text>
+              <Text style={styles.primaryText}>{t('addBibleVersion')}</Text>
             </TouchableOpacity>
           ) : null
         }
@@ -496,13 +500,13 @@ export default function BibleVersionsScreen({ mode, onAddPress, onVersionPress, 
               <Text style={[styles.sheetTitle, { color: colors.text }]}>
                 {modal === 'providers'
                   ? providerSection === 'offline'
-                    ? 'Offline Bible versions'
-                    : 'Online Bible versions'
+                    ? t('offlineVersions')
+                    : t('onlineVersions')
                   : optionEntry?.shortLabel}
               </Text>
               <TouchableOpacity
                 accessibilityRole="button"
-                accessibilityLabel="Close"
+                accessibilityLabel={t('close')}
                 onPress={() => {
                   setModal(null);
                   setProviderSection(null);
@@ -515,15 +519,14 @@ export default function BibleVersionsScreen({ mode, onAddPress, onVersionPress, 
             {modal === 'providers' ? (
               providerSection === 'offline' ? (
                 <Text style={[styles.modalBody, { color: colors.secondary }]}>
-                  Add and download an offline version to your library to read it without an internet
-                  connection.
+                  {t('offlineDescription')}
                 </Text>
               ) : (
                 <Text style={[styles.modalBody, { color: colors.secondary }]}>
-                  Add an online version to your library to read it without downloading the full
-                  Bible. Sign-in and an internet connection are required to read. Your highlights
-                  and notes remain available across versions.
-                  {providers.length ? ` Available providers: ${providers.join(', ')}.` : ''}
+                  {t('onlineDescription')}
+                  {providers.length
+                    ? t('availableProviders', { providers: providers.join(', ') })
+                    : ''}
                 </Text>
               )
             ) : optionEntry ? (
@@ -536,7 +539,7 @@ export default function BibleVersionsScreen({ mode, onAddPress, onVersionPress, 
                     read(optionEntry);
                   }}>
                   <Ionicons name="book-outline" size={22} color={colors.blue} />
-                  <Text style={{ color: colors.text, fontSize: 16 }}>Read this version</Text>
+                  <Text style={{ color: colors.text, fontSize: 16 }}>{t('readVersion')}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   accessibilityRole="button"
@@ -546,7 +549,7 @@ export default function BibleVersionsScreen({ mode, onAddPress, onVersionPress, 
                     onVersionPress(optionEntry.id);
                   }}>
                   <Ionicons name="information-circle-outline" size={22} color={colors.blue} />
-                  <Text style={{ color: colors.text, fontSize: 16 }}>Version details</Text>
+                  <Text style={{ color: colors.text, fontSize: 16 }}>{t('versionDetails')}</Text>
                 </TouchableOpacity>
                 {optionEntry.canDelete ? (
                   <TouchableOpacity
@@ -557,13 +560,11 @@ export default function BibleVersionsScreen({ mode, onAddPress, onVersionPress, 
                       void run(optionEntry.id, () => removeVersion(optionEntry.id));
                     }}>
                     <Ionicons name="trash-outline" size={22} color={colors.text} />
-                    <Text style={{ color: colors.text, fontSize: 16 }}>
-                      Remove from My Versions
-                    </Text>
+                    <Text style={{ color: colors.text, fontSize: 16 }}>{t('removeVersion')}</Text>
                   </TouchableOpacity>
                 ) : (
                   <Text style={[styles.notice, { color: colors.secondary }]}>
-                    This version is included with the app.
+                    {t('includedVersion')}
                   </Text>
                 )}
               </>

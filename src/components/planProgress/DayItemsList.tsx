@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { DayItemsProgress } from '@/src/types/types';
 import { Ionicons } from '@expo/vector-icons';
 import { Text, TouchableOpacity, useColorScheme, View } from 'react-native';
@@ -10,19 +11,19 @@ type Props = {
   toggleLoading: boolean;
 };
 
-function getItemLabel(item: DayItemsProgress, commentLabel: string) {
-  if (item.item_type === 'devotional') return 'Devotional';
+function getItemLabel(
+  item: DayItemsProgress,
+  commentLabel: string,
+  devotionalLabel: string,
+  scriptureLabel: string,
+) {
+  if (item.item_type === 'devotional') return devotionalLabel;
   if (item.item_type === 'comment') return commentLabel;
-  return item.item_key || 'Scripture';
+  return item.item_key || scriptureLabel;
 }
 
-export function DayItemsList({
-  items,
-  commentLabel = 'Reflect & Share',
-  onPressItem,
-  onToggle,
-  toggleLoading,
-}: Props) {
+export function DayItemsList({ items, commentLabel, onPressItem, onToggle, toggleLoading }: Props) {
+  const { t } = useTranslation('plans');
   const colorScheme = useColorScheme();
   return (
     <View className="mt-4 space-y-6 px-4">
@@ -46,7 +47,14 @@ export function DayItemsList({
                 />
               </TouchableOpacity>
 
-              <Text className="text-lg dark:text-white">{getItemLabel(item, commentLabel)}</Text>
+              <Text className="text-lg dark:text-white">
+                {getItemLabel(
+                  item,
+                  commentLabel ?? t('reflectAndShare'),
+                  t('devotional'),
+                  t('scripture'),
+                )}
+              </Text>
             </View>
 
             <Ionicons

@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Animated, Text, TouchableOpacity } from 'react-native';
 
 type Props = {
@@ -7,6 +8,7 @@ type Props = {
 };
 
 export function StartReadingCTA({ bottomInset, visible, onPress }: Props) {
+  const { t } = useTranslation('plans');
   if (!visible) return null;
 
   return (
@@ -23,7 +25,7 @@ export function StartReadingCTA({ bottomInset, visible, onPress }: Props) {
         className="bg-black dark:bg-white min-w-[80%] py-4 rounded-full mb-5"
         onPress={onPress}>
         <Text className="text-white dark:text-black font-semibold text-lg text-center">
-          Start Reading
+          {t('startReading')}
         </Text>
       </TouchableOpacity>
     </Animated.View>

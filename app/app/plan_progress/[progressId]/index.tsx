@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 /* eslint-disable react-hooks/exhaustive-deps */
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -38,6 +39,7 @@ import {
 } from 'react-native';
 
 export default function PlanProgress() {
+  const { t } = useTranslation('plans');
   const colorScheme = useColorScheme();
 
   const insets = useSafeAreaInsets();
@@ -121,7 +123,7 @@ export default function PlanProgress() {
   const prevCompletedOnce = useRef<boolean | null>(null);
   const prevPlanComplete = useRef<boolean | null>(null);
   const devotional = dayItemsProgress?.items.find((item) => item.item_type === 'devotional');
-  const planTitle = plan?.title ?? 'Plan Progress';
+  const planTitle = plan?.title ?? t('planProgress');
   const planTotalDays = plan?.total_days ?? days?.length ?? 0;
   const groupPlanProgresses = useMemo(() => {
     const progresses = groupPlanProgressesQuery.data ?? [];
@@ -235,31 +237,27 @@ export default function PlanProgress() {
 
     if (!userId || !targetProgressId) return;
 
-    Alert.alert(
-      'Stop plan?',
-      'This will delete your progress for this plan. You can start it again later.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Stop Plan',
-          style: 'destructive',
-          onPress: () => {
-            stopPlanProgressMutation.mutate(
-              { user_id: userId, progress_id: targetProgressId },
-              {
-                onSuccess: () => {
-                  router.replace('/app/(tabs)/PlansTab');
-                },
-                onError: (error) => {
-                  console.error('Error stopping plan:', error);
-                  Alert.alert('Unable to stop plan', 'Please try again.');
-                },
+    Alert.alert(t('stopPlanTitle'), t('stopPlanMessage'), [
+      { text: t('cancel'), style: 'cancel' },
+      {
+        text: t('stopPlan'),
+        style: 'destructive',
+        onPress: () => {
+          stopPlanProgressMutation.mutate(
+            { user_id: userId, progress_id: targetProgressId },
+            {
+              onSuccess: () => {
+                router.replace('/app/(tabs)/PlansTab');
               },
-            );
-          },
+              onError: (error) => {
+                console.error('Error stopping plan:', error);
+                Alert.alert(t('stopPlanError'), t('pleaseTryAgain'));
+              },
+            },
+          );
         },
-      ],
-    );
+      },
+    ]);
   }
 
   function handleInvitePress() {
@@ -317,7 +315,7 @@ export default function PlanProgress() {
   if (!planProgress || !days || !plan) {
     return (
       <View className="flex-1 justify-center items-center">
-        <Text>Plan not found</Text>
+        <Text>{t('planNotFound')}</Text>
       </View>
     );
   }
@@ -334,7 +332,7 @@ export default function PlanProgress() {
           headerRight: () => (
             <TouchableOpacity
               accessibilityRole="button"
-              accessibilityLabel="Open plan options"
+              accessibilityLabel={t('openPlanOptions')}
               className="h-10 w-10 items-center justify-center"
               disabled={stopPlanProgressMutation.isPending}
               onPress={() => setMenuVisible(true)}>
@@ -428,7 +426,7 @@ export default function PlanProgress() {
                 color={colorScheme === 'dark' ? '#fff' : '#000'}
               />
               <Text className="ml-3 text-base font-semibold text-black dark:text-white">
-                Invite others
+                {t('inviteOthers')}
               </Text>
             </TouchableOpacity>
 
@@ -446,7 +444,7 @@ export default function PlanProgress() {
               ) : (
                 <Ionicons name="trash-outline" size={22} color="#dc2626" />
               )}
-              <Text className="ml-3 text-base font-semibold text-red-600">Stop Plan</Text>
+              <Text className="ml-3 text-base font-semibold text-red-600">{t('stopPlan')}</Text>
             </TouchableOpacity>
           </View>
         </View>

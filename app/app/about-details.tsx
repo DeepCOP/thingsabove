@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import AboutDetailsForm from '@/src/components/AboutDetailsForm';
 import { useSaveSignupAboutDetails, useUpdateProfile } from '@/src/hooks/useProfile';
 import {
@@ -8,6 +9,7 @@ import {
 import {
   hasProfileDetailsErrors,
   ProfileDetailsFormErrors,
+  relocalizeProfileDetailsFormErrors,
   toSignUpAboutDetailsInput,
   toUpdateProfileInput,
   validateProfileDetailsForm,
@@ -15,7 +17,7 @@ import {
 import { useAuth } from '@/src/state/AuthContext';
 import { useSignUpDetailsStore } from '@/src/state/useSignUpDetailsStore';
 import { Href, useLocalSearchParams, useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Keyboard,
   KeyboardAvoidingView,
@@ -30,6 +32,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function AboutDetails() {
+  const { t } = useTranslation('app');
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const searchParams = useLocalSearchParams<
@@ -60,6 +63,10 @@ export default function AboutDetails() {
   const signupUserId = typeof userId === 'string' ? userId : '';
   const authRedirectParams = getAuthRedirectParams(searchParams);
   const postSignupReturnTo = getAuthRedirectReturnTo(searchParams);
+
+  useEffect(() => {
+    setErrors((current) => relocalizeProfileDetailsFormErrors(current, form));
+  }, [form, t]);
 
   const finishFlow = () => {
     resetDetails();
@@ -125,10 +132,12 @@ export default function AboutDetails() {
           keyboardShouldPersistTaps="handled"
           automaticallyAdjustKeyboardInsets>
           <View className="mb-6 flex-row items-center justify-between">
-            <Text className="text-2xl font-semibold text-gray-900 dark:text-white">About</Text>
+            <Text className="text-2xl font-semibold text-gray-900 dark:text-white">
+              {t('about')}
+            </Text>
             <TouchableOpacity onPress={onSkip} disabled={isSaving}>
               <Text className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                Skip for now
+                {t('skipForNow')}
               </Text>
             </TouchableOpacity>
           </View>
@@ -157,7 +166,7 @@ export default function AboutDetails() {
               className={`text-center font-bold ${
                 colorScheme === 'dark' ? 'text-black' : 'text-white'
               }`}>
-              Save
+              {t('save')}
             </Text>
           </TouchableOpacity>
         </ScrollView>

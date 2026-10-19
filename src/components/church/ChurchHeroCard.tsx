@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Church } from '@/src/types/types';
 import { Text, TouchableOpacity, View } from 'react-native';
 
@@ -8,6 +9,7 @@ type Props = {
 };
 
 export default function ChurchHeroCard({ church, memberCount, onOpenWebsite }: Props) {
+  const { t } = useTranslation('community');
   return (
     <View className="rounded-3xl border border-gray-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-950">
       <View className="flex-row items-start justify-between gap-3">
@@ -26,7 +28,7 @@ export default function ChurchHeroCard({ church, memberCount, onOpenWebsite }: P
         {typeof memberCount === 'number' ? (
           <View className="rounded-full bg-blue-50 px-3 py-1 dark:bg-blue-950/40">
             <Text className="text-xs font-semibold text-blue-700 dark:text-blue-300">
-              {memberCount} members
+              {t('memberCount', { count: memberCount })}
             </Text>
           </View>
         ) : null}

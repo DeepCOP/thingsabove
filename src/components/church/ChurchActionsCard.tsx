@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Text, TouchableOpacity, View } from 'react-native';
 
 type Props = {
@@ -19,6 +20,7 @@ export default function ChurchActionsCard({
   onSharePress,
   onOpenWebsitePress,
 }: Props) {
+  const { t } = useTranslation('community');
   return (
     <View className="gap-3">
       {onInvitePress ? (
@@ -27,7 +29,7 @@ export default function ChurchActionsCard({
           disabled={isInviting}
           onPress={onInvitePress}>
           <Text className="text-center text-lg font-semibold text-white dark:text-black">
-            {isInviting ? 'Preparing invite...' : 'Share Invite Link'}
+            {isInviting ? t('preparingInvite') : t('shareInviteLink')}
           </Text>
         </TouchableOpacity>
       ) : onJoinPress ? (
@@ -36,7 +38,7 @@ export default function ChurchActionsCard({
           disabled={isJoining}
           onPress={onJoinPress}>
           <Text className="text-center text-lg font-semibold text-white dark:text-black">
-            {isJoining ? 'Joining...' : 'Join Church'}
+            {isJoining ? t('joining') : t('joinChurch')}
           </Text>
         </TouchableOpacity>
       ) : null}
@@ -45,7 +47,7 @@ export default function ChurchActionsCard({
         className="rounded-full border border-gray-300 py-4 dark:border-neutral-700"
         onPress={onSharePress}>
         <Text className="text-center text-base font-semibold text-gray-900 dark:text-white">
-          Share Church
+          {t('shareChurch')}
         </Text>
       </TouchableOpacity>
 
@@ -54,7 +56,7 @@ export default function ChurchActionsCard({
           className="rounded-full border border-gray-300 py-4 dark:border-neutral-700"
           onPress={onOpenWebsitePress}>
           <Text className="text-center text-base font-semibold text-gray-900 dark:text-white">
-            Open Website
+            {t('openWebsite')}
           </Text>
         </TouchableOpacity>
       ) : null}

@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { useFetchDevotionalPlanById } from '@/src/hooks/useDevotionalPlans';
 import dayjs from '@/src/lib/dayjs';
 import PickStartDateScreen from '@/src/screens/PickStartDateScreen';
@@ -6,6 +7,7 @@ import { useMemo, useState } from 'react';
 import { ActivityIndicator, Text, View } from 'react-native';
 
 export default function PickStartDate() {
+  const { t } = useTranslation('plans');
   const { planId } = useLocalSearchParams<{
     planId: string;
   }>();
@@ -27,7 +29,7 @@ export default function PickStartDate() {
     return (
       <View className="flex-1 items-center justify-center p-4">
         <Text className="text-center text-gray-700 dark:text-gray-300">
-          Failed to load this devotional. Please try again later.
+          {t('devotionalLoadError')}
         </Text>
       </View>
     );
@@ -37,7 +39,7 @@ export default function PickStartDate() {
     return (
       <View className="flex-1 items-center justify-center p-4">
         <Text className="text-center text-gray-700 dark:text-gray-300">
-          This devotional could not be found.
+          {t('devotionalNotFound')}
         </Text>
       </View>
     );

@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import BottomSheet, { BottomSheetBackdrop, BottomSheetView } from '@gorhom/bottom-sheet';
 import { forwardRef, useState } from 'react';
 import PlanCoverImage from '@/src/components/PlanCoverImage';
@@ -23,6 +24,7 @@ const StartPlanBottomSheet = forwardRef<BottomSheet, Props>(
     },
     ref,
   ) => {
+    const { t } = useTranslation('plans');
     const colorScheme = useColorScheme();
     const insets = useSafeAreaInsets();
     const [showSoloOptions, setShowSoloOptions] = useState(false);
@@ -58,7 +60,7 @@ const StartPlanBottomSheet = forwardRef<BottomSheet, Props>(
           <PlanCoverImage uri={plan.cover_image} className="w-28 h-28 rounded-2xl mb-3" />
 
           <Text className="text-2xl text-center font-bold dark:text-white mb-4">
-            {isShowingSoloOptions ? 'You already have a solo plan' : 'How do you want to read?'}
+            {isShowingSoloOptions ? t('soloAlreadyStarted') : t('chooseReadingMode')}
           </Text>
 
           <View className="gap-3 w-full px-4">
@@ -70,7 +72,7 @@ const StartPlanBottomSheet = forwardRef<BottomSheet, Props>(
                     disabled={isStartingSoloPlan}
                     className="py-4 rounded-full bg-black dark:bg-white items-center">
                     <Text className="text-lg font-bold text-white dark:text-black">
-                      Continue Current Plan
+                      {t('continueCurrentPlan')}
                     </Text>
                   </TouchableOpacity>
                 )}
@@ -82,7 +84,9 @@ const StartPlanBottomSheet = forwardRef<BottomSheet, Props>(
                   {isStartingSoloPlan ? (
                     <ActivityIndicator size="small" color={soloSpinnerColor} />
                   ) : (
-                    <Text className="text-lg font-bold dark:text-white">Start New Solo Plan</Text>
+                    <Text className="text-lg font-bold dark:text-white">
+                      {t('startNewSoloPlan')}
+                    </Text>
                   )}
                 </TouchableOpacity>
 
@@ -91,7 +95,7 @@ const StartPlanBottomSheet = forwardRef<BottomSheet, Props>(
                   disabled={isStartingSoloPlan}
                   className="py-4 rounded-full border border-gray-300 dark:border-neutral-600 items-center">
                   <Text className="text-lg font-semibold text-gray-800 dark:text-gray-200">
-                    Back
+                    {t('back')}
                   </Text>
                 </TouchableOpacity>
               </>
@@ -111,7 +115,7 @@ const StartPlanBottomSheet = forwardRef<BottomSheet, Props>(
                   {isStartingSoloPlan ? (
                     <ActivityIndicator size="small" color={soloSpinnerColor} />
                   ) : (
-                    <Text className="text-lg font-bold dark:text-white">By Yourself</Text>
+                    <Text className="text-lg font-bold dark:text-white">{t('byYourself')}</Text>
                   )}
                 </TouchableOpacity>
 
@@ -119,7 +123,7 @@ const StartPlanBottomSheet = forwardRef<BottomSheet, Props>(
                   onPress={() => onStartPress('group')}
                   disabled={isStartingSoloPlan}
                   className="py-4 rounded-full bg-gray-300 dark:bg-neutral-600 items-center">
-                  <Text className="text-lg font-bold dark:text-white">With Friends</Text>
+                  <Text className="text-lg font-bold dark:text-white">{t('withFriends')}</Text>
                 </TouchableOpacity>
               </>
             )}

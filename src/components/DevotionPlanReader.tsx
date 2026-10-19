@@ -1,9 +1,11 @@
+import { useTranslation } from 'react-i18next';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import * as Clipboard from 'expo-clipboard';
 import { useRouter } from 'expo-router';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { findBookInBible, getBibleDotComBookCode, getBookNameForId } from '@/src/bible/books';
+import { localizeBibleError } from '@/src/bible/versionPresentation';
 import PlanCoverImage from '@/src/components/PlanCoverImage';
 import ReaderBottomBar from '@/src/components/ReaderBottomBar';
 import BibleAttribution from '@/src/components/BibleAttribution';
@@ -67,6 +69,8 @@ export default function DevotionalPlanReader({
     unknown
   >;
 }) {
+  const { t, i18n } = useTranslation('plans');
+  const { t: tBible } = useTranslation('bible');
   const insets = useSafeAreaInsets();
   const colorScheme = useColorScheme();
   const { width, height } = useWindowDimensions();
@@ -90,7 +94,8 @@ export default function DevotionalPlanReader({
   const didScrollRef = useRef(false);
 
   const devotionalTitle =
-    item?.title?.trim() || (item?.day_number ? `Day ${item.day_number}` : 'Devotional');
+    item?.title?.trim() ||
+    (item?.day_number ? t('dayNumber', { day: item.day_number }) : t('devotional'));
   const devotionalHtml = item?.devotional_content ?? '';
   const devotionalDocument = useMemo(() => {
     const isDark = colorScheme === 'dark';
@@ -544,22 +549,26 @@ export default function DevotionalPlanReader({
           />
         ) : scriptureLoading ? (
           <View className="flex-1 items-center justify-center">
-            <ActivityIndicator accessibilityLabel="Loading chapter" />
+            <ActivityIndicator accessibilityLabel={t('loadingChapter')} />
           </View>
         ) : readingError ? (
           <View className="flex-1 items-center justify-center gap-3 px-6">
-            <Text className="text-center text-gray-500 dark:text-gray-400">{readingError}</Text>
+            <Text className="text-center text-gray-500 dark:text-gray-400">
+              {localizeBibleError(readingError, tBible, i18n.resolvedLanguage)}
+            </Text>
             <TouchableOpacity onPress={readerError ? retryReader : retryChapter}>
-              <Text className="font-semibold text-blue-600 dark:text-blue-400">Try again</Text>
+              <Text className="font-semibold text-blue-600 dark:text-blue-400">
+                {t('tryAgain')}
+              </Text>
             </TouchableOpacity>
           </View>
         ) : showScriptureUnavailableFallback ? (
           <View className="flex-1 items-center justify-center px-6">
             <Text className="text-center text-xl font-semibold text-gray-900 dark:text-white">
-              Scripture reference unavailable
+              {t('scriptureReferenceUnavailable')}
             </Text>
             <Text className="mt-3 text-center text-base text-gray-500 dark:text-gray-400">
-              This reading item does not have a valid scripture reference.
+              {t('invalidScriptureReference')}
             </Text>
           </View>
         ) : (
@@ -661,11 +670,11 @@ export default function DevotionalPlanReader({
           centerAction={
             isDevotionalItem
               ? {
-                  label: 'Devotional',
+                  label: t('devotional'),
                 }
               : showScriptureUnavailableFallback
                 ? {
-                    label: 'Scripture unavailable',
+                    label: t('scriptureUnavailable'),
                     muted: true,
                   }
                 : {

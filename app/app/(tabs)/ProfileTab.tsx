@@ -1,3 +1,5 @@
+import LanguageSelector from '@/src/components/LanguageSelector';
+import { useTranslation } from 'react-i18next';
 import {
   useDeleteAvatar,
   useProfile,
@@ -6,11 +8,15 @@ import {
 } from '@/src/hooks/useProfile';
 import ProfileScreen from '@/src/screens/Profile';
 import { useAuth } from '@/src/state/AuthContext';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { useRouter } from 'expo-router';
-import { Text, TouchableOpacity, View } from 'react-native';
+import { useColorScheme } from 'nativewind';
+import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
 export default function App() {
+  const { t } = useTranslation('app');
   const { session, signOut } = useAuth();
+  const { colorScheme } = useColorScheme();
   const router = useRouter();
   const profileQuery = useProfile(session?.user?.id);
   const updateProfile = useUpdateProfile(session?.user?.id);
@@ -40,24 +46,45 @@ export default function App() {
       handleDeleteAvatar={deleteAvatar.mutate}
     />
   ) : (
-    <View className="flex-1 items-center justify-center px-6 bg-white dark:bg-black">
-      <Text className="text-2xl font-semibold mb-2 dark:text-white">Welcome 👋</Text>
+    <ScrollView
+      className="flex-1 bg-white dark:bg-black"
+      contentContainerStyle={{
+        flexGrow: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingHorizontal: 24,
+        paddingVertical: 32,
+      }}>
+      <View
+        accessibilityElementsHidden
+        importantForAccessibility="no-hide-descendants"
+        className="mb-5 h-16 w-16 items-center justify-center rounded-full bg-gray-100 dark:bg-neutral-900">
+        <Ionicons
+          name="person-outline"
+          size={30}
+          color={colorScheme === 'dark' ? '#f9fafb' : '#111827'}
+        />
+      </View>
+      <Text className="text-2xl font-semibold mb-2 dark:text-white">{t('welcome')}</Text>
 
       <Text className="text-center text-gray-600 dark:text-gray-400 mb-6">
-        Sign in or create an account to access your profile and settings.
+        {t('profileSignInDescription')}
       </Text>
 
       <TouchableOpacity
         onPress={() => router.push('/app/signin')}
         className="w-full bg-black dark:bg-white py-3 rounded-xl mb-3">
-        <Text className="text-center text-white dark:text-black font-semibold">Sign In</Text>
+        <Text className="text-center text-white dark:text-black font-semibold">{t('signIn')}</Text>
       </TouchableOpacity>
 
       <TouchableOpacity
         onPress={() => router.push('/app/signup')}
         className="w-full border border-black dark:border-white py-3 rounded-xl">
-        <Text className="text-center font-semibold dark:text-white">Create Account</Text>
+        <Text className="text-center font-semibold dark:text-white">{t('createAccount')}</Text>
       </TouchableOpacity>
-    </View>
+      <View className="mt-8 w-full">
+        <LanguageSelector />
+      </View>
+    </ScrollView>
   );
 }

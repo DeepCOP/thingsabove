@@ -1,12 +1,15 @@
 import { useAppStore } from '@/src/state/useAppStore';
+import { localizeBibleError } from '@/src/bible/versionPresentation';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useBible } from '@/src/state/BibleContext';
 
 export default function BibleBooksChapters() {
+  const { t, i18n } = useTranslation('bible');
   const router = useRouter();
   const params = useLocalSearchParams<{
     book?: string | string[];
@@ -31,7 +34,7 @@ export default function BibleBooksChapters() {
     <>
       <Stack.Screen
         options={{
-          title: 'References',
+          title: t('references'),
           headerShadowVisible: false,
         }}
       />
@@ -40,12 +43,16 @@ export default function BibleBooksChapters() {
         className="flex-1 bg-white dark:bg-black px-4 py-4"
         style={{ marginBottom: insets.bottom + 5 }}>
         {books.length === 0 && loadingVersionId ? (
-          <ActivityIndicator accessibilityLabel="Loading books" className="my-6" />
+          <ActivityIndicator accessibilityLabel={t('loadingBooks')} className="my-6" />
         ) : readerError ? (
           <View className="items-center gap-3 py-6">
-            <Text className="text-center text-gray-500 dark:text-gray-400">{readerError}</Text>
+            <Text className="text-center text-gray-500 dark:text-gray-400">
+              {localizeBibleError(readerError, t, i18n.resolvedLanguage)}
+            </Text>
             <TouchableOpacity onPress={retryReader}>
-              <Text className="font-semibold text-blue-600 dark:text-blue-400">Try again</Text>
+              <Text className="font-semibold text-blue-600 dark:text-blue-400">
+                {t('tryAgain')}
+              </Text>
             </TouchableOpacity>
           </View>
         ) : null}
@@ -59,7 +66,9 @@ export default function BibleBooksChapters() {
                 onPress={() => toggleBook(book.id)}
                 className="flex-row justify-between items-center bg-gray-100 dark:bg-neutral-900 px-4 py-3 rounded-lg">
                 <Text className="text-lg font-semibold text-gray-900 dark:text-gray-200">
-                  {book.name}
+                  {i18n.resolvedLanguage?.startsWith('en')
+                    ? book.name
+                    : t(`books.${book.id}`, { defaultValue: book.name })}
                 </Text>
 
                 <Ionicons name={isOpen ? 'chevron-up' : 'chevron-down'} size={22} color="#6b7280" />

@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import LoadingSpinner from '@/src/components/LoadingSpinner';
 import PrayerEmptyState from '@/src/components/prayer/PrayerEmptyState';
 import { useFriends, usePendingFriendRequests } from '@/src/hooks/useFriends';
@@ -13,11 +14,11 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 type CommunitySection = 'my-church' | 'prayer-board' | 'praise-item' | 'friends';
 
-const COMMUNITY_SECTIONS: { key: CommunitySection; label: string }[] = [
-  { key: 'my-church', label: 'My Church' },
-  { key: 'prayer-board', label: 'Prayer Board' },
-  { key: 'praise-item', label: 'Answered Prayers' },
-  { key: 'friends', label: 'Friends' },
+const COMMUNITY_SECTIONS: { key: CommunitySection; labelKey: string }[] = [
+  { key: 'my-church', labelKey: 'myChurch' },
+  { key: 'prayer-board', labelKey: 'prayerBoard' },
+  { key: 'praise-item', labelKey: 'answeredPrayers' },
+  { key: 'friends', labelKey: 'friends' },
 ];
 
 function isCommunitySection(value: string | undefined): value is CommunitySection {
@@ -30,6 +31,7 @@ function isCommunitySection(value: string | undefined): value is CommunitySectio
 }
 
 export default function CommunityTab() {
+  const { t } = useTranslation('app');
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { session } = useAuth();
@@ -60,24 +62,25 @@ export default function CommunityTab() {
         <View className="flex-1 justify-center px-4">
           <View className="rounded-3xl border border-gray-200 bg-white px-5 py-8 dark:border-neutral-800 dark:bg-neutral-950">
             <Text className="text-center text-2xl font-semibold text-gray-900 dark:text-white">
-              Join the community
+              {t('joinCommunity')}
             </Text>
             <Text className="mt-3 text-center text-sm leading-6 text-gray-600 dark:text-gray-400">
-              Sign in to keep up with your church and share prayer requests with people who can pray
-              with you.
+              {t('joinCommunityDescription')}
             </Text>
 
             <TouchableOpacity
               className="mt-6 rounded-full bg-black px-5 py-3 dark:bg-white"
               onPress={() => router.push('/app/signin')}>
-              <Text className="text-center font-semibold text-white dark:text-black">Sign In</Text>
+              <Text className="text-center font-semibold text-white dark:text-black">
+                {t('signIn')}
+              </Text>
             </TouchableOpacity>
 
             <TouchableOpacity
               className="mt-3 rounded-full border border-gray-300 px-5 py-3 dark:border-neutral-700"
               onPress={() => router.push('/app/signup')}>
               <Text className="text-center font-semibold text-gray-900 dark:text-white">
-                Create Account
+                {t('createAccount')}
               </Text>
             </TouchableOpacity>
           </View>
@@ -94,11 +97,10 @@ export default function CommunityTab() {
         <PrayerBoardScreen
           fixedFilter="answered"
           emptyStateCopy={{
-            title: 'No answered prayers yet',
-            description:
-              'Answered prayer requests will appear here as people share what God has done.',
+            title: t('noAnsweredPrayers'),
+            description: t('answeredPrayersDescription'),
           }}
-          loadMoreLabel="Load More Answered Prayers"
+          loadMoreLabel={t('loadMoreAnsweredPrayers')}
         />
       );
     }
@@ -134,9 +136,9 @@ export default function CommunityTab() {
           }}>
           <PrayerEmptyState
             icon="alert-circle-outline"
-            title="Unable to load your church"
-            description="Try again in a moment to open your church community."
-            ctaLabel="Try Again"
+            title={t('churchLoadError')}
+            description={t('churchLoadErrorDescription')}
+            ctaLabel={t('tryAgain')}
             onCta={() => profileQuery.refetch()}
           />
         </ScrollView>
@@ -154,9 +156,9 @@ export default function CommunityTab() {
           }}>
           <PrayerEmptyState
             icon="people-outline"
-            title="Add your church to unlock My Church"
-            description="Link your church in Profile to follow your church community, members, and devotional activity here."
-            ctaLabel="Open Profile"
+            title={t('linkChurch')}
+            description={t('linkChurchDescription')}
+            ctaLabel={t('openProfile')}
             onCta={() => router.navigate('/app/(tabs)/ProfileTab')}
           />
         </ScrollView>
@@ -172,7 +174,7 @@ export default function CommunityTab() {
         className="border-b border-gray-200 px-4 pb-4 dark:border-neutral-800"
         style={{ paddingTop: insets.top + 8 }}>
         <Text className="text-center text-lg font-semibold text-gray-900 dark:text-white">
-          Community
+          {t('community')}
         </Text>
 
         <View className="mt-4 flex-row rounded-full bg-neutral-900 p-1">
@@ -190,7 +192,7 @@ export default function CommunityTab() {
                   className={`text-center text-xs font-semibold ${
                     isActive ? 'text-black' : 'text-gray-400'
                   }`}>
-                  {item.label}
+                  {t(item.labelKey)}
                 </Text>
               </TouchableOpacity>
             );

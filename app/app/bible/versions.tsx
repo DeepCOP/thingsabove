@@ -3,6 +3,7 @@ import BibleVersionsScreen from '@/src/screens/BibleVersionsScreen';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Stack, useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   BackHandler,
   Keyboard,
@@ -19,6 +20,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 type VersionsView = { name: 'library' | 'catalog' } | { name: 'details'; versionId: string };
 
 export default function BibleVersionsRoute() {
+  const { t } = useTranslation('bible');
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const dark = useColorScheme() === 'dark';
@@ -61,23 +63,23 @@ export default function BibleVersionsRoute() {
         <View style={styles.header}>
           <TouchableOpacity
             accessibilityRole="button"
-            accessibilityLabel="Back"
+            accessibilityLabel={t('back')}
             onPress={goBack}
             style={styles.headerButton}>
             <Ionicons name="chevron-back" size={29} color={foreground} />
           </TouchableOpacity>
           <Text accessibilityRole="header" style={[styles.title, { color: foreground }]}>
             {current.name === 'library'
-              ? 'My Bible Versions'
+              ? t('myBibleVersions')
               : current.name === 'catalog'
-                ? 'Add Bible Version'
-                : 'Version Details'}
+                ? t('addBibleVersion')
+                : t('detailsTitle')}
           </Text>
           <View style={styles.headerButton}>
             {current.name === 'library' ? (
               <TouchableOpacity
                 accessibilityRole="button"
-                accessibilityLabel="About Bible versions"
+                accessibilityLabel={t('aboutVersionsLabel')}
                 onPress={() => setIsInfoVisible(true)}
                 style={styles.headerButton}>
                 <Ionicons name="information-circle-outline" size={26} color={foreground} />
@@ -119,25 +121,19 @@ export default function BibleVersionsRoute() {
             style={[styles.info, { backgroundColor: dark ? '#151719' : '#ffffff' }]}
             onPress={(event) => event.stopPropagation()}>
             <View style={styles.infoHeader}>
-              <Text style={[styles.infoTitle, { color: foreground }]}>About Bible Versions</Text>
+              <Text style={[styles.infoTitle, { color: foreground }]}>
+                {t('aboutBibleVersions')}
+              </Text>
               <TouchableOpacity
                 accessibilityRole="button"
-                accessibilityLabel="Close version info"
+                accessibilityLabel={t('closeInfo')}
                 onPress={() => setIsInfoVisible(false)}
                 style={styles.headerButton}>
                 <Ionicons name="close" size={23} color={secondary} />
               </TouchableOpacity>
             </View>
-            <Text style={[styles.infoText, { color: secondary }]}>
-              Keep the translations you use in My Bible Versions. Downloaded versions work offline,
-              and online versions stream text while you are signed in. Adding a version saves it to
-              your library; select Read this version to use it in the reader.
-            </Text>
-            <Text style={[styles.infoText, { color: secondary }]}>
-              Different translations use different wording to convey the original text. Choose the
-              version that helps you understand it best. Your highlights and notes stay connected to
-              their Scripture references.
-            </Text>
+            <Text style={[styles.infoText, { color: secondary }]}>{t('infoLibrary')}</Text>
+            <Text style={[styles.infoText, { color: secondary }]}>{t('infoTranslations')}</Text>
           </Pressable>
         </Pressable>
       </Modal>

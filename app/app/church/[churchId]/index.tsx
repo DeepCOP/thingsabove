@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import ChurchHeader from '@/src/components/church/ChurchHeader';
 import { useChurch } from '@/src/hooks/useChurch';
 import ChurchScreen from '@/src/screens/ChurchScreen';
@@ -5,6 +6,7 @@ import { Href, Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { View } from 'react-native';
 
 export default function ChurchRoute() {
+  const { t } = useTranslation('community');
   const { churchId } = useLocalSearchParams<{ churchId: string }>();
   const router = useRouter();
 
@@ -25,7 +27,7 @@ export default function ChurchRoute() {
     <>
       <Stack.Screen options={{ headerShown: false }} />
       <View className="flex-1 bg-white dark:bg-black">
-        <ChurchHeader title={church?.name ?? 'Church'} onBackPress={handleBackPress} />
+        <ChurchHeader title={church?.name ?? t('church')} onBackPress={handleBackPress} />
         <ChurchScreen churchId={churchId} />
       </View>
     </>

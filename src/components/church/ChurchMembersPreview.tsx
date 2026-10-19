@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import UserAvatar from '@/src/components/UserAvatar';
 import { ChurchMemberPreview } from '@/src/types/types';
 import { Text, TouchableOpacity, View } from 'react-native';
@@ -9,20 +10,23 @@ type Props = {
 };
 
 export default function ChurchMembersPreview({ members, onSeeAll, onMemberPress }: Props) {
+  const { t } = useTranslation('community');
   return (
     <View className="rounded-2xl border border-gray-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-950">
       <View className="flex-row items-center justify-between">
-        <Text className="text-lg font-semibold text-gray-900 dark:text-white">Members</Text>
+        <Text className="text-lg font-semibold text-gray-900 dark:text-white">{t('members')}</Text>
         {onSeeAll ? (
           <TouchableOpacity onPress={onSeeAll}>
-            <Text className="text-sm font-medium text-blue-600 dark:text-blue-400">See all</Text>
+            <Text className="text-sm font-medium text-blue-600 dark:text-blue-400">
+              {t('seeAll')}
+            </Text>
           </TouchableOpacity>
         ) : null}
       </View>
 
       {members.length === 0 ? (
         <Text className="mt-3 text-sm text-gray-500 dark:text-gray-400">
-          No members found for this church yet.
+          {t('noChurchMembers')}
         </Text>
       ) : (
         <View className="mt-4 flex-row flex-wrap gap-4">
@@ -40,7 +44,7 @@ export default function ChurchMembersPreview({ members, onSeeAll, onMemberPress 
                 border={false}
               />
               <Text className="mt-2 text-xs text-gray-600 dark:text-gray-400">
-                {member.first_name ?? 'Member'}
+                {member.first_name ?? t('member')}
               </Text>
             </TouchableOpacity>
           ))}

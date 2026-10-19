@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { useFetchDevotionalPlanById } from '@/src/hooks/useDevotionalPlans';
 import { usePlanRating } from '@/src/hooks/usePlanReactions';
 import PlanCompleteScreen from '@/src/screens/PlanCompleteScreen';
@@ -7,6 +8,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Animated, Share } from 'react-native';
 
 export default function PlanComplete() {
+  const { t } = useTranslation('plans');
   const { planId } = useLocalSearchParams<{ planId?: string | string[] }>();
   const resolvedPlanId = Array.isArray(planId) ? planId[0] : planId;
   const router = useRouter();
@@ -48,7 +50,10 @@ export default function PlanComplete() {
       }
       onRate={ratePlan}
       onShare={async () => {
-        const content = `Completed reading ${plan?.title}\n\n ${process.env.EXPO_PUBLIC_BASE_URL}/app/devotional_detail/${plan?.id}`;
+        const content = t('completedShare', {
+          title: plan?.title ?? '',
+          url: `${process.env.EXPO_PUBLIC_BASE_URL}/app/devotional_detail/${plan?.id}`,
+        });
         await Share.share({ message: content });
       }}
     />

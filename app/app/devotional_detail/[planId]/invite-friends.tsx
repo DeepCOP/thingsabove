@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import LoadingSpinner from '@/src/components/LoadingSpinner';
 import { fetchPlanGroupInviteCode } from '@/src/api/groupQueries';
 import { useCreatePlanGroup } from '@/src/hooks/useCreatePlanGroup';
@@ -20,6 +21,7 @@ const getInviterName = (firstName?: string | null, lastName?: string | null) => 
 };
 
 export default function InviteFriends() {
+  const { t } = useTranslation('plans');
   const { session } = useAuth();
   const { planId, startDate, groupId, progressId } = useLocalSearchParams<{
     planId: string;
@@ -61,10 +63,10 @@ export default function InviteFriends() {
     inviteFriendsToExistingGroup.isPending || (createPlanGroupMutation.isPending && !isSharing);
   const submitLabel =
     selected.length > 0
-      ? `Invite ${selected.length} Friend${selected.length === 1 ? '' : 's'}`
+      ? t('inviteFriends', { count: selected.length })
       : currentGroupId
-        ? 'Continue to Plan'
-        : 'Invite Friends Later';
+        ? t('continueToPlan')
+        : t('inviteFriendsLater');
 
   const openGroupPlan = (progressIdToOpen: string, nextGroupId?: string) => {
     router.replace({
@@ -82,7 +84,7 @@ export default function InviteFriends() {
     }
 
     if (!startDate || !session?.user?.id || !planId) {
-      throw new Error('Missing plan group details');
+      throw new Error(t('missingGroupDetails'));
     }
 
     const progress = await createPlanGroupMutation.mutateAsync({
@@ -93,7 +95,7 @@ export default function InviteFriends() {
     });
 
     if (!progress.group_id) {
-      throw new Error('Unable to create a shareable plan group');
+      throw new Error(t('createShareGroupError'));
     }
 
     setCurrentGroupId(progress.group_id);
@@ -136,7 +138,7 @@ export default function InviteFriends() {
       });
     } catch (error) {
       console.error('Error sharing plan invitation:', error);
-      Alert.alert('Unable to share invite link', 'Please try again.');
+      Alert.alert(t('shareInviteError'), t('pleaseTryAgain'));
     } finally {
       setIsSharing(false);
     }
@@ -146,7 +148,7 @@ export default function InviteFriends() {
     if (currentGroupId) {
       if (selected.length === 0) {
         if (!currentProgressId) {
-          Alert.alert('Unable to open group plan', 'Please try again.');
+          Alert.alert(t('openGroupError'), t('pleaseTryAgain'));
           return;
         }
 
@@ -157,7 +159,7 @@ export default function InviteFriends() {
       inviteFriendsToExistingGroup.mutate(selected, {
         onSuccess: () => {
           if (!currentProgressId) {
-            Alert.alert('Unable to open group plan', 'Please try again.');
+            Alert.alert(t('openGroupError'), t('pleaseTryAgain'));
             return;
           }
 
@@ -168,7 +170,7 @@ export default function InviteFriends() {
     }
 
     if (!startDate || !session?.user?.id || !planId) {
-      Alert.alert('Unable to create group plan', 'Please try again.');
+      Alert.alert(t('createGroupError'), t('pleaseTryAgain'));
       return;
     }
 

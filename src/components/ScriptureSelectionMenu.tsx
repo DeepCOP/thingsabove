@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
 import {
   LayoutChangeEvent,
@@ -36,12 +37,13 @@ export default function ScriptureSelectionMenu({
   onRequestClose,
   onMenuLayout,
   onOpenNotes,
-  highlightLabel = 'Highlight',
+  highlightLabel,
   highlightDisabled = false,
   onToggleHighlight,
   onCopy,
   onShare,
 }: ScriptureSelectionMenuProps) {
+  const { t } = useTranslation('community');
   const colorScheme = useColorScheme();
   const activeIconColor = colorScheme === 'dark' ? 'white' : 'black';
   const disabledIconColor = colorScheme === 'dark' ? '#737373' : '#9ca3af';
@@ -81,7 +83,7 @@ export default function ScriptureSelectionMenu({
                     ? 'text-gray-400 dark:text-neutral-500'
                     : 'text-primary dark:text-gray-200'
                 }`}>
-                Scripture Notes
+                {t('scriptureNotes')}
               </Text>
             </TouchableOpacity>
 
@@ -94,7 +96,7 @@ export default function ScriptureSelectionMenu({
                 onPress={onToggleHighlight}>
                 <Ionicons
                   name={
-                    highlightLabel === 'Remove Highlight'
+                    highlightLabel === 'Remove Highlight' || highlightLabel === t('removeHighlight')
                       ? 'remove-circle-outline'
                       : 'color-fill-outline'
                   }
@@ -107,26 +109,30 @@ export default function ScriptureSelectionMenu({
                       ? 'text-gray-400 dark:text-neutral-500'
                       : 'text-primary dark:text-gray-200'
                   }`}>
-                  {highlightLabel}
+                  {highlightLabel === 'Remove Highlight' || highlightLabel === t('removeHighlight')
+                    ? t('removeHighlight')
+                    : highlightLabel === 'Highlight' || !highlightLabel
+                      ? t('highlight')
+                      : highlightLabel}
                 </Text>
               </TouchableOpacity>
             ) : null}
 
             <TouchableOpacity className="px-4 py-3 flex-row items-center" onPress={onCopy}>
               <Ionicons name="copy" size={22} color={activeIconColor} />
-              <Text className="ml-3 text-primary dark:text-gray-200 text-base">Copy</Text>
+              <Text className="ml-3 text-primary dark:text-gray-200 text-base">{t('copy')}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity className="px-4 py-3 flex-row items-center" onPress={onShare}>
               <Ionicons name="share-outline" size={22} color={activeIconColor} />
-              <Text className="ml-3 text-primary dark:text-gray-200 text-base">Share</Text>
+              <Text className="ml-3 text-primary dark:text-gray-200 text-base">{t('share')}</Text>
             </TouchableOpacity>
 
             <View className="border-t border-gray-200 dark:border-neutral-700" />
 
             <TouchableOpacity className="px-4 py-3 flex-row items-center" onPress={onClose}>
               <Ionicons name="close-outline" size={22} color="#ef4444" />
-              <Text className="ml-3 text-red-600 text-base">Cancel</Text>
+              <Text className="ml-3 text-red-600 text-base">{t('cancel')}</Text>
             </TouchableOpacity>
           </View>
         </TouchableOpacity>

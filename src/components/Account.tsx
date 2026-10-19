@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 /* eslint-disable react-hooks/exhaustive-deps */
 
 import { Button, Input } from '@rneui/themed';
@@ -8,6 +9,7 @@ import { supabase } from '../lib/supabaseClient';
 import { useAuth } from '../state/AuthContext';
 
 export default function Account({ session }: { session: Session }) {
+  const { t } = useTranslation('app');
   const { signOut } = useAuth();
   const [loading, setLoading] = useState(true);
   const [username, setUsername] = useState('');
@@ -84,13 +86,21 @@ export default function Account({ session }: { session: Session }) {
   return (
     <View style={styles.container}>
       <View style={[styles.verticallySpaced, styles.mt20]}>
-        <Input label="Email" value={session?.user?.email} disabled />
+        <Input label={t('email')} value={session?.user?.email} disabled />
       </View>
       <View style={styles.verticallySpaced}>
-        <Input label="Username" value={username || ''} onChangeText={(text) => setUsername(text)} />
+        <Input
+          label={t('username')}
+          value={username || ''}
+          onChangeText={(text) => setUsername(text)}
+        />
       </View>
       <View style={styles.verticallySpaced}>
-        <Input label="Website" value={website || ''} onChangeText={(text) => setWebsite(text)} />
+        <Input
+          label={t('website')}
+          value={website || ''}
+          onChangeText={(text) => setWebsite(text)}
+        />
       </View>
       <View>
         {/* <Avatar
@@ -105,14 +115,14 @@ export default function Account({ session }: { session: Session }) {
       </View>
       <View style={[styles.verticallySpaced, styles.mt20]}>
         <Button
-          title={loading ? 'Loading ...' : 'Update'}
+          title={loading ? t('loading') : t('update')}
           onPress={() => updateProfile({ username, website, avatar_url: avatarUrl })}
           disabled={loading}
         />
       </View>
 
       <View style={styles.verticallySpaced}>
-        <Button title="Sign Out" onPress={signOut} />
+        <Button title={t('signOut')} onPress={signOut} />
       </View>
     </View>
   );

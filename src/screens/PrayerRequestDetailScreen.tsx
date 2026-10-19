@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import LoadingSpinner from '@/src/components/LoadingSpinner';
 import ProfileIdentityRow from '@/src/components/ProfileIdentityRow';
 import PrayerEmptyState from '@/src/components/prayer/PrayerEmptyState';
@@ -30,6 +31,7 @@ type Props = {
 };
 
 export default function PrayerRequestDetailScreen({ requestId }: Props) {
+  const { t } = useTranslation('community');
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const detailQuery = usePrayerRequest(requestId);
@@ -65,7 +67,8 @@ export default function PrayerRequestDetailScreen({ requestId }: Props) {
       {
         onSuccess: () => setEncouragementText(''),
         onError: (error) => {
-          Alert.alert('Unable to post encouragement', error.message);
+          console.error(t('encouragementError'), error);
+          Alert.alert(t('encouragementError'), t('pleaseTryAgain'));
         },
       },
     );
@@ -79,7 +82,7 @@ export default function PrayerRequestDetailScreen({ requestId }: Props) {
     const testimony = testimonyText.trim();
 
     if (testimony.length > 1000) {
-      Alert.alert('Testimony is too long', 'Keep your testimony to 1000 characters or fewer.');
+      Alert.alert(t('testimonyTooLong'), t('testimonyLimit'));
       return;
     }
 
@@ -91,7 +94,8 @@ export default function PrayerRequestDetailScreen({ requestId }: Props) {
       },
       {
         onError: (error) => {
-          Alert.alert('Unable to update prayer request', error.message);
+          console.error(t('updatePrayerError'), error);
+          Alert.alert(t('updatePrayerError'), t('pleaseTryAgain'));
         },
       },
     );
@@ -106,9 +110,9 @@ export default function PrayerRequestDetailScreen({ requestId }: Props) {
       <View className="flex-1 bg-white px-4 pt-6 dark:bg-black">
         <PrayerEmptyState
           icon="document-text-outline"
-          title="Prayer request not found"
-          description="It may have been removed, or you may not have access to it anymore."
-          ctaLabel="Back to Prayer Board"
+          title={t('prayerNotFound')}
+          description={t('prayerNotFoundDescription')}
+          ctaLabel={t('backToPrayerBoard')}
           onCta={() =>
             router.replace({
               pathname: '/app/(tabs)/CommunityTab',
@@ -123,15 +127,17 @@ export default function PrayerRequestDetailScreen({ requestId }: Props) {
   const displayName = getDisplayName({
     firstName: request.author_first_name,
     lastName: request.author_last_name,
+    fallbackLabel: t('member'),
   });
   const avatarName = getAvatarNameParts({
     firstName: request.author_first_name,
     lastName: request.author_last_name,
+    fallbackLabel: t('member'),
   });
   const scopeLabel =
     request.scope === 'church'
-      ? request.church_name || 'My Church'
-      : request.church_name || 'Public';
+      ? request.church_name || t('myChurch')
+      : request.church_name || t('public');
 
   return (
     <KeyboardAvoidingView
@@ -162,13 +168,15 @@ export default function PrayerRequestDetailScreen({ requestId }: Props) {
 
                 {request.is_urgent ? (
                   <View className="rounded-full bg-red-50 px-2 py-1 dark:bg-red-950/40">
-                    <Text className="text-xs text-red-700 dark:text-red-300">Urgent</Text>
+                    <Text className="text-xs text-red-700 dark:text-red-300">{t('urgent')}</Text>
                   </View>
                 ) : null}
 
                 {request.is_answered ? (
                   <View className="rounded-full bg-emerald-50 px-2 py-1 dark:bg-emerald-950/40">
-                    <Text className="text-xs text-emerald-700 dark:text-emerald-300">Answered</Text>
+                    <Text className="text-xs text-emerald-700 dark:text-emerald-300">
+                      {t('answered')}
+                    </Text>
                   </View>
                 ) : null}
               </>
@@ -186,7 +194,7 @@ export default function PrayerRequestDetailScreen({ requestId }: Props) {
           {request.is_answered && request.testimony ? (
             <View className="mt-5 rounded-3xl bg-emerald-50 p-4 dark:bg-emerald-950/30">
               <Text className="text-sm font-semibold uppercase tracking-wide text-emerald-700 dark:text-emerald-300">
-                Testimony
+                {t('testimony')}
               </Text>
               <Text className="mt-2 text-base leading-7 text-emerald-950 dark:text-emerald-100">
                 {request.testimony}
@@ -195,7 +203,9 @@ export default function PrayerRequestDetailScreen({ requestId }: Props) {
           ) : null}
 
           <View className="mt-4 self-start rounded-full bg-blue-50 px-2 py-1 dark:bg-blue-950/40">
-            <Text className="text-xs text-blue-700 dark:text-blue-300">{request.category}</Text>
+            <Text className="text-xs text-blue-700 dark:text-blue-300">
+              {t(`prayerCategory${request.category}`, { defaultValue: request.category })}
+            </Text>
           </View>
 
           <View className="mt-6 flex-row items-center gap-5">
@@ -206,16 +216,16 @@ export default function PrayerRequestDetailScreen({ requestId }: Props) {
                 🙏
               </Text>
               <Text className="text-sm text-gray-600 dark:text-gray-400">
-                {request.viewer_has_prayed
-                  ? `Praying ${request.prayer_count}`
-                  : `Pray ${request.prayer_count}`}
+                {t(request.viewer_has_prayed ? 'prayingCount' : 'prayCount', {
+                  count: request.prayer_count,
+                })}
               </Text>
             </TouchableOpacity>
 
             <View className="flex-row items-center gap-2">
               <Ionicons name="chatbubble-outline" size={18} color="#6b7280" />
               <Text className="text-sm text-gray-600 dark:text-gray-400">
-                Encourage {request.encouragement_count}
+                {t('encourageCount', { count: request.encouragement_count })}
               </Text>
             </View>
           </View>
@@ -224,13 +234,13 @@ export default function PrayerRequestDetailScreen({ requestId }: Props) {
         {request.viewer_is_owner ? (
           <View className="mt-4 rounded-3xl border border-gray-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-950">
             <Text className="text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
-              Owner Actions
+              {t('ownerActions')}
             </Text>
 
             <View className="mt-4 gap-3">
               <TextInput
                 multiline
-                placeholder="Share how this prayer was answered..."
+                placeholder={t('testimonyPlaceholder')}
                 placeholderTextColor="#9ca3af"
                 maxLength={1000}
                 value={testimonyText}
@@ -249,12 +259,12 @@ export default function PrayerRequestDetailScreen({ requestId }: Props) {
                 onPress={() => handleSetAnswered(true)}>
                 <Text className="text-center font-semibold text-white dark:text-black">
                   {markAnsweredMutation.isPending
-                    ? 'Saving...'
+                    ? t('saving')
                     : request.is_answered
-                      ? 'Save Testimony'
+                      ? t('saveTestimony')
                       : testimonyText.trim()
-                        ? 'Mark Answered & Share'
-                        : 'Mark as Answered'}
+                        ? t('markAnsweredShare')
+                        : t('markAnswered')}
                 </Text>
               </TouchableOpacity>
 
@@ -264,7 +274,7 @@ export default function PrayerRequestDetailScreen({ requestId }: Props) {
                   disabled={markAnsweredMutation.isPending}
                   onPress={() => handleSetAnswered(false)}>
                   <Text className="text-center font-semibold text-gray-900 dark:text-white">
-                    Mark as Unanswered
+                    {t('markUnanswered')}
                   </Text>
                 </TouchableOpacity>
               ) : null}
@@ -278,7 +288,7 @@ export default function PrayerRequestDetailScreen({ requestId }: Props) {
                   })
                 }>
                 <Text className="text-center font-semibold text-gray-900 dark:text-white">
-                  Edit Request
+                  {t('editRequest')}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -288,12 +298,12 @@ export default function PrayerRequestDetailScreen({ requestId }: Props) {
         {request.allow_comments ? (
           <View className="mt-4 rounded-3xl border border-gray-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-950">
             <Text className="text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
-              Send Encouragement
+              {t('sendEncouragement')}
             </Text>
 
             <TextInput
               multiline
-              placeholder="Write a short encouragement or prayer..."
+              placeholder={t('encouragementPlaceholder')}
               placeholderTextColor="#9ca3af"
               maxLength={300}
               value={encouragementText}
@@ -316,17 +326,17 @@ export default function PrayerRequestDetailScreen({ requestId }: Props) {
                     ? 'text-white dark:text-black'
                     : 'text-gray-500 dark:text-gray-300'
                 }`}>
-                {addEncouragementMutation.isPending ? 'Posting...' : 'Post Encouragement'}
+                {addEncouragementMutation.isPending ? t('posting') : t('postEncouragement')}
               </Text>
             </TouchableOpacity>
           </View>
         ) : (
           <View className="mt-4 rounded-3xl border border-gray-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-950">
             <Text className="text-base font-semibold text-gray-900 dark:text-white">
-              Replies are turned off
+              {t('repliesDisabled')}
             </Text>
             <Text className="mt-2 text-sm leading-6 text-gray-600 dark:text-gray-400">
-              The person who shared this request chose not to receive encouragement replies.
+              {t('repliesDisabledDescription')}
             </Text>
           </View>
         )}
@@ -334,7 +344,7 @@ export default function PrayerRequestDetailScreen({ requestId }: Props) {
         <View className="mt-4 rounded-3xl border border-gray-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-950">
           <View className="flex-row items-center justify-between">
             <Text className="text-lg font-semibold text-gray-900 dark:text-white">
-              Encouragements
+              {t('encouragements')}
             </Text>
             <Text className="text-sm text-gray-500 dark:text-gray-400">
               {request.encouragement_count}
@@ -351,10 +361,12 @@ export default function PrayerRequestDetailScreen({ requestId }: Props) {
                 const authorName = getDisplayName({
                   firstName: item.author?.first_name,
                   lastName: item.author?.last_name,
+                  fallbackLabel: t('member'),
                 });
                 const authorAvatarName = getAvatarNameParts({
                   firstName: item.author?.first_name,
                   lastName: item.author?.last_name,
+                  fallbackLabel: t('member'),
                 });
 
                 return (
@@ -386,7 +398,7 @@ export default function PrayerRequestDetailScreen({ requestId }: Props) {
           ) : (
             <View className="mt-4 rounded-3xl bg-gray-50 p-5 dark:bg-neutral-900">
               <Text className="text-center text-sm leading-6 text-gray-600 dark:text-gray-400">
-                No encouragements yet. Be the first to send a short prayer or uplifting note.
+                {t('noEncouragements')}
               </Text>
             </View>
           )}

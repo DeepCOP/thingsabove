@@ -1,3 +1,4 @@
+import i18n from '@/src/i18n';
 import type { DayItemsProgress, ParsedVerse } from '@/src/types/types';
 import * as Notifications from 'expo-notifications';
 import { parseDocument } from 'htmlparser2';
@@ -327,7 +328,7 @@ type DisplayNameOptions = {
 export function getDisplayName({
   firstName,
   lastName,
-  fallbackLabel = 'Member',
+  fallbackLabel = i18n.t('member', { ns: 'community' }),
 }: DisplayNameOptions) {
   const name = [firstName, lastName].filter(Boolean).join(' ').trim();
   return name || fallbackLabel;
@@ -336,7 +337,7 @@ export function getDisplayName({
 export function getAvatarNameParts({
   firstName,
   lastName,
-  fallbackLabel = 'Member',
+  fallbackLabel = i18n.t('member', { ns: 'community' }),
 }: DisplayNameOptions) {
   if (firstName) {
     return { firstName, lastName: lastName ?? undefined };

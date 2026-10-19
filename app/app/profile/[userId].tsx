@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import LoadingSpinner from '@/src/components/LoadingSpinner';
 import {
   useAcceptFriendRequest,
@@ -12,6 +13,7 @@ import { Href, useLocalSearchParams, useRouter } from 'expo-router';
 import { Alert, Text, TouchableOpacity, View } from 'react-native';
 
 export default function PublicProfileRoute() {
+  const { t } = useTranslation('community');
   const { userId } = useLocalSearchParams<{ userId: string }>();
   const router = useRouter();
   const { session } = useAuth();
@@ -30,17 +32,17 @@ export default function PublicProfileRoute() {
     return (
       <View className="flex-1 items-center justify-center bg-white px-6 dark:bg-black">
         <Text className="text-lg font-semibold text-gray-900 dark:text-white">
-          Unable to load profile
+          {t('profileError')}
         </Text>
         <Text className="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
-          Please try again. We could not load this profile right now.
+          {t('profileUnavailable')}
         </Text>
         <TouchableOpacity
           className="mt-5 rounded-full bg-black px-5 py-3 dark:bg-white"
           onPress={() => {
             targetUserProfile.refetch();
           }}>
-          <Text className="font-semibold text-white dark:text-black">Try again</Text>
+          <Text className="font-semibold text-white dark:text-black">{t('tryAgain')}</Text>
         </TouchableOpacity>
       </View>
     );
@@ -73,7 +75,8 @@ export default function PublicProfileRoute() {
                 },
                 {
                   onError: (error) => {
-                    Alert.alert('Unable to send friend request', error.message);
+                    console.error(t('sendFriendError'), error);
+                    Alert.alert(t('sendFriendError'), t('pleaseTryAgain'));
                   },
                 },
               )
@@ -86,7 +89,8 @@ export default function PublicProfileRoute() {
                 { friendId: requesterId },
                 {
                   onError: (error) => {
-                    Alert.alert('Unable to accept friend request', error.message);
+                    console.error(t('acceptFriendError'), error);
+                    Alert.alert(t('acceptFriendError'), t('pleaseTryAgain'));
                   },
                 },
               )
@@ -99,7 +103,8 @@ export default function PublicProfileRoute() {
                 { friendId: requesterId },
                 {
                   onError: (error) => {
-                    Alert.alert('Unable to decline friend request', error.message);
+                    console.error(t('declineFriendError'), error);
+                    Alert.alert(t('declineFriendError'), t('pleaseTryAgain'));
                   },
                 },
               )

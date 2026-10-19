@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { findBookInBible, getCanonicalBookIdByName, getBookNameForId } from '@/src/bible/books';
 import ScriptureNotesScreen from '@/src/screens/ScriptureNotesScreen';
 import { useBibleChapter } from '@/src/hooks/useBibleChapter';
@@ -14,6 +15,7 @@ const getParam = (value: string | string[] | undefined) =>
   Array.isArray(value) ? value[0] : value;
 
 export default function ScriptureNotes() {
+  const { t } = useTranslation('community');
   const router = useRouter();
   const params = useLocalSearchParams<{
     bookId?: string | string[];
@@ -121,12 +123,12 @@ export default function ScriptureNotes() {
     <>
       <Stack.Screen options={{ headerShown: false }} />
       {!selectedText && loading ? (
-        <ActivityIndicator accessibilityLabel="Loading scripture" className="mt-16" />
+        <ActivityIndicator accessibilityLabel={t('loadingScripture')} className="mt-16" />
       ) : !selectedText && error ? (
         <View className="items-center gap-3 px-6 pt-16">
           <Text className="text-center text-gray-500 dark:text-gray-400">{error}</Text>
           <TouchableOpacity onPress={retry}>
-            <Text className="font-semibold text-blue-600 dark:text-blue-400">Try again</Text>
+            <Text className="font-semibold text-blue-600 dark:text-blue-400">{t('tryAgain')}</Text>
           </TouchableOpacity>
         </View>
       ) : null}

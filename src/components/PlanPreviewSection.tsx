@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
 import { ComponentProps, useState } from 'react';
 import {
@@ -30,18 +31,24 @@ function getItemIcon(item: DayItemTemplate): IconName {
   return 'book-outline';
 }
 
-function getItemLabel(item: DayItemTemplate) {
-  if (item.item_type === 'devotional') return item.title?.trim() || 'Devotional';
-  if (item.item_type === 'comment') return 'Reflection';
+function getItemLabel(
+  item: DayItemTemplate,
+  labels: { devotional: string; reflection: string; scripture: string },
+) {
+  if (item.item_type === 'devotional') return item.title?.trim() || labels.devotional;
+  if (item.item_type === 'comment') return labels.reflection;
 
-  return item.item_key || 'Scripture';
+  return item.item_key || labels.scripture;
 }
 
-function getItemSubtitle(item: DayItemTemplate) {
-  if (item.item_type === 'devotional') return 'Devotional reading';
-  if (item.item_type === 'comment') return 'Notes and reflection';
+function getItemSubtitle(
+  item: DayItemTemplate,
+  labels: { devotionalReading: string; notesAndReflection: string; scripture: string },
+) {
+  if (item.item_type === 'devotional') return labels.devotionalReading;
+  if (item.item_type === 'comment') return labels.notesAndReflection;
 
-  return 'Scripture';
+  return labels.scripture;
 }
 
 export default function PlanPreviewSection({
@@ -52,6 +59,7 @@ export default function PlanPreviewSection({
   itemsLoading,
   onSelectDay,
 }: Props) {
+  const { t } = useTranslation('plans');
   const colorScheme = useColorScheme();
   const [readingsExpanded, setReadingsExpanded] = useState(false);
   const devotionalItem = items.find((item) => item.item_type === 'devotional');
@@ -61,7 +69,7 @@ export default function PlanPreviewSection({
   return (
     <View className="mt-7">
       <View className="px-4">
-        <Text className="text-xl font-bold text-gray-900 dark:text-white">Plan Preview</Text>
+        <Text className="text-xl font-bold text-gray-900 dark:text-white">{t('previewTitle')}</Text>
       </View>
 
       {!!days.length && (
@@ -83,7 +91,7 @@ export default function PlanPreviewSection({
                       ? 'border-black bg-black/10 dark:border-white dark:bg-white/10'
                       : 'border-gray-300 dark:border-gray-700'
                   }`}>
-                  <Text className="text-xs text-gray-500 dark:text-gray-400">Day</Text>
+                  <Text className="text-xs text-gray-500 dark:text-gray-400">{t('day')}</Text>
                   <Text className="text-lg font-bold text-gray-900 dark:text-white">
                     {day.day_number}
                   </Text>
@@ -99,7 +107,7 @@ export default function PlanPreviewSection({
           <View className="flex-row items-start justify-between gap-4">
             <View className="flex-1">
               <Text className="text-lg font-bold text-gray-900 dark:text-white">
-                Day {selectedDay} of {days.length || selectedDay}
+                {t('dayOfTotal', { day: selectedDay, total: days.length || selectedDay })}
               </Text>
               {!!selectedDayData?.title && (
                 <Text className="mt-1 text-base font-semibold text-gray-700 dark:text-gray-200">
@@ -110,7 +118,7 @@ export default function PlanPreviewSection({
 
             <View className="rounded-full border border-green-500 px-3 py-1">
               <Text className="text-xs font-semibold text-green-600">
-                {scriptureCount} {scriptureCount === 1 ? 'Scripture' : 'Scriptures'}
+                {t('scriptures', { count: scriptureCount })}
               </Text>
             </View>
           </View>
@@ -128,11 +136,11 @@ export default function PlanPreviewSection({
           className="flex-row items-center justify-between rounded-xl border border-gray-200 px-4 py-4 dark:border-neutral-800"
           onPress={() => setReadingsExpanded((expanded) => !expanded)}>
           <View>
-            <Text className="text-base font-bold text-gray-900 dark:text-white">Readings</Text>
+            <Text className="text-base font-bold text-gray-900 dark:text-white">
+              {t('readings')}
+            </Text>
             <Text className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">
-              {itemsLoading
-                ? 'Loading readings'
-                : `${items.length} ${items.length === 1 ? 'item' : 'items'}`}
+              {itemsLoading ? t('loadingReadings') : t('items', { count: items.length })}
             </Text>
           </View>
 
@@ -171,10 +179,18 @@ export default function PlanPreviewSection({
 
                       <View className="flex-1">
                         <Text className="text-base font-semibold text-gray-900 dark:text-white">
-                          {getItemLabel(item)}
+                          {getItemLabel(item, {
+                            devotional: t('devotional'),
+                            reflection: t('reflection'),
+                            scripture: t('scripture'),
+                          })}
                         </Text>
                         <Text className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">
-                          {getItemSubtitle(item)}
+                          {getItemSubtitle(item, {
+                            devotionalReading: t('devotionalReading'),
+                            notesAndReflection: t('notesAndReflection'),
+                            scripture: t('scripture'),
+                          })}
                         </Text>
                       </View>
                     </View>
@@ -184,7 +200,7 @@ export default function PlanPreviewSection({
             ) : (
               <View className="mt-4 rounded-xl border border-gray-200 px-4 py-6 dark:border-neutral-800">
                 <Text className="text-center text-gray-500 dark:text-gray-400">
-                  No reading items found for this day.
+                  {t('noDayReadings')}
                 </Text>
               </View>
             )}

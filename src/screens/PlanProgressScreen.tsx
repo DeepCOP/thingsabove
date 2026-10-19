@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import BottomSheet from '@gorhom/bottom-sheet';
 import { useIsFocused } from '@react-navigation/native';
 import { useCallback, useEffect, useRef } from 'react';
@@ -72,11 +73,12 @@ export default function PlanProgressScreen({
   openCommentsKey,
   onOpenCommentsConsumed,
 }: Props) {
+  const { t } = useTranslation('plans');
   const commentsSheetRef = useRef<BottomSheet>(null);
   const openedCommentsKeyRef = useRef<string | undefined>(undefined);
   const isFocused = useIsFocused();
   const isGroupPlan = Boolean(planProgress.group_id);
-  const commentLabel = isGroupPlan ? 'Reflect & Share' : 'Notes';
+  const commentLabel = isGroupPlan ? t('reflectAndShare') : t('notes');
   const openComments = useCallback(() => {
     const commentsSheet = commentsSheetRef.current;
     if (!commentsSheet) return false;
@@ -195,7 +197,7 @@ export default function PlanProgressScreen({
           />
         ) : (
           <View className="items-center justify-center py-10">
-            <Text>No items found</Text>
+            <Text>{t('noItems')}</Text>
           </View>
         )}
       </ScrollView>
@@ -214,13 +216,9 @@ export default function PlanProgressScreen({
         group_id={planProgress.group_id || undefined}
         isDoneLoading={toggleLoading}
         title={commentLabel}
-        entryLabel={isGroupPlan ? 'comment' : 'note'}
-        inputPlaceholder={isGroupPlan ? 'Share your thoughts...' : 'Write a note...'}
-        emptyMessage={
-          isGroupPlan
-            ? "Share your thoughts based on today's reading."
-            : "Add a note based on today's reading."
-        }
+        entryLabel={isGroupPlan ? t('comment') : t('note')}
+        inputPlaceholder={isGroupPlan ? t('shareThoughts') : t('writeNote')}
+        emptyMessage={isGroupPlan ? t('emptyComments') : t('emptyNotes')}
         onEntryCreated={markCommentItemComplete}
         onDone={handleCommentsDone}
       />

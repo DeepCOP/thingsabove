@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import DevotionalPlanReader from '@/src/components/DevotionPlanReader';
 import LoadingSpinner from '@/src/components/LoadingSpinner';
 import { useDayItemsProgress } from '@/src/hooks/useDayItemsProgress';
@@ -9,6 +10,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Text, View } from 'react-native';
 
 export default function DevotionalDayScreen() {
+  const { t } = useTranslation('plans');
   const { dayId, planId, progressId, groupId, itemId: routeItemId } = useLocalSearchParams();
   const dayIdParam = Array.isArray(dayId) ? dayId[0] : dayId;
   const progressIdParam = Array.isArray(progressId) ? progressId[0] : progressId;
@@ -75,7 +77,7 @@ export default function DevotionalDayScreen() {
   if (items.length === 0) {
     return (
       <View className="flex-1 justify-center items-center">
-        <Text>Item Not Found</Text>
+        <Text>{t('itemNotFound')}</Text>
       </View>
     );
   }

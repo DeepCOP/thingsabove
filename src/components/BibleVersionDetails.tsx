@@ -1,4 +1,5 @@
 import { BIBLE_SOURCE_LABELS } from '@/src/bible/sources';
+import { localizeBibleError } from '@/src/bible/versionPresentation';
 import BibleAttribution from '@/src/components/BibleAttribution';
 import BibleVersionCover from '@/src/components/BibleVersionCover';
 import { formatBibleVersionSize } from '@/src/lib/bibleVersionService';
@@ -6,6 +7,7 @@ import { useBible } from '@/src/state/BibleContext';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useNetInfo } from '@react-native-community/netinfo';
 import { useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
   Linking,
@@ -28,6 +30,7 @@ export default function BibleVersionDetails({
   onRemoved,
   onRead,
 }: BibleVersionDetailsProps) {
+  const { t, i18n } = useTranslation('bible');
   const {
     versions,
     addVersion,
@@ -82,7 +85,7 @@ export default function BibleVersionDetails({
       await operation();
       if (mounted.current) onSuccess?.();
     } catch (cause) {
-      if (mounted.current) setError(cause instanceof Error ? cause.message : 'Please try again.');
+      if (mounted.current) setError(cause instanceof Error ? cause.message : t('pleaseTryAgain'));
     } finally {
       actionInProgress.current = false;
       if (mounted.current) setAction(null);
@@ -93,9 +96,9 @@ export default function BibleVersionDetails({
     return (
       <View style={[styles.unavailable, { backgroundColor: colors.background }]}>
         <Ionicons name="book-outline" size={36} color={colors.secondary} />
-        <Text style={[styles.sectionTitle, { color: colors.text }]}>Version unavailable</Text>
+        <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('unavailableTitle')}</Text>
         <Text style={[styles.body, { color: colors.secondary, textAlign: 'center' }]}>
-          This translation is no longer in the catalog. Go back to choose another version.
+          {t('unavailableDescription')}
         </Text>
       </View>
     );
@@ -126,10 +129,10 @@ export default function BibleVersionDetails({
           <Text style={[styles.subtitle, { color: colors.secondary }]}>{entry.shortLabel}</Text>
           <Text style={[styles.subtitle, { color: colors.secondary }]}>
             {entry.isOnline
-              ? `Provided by ${provider}`
+              ? t('providedBy', { provider })
               : entry.isInstalled
-                ? 'Stored on this device'
-                : 'Available for download'}
+                ? t('storedOnDevice')
+                : t('availableDownload')}
           </Text>
           <View style={styles.status}>
             <Ionicons
@@ -138,7 +141,7 @@ export default function BibleVersionDetails({
               color={colors.blue}
             />
             <Text style={[styles.subtitle, { color: colors.blue }]}>
-              {entry.isOnline ? 'Online' : entry.isInstalled ? 'Downloaded' : 'Offline reading'}
+              {t(entry.isOnline ? 'online' : entry.isInstalled ? 'downloaded' : 'offlineReading')}
             </Text>
           </View>
         </View>
@@ -166,13 +169,13 @@ export default function BibleVersionDetails({
         <Text style={[styles.buttonText, { color: '#ffffff' }]}>
           {action === 'add' || entry.isDownloading
             ? entry.isOnline
-              ? 'Adding version...'
-              : 'Downloading...'
+              ? t('addingVersion')
+              : t('downloading')
             : entry.isAdded
-              ? 'Added to My Versions'
+              ? t('addedToLibrary')
               : entry.isOnline
-                ? 'Add to My Versions'
-                : 'Download and Add'}
+                ? t('addToLibrary')
+                : t('downloadAndAdd')}
         </Text>
       </TouchableOpacity>
 
@@ -197,7 +200,7 @@ export default function BibleVersionDetails({
           ) : (
             <Ionicons name="book-outline" size={22} color={colors.blue} />
           )}
-          <Text style={[styles.buttonText, { color: colors.text }]}>Read this version</Text>
+          <Text style={[styles.buttonText, { color: colors.text }]}>{t('readVersion')}</Text>
         </TouchableOpacity>
       ) : null}
 
@@ -205,9 +208,7 @@ export default function BibleVersionDetails({
         <View style={[styles.feedback, { backgroundColor: colors.card }]}>
           <Ionicons name="cloud-offline-outline" size={20} color={colors.secondary} />
           <Text style={[styles.feedbackText, { color: colors.secondary }]}>
-            {entry.isOnline
-              ? 'You are offline. Connect to the internet to read this version.'
-              : 'Connect to the internet to download this version.'}
+            {entry.isOnline ? t('offlineReadNotice') : t('offlineDownloadNotice')}
           </Text>
         </View>
       ) : null}
@@ -216,12 +217,17 @@ export default function BibleVersionDetails({
         <Text
           accessibilityRole="alert"
           style={[styles.feedbackText, styles.error, { color: colors.error }]}>
-          {error ?? entry.installState?.error}
+          {localizeBibleError(
+            error ?? entry.installState?.error,
+            t,
+            i18n.resolvedLanguage,
+            'actionError',
+          )}
         </Text>
       ) : null}
 
       <View style={styles.about}>
-        <Text style={[styles.sectionTitle, { color: colors.text }]}>About</Text>
+        <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('about')}</Text>
         <Text style={[styles.body, { color: colors.secondary }]}>
           {entry.description || entry.label}
         </Text>
@@ -236,16 +242,16 @@ export default function BibleVersionDetails({
         />
         <View style={styles.featureText}>
           <Text style={[styles.featureTitle, { color: colors.text }]}>
-            {entry.isOnline
-              ? 'Requires an internet connection'
-              : 'Read without an internet connection'}
+            {entry.isOnline ? t('requiresConnection') : t('readWithoutConnection')}
           </Text>
           <Text style={[styles.featureDescription, { color: colors.secondary }]}>
             {entry.isOnline
-              ? `Text is streamed from ${provider}`
+              ? t('streamedFrom', { provider })
               : entry.isBundled
-                ? 'Included with the app'
-                : `${formatBibleVersionSize(entry.installState?.sizeBytes ?? entry.sizeBytes)} ${entry.isInstalled ? 'stored on this device' : 'download'}`}
+                ? t('includedWithApp')
+                : t(entry.isInstalled ? 'storedSize' : 'downloadSize', {
+                    size: formatBibleVersionSize(entry.installState?.sizeBytes ?? entry.sizeBytes),
+                  })}
           </Text>
         </View>
       </View>
@@ -253,9 +259,11 @@ export default function BibleVersionDetails({
       <View style={styles.feature}>
         <Ionicons name="book-outline" size={27} color={colors.blue} />
         <View style={styles.featureText}>
-          <Text style={[styles.featureTitle, { color: colors.text }]}>Highlights and notes</Text>
+          <Text style={[styles.featureTitle, { color: colors.text }]}>
+            {t('highlightsAndNotes')}
+          </Text>
           <Text style={[styles.featureDescription, { color: colors.secondary }]}>
-            Highlight verses and add notes as you read.
+            {t('highlightsDescription')}
           </Text>
         </View>
       </View>
@@ -263,14 +271,14 @@ export default function BibleVersionDetails({
       {learnMoreUrl ? (
         <TouchableOpacity
           accessibilityRole="link"
-          accessibilityLabel={`Learn more about ${entry.label}`}
+          accessibilityLabel={t('learnMoreLabel', { version: entry.label })}
           activeOpacity={0.7}
           disabled={busy}
           onPress={() => void performAction('link', () => Linking.openURL(learnMoreUrl))}
           style={styles.feature}>
           <Ionicons name="link-outline" size={27} color={colors.blue} />
           <View style={[styles.featureText, styles.learnMore]}>
-            <Text style={[styles.featureTitle, { color: colors.text }]}>Learn more</Text>
+            <Text style={[styles.featureTitle, { color: colors.text }]}>{t('learnMore')}</Text>
             <Ionicons name="open-outline" size={20} color={colors.secondary} />
           </View>
         </TouchableOpacity>
@@ -294,7 +302,7 @@ export default function BibleVersionDetails({
             <Ionicons name="trash-outline" size={22} color={colors.text} />
           )}
           <Text style={[styles.buttonText, { color: colors.text }]}>
-            {action === 'remove' ? 'Removing...' : 'Remove from My Versions'}
+            {t(action === 'remove' ? 'removing' : 'removeVersion')}
           </Text>
         </TouchableOpacity>
       ) : null}
