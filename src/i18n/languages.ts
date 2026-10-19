@@ -15,6 +15,24 @@ export const SUPPORTED_LANGUAGES = [
 export type AppLanguage = (typeof SUPPORTED_LANGUAGES)[number];
 export type LanguagePreference = AppLanguage | 'system';
 
+const CHINESE_LANGUAGE_CODES = new Set([
+  'zh',
+  'zho',
+  'cmn',
+  'yue',
+  'wuu',
+  'nan',
+  'hak',
+  'gan',
+  'hsn',
+  'cdo',
+  'cjy',
+  'czh',
+  'czo',
+  'mnp',
+  'lzh',
+]);
+
 export const isLanguagePreference = (value: unknown): value is LanguagePreference =>
   value === 'system' || SUPPORTED_LANGUAGES.some((language) => language === value);
 
@@ -27,10 +45,10 @@ export function resolveAppLanguage(
   const normalized = deviceLanguageTags[0]?.trim().toLowerCase().replace(/_/g, '-') ?? '';
   const subtags = normalized.split('-');
   const language = subtags[0];
-  if (language === 'zh') {
-    if (subtags.includes('hant')) return 'zh-Hant';
+  if (CHINESE_LANGUAGE_CODES.has(language)) {
     if (subtags.includes('hans')) return 'zh-Hans';
-    if (subtags.some((subtag) => ['tw', 'hk', 'mo'].includes(subtag))) return 'zh-Hant';
+    if (subtags.includes('hant') || subtags.includes('hk') || subtags.includes('tw'))
+      return 'zh-Hant';
     return 'zh-Hans';
   }
   if (language === 'es') return 'es';

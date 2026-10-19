@@ -57,7 +57,7 @@ Follow the Expo prompts to run on a device or simulator. Push notifications requ
 
 ## App Language
 
-Menus, screen labels, and buttons support English, Spanish, Portuguese, Simplified and Traditional Chinese, French, Indonesian, Korean, Filipino (Tagalog), Swahili, and Hindi. Choose **Settings > Language** or use the language selector on the signed-out **Profile** screen. The default follows the device's primary language; unsupported device languages use English. Your preference is saved locally, and bundled translations work offline.
+Menus, screen labels, and buttons support English, Spanish, Portuguese, Simplified and Traditional Chinese, French, Indonesian, Korean, Filipino (Tagalog), Swahili, and Hindi. Choose **Settings > Language** or use the language selector on the signed-out **Profile** screen. The default follows the device's primary language; unsupported device languages use English. Hong Kong and Taiwan Chinese locales use Traditional Chinese; other Chinese locales use Simplified Chinese unless they explicitly request the Traditional script. Your preference is saved locally, and bundled translations work offline.
 
 Devotionals, Bible text, user content, and received push notification bodies keep their source languages. Native system and authentication dialogs follow device settings.
 

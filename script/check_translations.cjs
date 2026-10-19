@@ -4,7 +4,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const root = path.join(process.cwd(), 'src', 'i18n', 'locales');
-const locales = ['en', 'es', 'pt', 'zh-Hans', 'zh-Hant'];
+const locales = ['en', 'es', 'pt', 'zh-Hans', 'zh-Hant', 'fr', 'id', 'ko', 'fil', 'sw', 'hi'];
 const namespaces = ['app', 'bible', 'community', 'plans'];
 const errors = [];
 
@@ -62,6 +62,11 @@ function checkShape(locale, namespace, source, translation, key = '<root>') {
   const actual = placeholders(translation);
   if (expected.join('|') !== actual.join('|')) {
     errors.push(`${location}: placeholders differ (expected ${JSON.stringify(expected)}, got ${JSON.stringify(actual)})`);
+  }
+  const expectedLineBreaks = (source.match(/\n/g) ?? []).length;
+  const actualLineBreaks = (translation.match(/\n/g) ?? []).length;
+  if (expectedLineBreaks !== actualLineBreaks) {
+    errors.push(`${location}: line breaks differ (expected ${expectedLineBreaks}, got ${actualLineBreaks})`);
   }
 }
 

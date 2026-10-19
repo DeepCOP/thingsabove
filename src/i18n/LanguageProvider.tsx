@@ -24,9 +24,15 @@ export default function LanguageProvider({ children }: PropsWithChildren) {
   useEffect(() => {
     if (!hasHydrated) return;
     let active = true;
-    void i18n.changeLanguage(language).then(() => {
-      if (active) setInitialized(true);
-    });
+    void (async () => {
+      try {
+        await i18n.changeLanguage(language);
+      } catch (error) {
+        console.error('Failed to change language:', error);
+      } finally {
+        if (active) setInitialized(true);
+      }
+    })();
     return () => {
       active = false;
     };
