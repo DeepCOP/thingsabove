@@ -2,7 +2,7 @@ import { serve } from 'https://deno.land/std/http/server.ts';
 import { GoogleGenerativeAI } from 'https://esm.sh/@google/generative-ai';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
-const MODEL_NAME = 'gemini-2.5-flash';
+const MODEL_NAME = 'gemini-3.5-flash-lite';
 const PROMPT_VERSION = 'plan-screening-v5-scripture-focused-tags';
 const MAX_COVER_IMAGE_MB = 5;
 const MAX_COVER_IMAGE_BYTES = MAX_COVER_IMAGE_MB * 1024 * 1024;
