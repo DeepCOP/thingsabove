@@ -84,15 +84,20 @@ export const startPlanProgress = async ({
   user_id,
   plan_id,
   group_id,
+  start_date,
 }: {
   user_id: string;
   plan_id: string;
   group_id?: string;
+  start_date?: string;
 }) => {
+  // Solo plans use local timestamps so the selected calendar day survives timezone conversion.
+  const startDate = start_date ? dayjs(start_date).startOf('day').format() : undefined;
   const { data, error } = await supabase.rpc('start_private_plan_progress', {
     p_user_id: user_id,
     p_plan_id: plan_id,
     p_group_id: group_id,
+    p_start_date: startDate,
   });
 
   if (error) throw error;

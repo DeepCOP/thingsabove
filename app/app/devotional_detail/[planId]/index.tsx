@@ -1,10 +1,8 @@
-import { useTranslation } from 'react-i18next';
 import { useFetchDevotionalPlanById } from '@/src/hooks/useDevotionalPlans';
 import {
   useDayItemTemplates,
   useDevotionalDays,
   useMyPlanProgressPlans,
-  useStartPlanProgress,
 } from '@/src/hooks/usePlanProgress';
 import { useSavedPlans, useToggleSavedPlan } from '@/src/hooks/useSavedPlans';
 import DevotionalDetailScreen from '@/src/screens/DevotionalDetailScreen';
@@ -15,10 +13,9 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { useTogglePlanReaction } from '@/src/hooks/usePlanReactions';
 import { Href, Stack, useLocalSearchParams, useRouter } from 'expo-router';
-import { Alert, Platform, useColorScheme } from 'react-native';
+import { Platform, useColorScheme } from 'react-native';
 
 export default function DevotionalDetail() {
-  const { t } = useTranslation('plans');
   const { planId } = useLocalSearchParams<{ planId: string }>();
   const reportSheetRef = useRef<BottomSheet>(null);
   const { isGuest, session } = useAuth();
@@ -36,7 +33,6 @@ export default function DevotionalDetail() {
 
   const router = useRouter();
   const colorScheme = useColorScheme();
-  const startPlanProgressMutation = useStartPlanProgress();
   const myPlanProgressPlansQuery = useMyPlanProgressPlans(session?.user.id);
   const planQuery = useFetchDevotionalPlanById(planId);
   const plan = planQuery.data;
@@ -109,8 +105,6 @@ export default function DevotionalDetail() {
   };
 
   const handleStartPress = (mode: 'solo' | 'group') => {
-    if (startPlanProgressMutation.isPending) return;
-
     if (isGuest) {
       router.push(signInHref);
       return;
@@ -121,23 +115,10 @@ export default function DevotionalDetail() {
       return;
     }
 
-    if (mode === 'group') {
-      router.push(`/app/devotional_detail/${planId}/start-date`);
-      return;
-    }
-
-    startPlanProgressMutation.mutate(
-      { plan_id: planId, user_id: session?.user.id! },
-      {
-        onSuccess: (progress) => router.push(`/app/plan_progress/${progress.id}`),
-        onError: (error) => {
-          Alert.alert(
-            t('couldNotStart'),
-            error instanceof Error ? error.message : t('pleaseTryAgain'),
-          );
-        },
-      },
-    );
+    router.push({
+      pathname: '/app/devotional_detail/[planId]/start-date',
+      params: { planId, mode },
+    });
   };
 
   return (
@@ -177,7 +158,6 @@ export default function DevotionalDetail() {
         hasActivePlanProgress={!!currentActivePlanProgress?.progress_id}
         canStartPlan={!!canStartPlan}
         isPrivatePlan={!!isPrivatePlan}
-        isStartingSoloPlan={startPlanProgressMutation.isPending}
         onSelectPreviewDay={setSelectedPreviewDay}
         onContinuePress={handleContinuePress}
         isSaved={isSaved}
