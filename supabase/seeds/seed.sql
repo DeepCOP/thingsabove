@@ -60339,3 +60339,615 @@ END
 $postflight$;
 COMMIT;
 -- END GENERATED CONSECUTIVE REFERENCE DAY MERGE
+
+-- Begin updated devotional plan cover images from catalog CSV.
+-- Keep local seed resets aligned with the catalog cover image URLs.
+DO $seed_cover_image_sync$
+DECLARE
+  v_payload constant jsonb := $seed_cover_image_payload$[
+  {
+    "title": "\"He was buried.\" A Sermon for Easter Even",
+    "new_cover_image": "https://images.unsplash.com/photo-1706003259572-5c2473a5642a?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "\"Jesus Says So\"",
+    "new_cover_image": "https://images.unsplash.com/photo-1745162829464-c3487261f90d?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "'Jesus Himself'",
+    "new_cover_image": "https://images.unsplash.com/photo-1470686164816-830d3688f62c?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "A Life of Wisdom and Kindness: 20 Readings Inspired by Helen Ekin Starrett",
+    "new_cover_image": "https://images.unsplash.com/photo-1645927011343-65b4d884fb86?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "A Prayer Book for Soldiers and Sailors",
+    "new_cover_image": "https://images.unsplash.com/photo-1681174025588-a2e090c771c1?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "A Short Method of Prayer",
+    "new_cover_image": "https://images.unsplash.com/photo-1437603568260-1950d3ca6eab?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "Addresses by Henry Drummond",
+    "new_cover_image": "https://images.unsplash.com/photo-1645927011343-65b4d884fb86?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "An Earnest Exhortation to a Frequent Reception of the Holy Sacrament of the Lord's Supper",
+    "new_cover_image": "https://images.unsplash.com/photo-1531627467965-e9c3dd19209c?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "An Exhortation to Peace and Unity",
+    "new_cover_image": "https://images.unsplash.com/photo-1710168410077-b0343f8f34fc?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "Around the Wicket Gate",
+    "new_cover_image": "https://images.unsplash.com/photo-1720534256762-59e251d1ec1b?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "Beside the Still Waters",
+    "new_cover_image": "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "Christian Devotedness",
+    "new_cover_image": "https://images.unsplash.com/photo-1650979465192-13c3faf42e57?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "Christian Freedom and Neighborly Love: Eighteen Readings from Martin Luther",
+    "new_cover_image": "https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "Coming to the King",
+    "new_cover_image": "https://images.unsplash.com/photo-1706003259572-5c2473a5642a?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "Compassion, Repair, and Hope: Eight Readings from The One Moss-Rose",
+    "new_cover_image": "https://images.unsplash.com/photo-1663162550932-f67b561e656f?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "Conscience, Justice, and Peace: Six Readings from a 1710 Civic Sermon",
+    "new_cover_image": "https://images.unsplash.com/photo-1650979465192-13c3faf42e57?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "Conscience, Justice, and the Common Good: Nine Readings from an 1839 Election Sermon",
+    "new_cover_image": "https://images.unsplash.com/photo-1663162550932-f67b561e656f?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "Consolation in Life and Death, Derived from the Life of Christ",
+    "new_cover_image": "https://images.unsplash.com/photo-1681174025588-a2e090c771c1?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "Corrie: Twenty-Seven Readings on Compassion, Courage, and Grace",
+    "new_cover_image": "https://images.unsplash.com/photo-1663162550932-f67b561e656f?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "Courage, Compassion, and Calling: 27 Readings from Catherine Booth’s Life",
+    "new_cover_image": "https://images.unsplash.com/photo-1650979465192-13c3faf42e57?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "Daily Wisdom of the Saints: Eleven Scripture-Led Reflections",
+    "new_cover_image": "https://images.unsplash.com/photo-1641491664780-cd5b022c2f3a?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "David: Five Sermons",
+    "new_cover_image": "https://images.unsplash.com/photo-1720534256762-59e251d1ec1b?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "Essentials of prayer",
+    "new_cover_image": "https://images.unsplash.com/photo-1437603568260-1950d3ca6eab?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "Eternal Life",
+    "new_cover_image": "https://images.unsplash.com/photo-1681174025588-a2e090c771c1?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "Everyday Objects, Living Faith: 24 Scripture-Led Readings for Families",
+    "new_cover_image": "https://images.unsplash.com/photo-1745162829464-c3487261f90d?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "Faith Beyond the Census: Four Readings on Christian Witness",
+    "new_cover_image": "https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "Faith in Action: Thirteen Readings from Four Christian Tales",
+    "new_cover_image": "https://images.unsplash.com/photo-1663162550932-f67b561e656f?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "Faith, Grace, and Courage: 32 Readings from the Reformation Pulpit",
+    "new_cover_image": "https://images.unsplash.com/photo-1673322882205-add3ff85764b?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "Faith, Love, and Christian Witness: Eight Readings from the Nonington Sermons",
+    "new_cover_image": "https://images.unsplash.com/photo-1681174025588-a2e090c771c1?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "Faithful Discernment: 25 Readings on Scripture, Humility, and Christian Love",
+    "new_cover_image": "https://images.unsplash.com/photo-1673322882205-add3ff85764b?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "Faithful Service and Hope in Christ: Eleven Readings from the Francis Storr Memorials",
+    "new_cover_image": "https://images.unsplash.com/photo-1531627467965-e9c3dd19209c?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "Five Sermons",
+    "new_cover_image": "https://images.unsplash.com/photo-1645927011343-65b4d884fb86?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "Following Christ: Five Readings from William Penn",
+    "new_cover_image": "https://images.unsplash.com/photo-1710168410077-b0343f8f34fc?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "Food for the Lambs; or, Helps for Young Christians",
+    "new_cover_image": "https://images.unsplash.com/photo-1745162829464-c3487261f90d?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "From the Bowery to a Life of Service: 32 Readings from Dave Ranney",
+    "new_cover_image": "https://images.unsplash.com/photo-1663162550932-f67b561e656f?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "General Catholic Devotions",
+    "new_cover_image": "https://images.unsplash.com/photo-1437603568260-1950d3ca6eab?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "Gleanings among the Sheaves",
+    "new_cover_image": "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "Gratitude and the Common Good: Six Readings from an 1855 Sermon",
+    "new_cover_image": "https://commons.wikimedia.org/wiki/Special:FilePath/Bible_study_at_a_table.jpg?width=1200"
+  },
+  {
+    "title": "Holding Truth with Love: Eleven Readings on Christian Confession",
+    "new_cover_image": "https://images.unsplash.com/photo-1470686164816-830d3688f62c?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "Holy in Christ",
+    "new_cover_image": "https://images.unsplash.com/photo-1706003259572-5c2473a5642a?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "Home, Belonging, and Hope: 29 Readings from Christie’s Old Organ",
+    "new_cover_image": "https://images.unsplash.com/photo-1745162829464-c3487261f90d?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "How I Know God Answers Prayer: The Personal Testimony of One Life-Time",
+    "new_cover_image": "https://images.unsplash.com/photo-1437603568260-1950d3ca6eab?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "How to bring men to Christ",
+    "new_cover_image": "https://images.unsplash.com/photo-1710168410077-b0343f8f34fc?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "How to Succeed in the Christian Life",
+    "new_cover_image": "https://images.unsplash.com/photo-1645927011343-65b4d884fb86?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "Humility: The Beauty of Holiness",
+    "new_cover_image": "https://images.unsplash.com/photo-1641491664780-cd5b022c2f3a?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "I'm Greatly Concerned About Your Soul.",
+    "new_cover_image": "https://images.unsplash.com/photo-1607098263775-e2cc11657839?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "In Answer to Prayer",
+    "new_cover_image": "https://images.unsplash.com/photo-1607098263775-e2cc11657839?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "Jesus Fulfils the Law: 14 Readings on Grace, Scripture, and Neighborly Love",
+    "new_cover_image": "https://images.unsplash.com/photo-1720534256762-59e251d1ec1b?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "John the Baptist",
+    "new_cover_image": "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "Kept for the Master's Use",
+    "new_cover_image": "https://images.unsplash.com/photo-1681174025588-a2e090c771c1?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "Let Every Breath Praise: Three Readings from Psalm 150",
+    "new_cover_image": "https://commons.wikimedia.org/wiki/Special:FilePath/Bible_study_at_a_table.jpg?width=1200"
+  },
+  {
+    "title": "Life, Death, and Resurrection Hope: Seven Readings from a 1697 Funeral Sermon",
+    "new_cover_image": "https://images.unsplash.com/photo-1681174025588-a2e090c771c1?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "Light On the Child's Path",
+    "new_cover_image": "https://images.unsplash.com/photo-1745162829464-c3487261f90d?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "Light, Truth, and the Holy Spirit: Five Readings from a Chapel Guide",
+    "new_cover_image": "https://images.unsplash.com/photo-1673322882205-add3ff85764b?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "Little Folded Hands",
+    "new_cover_image": "https://images.unsplash.com/photo-1745162829464-c3487261f90d?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "Living and Dying to the Lord: Four Readings from an 1838 Sermon",
+    "new_cover_image": "https://images.unsplash.com/photo-1706003259572-5c2473a5642a?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "Living with Mercy and Truth: 17 Readings from Edith and Her Ayah",
+    "new_cover_image": "https://images.unsplash.com/photo-1663162550932-f67b561e656f?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "Lord, Teach Us To Pray",
+    "new_cover_image": "https://images.unsplash.com/photo-1437603568260-1950d3ca6eab?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "Love to the Uttermost",
+    "new_cover_image": "https://images.unsplash.com/photo-1706003259572-5c2473a5642a?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "Mary, the Help of Christians",
+    "new_cover_image": "https://images.unsplash.com/photo-1437603568260-1950d3ca6eab?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "Matelda and the cloister of Hellfde : extracts from the Book of Matilda of Magdeburg",
+    "new_cover_image": "https://images.unsplash.com/photo-1641491664780-cd5b022c2f3a?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "Memoranda Sacra",
+    "new_cover_image": "https://images.unsplash.com/photo-1470686164816-830d3688f62c?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "Messages from the Epistle to the Hebrews",
+    "new_cover_image": "https://images.unsplash.com/photo-1470686164816-830d3688f62c?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "Miscellaneous Pieces",
+    "new_cover_image": "https://images.unsplash.com/photo-1645927011343-65b4d884fb86?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "Money: Thoughts for God's Stewards",
+    "new_cover_image": "https://images.unsplash.com/photo-1663162550932-f67b561e656f?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "Morning and Evening Prayers for All Days of the Week",
+    "new_cover_image": "https://images.unsplash.com/photo-1607098263775-e2cc11657839?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "Morning and Evening: 366 Scripture-Guided Devotions",
+    "new_cover_image": "https://images.unsplash.com/photo-1645927011343-65b4d884fb86?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "Morning Bells; Or, Waking Thoughts for Little Ones",
+    "new_cover_image": "https://images.unsplash.com/photo-1745162829464-c3487261f90d?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "My Utmost for His Highest",
+    "new_cover_image": "https://images.unsplash.com/photo-1706003259572-5c2473a5642a?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "On Union with God",
+    "new_cover_image": "https://images.unsplash.com/photo-1437603568260-1950d3ca6eab?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "One Lord, One Faith, One Baptism: Seven Readings",
+    "new_cover_image": "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "Parables of the Christ-life",
+    "new_cover_image": "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "Parables of the Cross",
+    "new_cover_image": "https://images.unsplash.com/photo-1706003259572-5c2473a5642a?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "Pax Vobiscum",
+    "new_cover_image": "https://images.unsplash.com/photo-1641491664780-cd5b022c2f3a?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "Power Through Prayer",
+    "new_cover_image": "https://images.unsplash.com/photo-1607098263775-e2cc11657839?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "Prayer and Shared Scripture: Two Readings from an 1814 Pastoral Tract",
+    "new_cover_image": "https://images.unsplash.com/photo-1663162550932-f67b561e656f?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "Prayer, Humility, and Wise Living: 12 Readings from Jonathan Swift",
+    "new_cover_image": "https://images.unsplash.com/photo-1645927011343-65b4d884fb86?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "Praying for Freedom: Nine Readings from an Antislavery Tract",
+    "new_cover_image": "https://images.unsplash.com/photo-1650979465192-13c3faf42e57?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "Praying with the Early Church: Sixteen Scripture-Led Readings",
+    "new_cover_image": "https://images.unsplash.com/photo-1710168410077-b0343f8f34fc?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "Prevailing Prayer: What Hinders It?",
+    "new_cover_image": "https://images.unsplash.com/photo-1729714625765-6ad07c70038e?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "Providence, Repentance, and Reconciliation: Eleven Readings on Joseph",
+    "new_cover_image": "https://images.unsplash.com/photo-1663162550932-f67b561e656f?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "Remembering Christ in Grief: Seven Readings from an 1832 Sermon",
+    "new_cover_image": "https://images.unsplash.com/photo-1437603568260-1950d3ca6eab?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "Resurrection and Reason: 29 Readings on Testimony, Faith, and Hope",
+    "new_cover_image": "https://images.unsplash.com/photo-1681174025588-a2e090c771c1?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "Reuben Roy's temptations",
+    "new_cover_image": "https://images.unsplash.com/photo-1745162829464-c3487261f90d?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "Reverence, Grace, and Faithful Living: Fifteen Readings from a 1626 Funeral Sermon",
+    "new_cover_image": "https://images.unsplash.com/photo-1470686164816-830d3688f62c?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "Secret Power; or, The Secret of Success in Christian Life and Work",
+    "new_cover_image": "https://images.unsplash.com/photo-1437603568260-1950d3ca6eab?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "Seeing Faith Through Art: Eleven Scripture-Led Readings for Families",
+    "new_cover_image": "https://images.unsplash.com/photo-1470686164816-830d3688f62c?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "Seeking Another's Good: Thirteen Readings from a 1621 Plymouth Sermon",
+    "new_cover_image": "https://images.unsplash.com/photo-1650979465192-13c3faf42e57?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "Seeking God: 27 Devotional Readings Inspired by A. W. Tozer",
+    "new_cover_image": "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "Separation and Service; or, Thoughts on Numbers 6, 7.",
+    "new_cover_image": "https://images.unsplash.com/photo-1673322882205-add3ff85764b?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "Sermons for the Day",
+    "new_cover_image": "https://images.unsplash.com/photo-1645927011343-65b4d884fb86?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "Sharing Scripture with Love: Five Readings from an 1815 Sermon",
+    "new_cover_image": "https://images.unsplash.com/photo-1710168410077-b0343f8f34fc?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "Signs of Life: 22 Readings on Grace, Growth, and Spiritual Care",
+    "new_cover_image": "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "Small Acts, Great Love: 27 Readings Inspired by Small Means and Great Ends",
+    "new_cover_image": "https://images.unsplash.com/photo-1650979465192-13c3faf42e57?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "Sovereign Grace: Its Source, Its Nature and Its Effects",
+    "new_cover_image": "https://images.unsplash.com/photo-1706003259572-5c2473a5642a?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "Sowing and Reaping",
+    "new_cover_image": "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "Spiritual Torrents",
+    "new_cover_image": "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "Spiritual Victories Through the Light of Salvation",
+    "new_cover_image": "https://images.unsplash.com/photo-1706003259572-5c2473a5642a?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "Streams in the Desert",
+    "new_cover_image": "https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "Talks to Farmers",
+    "new_cover_image": "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "The Abiding Presence of the Holy Ghost in the Soul",
+    "new_cover_image": "https://images.unsplash.com/photo-1437603568260-1950d3ca6eab?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "The Atonement, as taught by the Church of England: A Sermon",
+    "new_cover_image": "https://images.unsplash.com/photo-1531627467965-e9c3dd19209c?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "The Believer Not Ashamed of the Gospel",
+    "new_cover_image": "https://images.unsplash.com/photo-1645927011343-65b4d884fb86?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "The Believer's Confidence in a Faithful God",
+    "new_cover_image": "https://images.unsplash.com/photo-1470252649378-9c29740c9fa8?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "The Breadth, Freeness, and Yet Exclusiveness of the Gospel",
+    "new_cover_image": "https://images.unsplash.com/photo-1706003259572-5c2473a5642a?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "The Character and Happiness of Them That Die in the Lord",
+    "new_cover_image": "https://images.unsplash.com/photo-1437603568260-1950d3ca6eab?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "The Children's Six Minutes",
+    "new_cover_image": "https://images.unsplash.com/photo-1745162829464-c3487261f90d?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "The Christian Serving His Own Generation",
+    "new_cover_image": "https://images.unsplash.com/photo-1650979465192-13c3faf42e57?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "The Cities of Refuge: or, The Name of Jesus",
+    "new_cover_image": "https://images.unsplash.com/photo-1706003259572-5c2473a5642a?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "The Cross: A Tract for the Times",
+    "new_cover_image": "https://images.unsplash.com/photo-1681174025588-a2e090c771c1?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "The Descent of the Branch into the Waters of Sorrow, to Bring up the Election of Grace",
+    "new_cover_image": "https://images.unsplash.com/photo-1681174025588-a2e090c771c1?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "The Discipline of War",
+    "new_cover_image": "https://images.unsplash.com/photo-1681174025588-a2e090c771c1?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "The Faithful Promiser",
+    "new_cover_image": "https://images.unsplash.com/photo-1681174025588-a2e090c771c1?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "The Glorious Law-Giver, and the Obedient Subject",
+    "new_cover_image": "https://images.unsplash.com/photo-1673322882205-add3ff85764b?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "The Glory of the Cross: 30 Readings on Love, Repentance, and Hope",
+    "new_cover_image": "https://images.unsplash.com/photo-1681174025588-a2e090c771c1?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "The Greatest Thing In the World and Other Addresses",
+    "new_cover_image": "https://images.unsplash.com/photo-1650979465192-13c3faf42e57?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "The Heart-Cry of Jesus",
+    "new_cover_image": "https://images.unsplash.com/photo-1681174025588-a2e090c771c1?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "The Living Letter, Written with the Pen of Truth",
+    "new_cover_image": "https://images.unsplash.com/photo-1720534256762-59e251d1ec1b?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "The Master's Indwelling",
+    "new_cover_image": "https://images.unsplash.com/photo-1706003259572-5c2473a5642a?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "The Mind of Jesus",
+    "new_cover_image": "https://images.unsplash.com/photo-1720534256762-59e251d1ec1b?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "The Ministry of Intercession",
+    "new_cover_image": "https://images.unsplash.com/photo-1437603568260-1950d3ca6eab?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "The Overcoming Life, and Other Sermons",
+    "new_cover_image": "https://images.unsplash.com/photo-1650979465192-13c3faf42e57?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "The Peep of Day",
+    "new_cover_image": "https://images.unsplash.com/photo-1745162829464-c3487261f90d?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "The Practice of the Presence of God",
+    "new_cover_image": "https://images.unsplash.com/photo-1729714625765-6ad07c70038e?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "The Prayers of St. Paul",
+    "new_cover_image": "https://images.unsplash.com/photo-1729714625765-6ad07c70038e?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "The Sabbath: A Sermon",
+    "new_cover_image": "https://images.unsplash.com/photo-1673322882205-add3ff85764b?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "The Shepherd Psalm: A Meditation",
+    "new_cover_image": "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "The Speedy Appearance of Christ Desired by the Church",
+    "new_cover_image": "https://images.unsplash.com/photo-1706003259572-5c2473a5642a?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "The Spirit-Filled Life",
+    "new_cover_image": "https://images.unsplash.com/photo-1641491664780-cd5b022c2f3a?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "The Threshold Grace: Meditations in the Psalms",
+    "new_cover_image": "https://images.unsplash.com/photo-1437603568260-1950d3ca6eab?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "The Trial and Death of Jesus Christ",
+    "new_cover_image": "https://images.unsplash.com/photo-1706003259572-5c2473a5642a?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "The True Ministers of Christ Accredited by the Holy Spirit: A Sermon",
+    "new_cover_image": "https://images.unsplash.com/photo-1720534256762-59e251d1ec1b?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "The value of a praying mother",
+    "new_cover_image": "https://images.unsplash.com/photo-1729714625765-6ad07c70038e?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "The Way to God and How to Find It",
+    "new_cover_image": "https://images.unsplash.com/photo-1706003259572-5c2473a5642a?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "The Words of Jesus",
+    "new_cover_image": "https://images.unsplash.com/photo-1470686164816-830d3688f62c?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "The Worth of the Soul",
+    "new_cover_image": "https://images.unsplash.com/photo-1673322882205-add3ff85764b?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "Thoughts for the Quiet Hour",
+    "new_cover_image": "https://images.unsplash.com/photo-1607098263775-e2cc11657839?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "To The Work! To The Work! Exhortations to Christians",
+    "new_cover_image": "https://images.unsplash.com/photo-1650979465192-13c3faf42e57?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "Weighed and Wanting: Addresses on the Ten Commandments",
+    "new_cover_image": "https://images.unsplash.com/photo-1645927011343-65b4d884fb86?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "With God in the World: A Series of Papers",
+    "new_cover_image": "https://images.unsplash.com/photo-1710168410077-b0343f8f34fc?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "Witnesses to Christ: Three Readings from an 1877 Sermon",
+    "new_cover_image": "https://images.unsplash.com/photo-1706003259572-5c2473a5642a?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "Worship with Understanding: 27 Readings Inspired by Ritual Conformity",
+    "new_cover_image": "https://images.unsplash.com/photo-1531627467965-e9c3dd19209c?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "Worship, Conscience, and Christian Unity: 19 Readings from a Victorian Debate",
+    "new_cover_image": "https://images.unsplash.com/photo-1720534256762-59e251d1ec1b?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "Zeal Tempered by Love: Fifteen Readings from Samuel Ward",
+    "new_cover_image": "https://images.unsplash.com/photo-1650979465192-13c3faf42e57?auto=format&fit=crop&w=1200&q=80"
+  }
+]$seed_cover_image_payload$::jsonb;
+  v_payload_count integer;
+  v_matched_count integer;
+BEGIN
+  v_payload_count := jsonb_array_length(v_payload);
+  IF v_payload_count <> 144 THEN
+    RAISE EXCEPTION 'Seed cover image payload count mismatch: expected 144, found %', v_payload_count;
+  END IF;
+
+  SELECT count(*) INTO v_matched_count
+  FROM jsonb_to_recordset(v_payload) AS item(title text, new_cover_image text)
+  JOIN public.devotional_plans AS plan
+    ON plan.title = item.title
+   AND plan.id::text LIKE '90000000-0000-0000-0000-%';
+
+  IF v_matched_count <> v_payload_count THEN
+    RAISE EXCEPTION 'Seed cover image preflight failed: expected % plan-title matches, found %',
+      v_payload_count, v_matched_count;
+  END IF;
+
+  UPDATE public.devotional_plans AS plan
+  SET cover_image = item.new_cover_image,
+      updated_at = greatest(coalesce(plan.updated_at, timestamptz '2026-04-14 12:00:00+00'), timestamptz '2026-10-29 12:00:00+00')
+  FROM jsonb_to_recordset(v_payload) AS item(title text, new_cover_image text)
+  WHERE plan.id::text LIKE '90000000-0000-0000-0000-%'
+    AND plan.title = item.title
+    AND plan.cover_image IS DISTINCT FROM item.new_cover_image;
+END
+$seed_cover_image_sync$;
+-- End updated devotional plan cover images from catalog CSV.
