@@ -7,7 +7,15 @@ import { RelatedPlansSection } from '@/src/components/RelatedPlans';
 import { Ionicons } from '@expo/vector-icons';
 import BottomSheet from '@gorhom/bottom-sheet';
 import { useRef } from 'react';
-import { ScrollView, Text, TouchableOpacity, View, useColorScheme } from 'react-native';
+import {
+  ActivityIndicator,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+  useColorScheme,
+  useWindowDimensions,
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import ReportPlanSheet from '../components/ReportPlanModal';
 import StartPlanBottomSheet from '../components/StartPlanBottomSheet';
@@ -68,6 +76,7 @@ export default function DevotionalDetailScreen({
   const bottomSheetRef = useRef<BottomSheet>(null);
   const insets = useSafeAreaInsets();
   const colorScheme = useColorScheme();
+  const { height: windowHeight } = useWindowDimensions();
 
   const { isGuest } = useAuth();
   const resolvedTopInset = insets.top;
@@ -110,10 +119,15 @@ export default function DevotionalDetailScreen({
           paddingBottom: scrollBottomPadding,
         }}>
         <View>
-          <PlanCoverImage uri={plan?.cover_image} className="w-full h-60 rounded-2xl" />
+          <PlanCoverImage
+            uri={plan?.cover_image}
+            className="w-full rounded-2xl bg-gray-100 dark:bg-neutral-800"
+            fitToWidth
+            maxHeight={windowHeight / 2}
+          />
 
           {(plan?.completions ?? 0) > 0 && (
-            <View className="absolute bottom-0 left-0 right-0 bg-black/50 py-2 rounded-b-2xl">
+            <View className="bg-black/50 py-2 rounded-b-2xl">
               <Text className="text-center text-white font-semibold">
                 {t('completions', { count: plan?.completions ?? 0 })}
               </Text>
