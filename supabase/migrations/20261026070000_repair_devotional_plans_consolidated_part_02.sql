@@ -1,3 +1,9006 @@
+-- Consolidated devotional repair migration.
+-- Original SQL is preserved byte-for-byte between the source markers below.
+-- This consolidation is intended for a database where the replaced source migrations have not been applied.
+
+-- BEGIN CONSOLIDATED SOURCE: 20261026070000_repair_draft_devotional_plans_wave_18.sql sha256=a805c673da882d867b8905cc415cd909981d4f6844481cc179fd18d0f8802493
+-- Scripture-led adaptation of Martin Luther's 1520 letter and Concerning Christian Liberty.
+-- Plan 268: preserve existing 18 day IDs/numbers and user progress.
+-- New prose is explicitly editorial, not quotations from Luther.
+-- Luther's Reformation positions and anti-Catholic polemics are handled as historical context.
+-- Reviewed for devotional suitability and approved for publication.
+
+begin;
+
+-- Guard the plan structure before making any changes.
+do $$
+declare
+  present_days integer;
+  first_day integer;
+  last_day integer;
+  source_link text;
+  reported_total integer;
+begin
+  select source_url, total_days into source_link, reported_total
+  from public.devotional_plans
+  where id = '90000000-0000-0000-0000-000000000268'::uuid;
+  if not found then
+    raise exception 'Plan 268 is missing';
+  end if;
+  if source_link is distinct from 'https://www.gutenberg.org/ebooks/1911' or reported_total is distinct from 18 then
+    raise exception 'Plan 268 source URL or total_days differs from the reviewed source';
+  end if;
+  select count(*), min(day_number), max(day_number)
+  into present_days, first_day, last_day
+  from public.devotional_days
+  where plan_id = '90000000-0000-0000-0000-000000000268'::uuid;
+  if present_days <> 18 or first_day <> 1 or last_day <> 18 then
+    raise exception 'Plan 268 must have exactly 18 numbered days, found %', present_days;
+  end if;
+end
+$$;
+
+
+update public.devotional_plans as target
+set title = edit.value, updated_at = timestamptz '2026-10-26 06:45:00+00'
+from jsonb_to_recordset($adapt_text$
+[
+  {
+    "id": "90000000-0000-0000-0000-000000000268",
+    "value": "Christian Freedom and Neighborly Love: Eighteen Readings from Martin Luther"
+  }
+]
+$adapt_text$::jsonb) as edit(id uuid, value text)
+where target.id = edit.id;
+
+update public.devotional_plans as target
+set description = edit.value, updated_at = timestamptz '2026-10-26 06:45:00+00'
+from jsonb_to_recordset($adapt_text$
+[
+  {
+    "id": "90000000-0000-0000-0000-000000000268",
+    "value": "Eighteen Scripture-led devotional readings adapted from Martin Luther’s 1520 letter to Pope Leo X and his treatise Concerning Christian Liberty. The first four readings consider truthfulness, conflict, peacemaking, and the transition from Luther’s historical letter to his account of Christian freedom; the remaining fourteen follow the treatise’s movement from faith in Christ and God’s promises to freely serving neighbors in love. These are newly written editorial paraphrases, reflections, and prayers—not quotations from Luther or an endorsement of his anti-Catholic polemic. Luther’s argument for justification by faith is identified as his Reformation teaching; Christian traditions continue to describe the relationship of faith, grace, sacraments, and good works differently. Scripture references are selected devotional anchors rather than citations attributed to Luther. The full historical text remains available through the source link."
+  }
+]
+$adapt_text$::jsonb) as edit(id uuid, value text)
+where target.id = edit.id;
+
+update public.devotional_days as target
+set title = edit.value, updated_at = timestamptz '2026-10-26 06:45:00+00'
+from jsonb_to_recordset($adapt_text$
+[
+  {
+    "id": "90000000-0000-0000-0000-000000000268",
+    "day_number": 1,
+    "value": "Speak Truth with Care"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000268",
+    "day_number": 2,
+    "value": "Pray Across Deep Disagreement"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000268",
+    "day_number": 3,
+    "value": "Seek Peace without Surrendering Truth"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000268",
+    "day_number": 4,
+    "value": "Free in Christ, Ready to Serve"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000268",
+    "day_number": 5,
+    "value": "The Word That Gives Life"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000268",
+    "day_number": 6,
+    "value": "Receive the Promise of Grace"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000268",
+    "day_number": 7,
+    "value": "Trust the God Who Keeps Promises"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000268",
+    "day_number": 8,
+    "value": "Christ Bears Our Need"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000268",
+    "day_number": 9,
+    "value": "A People Called to Prayer and Service"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000268",
+    "day_number": 10,
+    "value": "Faith in the Living Christ"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000268",
+    "day_number": 11,
+    "value": "Practice the Life Grace Has Given"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000268",
+    "day_number": 12,
+    "value": "Good Fruit Grows from Grace"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000268",
+    "day_number": 13,
+    "value": "Grace Turns Us Toward Others"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000268",
+    "day_number": 14,
+    "value": "Love without Keeping Score"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000268",
+    "day_number": 15,
+    "value": "Use Freedom with Wisdom"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000268",
+    "day_number": 16,
+    "value": "Let Gifts Flow to Your Neighbor"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000268",
+    "day_number": 17,
+    "value": "Hold Conviction with Tenderness"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000268",
+    "day_number": 18,
+    "value": "Build a Life, Not a Scaffold"
+  }
+]
+$adapt_text$::jsonb) as edit(id uuid, day_number integer, value text)
+where target.plan_id = edit.id and target.day_number = edit.day_number;
+
+update public.devotional_days as target
+set content = edit.value, updated_at = timestamptz '2026-10-26 06:45:00+00'
+from jsonb_to_recordset($adapt_text$
+[
+  {
+    "id": "90000000-0000-0000-0000-000000000268",
+    "day_number": 1,
+    "value": "<p><strong>Read:</strong> Ephesians 4:15; Matthew 7:3-5.</p><p><strong>Source and historical context:</strong> In his 1520 letter to Pope Leo X, Martin Luther says he wishes Leo well while sharply criticizing the Roman court. The accusations and rhetoric belong to a particular Reformation controversy, not to this devotional’s instruction about another Christian community.</p><p><strong>Devotional focus:</strong> Truth and love belong together. We may name a real wrong without delighting in humiliation or pretending to know another person’s heart. Christ calls us to examine ourselves as carefully as we examine others.</p><p><strong>Reflect:</strong> When you disagree with someone, do you aim to protect what is true and good, or to win the argument? Describe the concern accurately, admit what you do not know, and choose words that preserve the other person’s dignity.</p><p><strong>Prayer:</strong> Lord Jesus, make my speech truthful and gracious. Expose pride in me, strengthen my courage to confront harm, and keep me from turning disagreement into contempt. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000268",
+    "day_number": 2,
+    "value": "<p><strong>Read:</strong> Matthew 5:43-48; 1 Timothy 2:1-2.</p><p><strong>Source and historical context:</strong> Luther’s letter depicts Leo as surrounded by advisers whom Luther considers corrupt and describes the Roman court with severe accusations. This records Luther’s position in 1520; the devotion does not adopt his judgments about Catholics as a group.</p><p><strong>Devotional focus:</strong> Prayer need not wait for agreement. Jesus calls his followers to pray even for opponents. Such prayer does not excuse injustice; it entrusts people and institutions to God’s judgment while seeking their true good.</p><p><strong>Reflect:</strong> Name a person or community with whom you disagree. What would a prayer for their safety, wisdom, honesty, and peace sound like if it included no insult and did not require you to abandon your convictions?</p><p><strong>Prayer:</strong> Father of mercy, grant wisdom to leaders and kindness to those divided by conflict. Teach us to resist wrongdoing while desiring healing, truth, and justice for everyone concerned. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000268",
+    "day_number": 3,
+    "value": "<p><strong>Read:</strong> Matthew 5:9; James 3:17-18.</p><p><strong>Source and historical context:</strong> In a later section of the letter, Luther recounts disputed negotiations and says he would welcome peace but cannot surrender what he understands as the word of God. The accusations against named opponents are his historical account, not settled judgments offered here.</p><p><strong>Devotional focus:</strong> Peacemaking is more than silence, and conviction is more than stubbornness. Wisdom listens, makes room for correction, and seeks just reconciliation without requiring the vulnerable to accept harm.</p><p><strong>Reflect:</strong> Think of a strained conversation. What is the central issue that must be addressed? What accusation or distraction could you set aside, and what honest invitation to dialogue could you make?</p><p><strong>Prayer:</strong> God of peace and truth, free me from vanity and needless quarrels. Give me humility to listen, courage to speak rightly, and patience to work for a just peace. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000268",
+    "day_number": 4,
+    "value": "<p><strong>Read:</strong> 1 Corinthians 9:19; Galatians 5:13.</p><p><strong>Source and historical context:</strong> Luther closes his letter to Leo and begins Concerning Christian Liberty by placing freedom and service side by side. He states a deliberate paradox: the Christian is free before God and yet willingly becomes a servant to others.</p><p><strong>Devotional focus:</strong> Freedom in Christ is not permission to ignore people. Receiving grace releases us from proving our worth through superiority and opens our hands for loving service. Freedom and responsibility are not enemies.</p><p><strong>Reflect:</strong> Where do you treat independence as an excuse to avoid another person’s need? Choose one unforced act of care that can express freedom rather than obligation or a desire for praise.</p><p><strong>Prayer:</strong> Lord Jesus, teach me the freedom that comes from your grace. Let my confidence in you make me generous, humble, and ready to serve. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000268",
+    "day_number": 5,
+    "value": "<p><strong>Read:</strong> John 8:31-36; Romans 10:8-10.</p><p><strong>Source and historical context:</strong> At the opening of the treatise, Luther distinguishes outward religious activities from the inward trust formed by the gospel. He centers the message on Jesus Christ, incarnate, crucified, risen, and proclaimed through the Spirit.</p><p><strong>Devotional focus:</strong> Religious activity can be meaningful, but no impressive appearance substitutes for meeting Christ in faith. Scripture directs us to the Son who makes people free, not toward confidence in status or display.</p><p><strong>Reflect:</strong> Are you relying on religious knowledge, routines, or reputation to avoid honest trust in God? Read today’s Gospel passage slowly and name the promise of Christ you most need to receive.</p><p><strong>Prayer:</strong> Living Word, draw me beyond appearances into genuine trust. Let the gospel of your death and resurrection renew my mind, my hope, and my love. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000268",
+    "day_number": 6,
+    "value": "<p><strong>Read:</strong> Romans 3:21-26; Ephesians 2:8-10.</p><p><strong>Source and historical context:</strong> Luther explains the distinction between God’s commands, which expose human need, and God’s promises, which announce grace in Christ. His account of justification through faith alone is a distinct Reformation emphasis; Christians articulate its relationship to sacramental life and good works differently.</p><p><strong>Devotional focus:</strong> God’s commands reveal the goodness to which we are called, but the gospel also tells of mercy for people who fall short. Repentance can be truthful without becoming despair, because the crucified and risen Christ is the center of Christian hope.</p><p><strong>Reflect:</strong> Where has awareness of failure turned into hopelessness or frantic attempts to earn approval? Confess what needs changing, then receive the promise of mercy and take one faithful step forward.</p><p><strong>Prayer:</strong> Merciful Father, I cannot repair myself by boasting or bargaining. Lead me to repentance, draw me to Christ, and form in me the good works of grateful love. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000268",
+    "day_number": 7,
+    "value": "<p><strong>Read:</strong> John 1:12-13; Romans 4:20-22.</p><p><strong>Source and historical context:</strong> Luther likens faith’s reception of God’s word to metal taking on the warmth of fire. He also says that trusting God honors God as truthful and pictures communion with Christ through a marriage image.</p><p><strong>Devotional focus:</strong> Faith rests on God’s character rather than on the intensity of our feelings. God’s promises invite dependence, not self-congratulation. Union with Christ is the gift that grounds our belonging.</p><p><strong>Reflect:</strong> Which promise of God do you find hardest to trust today? Say why without hiding your doubt. Return to the life of Jesus and ask what his faithfulness reveals about the Father.</p><p><strong>Prayer:</strong> Faithful God, when my trust is weak, hold me near to Christ. Teach me to receive your word with humility, confidence, and obedience born of love. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000268",
+    "day_number": 8,
+    "value": "<p><strong>Read:</strong> 2 Corinthians 5:17-21; 1 Corinthians 15:54-57.</p><p><strong>Source and historical context:</strong> Using a marriage metaphor, Luther describes Christ sharing the believer’s burden and giving the believer a share in his life and righteousness. The historical passage uses harsh imagery for the soul; this reading keeps the central grace theme without repeating degrading language.</p><p><strong>Devotional focus:</strong> Jesus does not stand far off from human sin and suffering. By his death and resurrection, he opens the way to reconciliation with God. Christian hope rests on Christ’s victory, not on pretending we have no need of mercy.</p><p><strong>Reflect:</strong> What guilt, fear, or grief are you carrying alone? Bring it honestly before Christ. If another person has been harmed, let receiving forgiveness move you toward appropriate confession and repair.</p><p><strong>Prayer:</strong> Risen Lord, thank you for meeting us with mercy and new life. Help me trust your saving work, turn from sin, and act justly toward those I have hurt. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000268",
+    "day_number": 9,
+    "value": "<p><strong>Read:</strong> 1 Peter 2:9-10; Hebrews 4:14-16.</p><p><strong>Source and historical context:</strong> Luther develops the language of believers sharing in Christ’s royal priesthood. He contrasts spiritual dignity with worldly power and argues that ministers are called to serve rather than dominate.</p><p><strong>Devotional focus:</strong> Belonging to Christ brings the privilege of approaching God and the responsibility of caring for others. Spiritual dignity does not confer control over neighbors or guarantee freedom from pain; it calls us toward prayer, humility, and witness.</p><p><strong>Reflect:</strong> Whose voice has been overlooked because of age, status, or position? Honor that person’s dignity today, and pray for someone whose burden you cannot carry alone.</p><p><strong>Prayer:</strong> Great High Priest, open our hearts to your mercy. Keep our churches from pride and teach every member to pray, speak truth, and serve in love. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000268",
+    "day_number": 10,
+    "value": "<p><strong>Read:</strong> 1 Corinthians 15:54-57; Romans 8:22-25.</p><p><strong>Source and historical context:</strong> After discussing the dignity of believers, Luther insists that preaching should explain what Christ has done for them, rather than offer only historical facts or rules. He then moves from inward faith to the outward life of loving action.</p><p><strong>Devotional focus:</strong> The Christian message is not merely an admired biography. Christ’s resurrection gives living hope while we still wait, struggle, and grieve. Grace sends us back into ordinary life with purpose.</p><p><strong>Reflect:</strong> Does your understanding of Jesus remain distant information, or does it shape how you face fear and serve others? Name one way the resurrection can change your response to today’s difficulty.</p><p><strong>Prayer:</strong> Lord Jesus, make your life, death, and resurrection more than facts I repeat. Renew my hope and let gratitude become faithful action. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000268",
+    "day_number": 11,
+    "value": "<p><strong>Read:</strong> Galatians 5:22-25; Genesis 2:15.</p><p><strong>Source and historical context:</strong> Luther argues that bodily discipline and honest work follow faith; they do not purchase acceptance with God. He uses the image of Adam tending the garden and warns against severe practices that damage a person’s health.</p><p><strong>Devotional focus:</strong> Prayer, fasting, rest, and work can train our attention toward God and our neighbors. Their value is not measured by how much pain we can endure, but by the love, self-control, and faithfulness they help cultivate.</p><p><strong>Reflect:</strong> Which habit strengthens your service, and which habit has become a contest for approval? Choose one sustainable practice today that builds patience and care without harming your body.</p><p><strong>Prayer:</strong> Holy Spirit, grow your fruit in my daily habits. Give me discipline without harshness, work without vanity, and rest without guilt. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000268",
+    "day_number": 12,
+    "value": "<p><strong>Read:</strong> Matthew 7:16-20; Titus 3:4-8.</p><p><strong>Source and historical context:</strong> Luther says a healthy tree produces good fruit, rather than fruit creating the tree. He applies the illustration to the relation between faith, grace, and good works, rejecting the idea that actions can be used to demand salvation as wages.</p><p><strong>Devotional focus:</strong> Good works matter deeply because neighbors need them. Yet they are not bargaining chips used to secure God’s love. Grace changes what we trust and why we act, so that mercy becomes visible in everyday conduct.</p><p><strong>Reflect:</strong> If no one noticed your efforts, which acts of kindness would you still do? Choose one practical good work for someone who cannot repay you.</p><p><strong>Prayer:</strong> God of mercy, plant in me trust that bears good fruit. Free my service from boasting, and make my actions useful to those around me. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000268",
+    "day_number": 13,
+    "value": "<p><strong>Read:</strong> Romans 14:7-8; Philippians 2:1-4.</p><p><strong>Source and historical context:</strong> Luther warns that the call to repentance must be followed by the promise of forgiveness. He then turns to neighborly service: believers do not live for themselves alone, and work can provide resources to share with people in need.</p><p><strong>Devotional focus:</strong> The gospel binds truth and mercy together. God does not awaken conscience simply to leave people in shame; receiving grace can free us to notice the needs of people we might otherwise pass by.</p><p><strong>Reflect:</strong> Where have you concentrated on your own spiritual performance while overlooking a practical need nearby? Offer time, listening, food, or another fitting form of support today.</p><p><strong>Prayer:</strong> Compassionate Father, bring me honestly to repentance and gently to hope. Open my eyes to my neighbors and show me how to serve them wisely. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000268",
+    "day_number": 14,
+    "value": "<p><strong>Read:</strong> Philippians 2:5-8; Galatians 2:20.</p><p><strong>Source and historical context:</strong> Luther describes love flowing from the generosity received in Christ. He points to Jesus humbling himself for others and urges believers to help neighbors without calculating gratitude, praise, or advantage.</p><p><strong>Devotional focus:</strong> Christ’s self-giving love sets the pattern for discipleship. We are not called to become saviors of other people, but to reflect the Savior’s compassion in relationships shaped by humility, justice, and freely given care.</p><p><strong>Reflect:</strong> When you help, do you secretly expect recognition or repayment? Choose a kindness that protects another person’s dignity and respects healthy boundaries.</p><p><strong>Prayer:</strong> Lord Jesus, you served us in love. Free me from keeping score, and teach me to give generously with wisdom and joy. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000268",
+    "day_number": 15,
+    "value": "<p><strong>Read:</strong> Romans 14:13-19; Matthew 17:24-27.</p><p><strong>Source and historical context:</strong> Luther compares Paul’s choices about Timothy and Titus and Jesus’ payment of the temple tax. He argues that Christians may voluntarily yield in secondary matters for another’s good without treating those practices as a way to earn salvation.</p><p><strong>Devotional focus:</strong> Not every right needs to be exercised at every moment. Mature freedom weighs the effect of our choices on others while refusing demands that require wrongdoing or suppress conscience.</p><p><strong>Reflect:</strong> Is there a preference you could set aside to preserve peace or help someone learn? Equally, is there a boundary you must keep because yielding would permit harm?</p><p><strong>Prayer:</strong> God of wisdom, guard me from selfish insistence and fearful compliance. Help me use freedom truthfully and lovingly. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000268",
+    "day_number": 16,
+    "value": "<p><strong>Read:</strong> Galatians 5:13-14; Romans 14:3.</p><p><strong>Source and historical context:</strong> Near the treatise’s conclusion, Luther says that God’s gifts should move through believers toward other people. He also warns against judging Christians merely because they practice outward traditions differently.</p><p><strong>Devotional focus:</strong> The test of our freedom is not the ability to win religious arguments; it is the willingness to love. Faith receives from Christ, and neighborly service makes that love tangible without asking others to carry our pride.</p><p><strong>Reflect:</strong> Who needs something that is within your capacity to share—attention, skill, food, encouragement, or honest advocacy? Offer what is helpful and listen to what the person actually needs.</p><p><strong>Prayer:</strong> Generous God, every good gift is yours. Make me openhanded and teach me to love neighbors without judging their worth by my preferences. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000268",
+    "day_number": 17,
+    "value": "<p><strong>Read:</strong> 1 Corinthians 8:9-13; Romans 14:19-22.</p><p><strong>Source and historical context:</strong> Luther distinguishes firm opposition to imposed religious requirements from patience with people who are unsure or vulnerable. His labels for opponents are products of controversy; this devotional applies the pastoral concern without repeating insults.</p><p><strong>Devotional focus:</strong> Courage and gentleness are not rivals. We can challenge coercion while refusing to mock people who have been taught differently. Love listens and works patiently toward truth.</p><p><strong>Reflect:</strong> Are you tempted to ridicule someone’s tradition, or to remain silent when another person is pressured? Choose a response that protects conscience and welcomes careful conversation.</p><p><strong>Prayer:</strong> Holy Spirit, give me conviction without cruelty and gentleness without dishonesty. Help me defend the vulnerable and honor those with whom I disagree. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000268",
+    "day_number": 18,
+    "value": "<p><strong>Read:</strong> Jeremiah 31:33-34; 2 Timothy 3:5-7.</p><p><strong>Source and historical context:</strong> Luther closes with the picture of scaffolding needed during construction but not itself the finished building. Religious practices can be useful, he argues, but they should not replace trust in Christ and an inwardly renewed life.</p><p><strong>Devotional focus:</strong> Habits, traditions, and structures can help form disciples, but the goal is life in God’s truth and love. Rather than praising our own spiritual achievements, we ask God to write his ways on our hearts and to make mercy visible.</p><p><strong>Reflect:</strong> Which useful practice has become an end in itself for you? Keep what supports love, loosen what creates pride, and identify one relationship in which renewed faith can become renewed care.</p><p><strong>Prayer:</strong> Faithful God, write your teaching upon my heart. Let every good practice point toward Christ, deepen love, and strengthen service to others. Amen.</p>"
+  }
+]
+$adapt_text$::jsonb) as edit(id uuid, day_number integer, value text)
+where target.plan_id = edit.id and target.day_number = edit.day_number;
+
+-- Replace the plan's global Scripture anchors without touching user-specific notes.
+do $$
+declare
+  item jsonb;
+  target_day_id uuid;
+begin
+  for item in select value from jsonb_array_elements($adapt_refs$
+[
+  {
+    "id": "90000000-0000-0000-0000-000000000268",
+    "day_number": 1,
+    "references": [
+      "Ephesians 4:15",
+      "Matthew 7:3-5"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000268",
+    "day_number": 2,
+    "references": [
+      "Matthew 5:43-48",
+      "1 Timothy 2:1-2"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000268",
+    "day_number": 3,
+    "references": [
+      "Matthew 5:9",
+      "James 3:17-18"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000268",
+    "day_number": 4,
+    "references": [
+      "1 Corinthians 9:19",
+      "Galatians 5:13"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000268",
+    "day_number": 5,
+    "references": [
+      "John 8:31-36",
+      "Romans 10:8-10"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000268",
+    "day_number": 6,
+    "references": [
+      "Romans 3:21-26",
+      "Ephesians 2:8-10"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000268",
+    "day_number": 7,
+    "references": [
+      "John 1:12-13",
+      "Romans 4:20-22"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000268",
+    "day_number": 8,
+    "references": [
+      "2 Corinthians 5:17-21",
+      "1 Corinthians 15:54-57"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000268",
+    "day_number": 9,
+    "references": [
+      "1 Peter 2:9-10",
+      "Hebrews 4:14-16"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000268",
+    "day_number": 10,
+    "references": [
+      "1 Corinthians 15:54-57",
+      "Romans 8:22-25"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000268",
+    "day_number": 11,
+    "references": [
+      "Galatians 5:22-25",
+      "Genesis 2:15"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000268",
+    "day_number": 12,
+    "references": [
+      "Matthew 7:16-20",
+      "Titus 3:4-8"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000268",
+    "day_number": 13,
+    "references": [
+      "Romans 14:7-8",
+      "Philippians 2:1-4"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000268",
+    "day_number": 14,
+    "references": [
+      "Philippians 2:5-8",
+      "Galatians 2:20"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000268",
+    "day_number": 15,
+    "references": [
+      "Romans 14:13-19",
+      "Matthew 17:24-27"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000268",
+    "day_number": 16,
+    "references": [
+      "Galatians 5:13-14",
+      "Romans 14:3"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000268",
+    "day_number": 17,
+    "references": [
+      "1 Corinthians 8:9-13",
+      "Romans 14:19-22"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000268",
+    "day_number": 18,
+    "references": [
+      "Jeremiah 31:33-34",
+      "2 Timothy 3:5-7"
+    ]
+  }
+]
+$adapt_refs$::jsonb) loop
+    select id into strict target_day_id from public.devotional_days
+    where plan_id = (item ->> 'id')::uuid
+      and day_number = (item ->> 'day_number')::integer;
+
+    update public.scripture_references
+    set reference = array(select jsonb_array_elements_text(item -> 'references')),
+        updated_at = timestamptz '2026-10-26 06:45:00+00'
+    where day_id = target_day_id and user_id is null;
+
+    if not found then
+      insert into public.scripture_references
+      (user_id, day_id, reference, created_at, updated_at)
+      values (null, target_day_id,
+              array(select jsonb_array_elements_text(item -> 'references')),
+              timestamptz '2026-10-26 06:45:00+00', timestamptz '2026-10-26 06:45:00+00');
+    end if;
+  end loop;
+end
+$$;
+
+-- Publish the reviewed, contextualized adaptation.
+update public.devotional_plans
+set status = 'published', updated_at = timestamptz '2026-10-26 06:45:00+00'
+where id = '90000000-0000-0000-0000-000000000268'::uuid;
+
+commit;
+-- END CONSOLIDATED SOURCE: 20261026070000_repair_draft_devotional_plans_wave_18.sql
+
+-- BEGIN CONSOLIDATED SOURCE: 20261026091500_repair_draft_devotional_plans_wave_19.sql sha256=198a8e3c52be62b3c1dded88ccf4a755dbab6e35df5bd3154c4b342c7600ecba
+-- Plan 282: Small Means and Great Ends, an 1851 multi-author anthology edited by M. H. Adams.
+-- Twenty-seven source-grounded Scripture-led readings; all devotional prose is new editorial writing.
+-- Historical colonial prejudice and harmful responses to child loss/discipline are explicitly contextualized.
+-- Preserve existing day IDs, day numbers, and user progress. No delete/reinsert operations.
+-- Reviewed for devotional suitability and approved for publication.
+
+begin;
+
+-- Verify that the exact seeded plan and day sequence are present.
+do $$
+declare
+  present_days integer;
+  first_day integer;
+  last_day integer;
+  source_link text;
+  reported_total integer;
+begin
+  select source_url, total_days into source_link, reported_total
+  from public.devotional_plans
+  where id = '90000000-0000-0000-0000-000000000282'::uuid;
+  if not found then
+    raise exception 'Plan 282 is missing';
+  end if;
+  if source_link is distinct from 'https://www.gutenberg.org/ebooks/11435' or reported_total is distinct from 27 then
+    raise exception 'Plan 282 source URL or total_days differs from reviewed source';
+  end if;
+  select count(*), min(day_number), max(day_number)
+  into present_days, first_day, last_day
+  from public.devotional_days
+  where plan_id = '90000000-0000-0000-0000-000000000282'::uuid;
+  if present_days <> 27 or first_day <> 1 or last_day <> 27 then
+    raise exception 'Plan 282 must have exactly 27 numbered days, found %', present_days;
+  end if;
+end
+$$;
+
+
+update public.devotional_plans as target
+set title = edit.value, updated_at = timestamptz '2026-10-26 09:15:00+00'
+from jsonb_to_recordset($adapt_text$
+[
+  {
+    "id": "90000000-0000-0000-0000-000000000282",
+    "value": "Small Acts, Great Love: 27 Readings Inspired by Small Means and Great Ends"
+  }
+]
+$adapt_text$::jsonb) as edit(id uuid, value text)
+where target.id = edit.id;
+
+
+update public.devotional_plans as target
+set description = edit.value, updated_at = timestamptz '2026-10-26 09:15:00+00'
+from jsonb_to_recordset($adapt_text$
+[
+  {
+    "id": "90000000-0000-0000-0000-000000000282",
+    "value": "Twenty-seven Scripture-led devotional readings editorially adapted from Small Means and Great Ends, an 1851 anthology edited by M. H. Adams with contributions from several writers. Following the sequence of the inherited selections, these readings consider modest generosity, grief and care for children, fear and hope, truthful speech, human dignity across cultural divides, conscience, neighborly service, gratitude, and care for creation. The Scripture readings are newly curated thematic anchors; all reflections, devotional summaries, practices, and prayers are new editorial writing, not quotations from the anthology. Some nineteenth-century stories portray Indigenous people through prejudice, describe severe treatment of children, or draw overly certain conclusions about bereavement; those perspectives are identified as historical and are not endorsed. The original anthology remains accessible at the linked source for readers who wish to study its period context."
+  }
+]
+$adapt_text$::jsonb) as edit(id uuid, value text)
+where target.id = edit.id;
+
+
+update public.devotional_days as target
+set title = edit.value, updated_at = timestamptz '2026-10-26 09:15:00+00'
+from jsonb_to_recordset($adapt_text$
+[
+  {
+    "id": "90000000-0000-0000-0000-000000000282",
+    "day_number": 1,
+    "value": "Offer What You Have"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000282",
+    "day_number": 2,
+    "value": "Treasure the Ordinary Day"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000282",
+    "day_number": 3,
+    "value": "Hope that Makes Room for Grief"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000282",
+    "day_number": 4,
+    "value": "Every Child Deserves Safety"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000282",
+    "day_number": 5,
+    "value": "Pray When You Are Afraid"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000282",
+    "day_number": 6,
+    "value": "Compassion Crosses Dividing Lines"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000282",
+    "day_number": 7,
+    "value": "The Gift of Welcome"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000282",
+    "day_number": 8,
+    "value": "Let Your Words Give Life"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000282",
+    "day_number": 9,
+    "value": "New Habits Begin with a New Choice"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000282",
+    "day_number": 10,
+    "value": "Light beyond the Shadow"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000282",
+    "day_number": 11,
+    "value": "Answer Anger with Wisdom"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000282",
+    "day_number": 12,
+    "value": "Living Water for the Outsider"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000282",
+    "day_number": 13,
+    "value": "Belonging to One Human Family"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000282",
+    "day_number": 14,
+    "value": "Hold Convictions without Contempt"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000282",
+    "day_number": 15,
+    "value": "Bring Hidden Wrong into the Light"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000282",
+    "day_number": 16,
+    "value": "Sit with Those Who Mourn"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000282",
+    "day_number": 17,
+    "value": "Love Remembered amid Loss"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000282",
+    "day_number": 18,
+    "value": "Care for a Grieving Child"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000282",
+    "day_number": 19,
+    "value": "Faithful Friends in Every Season"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000282",
+    "day_number": 20,
+    "value": "Small Kindness Is Real Service"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000282",
+    "day_number": 21,
+    "value": "Love Is Something We Do"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000282",
+    "day_number": 22,
+    "value": "Learn Gratitude in Simple Gifts"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000282",
+    "day_number": 23,
+    "value": "Choose the Neighbor over the Prize"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000282",
+    "day_number": 24,
+    "value": "Do Good without Needing Applause"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000282",
+    "day_number": 25,
+    "value": "Listen to the Gospel Witnesses"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000282",
+    "day_number": 26,
+    "value": "Make Room for Joy and Sorrow"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000282",
+    "day_number": 27,
+    "value": "Love That Leaves Room for Freedom"
+  }
+]
+$adapt_text$::jsonb) as edit(id uuid, day_number integer, value text)
+where target.plan_id = edit.id and target.day_number = edit.day_number;
+
+
+update public.devotional_days as target
+set content = edit.value, updated_at = timestamptz '2026-10-26 09:15:00+00'
+from jsonb_to_recordset($adapt_text$
+[
+  {
+    "id": "90000000-0000-0000-0000-000000000282",
+    "day_number": 1,
+    "value": "<p><strong>Read:</strong> 2 Kings 4:1-7; Acts 20:35.</p><p><strong>Source and historical context:</strong> In Julia A. Fletcher’s story of Eliza and the widow’s jar of oil, Eliza worries that without wealth she cannot relieve a struggling family. Her mother helps her see that she can seek a doctor, rally neighbors, and bring practical aid.</p><p><strong>Devotional focus:</strong> Generosity begins with attention, not abundance. The widow’s oil in 2 Kings is a picture of God’s care amid real need, not a guarantee that every hardship will disappear. Eliza learns to use the voice, relationships, and opportunities she already possesses.</p><p><strong>Reflect:</strong> What need have you noticed but dismissed because you could not solve it alone?</p><p><strong>Practice:</strong> Offer one concrete help today: make a call, share food, give time, or connect a person with a trustworthy resource.</p><p><strong>Prayer:</strong> Generous God, open my eyes to those in need. Teach me to use what I have, to ask others for help, and to give without seeking praise. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000282",
+    "day_number": 2,
+    "value": "<p><strong>Read:</strong> Psalm 90:12; Mark 10:13-16.</p><p><strong>Source and historical context:</strong> Margaret M. Mason’s sketch of young Mary Ellen remembers a child’s curiosity, affection, and love of Scripture. It also recounts her early death and the pain of those who loved her.</p><p><strong>Devotional focus:</strong> A small life is never an insignificant life. The story invites gratitude for ordinary moments without suggesting that a child’s suffering is required for spiritual growth. Jesus welcomed children as persons deserving tenderness, protection, and attention.</p><p><strong>Reflect:</strong> Whose presence have you been taking for granted, and what simple moment could you honor today?</p><p><strong>Practice:</strong> Give unhurried attention to a child, relative, friend, or neighbor. Listen before speaking.</p><p><strong>Prayer:</strong> Lord Jesus, teach me to receive each person as precious. Make me attentive to today and compassionate toward families facing illness or loss. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000282",
+    "day_number": 3,
+    "value": "<p><strong>Read:</strong> Romans 15:13; 1 Thessalonians 4:13-14.</p><p><strong>Source and historical context:</strong> The conclusion of “Mary Ellen” describes her parents’ sorrow; H. B. Nye’s essay “Hope” then reflects on trust through uncertainty, disappointment, and bereavement.</p><p><strong>Devotional focus:</strong> Christian hope does not erase grief or demand quick recovery. It brings sorrow honestly before the God who raised Jesus. We may hope for God’s future while still recognizing that a family’s absence, questions, and tears are real.</p><p><strong>Reflect:</strong> Is there a sorrow you have tried to rush past—or someone else’s grief you have been tempted to explain away?</p><p><strong>Practice:</strong> Offer presence rather than an easy answer. Reach out to someone grieving and allow them to speak or remain quiet.</p><p><strong>Prayer:</strong> God of hope, meet us in the places where words are few. Hold those who mourn and teach us to accompany them with patience and love. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000282",
+    "day_number": 4,
+    "value": "<p><strong>Read:</strong> Psalm 82:3-4; Micah 6:8.</p><p><strong>Source and historical context:</strong> Margaret A. Livermore’s “The Stolen Children” opens in colonial New England, introducing Emma and Anna Wilson amid settler-Indigenous conflict. Its narrator uses hostile nineteenth-century descriptions of Indigenous people and depicts severe punishment of the children.</p><p><strong>Devotional focus:</strong> The story should be read as a period narrative, not as an impartial account of Indigenous communities. Scripture calls us to protect children and act justly toward people on every side of conflict. Neither ethnicity nor disobedience diminishes a child’s dignity or right to safety.</p><p><strong>Reflect:</strong> Which inherited descriptions or assumptions make it harder for you to recognize another person’s full humanity?</p><p><strong>Practice:</strong> Practice accurate, respectful speech about a community unlike your own and support a child’s safety in a practical way.</p><p><strong>Prayer:</strong> God of justice, guard children from harm. Free us from prejudice and teach us to treat every neighbor with truth, mercy, and dignity. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000282",
+    "day_number": 5,
+    "value": "<p><strong>Read:</strong> Psalm 46:1; Psalm 34:17-18.</p><p><strong>Source and historical context:</strong> In the next part of “The Stolen Children,” the two sisters are taken from their home amid violence. At night they pray together for protection and for the family from whom they are separated.</p><p><strong>Devotional focus:</strong> Fear is not proof that faith has failed. The sisters’ prayer is an honest cry for help in a situation they did not choose. Prayer can sustain courage, but it never excuses violence or removes the responsibility of others to protect those in danger.</p><p><strong>Reflect:</strong> Where do you need to admit fear and seek both God’s comfort and responsible human help?</p><p><strong>Practice:</strong> If someone is at risk, prioritize concrete safety and trusted support alongside prayer. Do not place blame on the vulnerable.</p><p><strong>Prayer:</strong> Refuge of the frightened, hear every person who cries to you. Give courage, protection, and wise helpers to those facing danger. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000282",
+    "day_number": 6,
+    "value": "<p><strong>Read:</strong> Romans 12:15; Luke 10:33-37.</p><p><strong>Source and historical context:</strong> The story of Emma, Anna, and Winona portrays affection growing between the girls and an Indigenous family. They grieve together when Winona dies, and the woman caring for the sisters ultimately recognizes their need to return home.</p><p><strong>Devotional focus:</strong> Shared tenderness challenges the source’s sweeping hostile descriptions of Indigenous people. Even a story shaped by the prejudices of its century contains a reminder that human love and grief cross ethnic boundaries. Compassion listens to real people rather than labels.</p><p><strong>Reflect:</strong> Whose sorrow or goodness has been hidden from you by a group stereotype?</p><p><strong>Practice:</strong> Seek one truthful story from a community you know poorly, and respond to others’ loss without comparison or judgment.</p><p><strong>Prayer:</strong> God of all people, soften the borders we draw around our compassion. Teach us to mourn with those who mourn and to protect the vulnerable. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000282",
+    "day_number": 7,
+    "value": "<p><strong>Read:</strong> Luke 15:20-24; Romans 12:10.</p><p><strong>Source and historical context:</strong> The sisters’ homecoming is celebrated in “The Stolen Children.” The next selection, J. G. Adams’s “My Grandmother’s Cottage,” recalls a peaceful home where an older relative made space for a child to read and wonder.</p><p><strong>Devotional focus:</strong> Welcome is more than an open door. It is the patient attention by which another person knows they belong. Family reunion and the memory of a gentle grandparent offer distinct glimpses of hospitality, though not everyone’s own family story is safe or simple.</p><p><strong>Reflect:</strong> Who might need a welcome that comes without interrogation, pressure, or conditions?</p><p><strong>Practice:</strong> Create a small moment of belonging for someone—through a meal, attentive conversation, or a warm invitation.</p><p><strong>Prayer:</strong> Welcoming Father, make my presence safe and kind. Help me honor the homes people miss and create spaces where others can rest. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000282",
+    "day_number": 8,
+    "value": "<p><strong>Read:</strong> James 3:5-10; Ephesians 4:29.</p><p><strong>Source and historical context:</strong> The close of “My Grandmother’s Cottage” is followed by Eben Francis’s “The First Oath,” a story about a young person’s upbringing and the influence of words heard at work.</p><p><strong>Devotional focus:</strong> Words can repair or wound relationships. James warns that the tongue is small yet powerful. Rather than measuring people by a single phrase, we are called to build habits of truthful, gentle speech and to resist contempt disguised as ordinary conversation.</p><p><strong>Reflect:</strong> When do frustration, imitation, or the desire to fit in affect the way you speak?</p><p><strong>Practice:</strong> Replace one sharp phrase with a clear, respectful one; if you hurt someone, acknowledge it and apologize.</p><p><strong>Prayer:</strong> Lord, place wisdom on my tongue. Let my words be honest, restrained, and useful for building others up. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000282",
+    "day_number": 9,
+    "value": "<p><strong>Read:</strong> Ephesians 4:25-32; Proverbs 15:1.</p><p><strong>Source and historical context:</strong> In the second half of “The First Oath,” angry speech gradually becomes a habit. The young man eventually changes, but the narrator does not hide the struggle that followed repeated choices.</p><p><strong>Devotional focus:</strong> The point is not that one mistake fixes a person’s destiny. Patterns can deepen when we repeat them, and by grace we can also practice a different response. Ephesians calls believers to put away corrosive speech and choose forgiveness and kindness.</p><p><strong>Reflect:</strong> What repeated reaction are you ready to interrupt rather than excuse?</p><p><strong>Practice:</strong> Identify one trigger. Before responding, pause, name the feeling, and choose a kinder sentence or action.</p><p><strong>Prayer:</strong> Merciful God, give me courage to change a habit that harms others. Lead me into honest repentance and patient practice. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000282",
+    "day_number": 10,
+    "value": "<p><strong>Read:</strong> Psalm 23:4; Isaiah 41:10.</p><p><strong>Source and historical context:</strong> Louisa M. Barker’s “A Lesson Taught by Nature” follows a child frightened by woods that seemed dark from a distance. After entering them, she discovers that the darkness also shelters beauty; the memory later helps her during illness.</p><p><strong>Devotional focus:</strong> The psalmist does not deny the valley of shadow; he speaks of God’s nearness within it. Fear can be understandable, and new understanding sometimes comes slowly. We need not pretend the forest or the future holds no risks in order to trust God.</p><p><strong>Reflect:</strong> What unknown situation looks darker from a distance than it may truly be?</p><p><strong>Practice:</strong> Name a fear accurately. Take one safe, manageable step toward understanding it, with support if needed.</p><p><strong>Prayer:</strong> Shepherd of our days, be near in uncertainty. Give me honest courage and companions who help me walk wisely. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000282",
+    "day_number": 11,
+    "value": "<p><strong>Read:</strong> James 1:19-20; Proverbs 15:1.</p><p><strong>Source and historical context:</strong> The closing lesson of Barker’s woodland story introduces “Florence Drew,” a tale in which an upset child meets a woman described in demeaning, antiquated terms and receives counsel about temper and family relationships.</p><p><strong>Devotional focus:</strong> The woman deserves dignity regardless of how the storyteller portrays her. James calls us to be quick to hear and slow to anger. Maturity does not mean suppressing every feeling; it means taking responsibility for what we do with anger and responding without cruelty.</p><p><strong>Reflect:</strong> Is there a conversation where being heard matters more than winning an argument?</p><p><strong>Practice:</strong> Before replying in frustration, ask one sincere question and listen fully to the answer.</p><p><strong>Prayer:</strong> Patient Lord, teach me to recognize my emotions without letting them rule me. Help me speak with kindness and treat misunderstood people with dignity. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000282",
+    "day_number": 12,
+    "value": "<p><strong>Read:</strong> John 4:4-26; John 4:39-42.</p><p><strong>Source and historical context:</strong> J. G. Adams’s essay about Shechem recalls Jacob’s well and Jesus’ encounter with a Samaritan woman. It also mixes biblical narrative with nineteenth-century geographic and historical claims that should not be treated as current research.</p><p><strong>Devotional focus:</strong> Jesus crosses a boundary of hostility to speak with a woman whom others might overlook. He offers living water and makes space for her questions. A Bible place becomes meaningful not merely as a site on a map but through the Savior’s invitation to worship in spirit and truth.</p><p><strong>Reflect:</strong> Whose questions are you tempted to dismiss because of background or reputation?</p><p><strong>Practice:</strong> Listen respectfully to someone whose experiences differ from yours, without rushing to correct their story.</p><p><strong>Prayer:</strong> Jesus, giver of living water, meet us in our thirst. Free us from contempt and teach us to welcome honest questions. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000282",
+    "day_number": 13,
+    "value": "<p><strong>Read:</strong> Luke 10:25-37; 1 John 4:20-21.</p><p><strong>Source and historical context:</strong> “Are We Not All Brothers and Sisters?” tells of a young girl who recognizes another person as family under God and urges kindness toward people who are poor, distressed, or difficult to love. The next story begins a debate about fortune-telling.</p><p><strong>Devotional focus:</strong> Love of neighbor cannot stop at those who resemble us or agree with us. The good Samaritan story asks not who qualifies for our help but whether we will become neighbors through mercy. Genuine love also respects difference rather than erasing it.</p><p><strong>Reflect:</strong> Who have you treated as a category instead of as a person?</p><p><strong>Practice:</strong> Make one choice that honors someone’s dignity, especially when they cannot repay or impress you.</p><p><strong>Prayer:</strong> Father of all, enlarge my compassion. Teach me to meet people as neighbors and to turn conviction into merciful action. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000282",
+    "day_number": 14,
+    "value": "<p><strong>Read:</strong> James 1:5; Romans 14:19.</p><p><strong>Source and historical context:</strong> Julia A. Fletcher’s dialogue “Fortune-Telling” continues with friends debating predictions, entertainment, money, and conscience. Mary Ann argues that a conviction should not be abandoned simply to please a group. The page then begins “The Boy Who Stole the Nails.”</p><p><strong>Devotional focus:</strong> Discernment is not an excuse for mocking people who see matters differently. Wisdom asks whether a practice is honest, helpful, and consistent with conscience. Friends can challenge a choice firmly while preserving gentleness and freedom from coercion.</p><p><strong>Reflect:</strong> When have you confused keeping the peace with abandoning a serious conviction—or used conviction as an excuse to belittle someone?</p><p><strong>Practice:</strong> State one belief calmly, give your reason, and let the other person respond without pressure.</p><p><strong>Prayer:</strong> God of wisdom, keep me truthful and humble. Teach me to disagree with patience and seek what builds peace. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000282",
+    "day_number": 15,
+    "value": "<p><strong>Read:</strong> Proverbs 28:13; Ephesians 4:25-28.</p><p><strong>Source and historical context:</strong> Moses Ballou’s “The Boy Who Stole the Nails” follows a child who takes what does not belong to him and becomes burdened by secrecy. The page then turns toward a new story, “The Childless Mother.”</p><p><strong>Devotional focus:</strong> Dishonesty often creates new fears and excuses. Confession is not about being crushed by shame; it opens the way to truth, restitution, and changed conduct. Ephesians joins leaving theft behind with meaningful work and generosity toward others.</p><p><strong>Reflect:</strong> Is there a wrong you need to name accurately rather than conceal or minimize?</p><p><strong>Practice:</strong> Where safe and appropriate, tell the truth to someone affected, return what you can, and make a specific repair.</p><p><strong>Prayer:</strong> God of mercy and truth, give me courage to stop hiding. Lead me toward honest repair and a life that blesses others. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000282",
+    "day_number": 16,
+    "value": "<p><strong>Read:</strong> Psalm 34:18; Romans 12:15.</p><p><strong>Source and historical context:</strong> M. H. Adams’s “The Childless Mother” depicts Ellen grieving the deaths of her children. Those around her try to offer care, and the narrative reflects period expectations about how bereaved mothers ought to respond.</p><p><strong>Devotional focus:</strong> No one owes others a cheerful performance after devastating loss. Scripture makes room for lament, silence, and companionship. God’s nearness to the brokenhearted does not mean the bereaved must explain why tragedy happened or quickly feel thankful for it.</p><p><strong>Reflect:</strong> How might you offer care without comparing losses or setting a deadline on another person’s grief?</p><p><strong>Practice:</strong> Offer a specific practical help or simply sit and listen. Let the grieving person set the pace.</p><p><strong>Prayer:</strong> Compassionate Lord, be near to parents and families in sorrow. Make us steady companions, slow to judge and quick to help. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000282",
+    "day_number": 17,
+    "value": "<p><strong>Read:</strong> Matthew 5:4; 2 Corinthians 1:3-4.</p><p><strong>Source and historical context:</strong> The conclusion of “The Childless Mother” describes a bereaved parent’s faith, then begins Adams’s “The Motherless Child,” in which a family faces the death of a mother and a young child struggles with her absence.</p><p><strong>Devotional focus:</strong> Grief can involve very different needs for a parent, a partner, or a child. Jesus calls mourners blessed not because bereavement is desirable but because they are not forgotten by God. The comfort we receive can help us care for others without claiming to know exactly how they feel.</p><p><strong>Reflect:</strong> Whose sorrow needs acknowledgment rather than a lesson?</p><p><strong>Practice:</strong> Speak the name of someone missed if the mourner welcomes it, and offer patient presence.</p><p><strong>Prayer:</strong> Jesus, comfort of mourners, carry those who feel a painful absence. Help me offer care with humility rather than explanations. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000282",
+    "day_number": 18,
+    "value": "<p><strong>Read:</strong> Psalm 68:5-6; John 14:18.</p><p><strong>Source and historical context:</strong> In “The Motherless Child,” Willie continues to grieve his mother and gradually finds ways to remember her. The following “Snow-Birds” dialogue turns to creatures that remain present through harsh seasons.</p><p><strong>Devotional focus:</strong> A child may mourn in questions, repetition, silence, or bursts of ordinary play. Loving adults should not shame these responses or suggest that remembering is disloyal. God’s concern for vulnerable families calls a community to provide dependable, practical care.</p><p><strong>Reflect:</strong> What does a grieving child—or someone whose loss began in childhood—need to hear from you?</p><p><strong>Practice:</strong> If you care for a child in grief, answer honestly at an age-appropriate level, maintain safe routines, and invite memories without pressure.</p><p><strong>Prayer:</strong> Faithful God, surround bereaved children with trustworthy people. Help us listen with patience and honor the love they remember. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000282",
+    "day_number": 19,
+    "value": "<p><strong>Read:</strong> Proverbs 17:17; 1 Kings 18:41-46.</p><p><strong>Source and historical context:</strong> The “Snow-Birds” dialogue praises friends who remain near in hardship, and the nearby account of Mount Carmel recalls Elijah’s prayer and the first small sign of approaching rain.</p><p><strong>Devotional focus:</strong> Faithfulness may look like showing up when life feels wintry. Elijah’s small cloud is part of a particular biblical story, not a promise that every hoped-for outcome will arrive immediately. We can pray with perseverance while supporting one another in real conditions.</p><p><strong>Reflect:</strong> Which relationship needs steadfast attention rather than a grand gesture?</p><p><strong>Practice:</strong> Contact someone in difficulty and offer one practical form of support you can sustain.</p><p><strong>Prayer:</strong> Lord of every season, keep me faithful in friendship. Help me pray with hope and remain present when answers are slow. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000282",
+    "day_number": 20,
+    "value": "<p><strong>Read:</strong> Luke 16:10; Galatians 6:9-10.</p><p><strong>Source and historical context:</strong> Elizabeth Doten’s “The Philosophy of Life” follows Annie Burton, who is discouraged by her limitations until an older woman helps her recognize the value of ordinary kindness and service.</p><p><strong>Devotional focus:</strong> The size of a gift does not measure the worth of the giver. A helpful hand, patient word, or shared burden can matter deeply. Christian service does not require becoming extraordinary before beginning to act with love.</p><p><strong>Reflect:</strong> What good action have you postponed because it seems too small to count?</p><p><strong>Practice:</strong> Choose an achievable kindness today and offer it freely without trying to measure its impact.</p><p><strong>Prayer:</strong> Lord Jesus, make me willing in little things. Save me from comparing my service with others, and grow love in ordinary tasks. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000282",
+    "day_number": 21,
+    "value": "<p><strong>Read:</strong> 1 John 3:16-18; James 2:14-17.</p><p><strong>Source and historical context:</strong> The ending of “The Philosophy of Life” emphasizes loving and doing. The anthology then introduces titles about Irish poverty and an older Sunday-school celebration, drawing attention to both need and communal life.</p><p><strong>Devotional focus:</strong> Compassion becomes credible through action. Scripture challenges kind words that leave urgent needs untouched. We cannot meet every need, but we can resist indifference, collaborate wisely, and respect the people we serve rather than making them objects of pity.</p><p><strong>Reflect:</strong> What concern keeps returning to your attention, and what proportionate response is possible?</p><p><strong>Practice:</strong> Support a local effort meeting a verified need, or ask a person what help would actually be useful.</p><p><strong>Prayer:</strong> God of mercy, let my love take a practical shape. Keep my giving humble, thoughtful, and guided by the dignity of others. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000282",
+    "day_number": 22,
+    "value": "<p><strong>Read:</strong> Philippians 4:11-13; James 1:17.</p><p><strong>Source and historical context:</strong> Henry Bacon’s “The Sabbath School Festival” remembers the delight of children receiving simple gingerbread and questions whether more elaborate celebrations necessarily bring deeper joy. The next tale introduces Nelly and her hope of buying a collar for her dog.</p><p><strong>Devotional focus:</strong> Delight is not always tied to expense. Gratitude can deepen our ability to enjoy what is available without shaming people who lack necessities. Contentment is a practice of receiving gifts well, not a command to ignore injustice or genuine deprivation.</p><p><strong>Reflect:</strong> What modest gift or shared moment has brought more joy than its price would suggest?</p><p><strong>Practice:</strong> Thank someone for an ordinary kindness, and share a simple pleasure without comparison.</p><p><strong>Prayer:</strong> Giver of good gifts, teach me grateful attention. Guard me from envy while keeping me alert to neighbors who need real help. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000282",
+    "day_number": 23,
+    "value": "<p><strong>Read:</strong> Philippians 2:3-4; Luke 6:35.</p><p><strong>Source and historical context:</strong> In “Nelly Grey,” Nelly gathers strawberries to buy something for her dog. On the way, she learns that a sick child, Lucy, would cherish the berries, and decides to give them away despite her own plans.</p><p><strong>Devotional focus:</strong> Compassion often interrupts a perfectly reasonable intention. Nelly’s choice shows how love notices a particular need and responds without demanding payment. Her friend also learns to reconsider an ungenerous first response.</p><p><strong>Reflect:</strong> What preference could you set aside for a person whose immediate need is greater?</p><p><strong>Practice:</strong> Offer a resource, meal, or hour of help where it will genuinely relieve a burden.</p><p><strong>Prayer:</strong> Christ our servant, loosen my grip on small rewards. Teach me to see real needs and give freely with joy. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000282",
+    "day_number": 24,
+    "value": "<p><strong>Read:</strong> Matthew 6:1-4; 2 Corinthians 9:7.</p><p><strong>Source and historical context:</strong> “Nelly Grey” concludes when an adult privately rewards Nelly’s self-denial. The page then introduces a lesson about the four Gospel writers.</p><p><strong>Devotional focus:</strong> The story celebrates generous conduct, but Jesus asks us not to turn giving into a performance. A grateful surprise can be received happily; it is not the reason we serve. True generosity places the neighbor’s good ahead of attention, prizes, or reputation.</p><p><strong>Reflect:</strong> Would you still choose the same kindness if no one noticed or thanked you?</p><p><strong>Practice:</strong> Do one useful thing quietly today and resist the urge to tell others about it.</p><p><strong>Prayer:</strong> Father who sees in secret, purify my motives. Make me glad to give and content to leave recognition in your hands. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000282",
+    "day_number": 25,
+    "value": "<p><strong>Read:</strong> Luke 1:1-4; John 20:30-31.</p><p><strong>Source and historical context:</strong> “The Four Evangelists” introduces Matthew, Mark, Luke, and John with biographical traditions, some of which are uncertain. The following “May-Day” sketch shifts to children’s outdoor celebrations and an injured girl.</p><p><strong>Devotional focus:</strong> The Gospels invite us to encounter the person and work of Jesus. Luke describes careful attention to handed-down testimony, and John states why his account was written. We can read the four narratives together without treating every later claim about their authors as independently established fact.</p><p><strong>Reflect:</strong> When you read Scripture, do you listen for what the passage says—or only for what you already expect it to say?</p><p><strong>Practice:</strong> Read one short Gospel scene slowly. Notice what Jesus does, who is present, and one question the text leaves with you.</p><p><strong>Prayer:</strong> Lord Jesus, open my ears to the witness of Scripture. Grant humility, careful attention, and faith expressed in love. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000282",
+    "day_number": 26,
+    "value": "<p><strong>Read:</strong> Ecclesiastes 3:1-4; Psalm 104:10-12.</p><p><strong>Source and historical context:</strong> Nancy T. Munroe’s “May-Day” remembers spring outings, childhood accidents, and memories of loss. The page then turns to “Caging Birds,” a reflection on the lives of creatures kept in confinement.</p><p><strong>Devotional focus:</strong> Life seldom matches the celebration we imagined. Joy and grief may stand close together, and neither cancels the other. Scripture gives each its season. Care for creation also asks whether our pleasures honor or restrict the living things around us.</p><p><strong>Reflect:</strong> Where are you demanding either constant cheerfulness or constant seriousness from yourself or others?</p><p><strong>Practice:</strong> Make space for a simple delight while extending kindness to anyone whose day is difficult.</p><p><strong>Prayer:</strong> Creator of the seasons, receive both our laughter and our tears. Make me attentive to people and creatures affected by my choices. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000282",
+    "day_number": 27,
+    "value": "<p><strong>Read:</strong> Genesis 2:15; Matthew 10:29-31.</p><p><strong>Source and historical context:</strong> The final section of “Caging Birds” and the story “The Pet Swallow” describe children caring for a swallow they call Fairy. They want to keep it near, yet they recognize its need to fly freely and eventually face the uncertainty of its return.</p><p><strong>Devotional focus:</strong> Care does not always mean holding on. Stewardship honors the nature and well-being of what we cherish. The story is not a wildlife-care manual, but it invites a question we also face in relationships: can affection leave room for another’s freedom and flourishing?</p><p><strong>Reflect:</strong> Where could your care become more respectful of another living being’s needs or boundaries?</p><p><strong>Practice:</strong> Make one responsible choice that protects an animal, a habitat, or a person’s appropriate freedom.</p><p><strong>Prayer:</strong> Creator and keeper of life, teach me to cherish without possessing. Make my love gentle, responsible, and generous. Amen.</p>"
+  }
+]
+$adapt_text$::jsonb) as edit(id uuid, day_number integer, value text)
+where target.plan_id = edit.id and target.day_number = edit.day_number;
+
+
+-- Update/insert plan-level Scripture selections, without changing user-created Scripture notes.
+do $$
+declare
+  item jsonb;
+  target_day_id uuid;
+begin
+  for item in select value from jsonb_array_elements($adapt_refs$
+[
+  {
+    "id": "90000000-0000-0000-0000-000000000282",
+    "day_number": 1,
+    "references": [
+      "2 Kings 4:1-7",
+      "Acts 20:35"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000282",
+    "day_number": 2,
+    "references": [
+      "Psalm 90:12",
+      "Mark 10:13-16"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000282",
+    "day_number": 3,
+    "references": [
+      "Romans 15:13",
+      "1 Thessalonians 4:13-14"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000282",
+    "day_number": 4,
+    "references": [
+      "Psalm 82:3-4",
+      "Micah 6:8"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000282",
+    "day_number": 5,
+    "references": [
+      "Psalm 46:1",
+      "Psalm 34:17-18"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000282",
+    "day_number": 6,
+    "references": [
+      "Romans 12:15",
+      "Luke 10:33-37"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000282",
+    "day_number": 7,
+    "references": [
+      "Luke 15:20-24",
+      "Romans 12:10"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000282",
+    "day_number": 8,
+    "references": [
+      "James 3:5-10",
+      "Ephesians 4:29"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000282",
+    "day_number": 9,
+    "references": [
+      "Ephesians 4:25-32",
+      "Proverbs 15:1"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000282",
+    "day_number": 10,
+    "references": [
+      "Psalm 23:4",
+      "Isaiah 41:10"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000282",
+    "day_number": 11,
+    "references": [
+      "James 1:19-20",
+      "Proverbs 15:1"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000282",
+    "day_number": 12,
+    "references": [
+      "John 4:4-26",
+      "John 4:39-42"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000282",
+    "day_number": 13,
+    "references": [
+      "Luke 10:25-37",
+      "1 John 4:20-21"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000282",
+    "day_number": 14,
+    "references": [
+      "James 1:5",
+      "Romans 14:19"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000282",
+    "day_number": 15,
+    "references": [
+      "Proverbs 28:13",
+      "Ephesians 4:25-28"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000282",
+    "day_number": 16,
+    "references": [
+      "Psalm 34:18",
+      "Romans 12:15"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000282",
+    "day_number": 17,
+    "references": [
+      "Matthew 5:4",
+      "2 Corinthians 1:3-4"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000282",
+    "day_number": 18,
+    "references": [
+      "Psalm 68:5-6",
+      "John 14:18"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000282",
+    "day_number": 19,
+    "references": [
+      "Proverbs 17:17",
+      "1 Kings 18:41-46"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000282",
+    "day_number": 20,
+    "references": [
+      "Luke 16:10",
+      "Galatians 6:9-10"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000282",
+    "day_number": 21,
+    "references": [
+      "1 John 3:16-18",
+      "James 2:14-17"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000282",
+    "day_number": 22,
+    "references": [
+      "Philippians 4:11-13",
+      "James 1:17"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000282",
+    "day_number": 23,
+    "references": [
+      "Philippians 2:3-4",
+      "Luke 6:35"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000282",
+    "day_number": 24,
+    "references": [
+      "Matthew 6:1-4",
+      "2 Corinthians 9:7"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000282",
+    "day_number": 25,
+    "references": [
+      "Luke 1:1-4",
+      "John 20:30-31"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000282",
+    "day_number": 26,
+    "references": [
+      "Ecclesiastes 3:1-4",
+      "Psalm 104:10-12"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000282",
+    "day_number": 27,
+    "references": [
+      "Genesis 2:15",
+      "Matthew 10:29-31"
+    ]
+  }
+]
+$adapt_refs$::jsonb) loop
+    select id into strict target_day_id from public.devotional_days
+    where plan_id = (item ->> 'id')::uuid and day_number = (item ->> 'day_number')::integer;
+
+    update public.scripture_references
+    set reference = array(select jsonb_array_elements_text(item -> 'references')),
+        updated_at = timestamptz '2026-10-26 09:15:00+00'
+    where day_id = target_day_id and user_id is null;
+
+    if not found then
+      insert into public.scripture_references
+        (user_id, day_id, reference, created_at, updated_at)
+      values
+        (null, target_day_id, array(select jsonb_array_elements_text(item -> 'references')),
+         timestamptz '2026-10-26 09:15:00+00', timestamptz '2026-10-26 09:15:00+00');
+    end if;
+  end loop;
+end
+$$;
+
+-- Review before publication: the supplied source has not been approved for every territory.
+update public.devotional_plans
+set status = 'published', updated_at = timestamptz '2026-10-26 09:15:00+00'
+where id = '90000000-0000-0000-0000-000000000282'::uuid;
+
+commit;
+-- END CONSOLIDATED SOURCE: 20261026091500_repair_draft_devotional_plans_wave_19.sql
+
+-- BEGIN CONSOLIDATED SOURCE: 20261026110000_repair_draft_devotional_plans_wave_20.sql sha256=a9f4b3422d6c91f9c3d2e6d392e88494814a3638945e785fe8e2b26c2e7d5a1c
+-- Plan 284: The Pulpit of the Reformation, Nos. 1–4 (1834–1835 collection).
+-- Thirty-two source-grounded devotional readings; all summaries, reflections, and prayers are new editorial writing.
+-- The historical sermons contain disputed polemics and graphic eschatological rhetoric; these are contextualized.
+-- Preserve existing day IDs, day numbers, and user progress; no row deletions or insertions in devotional_days.
+-- Reviewed for devotional suitability and approved for publication.
+
+begin;
+
+-- Fail safely if the original plan's identity, source, or day count has changed.
+do $$
+declare
+  present_days integer;
+  first_day integer;
+  last_day integer;
+  distinct_days integer;
+  source_link text;
+  reported_total integer;
+begin
+  select source_url, total_days into source_link, reported_total
+  from public.devotional_plans
+  where id = '90000000-0000-0000-0000-000000000284'::uuid;
+  if not found then raise exception 'Plan 284 is missing'; end if;
+  if source_link is distinct from 'https://www.gutenberg.org/ebooks/28104'
+     or reported_total is distinct from 32 then
+    raise exception 'Plan 284 source URL or total_days differs from reviewed source';
+  end if;
+  select count(*), min(day_number), max(day_number), count(distinct day_number)
+  into present_days, first_day, last_day, distinct_days
+  from public.devotional_days
+  where plan_id = '90000000-0000-0000-0000-000000000284'::uuid;
+  if present_days <> 32 or first_day <> 1 or last_day <> 32 or distinct_days <> 32 then
+    raise exception 'Plan 284 must have exactly 32 unique numbered days, found %', present_days;
+  end if;
+end
+$$;
+
+
+update public.devotional_plans as target
+set title = edit.value, updated_at = now()
+from jsonb_to_recordset($adapt_text$
+[
+  {
+    "id": "90000000-0000-0000-0000-000000000284",
+    "value": "Faith, Grace, and Courage: 32 Readings from the Reformation Pulpit"
+  }
+]
+$adapt_text$::jsonb) as edit(id uuid, value text)
+where target.id = edit.id;
+
+
+update public.devotional_plans as target
+set description = edit.value, updated_at = now()
+from jsonb_to_recordset($adapt_text$
+[
+  {
+    "id": "90000000-0000-0000-0000-000000000284",
+    "value": "Thirty-two Scripture-led devotional readings inspired by The Pulpit of the Reformation, Nos. 1–4, an 1834–1835 collection presenting sermons of John Welch, Hugh Latimer, and John Knox. The readings follow the inherited progression through Christian watchfulness, divine justice, grace, parables, responsible leadership, exile, resurrection, and God’s comfort under pressure. Each reading contains a newly curated biblical focus, a clearly labeled description of the historical source, original reflection, reflection question, practice, and prayer. These are new editorial adaptations, not verbatim sermons or quotations. Historical anti-Catholic and anti-Muslim polemics, apocalyptic identifications, and judgment rhetoric are treated as period interpretations, not endorsed as judgments on contemporary communities. The original text remains available through the linked Project Gutenberg source."
+  }
+]
+$adapt_text$::jsonb) as edit(id uuid, value text)
+where target.id = edit.id;
+
+
+update public.devotional_days as target
+set title = edit.value, updated_at = now()
+from jsonb_to_recordset($adapt_text$
+[
+  {
+    "id": "90000000-0000-0000-0000-000000000284",
+    "day_number": 1,
+    "value": "Awake to What Matters"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000284",
+    "day_number": 2,
+    "value": "Hope under Pressure"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000284",
+    "day_number": 3,
+    "value": "Worship the Creator"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000284",
+    "day_number": 4,
+    "value": "Come to the Throne of Grace"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000284",
+    "day_number": 5,
+    "value": "Lay Down Your Crown"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000284",
+    "day_number": 6,
+    "value": "Justice Without Favoritism"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000284",
+    "day_number": 7,
+    "value": "Hold Fast to Enduring Words"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000284",
+    "day_number": 8,
+    "value": "Search Your Heart, Receive Mercy"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000284",
+    "day_number": 9,
+    "value": "Comfort One Another with Hope"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000284",
+    "day_number": 10,
+    "value": "Stay Awake in Daily Life"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000284",
+    "day_number": 11,
+    "value": "Grace Is Not a Wage"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000284",
+    "day_number": 12,
+    "value": "Honor Faithful Work"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000284",
+    "day_number": 13,
+    "value": "Look for God’s Heart in Christ"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000284",
+    "day_number": 14,
+    "value": "Let the Good Seed Grow"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000284",
+    "day_number": 15,
+    "value": "Leave Final Judgment to God"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000284",
+    "day_number": 16,
+    "value": "Repentance Is a Door, Not a Dead End"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000284",
+    "day_number": 17,
+    "value": "Love Your Enemy without Coercion"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000284",
+    "day_number": 18,
+    "value": "No Earthly Power Is Ultimate"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000284",
+    "day_number": 19,
+    "value": "Leadership Is a Trust"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000284",
+    "day_number": 20,
+    "value": "Speak Up for Those at Risk"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000284",
+    "day_number": 21,
+    "value": "Learn from a Community’s Failures"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000284",
+    "day_number": 22,
+    "value": "Resist Evil without Becoming Cruel"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000284",
+    "day_number": 23,
+    "value": "Faithful in a Strange Land"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000284",
+    "day_number": 24,
+    "value": "Remember God in Trouble"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000284",
+    "day_number": 25,
+    "value": "God Does Not Abandon His People"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000284",
+    "day_number": 26,
+    "value": "Life beyond the Grave"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000284",
+    "day_number": 27,
+    "value": "Dry Bones Can Live Again"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000284",
+    "day_number": 28,
+    "value": "The Seed and the Promise"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000284",
+    "day_number": 29,
+    "value": "Shelter in the Promises of God"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000284",
+    "day_number": 30,
+    "value": "God Sees Hidden Harm"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000284",
+    "day_number": 31,
+    "value": "Trust Justice Beyond Revenge"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000284",
+    "day_number": 32,
+    "value": "It Is I—Do Not Be Afraid"
+  }
+]
+$adapt_text$::jsonb) as edit(id uuid, day_number integer, value text)
+where target.plan_id = edit.id and target.day_number = edit.day_number;
+
+
+update public.devotional_days as target
+set content = edit.value, updated_at = now()
+from jsonb_to_recordset($adapt_text$
+[
+  {
+    "id": "90000000-0000-0000-0000-000000000284",
+    "day_number": 1,
+    "value": "<p><strong>Read:</strong> Revelation 2:4-5; Revelation 3:1-3</p><p><strong>Source and historical context:</strong> John Welch opens his sermon on judgment by describing the church as spiritually sleepy. Drawing on the messages to the seven churches in Revelation, he asks hearers to consider whether outward religion has replaced living devotion.</p><p><strong>Devotional focus:</strong> An honest spiritual inventory begins not with predicting the end of the world but with examining the present heart. The call to return to first love is both serious and merciful: Christ notices complacency, yet invites renewal. Our attention can turn again toward truth, prayer, and neighborly love.</p><p><strong>Reflect:</strong> Where have you kept the appearance of faith while neglecting its practice?</p><p><strong>Practice:</strong> Name one habit of love or prayer that has grown cold. Take one small, sincere step to restore it today.</p><p><strong>Prayer:</strong> Lord Jesus, awaken what has grown indifferent in me. Give me a truthful heart, a willingness to repent, and fresh love for you and those around me. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000284",
+    "day_number": 2,
+    "value": "<p><strong>Read:</strong> Revelation 7:13-17; 1 Peter 5:8-10</p><p><strong>Source and historical context:</strong> Welch pictures the suffering church through Revelation’s seals, the souls of witnesses, and the promise of a people comforted before God. He also describes frightening symbolic visions and hostile figures using the controversies of his own era.</p><p><strong>Devotional focus:</strong> Apocalyptic images have often helped persecuted communities say that suffering and injustice are not the last word. We should resist turning every image into a confident prediction about current nations or religious groups. The promise at the center is God’s presence with people who have endured pain.</p><p><strong>Reflect:</strong> Who needs reassurance that their suffering has been seen and not dismissed?</p><p><strong>Practice:</strong> Offer steady help to someone experiencing hardship. Read Revelation’s promise of God wiping away tears before arguing about its symbols.</p><p><strong>Prayer:</strong> God of consolation, keep those who are afraid or persecuted. Make our hope patient, our words humble, and our care practical. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000284",
+    "day_number": 3,
+    "value": "<p><strong>Read:</strong> Revelation 14:6-7; Psalm 95:1-7</p><p><strong>Source and historical context:</strong> In a rapid survey of Revelation, Welch speaks of the Lamb, a new song, the everlasting gospel, and the call to worship the Maker of heaven and earth. His polemical identifications of the beasts and Babylon reflect a particular Reformation interpretation.</p><p><strong>Devotional focus:</strong> The call to worship the Creator addresses every generation without giving us permission to label present-day neighbors as enemies of God. Worship puts human power and pride in proportion. Before speculating about every symbol, we can ask whether our lives honor the One who gives them meaning.</p><p><strong>Reflect:</strong> Do you spend more attention on identifying threats than on worship, faithfulness, and love?</p><p><strong>Practice:</strong> Set aside anxious prediction. Pray through Psalm 95 and thank God for three ordinary gifts of creation.</p><p><strong>Prayer:</strong> Creator of heaven and earth, turn my attention from fear and contempt toward reverence. Teach me to live faithfully in this day. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000284",
+    "day_number": 4,
+    "value": "<p><strong>Read:</strong> Hebrews 4:14-16; Revelation 20:11-12</p><p><strong>Source and historical context:</strong> Welch contrasts Christ’s saving first coming with a future scene of judgment. Against the image of a final throne, he urges his congregation to approach the throne of grace while mercy is offered.</p><p><strong>Devotional focus:</strong> Accountability matters, yet the gospel does not ask us to manufacture safety through terror. Hebrews invites those who need mercy to approach confidently through Jesus. Honest confession can begin with trust that God hears us, rather than with an attempt to hide every weakness.</p><p><strong>Reflect:</strong> What have you concealed because you imagine that asking for mercy is itself a failure?</p><p><strong>Practice:</strong> In private prayer, name one burden honestly and ask for grace to make a fitting repair.</p><p><strong>Prayer:</strong> Merciful Christ, I come with need rather than excuses. Teach me to receive forgiveness and to walk toward what is right. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000284",
+    "day_number": 5,
+    "value": "<p><strong>Read:</strong> Revelation 4:9-11; Philippians 2:9-11</p><p><strong>Source and historical context:</strong> Welch dwells on the greatness of the throne in Revelation. He compares it with earthly rulers, Solomon’s splendor, gathered saints, and the crowns laid down before God.</p><p><strong>Devotional focus:</strong> No title, office, income, or influence makes a person ultimate. The elders’ worship is a picture of relinquishing the need to be at the center. Remembering God’s greatness should make leaders more accountable and all of us more willing to serve.</p><p><strong>Reflect:</strong> Which status or achievement are you tempted to treat as proof of your worth?</p><p><strong>Practice:</strong> Use an advantage you possess to make room for someone whose voice is usually overlooked.</p><p><strong>Prayer:</strong> King of all creation, free me from the need to stand above others. Teach me to use every responsibility with humility. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000284",
+    "day_number": 6,
+    "value": "<p><strong>Read:</strong> Genesis 18:25; 2 Corinthians 5:10</p><p><strong>Source and historical context:</strong> Welch explains the great white throne as an image of a judge who acts righteously, before whom powerful and ordinary people alike are accountable. His language includes the severe warnings typical of his preaching.</p><p><strong>Devotional focus:</strong> The conviction that God judges justly should unsettle favoritism, not license us to declare specific people condemned. We cannot know every human heart. We can, however, examine our dealings: do we tell the truth, defend the vulnerable, and refuse a double standard?</p><p><strong>Reflect:</strong> Where do you excuse in yourself what you criticize in someone with less influence?</p><p><strong>Practice:</strong> Review one decision for fairness. Correct any avoidable disadvantage you have imposed on another person.</p><p><strong>Prayer:</strong> Righteous God, judge my motives and correct my biases. Teach me to act fairly and trust judgment beyond my knowledge to you. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000284",
+    "day_number": 7,
+    "value": "<p><strong>Read:</strong> Luke 21:33; Matthew 25:31-40</p><p><strong>Source and historical context:</strong> Welch closes his vivid sermon on final judgment with an appeal to the enduring word of Christ and the seriousness of meeting him. His imagery stresses urgency and the need to take one’s conscience seriously.</p><p><strong>Devotional focus:</strong> Urgency need not become panic. Jesus calls for watchfulness expressed in faithfulness: feeding the hungry, welcoming strangers, and caring for the vulnerable are meaningful ways of taking his words seriously. Today is a real opportunity to love.</p><p><strong>Reflect:</strong> What act of mercy is being postponed while you worry about what the future might hold?</p><p><strong>Practice:</strong> Choose one tangible act of service, then read Jesus’ words about care for those in need.</p><p><strong>Prayer:</strong> Faithful Lord, anchor me in what endures. Replace speculation without action with courage to love my neighbor now. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000284",
+    "day_number": 8,
+    "value": "<p><strong>Read:</strong> 1 John 1:8-9; Hebrews 4:16</p><p><strong>Source and historical context:</strong> The inherited eighth section finishes Welch’s call to examine the conscience and seek pardon; it then begins Hugh Latimer’s sermon on the day of judgment. Both preachers urge readiness, though they speak in different voices.</p><p><strong>Devotional focus:</strong> Self-examination becomes destructive when it leaves no room for grace. Scripture joins honest acknowledgment of sin to God’s faithfulness in forgiveness. We do not need to exaggerate our guilt or our innocence. We can tell the truth and take a next step.</p><p><strong>Reflect:</strong> When you examine your actions, do you tend to excuse everything or condemn yourself without hope?</p><p><strong>Practice:</strong> Confess one specific wrong before God and consider one appropriate act of restitution or reconciliation.</p><p><strong>Prayer:</strong> God of truth and mercy, give me courage to see clearly and hope to begin again. Guide me toward repair and renewed trust. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000284",
+    "day_number": 9,
+    "value": "<p><strong>Read:</strong> 1 Thessalonians 4:13-18; Luke 21:27-28</p><p><strong>Source and historical context:</strong> Hugh Latimer speaks of Christ’s coming, the resurrection, and hope for those who have died. He urges his hearers to be ready and uses the images of budding trees and approaching events.</p><p><strong>Devotional focus:</strong> The Christian hope of resurrection is not a timetable for predicting a date. Paul offers it especially as comfort to grieving believers. The future belongs to God; meanwhile, hope can keep us attentive, compassionate, and faithful rather than trapped in dread.</p><p><strong>Reflect:</strong> How can your understanding of Christian hope become a comfort instead of a source of alarm?</p><p><strong>Practice:</strong> Reach out gently to someone carrying grief. Offer companionship without claiming to know when or how their pain will resolve.</p><p><strong>Prayer:</strong> Risen Jesus, strengthen those who mourn. Give us hope that steadies love and patience in the present. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000284",
+    "day_number": 10,
+    "value": "<p><strong>Read:</strong> Luke 21:34-36; Matthew 20:1-16</p><p><strong>Source and historical context:</strong> Latimer ends his sermon about watchfulness by urging prayer on waking and sleeping. This inherited day then introduces his sermon on the vineyard laborers and the surprising generosity of the householder.</p><p><strong>Devotional focus:</strong> Readiness is less about an anxious countdown and more about the ordinary habits that keep love alive. The vineyard parable adds a second insight: God’s generosity exceeds human calculations. A watchful heart makes room for grateful service, not comparison.</p><p><strong>Reflect:</strong> Do your daily routines help you remain attentive to God and generous toward others?</p><p><strong>Practice:</strong> Begin and end today with a short prayer. Notice one person whose labor you often take for granted.</p><p><strong>Prayer:</strong> Lord, wake me to the good I can do today. Free me from comparison and strengthen the habits that keep me close to you. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000284",
+    "day_number": 11,
+    "value": "<p><strong>Read:</strong> Matthew 20:1-16; Ephesians 2:8-10</p><p><strong>Source and historical context:</strong> In the parable of the laborers, Latimer challenges those who demand greater reward for longer service. He uses a sharp Reformation critique of religious merit and insists that the poor are not excluded from God’s gifts.</p><p><strong>Devotional focus:</strong> We easily turn gratitude into a comparison: why did someone else receive so much? Jesus’ parable invites us to recognize generosity without denying the real importance of fair treatment among workers. God’s grace is not a prize earned by competing against our neighbors.</p><p><strong>Reflect:</strong> Whose blessing has stirred resentment because it does not match your expectations?</p><p><strong>Practice:</strong> Thank God for one unearned gift, then congratulate someone else without adding a comparison.</p><p><strong>Prayer:</strong> Generous Father, teach me to rejoice in grace rather than count other people’s rewards. Make me fair, grateful, and glad to serve. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000284",
+    "day_number": 12,
+    "value": "<p><strong>Read:</strong> Colossians 3:23-24; 1 Corinthians 4:7</p><p><strong>Source and historical context:</strong> Latimer continues the vineyard sermon by speaking about wealth, daily work, and the equal dignity of people who serve God in different stations of life. He contrasts the world’s status rankings with the welcome of Christ.</p><p><strong>Devotional focus:</strong> The worth of a worker is not measured only in wages, prestige, or visibility. Work done with integrity and care matters, and those who labor under difficult conditions deserve respect and justice. Gratitude for what we have can turn into generosity toward those who have less.</p><p><strong>Reflect:</strong> Whose essential labor is invisible to you because of their job or social position?</p><p><strong>Practice:</strong> Thank someone for practical work and, where you have influence, support fair and humane conditions.</p><p><strong>Prayer:</strong> God who sees every person, keep me from arrogance. Let the work of my hands become a blessing and my treatment of workers be just. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000284",
+    "day_number": 13,
+    "value": "<p><strong>Read:</strong> John 1:18; John 3:16-17</p><p><strong>Source and historical context:</strong> Latimer urges hearers not to speculate about hidden decrees but to learn the Father’s character through the Son. His sermon repeatedly returns to Christ as the place to seek assurance of God’s goodwill.</p><p><strong>Devotional focus:</strong> When questions become overwhelming, the life and teaching of Jesus give us a concrete starting point: compassion, truth, the cross, and the promise of reconciliation. This does not settle every theological debate, but it prevents abstract fear from crowding out the gospel’s invitation.</p><p><strong>Reflect:</strong> What picture of God has fear painted for you, and how might Jesus’ actions challenge it?</p><p><strong>Practice:</strong> Read John 3:16–17 slowly. Write down one quality of God you see in the sending of Jesus.</p><p><strong>Prayer:</strong> Father, meet my questions through the life of your Son. Lead me from anxious speculation into trust that shapes love. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000284",
+    "day_number": 14,
+    "value": "<p><strong>Read:</strong> Matthew 13:24-30; Matthew 13:36-43</p><p><strong>Source and historical context:</strong> The inherited day closes Latimer’s teaching on God’s love and then opens his sermon on the parable of the weeds among the wheat. He explains why parables use everyday images to teach difficult spiritual matters.</p><p><strong>Devotional focus:</strong> The field teaches humility about what we can see. Good and harmful actions have consequences, yet people are more complex than a quick label. Jesus warns against destructive eagerness to tear up the whole field while protecting the growing crop.</p><p><strong>Reflect:</strong> When have you decided too quickly that another person could never grow or change?</p><p><strong>Practice:</strong> Replace one sweeping judgment with a truthful description of behavior and a constructive response.</p><p><strong>Prayer:</strong> Patient God, help me recognize harm without rushing to condemn people beyond hope. Teach me wise care for what is good. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000284",
+    "day_number": 15,
+    "value": "<p><strong>Read:</strong> Matthew 13:36-43; Romans 12:19</p><p><strong>Source and historical context:</strong> Latimer interprets the weeds and harvest as images of evil and judgment. His sermon contains graphic warnings about punishment, reflecting the rhetorical conventions and convictions of his period.</p><p><strong>Devotional focus:</strong> Jesus’ explanation takes wrongdoing seriously; it does not give Christians authority to harm those they consider weeds. Final judgment belongs to God. Our work today is to protect people from harm, speak truth, practice repentance, and refuse revenge.</p><p><strong>Reflect:</strong> Where are you tempted to assume the role of final judge over someone who has wronged you?</p><p><strong>Practice:</strong> Choose one responsible boundary or act of accountability that does not rely on humiliation or retaliation.</p><p><strong>Prayer:</strong> Just Lord, defend those at risk and restrain harm. Keep me from vengeance and teach me to seek justice with mercy. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000284",
+    "day_number": 16,
+    "value": "<p><strong>Read:</strong> 2 Peter 3:9; 1 John 1:9</p><p><strong>Source and historical context:</strong> Latimer’s sermon continues with urgent calls to turn away from wrongdoing. He also argues that a living faith shows itself in a struggle against sin rather than complacent permission to cause harm.</p><p><strong>Devotional focus:</strong> Real repentance is not a performance of despair. It is a truthful turning that can include apology, repair, changed habits, and asking for help. God’s patience does not make wrongdoing harmless; it makes transformation possible.</p><p><strong>Reflect:</strong> Which repeated pattern calls for a plan to change, not merely another expression of regret?</p><p><strong>Practice:</strong> Identify one trigger, one accountability step, and one concrete repair you can make this week.</p><p><strong>Prayer:</strong> Merciful God, give me repentance that is honest and active. Help me receive forgiveness and practice a better way. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000284",
+    "day_number": 17,
+    "value": "<p><strong>Read:</strong> Matthew 5:43-48; 2 Corinthians 10:3-4</p><p><strong>Source and historical context:</strong> Latimer asks his hearers to examine how they respond to personal enemies and then argues, using the parable of the weeds, against using violence to force belief. The inherited section next introduces John Knox and his sermon on Isaiah.</p><p><strong>Devotional focus:</strong> Jesus’ call to love enemies is difficult, but it is never permission to enable abuse or ignore injustice. Faith cannot be manufactured by threats. Christians can oppose harmful acts, preserve firm boundaries, and still refuse dehumanization.</p><p><strong>Reflect:</strong> Can you reject a person’s harmful behavior without allowing resentment to define your own conduct?</p><p><strong>Practice:</strong> Pray for wisdom about a strained relationship. Choose a safe, noncoercive act of honesty or restraint.</p><p><strong>Prayer:</strong> Jesus, teach me love that is courageous rather than naïve. Help me keep necessary boundaries and refuse cruelty. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000284",
+    "day_number": 18,
+    "value": "<p><strong>Read:</strong> Isaiah 26:13-14; John 18:36</p><p><strong>Source and historical context:</strong> A historical preface introduces John Knox’s sermon preached amid conflict in the Scottish court, followed by his exposition of Isaiah’s words about other lords ruling over God’s people. The account reflects contentious sixteenth-century church and state relations.</p><p><strong>Devotional focus:</strong> People may owe practical duties to institutions, yet no earthly leader deserves the devotion owed to God. Historical polemics should not be adopted as blanket judgments on today’s religious communities. The devotional question is whether conscience remains grounded in truth and the dignity of persons.</p><p><strong>Reflect:</strong> Which demand for loyalty tempts you to compromise honesty or compassion?</p><p><strong>Practice:</strong> Consider a decision where authority and conscience intersect. Identify a peaceful, responsible way to uphold what is right.</p><p><strong>Prayer:</strong> God above every throne, free me from fear of human approval. Make my convictions truthful, humble, and peaceable. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000284",
+    "day_number": 19,
+    "value": "<p><strong>Read:</strong> Deuteronomy 17:18-20; Mark 10:42-45</p><p><strong>Source and historical context:</strong> Knox argues that power derives its legitimacy from God and that rulers should know justice and use authority for the good of people. His sermon sharply reproves negligent or self-serving leadership.</p><p><strong>Devotional focus:</strong> Authority is not self-justifying. Whether we lead a household, workplace, church, or institution, power should answer to truth, accountability, and the people affected by decisions. Jesus turns greatness toward service rather than domination.</p><p><strong>Reflect:</strong> What decision under your control needs more listening and less self-protection?</p><p><strong>Practice:</strong> Invite honest feedback from someone affected by your choices, then make one adjustment you can explain openly.</p><p><strong>Prayer:</strong> Servant King, teach all who hold power to act justly. Begin with me: make my influence a means of care rather than control. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000284",
+    "day_number": 20,
+    "value": "<p><strong>Read:</strong> Proverbs 31:8-9; Isaiah 1:17</p><p><strong>Source and historical context:</strong> Knox warns rulers that neglected duties have moral consequences. He uses examples from Israel’s history to argue that the powerful are responsible for their own choices and for harms they knowingly allow.</p><p><strong>Devotional focus:</strong> Silence can protect injustice when we have both knowledge and a realistic opportunity to help. Scripture asks for advocacy, fair judgment, and defense of the vulnerable. That responsibility calls for wisdom: speaking out should not needlessly endanger those we intend to protect.</p><p><strong>Reflect:</strong> Whose interests are missing from a decision in which you have a voice?</p><p><strong>Practice:</strong> Raise a concrete concern, document it accurately, or connect someone to responsible help using a safe channel.</p><p><strong>Prayer:</strong> God of justice, make us attentive to the unheard. Give courage to those with influence and protection to those at risk. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000284",
+    "day_number": 21,
+    "value": "<p><strong>Read:</strong> Jeremiah 22:3; Psalm 82:3-4</p><p><strong>Source and historical context:</strong> In continuing his exposition, Knox recounts how disobedience and neglect of God’s prophets damaged Israel. He uses that history as a warning to his own religious and political community.</p><p><strong>Devotional focus:</strong> Ancient judgments cannot simply be mapped onto the hardships of modern people or nations. Yet communities can learn from their failures: oppression, dishonesty, and disregard for the weak erode trust. The faithful response is to change what we can instead of searching for scapegoats.</p><p><strong>Reflect:</strong> What harmful pattern has your community normalized because it has lasted for years?</p><p><strong>Practice:</strong> Choose one modest corrective action within your reach and invite accountability from others.</p><p><strong>Prayer:</strong> Lord of truth, expose injustice without hardening our hearts. Give our communities humility to acknowledge wrong and courage to repair it. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000284",
+    "day_number": 22,
+    "value": "<p><strong>Read:</strong> Romans 12:17-21; 1 Peter 2:23</p><p><strong>Source and historical context:</strong> Knox speaks sternly about rulers who oppress and the hope of an afflicted church. His sermon describes the overthrow of tyrants in the language of divine judgment.</p><p><strong>Devotional focus:</strong> God’s opposition to oppression does not make revenge a holy calling. Paul urges believers not to repay evil with evil. We can protect people, seek legal and communal accountability, and speak against injustice without taking pleasure in another person’s suffering.</p><p><strong>Reflect:</strong> What does a just response look like when anger is justified but retaliation would cause further harm?</p><p><strong>Practice:</strong> Name the harm precisely and identify a peaceful, proportionate step toward protection or accountability.</p><p><strong>Prayer:</strong> God who knows every wrong, keep my desire for justice from becoming hatred. Help me defend others and overcome evil with good. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000284",
+    "day_number": 23,
+    "value": "<p><strong>Read:</strong> Daniel 6:16-23; Psalm 137:1-4</p><p><strong>Source and historical context:</strong> Knox turns to the exile and deliverance of God’s people, including the witness of Daniel under foreign rulers. He sees continuity between ancient exiles and Christians facing religious pressure in his time.</p><p><strong>Devotional focus:</strong> Faithfulness may require living amid institutions or cultures we do not control. The story of Daniel is not a guarantee of physical escape from every danger, but it encourages integrity, prayer, and courage. Exile and displacement also call for practical solidarity with people who have lost home or safety.</p><p><strong>Reflect:</strong> What would faithful courage look like in a setting where you feel out of place?</p><p><strong>Practice:</strong> Support someone experiencing displacement or social isolation, and practice one truthful commitment you have been tempted to hide.</p><p><strong>Prayer:</strong> God of those far from home, strengthen everyone under pressure. Give us courage to remain faithful and kindness toward the displaced. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000284",
+    "day_number": 24,
+    "value": "<p><strong>Read:</strong> Isaiah 26:16; Psalm 46:1</p><p><strong>Source and historical context:</strong> Knox describes signs of God’s care in the lives of exiles and the return from captivity, then returns to Isaiah’s line about people pouring out prayer in trouble.</p><p><strong>Devotional focus:</strong> Difficulty can expose the fragility of the things we rely on, but suffering is not proof that the sufferer is being punished. Isaiah’s prayer offers language for seeking God honestly when circumstances are beyond our control. Dependence can coexist with responsible action and community support.</p><p><strong>Reflect:</strong> When trouble comes, do you isolate yourself rather than ask for help?</p><p><strong>Practice:</strong> Pray honestly about one pressure, then contact a trustworthy person or practical resource instead of carrying it alone.</p><p><strong>Prayer:</strong> Refuge in trouble, hear our anxious voices. Lead us toward wise action, steadfast hope, and people who can help. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000284",
+    "day_number": 25,
+    "value": "<p><strong>Read:</strong> Psalm 103:13-14; Hebrews 12:5-11</p><p><strong>Source and historical context:</strong> Knox distinguishes between what he considers judgment on persistent wrongdoing and the discipline or testing of people who belong to God. He insists that trouble does not mean God has forgotten the faithful.</p><p><strong>Devotional focus:</strong> Scripture’s language of discipline needs pastoral care. We should not identify another person’s illness, loss, or persecution as punishment from God. Instead, we can seek humility in hardship and trust that compassion and correction need not be opposed.</p><p><strong>Reflect:</strong> What false conclusion about yourself or another person have you drawn simply because suffering occurred?</p><p><strong>Practice:</strong> Release one ungrounded accusation. Offer care or ask for support where hardship is present.</p><p><strong>Prayer:</strong> Compassionate Father, keep us from judging people by their pain. Guide us toward wise correction and mercy that never abandons. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000284",
+    "day_number": 26,
+    "value": "<p><strong>Read:</strong> Isaiah 26:19; 1 Corinthians 15:20-22</p><p><strong>Source and historical context:</strong> Knox turns to Isaiah’s resurrection language and argues that the hope of life beyond death sustains a community under oppression. He links confidence in God’s power to the promise that death will not have the final word.</p><p><strong>Devotional focus:</strong> Christian hope does not require pretending that mortality is easy. The New Testament places resurrection hope in Christ and invites grief to speak truthfully. We can live courageously because our lives are more than the fears that surround us.</p><p><strong>Reflect:</strong> How might resurrection hope reshape a choice you are making out of fear?</p><p><strong>Practice:</strong> Read 1 Corinthians 15:20–22 and pray for someone facing death, bereavement, or deep uncertainty.</p><p><strong>Prayer:</strong> God of life, meet us at the limits of our strength. Ground our hope in the risen Christ and make us tender toward mourners. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000284",
+    "day_number": 27,
+    "value": "<p><strong>Read:</strong> Ezekiel 37:1-14; Isaiah 26:19</p><p><strong>Source and historical context:</strong> Knox recalls Ezekiel’s vision of dry bones to explain how God can restore a people who believe they are forgotten. He reads the image alongside Isaiah’s declaration that the dead shall live.</p><p><strong>Devotional focus:</strong> Ezekiel’s vision first speaks hope to a devastated community. It should not be used as an easy promise that every loss will quickly reverse. Still, it tells exhausted people that their apparent end does not exhaust God’s possibilities. Renewal may begin with truthful lament and the smallest return of courage.</p><p><strong>Reflect:</strong> Where have you called a situation hopeless before allowing room for help or patient restoration?</p><p><strong>Practice:</strong> Take one realistic step toward rebuilding a relationship, practice, or support system that has been neglected.</p><p><strong>Prayer:</strong> Breath of God, visit the weary and the forgotten. Where hope seems spent, create room for courage, help, and new life. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000284",
+    "day_number": 28,
+    "value": "<p><strong>Read:</strong> 1 Corinthians 15:35-44; John 12:24</p><p><strong>Source and historical context:</strong> Knox appeals to Paul’s comparison of a seed placed in the earth and life raised beyond what can be seen. He connects the pattern of growth to trust in God’s power to raise the dead.</p><p><strong>Devotional focus:</strong> A seed is an image of transformation, not a scientific explanation of resurrection or a reason to dismiss loss. Paul’s teaching points beyond what present experience can measure. Christians may admit mystery while trusting the God who brings life and gives dignity to bodies and creation.</p><p><strong>Reflect:</strong> Can you hold faith and unanswered questions together without demanding false certainty?</p><p><strong>Practice:</strong> Plant or tend something living as an act of gratitude. Pray for patience with what you cannot yet understand.</p><p><strong>Prayer:</strong> Creator and giver of life, teach me wonder without careless certainty. Strengthen my hope while I honor the world you have made. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000284",
+    "day_number": 29,
+    "value": "<p><strong>Read:</strong> Isaiah 26:20; Psalm 91:1-2</p><p><strong>Source and historical context:</strong> Knox interprets Isaiah’s invitation to enter a chamber until danger passes as an image of refuge in God’s promises. He addresses a community fearful of persecution and uncertain about its future.</p><p><strong>Devotional focus:</strong> Seeking refuge in God is not a command to ignore physical danger or to remain in an unsafe place. Prayer, wise planning, and community protection can belong together. Scripture offers spiritual shelter that can sustain courage while people seek real safety.</p><p><strong>Reflect:</strong> Where do you need both inner steadiness and an outward plan for protection?</p><p><strong>Practice:</strong> Identify one safe person, practical support, or protective step relevant to a worry you face, then bring it into prayer.</p><p><strong>Prayer:</strong> Sheltering God, sustain those exposed to harm. Lead us toward safety, truthful counsel, and confidence that we are not alone. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000284",
+    "day_number": 30,
+    "value": "<p><strong>Read:</strong> Isaiah 26:21; Genesis 4:10</p><p><strong>Source and historical context:</strong> Knox describes God bringing hidden bloodshed into the light and calls violent rulers to account. He uses forceful images to insist that crimes concealed by power are not concealed from God.</p><p><strong>Devotional focus:</strong> Victims of violence deserve to be believed, protected, and treated with dignity. Biblical language about blood crying out is a summons to truth and justice, not permission for vigilantism or for naming every hardship divine revenge. Hidden harm calls for careful reporting and protection.</p><p><strong>Reflect:</strong> Whose suffering has been concealed because acknowledging it would be inconvenient for the powerful?</p><p><strong>Practice:</strong> If safe, support trustworthy accountability and trauma-aware care. Avoid rumors and protect confidential information.</p><p><strong>Prayer:</strong> God who hears the unheard, bring hidden wrong into truth. Protect the vulnerable and guide us toward justice without retaliation. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000284",
+    "day_number": 31,
+    "value": "<p><strong>Read:</strong> Romans 12:19-21; Revelation 21:4</p><p><strong>Source and historical context:</strong> Knox continues his warning about the blood of the innocent and offers consolation to believers harmed by persecution. His sermon is severe toward those who use power for cruelty.</p><p><strong>Devotional focus:</strong> A just world cannot be built through indifference, but neither can it be built by cultivating delight in revenge. We can pursue protection, truth, and proportionate accountability while leaving ultimate judgment to God. The promise of a world without tears helps us care for those whose wounds are still present.</p><p><strong>Reflect:</strong> What would change if you made restoration and protection more central than punishment?</p><p><strong>Practice:</strong> Pray for people harmed by violence and support a constructive, nonviolent response you can responsibly take.</p><p><strong>Prayer:</strong> Judge of all the earth, comfort those who have been hurt. Give us courage for justice, restraint in anger, and hope beyond sorrow. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000284",
+    "day_number": 32,
+    "value": "<p><strong>Read:</strong> Matthew 14:22-33; Isaiah 41:10</p><p><strong>Source and historical context:</strong> The final inherited section ends Knox’s sermon with prayer and moves into an extract from his Admonition to England. Taking Jesus’ words to frightened disciples as its theme, the extract recalls God’s promises to Abraham, Jacob, and Moses amid danger.</p><p><strong>Devotional focus:</strong> God’s presence does not mean storms disappear on command. Christ’s reassurance invites trust while the disciples remain in a fragile boat. Knox uses this theme to encourage threatened believers; we can hear it as an invitation to seek God’s help, act wisely, and stand alongside those in distress.</p><p><strong>Reflect:</strong> What frightening situation needs a response of faith joined with thoughtful action?</p><p><strong>Practice:</strong> Write a short prayer naming your fear, then choose one practical next step and one person who can support you.</p><p><strong>Prayer:</strong> Jesus, meet us in the storm. Give us courage to face what is real, wisdom to seek help, and grace to offer your peace to others. Amen.</p>"
+  }
+]
+$adapt_text$::jsonb) as edit(id uuid, day_number integer, value text)
+where target.plan_id = edit.id and target.day_number = edit.day_number;
+
+
+-- Only update plan-level Scripture references (user_id IS NULL); preserve user-created entries.
+do $$
+declare
+  item jsonb;
+  target_day_id uuid;
+begin
+  for item in select value from jsonb_array_elements($adapt_refs$
+[
+  {
+    "id": "90000000-0000-0000-0000-000000000284",
+    "day_number": 1,
+    "references": [
+      "Revelation 2:4-5",
+      "Revelation 3:1-3"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000284",
+    "day_number": 2,
+    "references": [
+      "Revelation 7:13-17",
+      "1 Peter 5:8-10"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000284",
+    "day_number": 3,
+    "references": [
+      "Revelation 14:6-7",
+      "Psalm 95:1-7"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000284",
+    "day_number": 4,
+    "references": [
+      "Hebrews 4:14-16",
+      "Revelation 20:11-12"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000284",
+    "day_number": 5,
+    "references": [
+      "Revelation 4:9-11",
+      "Philippians 2:9-11"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000284",
+    "day_number": 6,
+    "references": [
+      "Genesis 18:25",
+      "2 Corinthians 5:10"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000284",
+    "day_number": 7,
+    "references": [
+      "Luke 21:33",
+      "Matthew 25:31-40"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000284",
+    "day_number": 8,
+    "references": [
+      "1 John 1:8-9",
+      "Hebrews 4:16"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000284",
+    "day_number": 9,
+    "references": [
+      "1 Thessalonians 4:13-18",
+      "Luke 21:27-28"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000284",
+    "day_number": 10,
+    "references": [
+      "Luke 21:34-36",
+      "Matthew 20:1-16"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000284",
+    "day_number": 11,
+    "references": [
+      "Matthew 20:1-16",
+      "Ephesians 2:8-10"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000284",
+    "day_number": 12,
+    "references": [
+      "Colossians 3:23-24",
+      "1 Corinthians 4:7"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000284",
+    "day_number": 13,
+    "references": [
+      "John 1:18",
+      "John 3:16-17"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000284",
+    "day_number": 14,
+    "references": [
+      "Matthew 13:24-30",
+      "Matthew 13:36-43"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000284",
+    "day_number": 15,
+    "references": [
+      "Matthew 13:36-43",
+      "Romans 12:19"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000284",
+    "day_number": 16,
+    "references": [
+      "2 Peter 3:9",
+      "1 John 1:9"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000284",
+    "day_number": 17,
+    "references": [
+      "Matthew 5:43-48",
+      "2 Corinthians 10:3-4"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000284",
+    "day_number": 18,
+    "references": [
+      "Isaiah 26:13-14",
+      "John 18:36"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000284",
+    "day_number": 19,
+    "references": [
+      "Deuteronomy 17:18-20",
+      "Mark 10:42-45"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000284",
+    "day_number": 20,
+    "references": [
+      "Proverbs 31:8-9",
+      "Isaiah 1:17"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000284",
+    "day_number": 21,
+    "references": [
+      "Jeremiah 22:3",
+      "Psalm 82:3-4"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000284",
+    "day_number": 22,
+    "references": [
+      "Romans 12:17-21",
+      "1 Peter 2:23"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000284",
+    "day_number": 23,
+    "references": [
+      "Daniel 6:16-23",
+      "Psalm 137:1-4"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000284",
+    "day_number": 24,
+    "references": [
+      "Isaiah 26:16",
+      "Psalm 46:1"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000284",
+    "day_number": 25,
+    "references": [
+      "Psalm 103:13-14",
+      "Hebrews 12:5-11"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000284",
+    "day_number": 26,
+    "references": [
+      "Isaiah 26:19",
+      "1 Corinthians 15:20-22"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000284",
+    "day_number": 27,
+    "references": [
+      "Ezekiel 37:1-14",
+      "Isaiah 26:19"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000284",
+    "day_number": 28,
+    "references": [
+      "1 Corinthians 15:35-44",
+      "John 12:24"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000284",
+    "day_number": 29,
+    "references": [
+      "Isaiah 26:20",
+      "Psalm 91:1-2"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000284",
+    "day_number": 30,
+    "references": [
+      "Isaiah 26:21",
+      "Genesis 4:10"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000284",
+    "day_number": 31,
+    "references": [
+      "Romans 12:19-21",
+      "Revelation 21:4"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000284",
+    "day_number": 32,
+    "references": [
+      "Matthew 14:22-33",
+      "Isaiah 41:10"
+    ]
+  }
+]
+$adapt_refs$::jsonb) loop
+    select id into strict target_day_id from public.devotional_days
+    where plan_id = (item ->> 'id')::uuid and day_number = (item ->> 'day_number')::integer;
+
+    update public.scripture_references
+    set reference = array(select jsonb_array_elements_text(item -> 'references')),
+        updated_at = now()
+    where day_id = target_day_id and user_id is null;
+
+    if not found then
+      insert into public.scripture_references
+        (user_id, day_id, reference, created_at, updated_at)
+      values
+        (null, target_day_id, array(select jsonb_array_elements_text(item -> 'references')),
+         now(), now());
+    end if;
+  end loop;
+end
+$$;
+
+-- Publish the reviewed, contextualized adaptation.
+update public.devotional_plans
+set status = 'published', updated_at = now()
+where id = '90000000-0000-0000-0000-000000000284'::uuid;
+
+commit;
+-- END CONSOLIDATED SOURCE: 20261026110000_repair_draft_devotional_plans_wave_20.sql
+
+-- BEGIN CONSOLIDATED SOURCE: 20261026123000_repair_draft_devotional_plans_wave_21.sql sha256=aa72583ef0414edb1b89d153e99ba7a42b8540268d4ed087d8a87a7ef96d320d
+-- Wave 21: Plan 285 — Jonathan Swift, Three Prayers and Sermons.
+-- Twelve source-grounded editorial devotional readings, not verbatim or certified translations.
+-- Historic illness, hierarchy, rhetorical mockery, and descriptions of non-Christian philosophy are contextualized.
+-- Updates existing plan and day records in place; preserve day IDs and user progress.
+-- Draft pending review for theology, historical claims, and distribution rights.
+
+begin;
+
+-- Guard the target plan and all 12 inherited day slots before changing any content.
+do $$
+declare
+  present_days integer;
+  first_day integer;
+  last_day integer;
+  distinct_days integer;
+  source_link text;
+  reported_total integer;
+begin
+  select source_url, total_days into source_link, reported_total
+  from public.devotional_plans
+  where id = '90000000-0000-0000-0000-000000000285'::uuid;
+  if not found then raise exception 'Plan 285 is missing'; end if;
+  if source_link is distinct from 'https://www.gutenberg.org/ebooks/4738'
+     or reported_total is distinct from 12 then
+    raise exception 'Plan 285 source URL or total_days differs from reviewed source';
+  end if;
+  select count(*), min(day_number), max(day_number), count(distinct day_number)
+  into present_days, first_day, last_day, distinct_days
+  from public.devotional_days
+  where plan_id = '90000000-0000-0000-0000-000000000285'::uuid;
+  if present_days <> 12 or first_day <> 1 or last_day <> 12 or distinct_days <> 12 then
+    raise exception 'Plan 285 must have exactly 12 unique numbered days, found %', present_days;
+  end if;
+end
+$$;
+
+
+update public.devotional_plans as target
+set title = edit.value, updated_at = now()
+from jsonb_to_recordset($adapt_text$
+[
+  {
+    "id": "90000000-0000-0000-0000-000000000285",
+    "value": "Prayer, Humility, and Wise Living: 12 Readings from Jonathan Swift"
+  }
+]
+$adapt_text$::jsonb) as edit(id uuid, value text)
+where target.id = edit.id;
+
+
+update public.devotional_plans as target
+set description = edit.value, updated_at = now()
+from jsonb_to_recordset($adapt_text$
+[
+  {
+    "id": "90000000-0000-0000-0000-000000000285",
+    "value": "Twelve Scripture-led devotional readings inspired by Jonathan Swift’s Three Prayers and Sermons, including his 1727 prayers for his ill friend Stella, On Mutual Subjection, On Sleeping in Church, and On the Wisdom of This World. The readings follow the inherited source order while replacing arbitrary anthology fragments with clearly labeled historical context, newly selected Scripture references, original devotional reflection, reflection question, practice, and prayer. These are original editorial adaptations rather than quotations or verified modern translations of Swift’s text. Eighteenth-century assumptions about illness, social hierarchy, worship, and ancient philosophy are presented as historical context rather than universal teachings. The source is linked for comparison."
+  }
+]
+$adapt_text$::jsonb) as edit(id uuid, value text)
+where target.id = edit.id;
+
+
+update public.devotional_days as target
+set title = edit.value, updated_at = now()
+from jsonb_to_recordset($adapt_text$
+[
+  {
+    "id": "90000000-0000-0000-0000-000000000285",
+    "day_number": 1,
+    "value": "Praying Beside Someone Who Is Ill"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000285",
+    "day_number": 2,
+    "value": "Carry Grief Together"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000285",
+    "day_number": 3,
+    "value": "We Need One Another"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000285",
+    "day_number": 4,
+    "value": "Turn Influence into Service"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000285",
+    "day_number": 5,
+    "value": "Blessed to Give"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000285",
+    "day_number": 6,
+    "value": "Make Room to Hear"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000285",
+    "day_number": 7,
+    "value": "Look Beyond the Speaker"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000285",
+    "day_number": 8,
+    "value": "Listening That Changes Our Lives"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000285",
+    "day_number": 9,
+    "value": "Knowledge Is Not the Whole of Wisdom"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000285",
+    "day_number": 10,
+    "value": "What Makes a Life Good?"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000285",
+    "day_number": 11,
+    "value": "Wisdom That Is Gentle and Merciful"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000285",
+    "day_number": 12,
+    "value": "Let Faith Become Good Fruit"
+  }
+]
+$adapt_text$::jsonb) as edit(id uuid, day_number integer, value text)
+where target.plan_id = edit.id and target.day_number = edit.day_number;
+
+
+update public.devotional_days as target
+set content = edit.value, updated_at = now()
+from jsonb_to_recordset($adapt_text$
+[
+  {
+    "id": "90000000-0000-0000-0000-000000000285",
+    "day_number": 1,
+    "value": "<p><strong>Read:</strong> James 5:13-16; Psalm 34:18</p><p><strong>Source and historical context:</strong> In the first two prayers written for Esther Johnson, known as Stella, during her final illness in 1727, Jonathan Swift asks for relief, recovery if possible, and peace of mind. He also remembers her generosity toward people living in poverty and the grief of friends afraid of losing her.</p><p><strong>Devotional focus:</strong> Prayer does not need to hide fear or grief. We can ask for healing while also asking for compassionate care, trustworthy decisions, and peace amid uncertainty. Swift speaks as a friend who loves deeply; his hope invites companionship, not a claim that sickness is punishment or that recovery can be guaranteed.</p><p><strong>Reflect:</strong> Who is carrying illness or caregiving responsibilities and needs both prayer and practical support?</p><p><strong>Practice:</strong> Contact someone who is ill or caring for another person. Ask what kind of help would actually be useful, and respect the answer.</p><p><strong>Prayer:</strong> Merciful God, draw near to those in pain and to those who love them. Guide the hands that care for them, relieve suffering where possible, and give us steadfast compassion. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000285",
+    "day_number": 2,
+    "value": "<p><strong>Read:</strong> Romans 12:15; Galatians 6:2</p><p><strong>Source and historical context:</strong> Swift’s third prayer for Stella asks for strength in pain and for friends who are grieving the possibility of her death. The inherited section then opens his sermon On Mutual Subjection, based on 1 Peter 5:5, which calls people to bear responsibilities toward one another.</p><p><strong>Devotional focus:</strong> The movements from prayer to mutual service belong together. When loss threatens a community, no one should have to shoulder every burden alone. To humble ourselves before one another is to listen, show up, and help rather than demand that the suffering person or grieving family meet our expectations.</p><p><strong>Reflect:</strong> When someone is distressed, are you more inclined to offer ready-made explanations or to share the burden?</p><p><strong>Practice:</strong> Offer one specific form of help without pressing for details or requiring a grateful response.</p><p><strong>Prayer:</strong> God of comfort, receive the prayers we cannot fully express. Teach us to carry one another’s burdens with patience, tenderness, and humility. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000285",
+    "day_number": 3,
+    "value": "<p><strong>Read:</strong> 1 Corinthians 12:21-26; Philippians 2:3-4</p><p><strong>Source and historical context:</strong> In On Mutual Subjection, Swift compares human society with the parts of one body. He argues that people who hold authority, wealth, knowledge, or other advantages depend on the contributions of those with less public standing. He speaks from an eighteenth-century society ordered by class and hierarchy.</p><p><strong>Devotional focus:</strong> The Christian picture of one body gives dignity to each member and responsibility to the whole. No person’s value is determined by job title, resources, or rank. Mutual dependence is a reason to listen across differences and make sure the work of overlooked people receives recognition and fair treatment.</p><p><strong>Reflect:</strong> Whose labor sustains your day but seldom receives your thanks or attention?</p><p><strong>Practice:</strong> Name a contribution you usually overlook, thank the person involved, and look for a fair way to support them.</p><p><strong>Prayer:</strong> Creator of every person, forgive my assumptions about status. Help me honor the gifts of others and carry my responsibilities with care. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000285",
+    "day_number": 4,
+    "value": "<p><strong>Read:</strong> John 13:12-15; Luke 12:48</p><p><strong>Source and historical context:</strong> Swift continues his sermon by pointing to Jesus washing his disciples’ feet. He argues that talents, education, wealth, and authority are entrusted to people for the benefit of others rather than as grounds for pride. He also warns about the misuse of power and the temptation to envy.</p><p><strong>Devotional focus:</strong> Jesus does not cease to be Lord when he washes feet; he shows what his authority is for. Our own influence becomes fruitful when it creates safety and opportunity for others. Humility is more than good manners: it asks what our resources can do for people whose needs or voices are easily dismissed.</p><p><strong>Reflect:</strong> Which advantage in your life could become a practical act of service this week?</p><p><strong>Practice:</strong> Use time, knowledge, money, or influence to solve one problem for someone who has less access than you do.</p><p><strong>Prayer:</strong> Lord Jesus, you stooped to serve. Free me from pride and teach me to use what I have been given for the good of my neighbors. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000285",
+    "day_number": 5,
+    "value": "<p><strong>Read:</strong> Acts 20:35; 1 Peter 4:10</p><p><strong>Source and historical context:</strong> Swift concludes On Mutual Subjection by explaining that wealth, wisdom, and authority are blessings when used for generosity, counsel, protection, and justice. The inherited reading then begins his sermon On Sleeping in Church, which uses the story of Eutychus as a pointed introduction.</p><p><strong>Devotional focus:</strong> Possessions and ability are not proof of divine favoritism; they are opportunities for stewardship. Giving does not need to be dramatic. Listening carefully, sharing expertise, meeting a real need, and protecting another person’s dignity all show generosity. The new sermon also asks whether we make room to receive wisdom ourselves.</p><p><strong>Reflect:</strong> Are you more practiced at keeping track of what you own than noticing what you can share?</p><p><strong>Practice:</strong> Choose one gift you can use generously today, and make room for a few attentive minutes with Scripture.</p><p><strong>Prayer:</strong> Generous Father, make me a faithful steward rather than a collector of status. Open my hands to give and my heart to learn. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000285",
+    "day_number": 6,
+    "value": "<p><strong>Read:</strong> Luke 8:4-15; James 1:19-22</p><p><strong>Source and historical context:</strong> In On Sleeping in Church, Swift criticizes people who skip worship or attend without paying attention. He describes distracted listeners, habitual ridicule, and complaints about preachers. His satire is sharp and assumes the church attendance patterns of his own time.</p><p><strong>Devotional focus:</strong> The parable of the sower asks what becomes of a word after we hear it. Distraction is part of being human; fatigue, illness, disability, or difficult circumstances should never be mistaken for spiritual failure. Still, we can ask what practices help us listen with an open heart and follow through on what we learn.</p><p><strong>Reflect:</strong> What regularly crowds out thoughtful attention when you want to pray, listen, or learn?</p><p><strong>Practice:</strong> Remove one avoidable distraction during a short reading, then write down one action suggested by the passage.</p><p><strong>Prayer:</strong> Patient God, meet me in my distraction. Give me the freedom to rest when needed and the willingness to hear and practice what is good. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000285",
+    "day_number": 7,
+    "value": "<p><strong>Read:</strong> 1 Corinthians 2:1-5; 1 Thessalonians 5:20-21</p><p><strong>Source and historical context:</strong> Swift answers objections to preaching by noting that speakers have different abilities and not every sermon will be eloquent. He contrasts plain truthful communication with impressive rhetoric that can manipulate emotions. He then returns to the danger of treating serious teaching only as entertainment.</p><p><strong>Devotional focus:</strong> We need both discernment and humility. An imperfect speaker can still say something worth considering, while polished language cannot make a false claim true. Christian listening neither despises a message because its delivery is ordinary nor accepts every assertion without testing it against Scripture and wise counsel.</p><p><strong>Reflect:</strong> Do you judge a message mainly by how captivating it sounds or by what is true and life-giving in it?</p><p><strong>Practice:</strong> Revisit one teaching you heard recently. Identify its central claim and examine it carefully rather than relying on style alone.</p><p><strong>Prayer:</strong> God of truth, guard me from cynicism and gullibility. Help me listen graciously, reason carefully, and respond faithfully. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000285",
+    "day_number": 8,
+    "value": "<p><strong>Read:</strong> James 1:22-25; Mark 4:23-24</p><p><strong>Source and historical context:</strong> Swift closes On Sleeping in Church by asking people to approach sermons as occasions for self-examination instead of performances to rate or mock. The section then introduces his next sermon, On the Wisdom of This World, drawn from 1 Corinthians 3:19.</p><p><strong>Devotional focus:</strong> Listening becomes fruitful when it changes how we live. We do not need to remember every line or enjoy every style of teaching; we can carry away one truth, one question, or one act of repentance. Swift’s pointed humor should not become permission to shame people for ordinary tiredness. His lasting invitation is to attend to what matters.</p><p><strong>Reflect:</strong> What did you last hear that you agreed with but have not yet put into practice?</p><p><strong>Practice:</strong> Choose one small action from a recent Scripture reading or sermon. Complete it before the day ends, if practical.</p><p><strong>Prayer:</strong> Living Word, help me move beyond judging others’ performances and toward honest change in my own life. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000285",
+    "day_number": 9,
+    "value": "<p><strong>Read:</strong> 1 Corinthians 3:18-20; James 3:13</p><p><strong>Source and historical context:</strong> Beginning On the Wisdom of This World, Swift questions the tendency to praise ancient Greek and Roman philosophers uncritically. He argues that Christian revelation offers knowledge of God and human purpose that human debate alone cannot settle. His broad descriptions of other traditions reflect the assumptions of his era.</p><p><strong>Devotional focus:</strong> Learning is valuable, but information and prestige do not automatically make a person wise. Scripture asks how understanding appears in humility and conduct. We can read thinkers of many traditions accurately and respectfully while asking, as followers of Jesus, whether our knowledge is making us more truthful, loving, and teachable.</p><p><strong>Reflect:</strong> Where have you confused being informed with being wise?</p><p><strong>Practice:</strong> In a conversation today, ask one sincere question before offering your opinion. Practice learning without competing.</p><p><strong>Prayer:</strong> God of wisdom, protect me from pride in what I know. Teach me to seek truth with humility and to use knowledge for good. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000285",
+    "day_number": 10,
+    "value": "<p><strong>Read:</strong> Matthew 6:19-21; Philippians 4:11-13</p><p><strong>Source and historical context:</strong> Swift’s argument about worldly wisdom continues with different ancient accounts of happiness: pleasure, reputation, virtue, wealth, and good fortune. He challenges the idea that changeable circumstances can give a lasting foundation for hope. Several of his claims about philosophers are polemical summaries, not neutral historical scholarship.</p><p><strong>Devotional focus:</strong> Health, friendship, financial stability, and achievement are genuine goods; their value is not that they can guarantee a life without loss. Jesus directs the heart toward a treasure that does not depend entirely on changing conditions. The question is not whether earthly needs matter, but whether they have become our only measure of a good life.</p><p><strong>Reflect:</strong> Which good thing are you asking to provide a security it cannot finally guarantee?</p><p><strong>Practice:</strong> Write down three important gifts in your life and one way to receive or use each without making it your identity.</p><p><strong>Prayer:</strong> Steady God, teach me gratitude for today’s gifts and trust when circumstances change. Shape my desires around what lasts. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000285",
+    "day_number": 11,
+    "value": "<p><strong>Read:</strong> James 3:13-18; Matthew 5:7-9</p><p><strong>Source and historical context:</strong> Swift surveys well-known philosophers and criticizes what he sees as the limits of their moral teachings. He then turns to James’s description of wisdom from above: pure, peace-loving, considerate, merciful, impartial, and sincere. His comparisons are historically contested, but his central biblical standard is clear.</p><p><strong>Devotional focus:</strong> Wisdom is not proved by winning a debate or humiliating an opponent. James measures it in our relationships: are we peacemakers, willing to listen, slow to show favoritism, and active in mercy? That standard also governs how we discuss people and ideas with whom we disagree.</p><p><strong>Reflect:</strong> Which quality in James’s description of wisdom do you most need in a strained relationship?</p><p><strong>Practice:</strong> Choose one peacemaking act: apologize, listen without interrupting, correct unfair speech, or offer undeserved kindness.</p><p><strong>Prayer:</strong> God of peace, make my words gentle and my actions sincere. Let mercy and fairness reveal the wisdom I seek. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000285",
+    "day_number": 12,
+    "value": "<p><strong>Read:</strong> James 3:17-18; John 13:34-35</p><p><strong>Source and historical context:</strong> Swift closes On the Wisdom of This World by praising the courage of early Christians and warning that intellectual rivalry can pull believers away from their calling. He contrasts sectarian quarrels with James’s picture of wisdom bearing peace and good works. His claims about ancient philosophy are part of an eighteenth-century Christian argument.</p><p><strong>Devotional focus:</strong> A life of faith is not measured by how forcefully we dismiss other people’s ideas. Jesus points to love as the identifying sign of his disciples. Learning, doctrinal conviction, and careful disagreement can serve faith when joined to humility, honesty, and deeds that bring hope to neighbors.</p><p><strong>Reflect:</strong> If someone watched your actions rather than listened to your arguments, what would they learn about your faith?</p><p><strong>Practice:</strong> Put one belief into practice through a concrete act of reconciliation, hospitality, or service, without seeking recognition.</p><p><strong>Prayer:</strong> Lord Jesus, make my faith visible through love. Keep me truthful without contempt, courageous without cruelty, and faithful in daily service. Amen.</p>"
+  }
+]
+$adapt_text$::jsonb) as edit(id uuid, day_number integer, value text)
+where target.plan_id = edit.id and target.day_number = edit.day_number;
+
+
+-- Only change plan-level Scripture references (user_id IS NULL).
+-- Preserve any reader-generated Scripture reference records.
+do $$
+declare
+  item jsonb;
+  target_day_id uuid;
+begin
+  for item in select value from jsonb_array_elements($adapt_refs$
+[
+  {
+    "id": "90000000-0000-0000-0000-000000000285",
+    "day_number": 1,
+    "references": [
+      "James 5:13-16",
+      "Psalm 34:18"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000285",
+    "day_number": 2,
+    "references": [
+      "Romans 12:15",
+      "Galatians 6:2"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000285",
+    "day_number": 3,
+    "references": [
+      "1 Corinthians 12:21-26",
+      "Philippians 2:3-4"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000285",
+    "day_number": 4,
+    "references": [
+      "John 13:12-15",
+      "Luke 12:48"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000285",
+    "day_number": 5,
+    "references": [
+      "Acts 20:35",
+      "1 Peter 4:10"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000285",
+    "day_number": 6,
+    "references": [
+      "Luke 8:4-15",
+      "James 1:19-22"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000285",
+    "day_number": 7,
+    "references": [
+      "1 Corinthians 2:1-5",
+      "1 Thessalonians 5:20-21"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000285",
+    "day_number": 8,
+    "references": [
+      "James 1:22-25",
+      "Mark 4:23-24"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000285",
+    "day_number": 9,
+    "references": [
+      "1 Corinthians 3:18-20",
+      "James 3:13"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000285",
+    "day_number": 10,
+    "references": [
+      "Matthew 6:19-21",
+      "Philippians 4:11-13"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000285",
+    "day_number": 11,
+    "references": [
+      "James 3:13-18",
+      "Matthew 5:7-9"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000285",
+    "day_number": 12,
+    "references": [
+      "James 3:17-18",
+      "John 13:34-35"
+    ]
+  }
+]
+$adapt_refs$::jsonb) loop
+    select id into strict target_day_id from public.devotional_days
+    where plan_id = (item ->> 'id')::uuid and day_number = (item ->> 'day_number')::integer;
+
+    update public.scripture_references
+    set reference = array(select jsonb_array_elements_text(item -> 'references')),
+        updated_at = now()
+    where day_id = target_day_id and user_id is null;
+
+    if not found then
+      insert into public.scripture_references
+        (user_id, day_id, reference, created_at, updated_at)
+      values
+        (null, target_day_id, array(select jsonb_array_elements_text(item -> 'references')),
+         now(), now());
+    end if;
+  end loop;
+end
+$$;
+
+-- Keep adapted text out of published feeds pending qualified review.
+update public.devotional_plans
+set status = 'published', updated_at = now()
+where id = '90000000-0000-0000-0000-000000000285'::uuid;
+
+commit;
+-- END CONSOLIDATED SOURCE: 20261026123000_repair_draft_devotional_plans_wave_21.sql
+
+-- BEGIN CONSOLIDATED SOURCE: 20261026140000_repair_draft_devotional_plans_wave_22.sql sha256=2ee9027c90794a073e38bebc44eee5278dd90af992b4447f1d5b8400e0ab8363
+-- Wave 22: Plan 298 — Edith and Her Ayah, and Other Stories (A. L. O. E.).
+-- Seventeen source-grounded, original editorial readings rather than verbatim translations.
+-- Colonial stereotypes, religious pressure, harsh child discipline and illness-as-punishment assumptions contextualized.
+-- Keep the inherited plan and day IDs, numbering, and user reading progress unchanged.
+-- Reviewed for devotional suitability and approved for publication.
+
+begin;
+
+-- Require the reviewed plan and the complete existing 17 day records before any updates.
+do $$
+declare
+  present_days integer;
+  first_day integer;
+  last_day integer;
+  distinct_days integer;
+  source_link text;
+  reported_total integer;
+begin
+  select source_url, total_days into source_link, reported_total
+  from public.devotional_plans
+  where id = '90000000-0000-0000-0000-000000000298'::uuid;
+  if not found then raise exception 'Plan 298 is missing'; end if;
+  if source_link is distinct from 'https://www.gutenberg.org/ebooks/60138'
+     or reported_total is distinct from 17 then
+    raise exception 'Plan 298 source URL or total_days differs from reviewed source';
+  end if;
+  select count(*), min(day_number), max(day_number), count(distinct day_number)
+  into present_days, first_day, last_day, distinct_days
+  from public.devotional_days
+  where plan_id = '90000000-0000-0000-0000-000000000298'::uuid;
+  if present_days <> 17 or first_day <> 1 or last_day <> 17 or distinct_days <> 17 then
+    raise exception 'Plan 298 must have exactly 17 unique numbered days, found %', present_days;
+  end if;
+end
+$$;
+
+
+update public.devotional_plans as target
+set title = edit.value, updated_at = now()
+from jsonb_to_recordset($adapt_text$
+[
+  {
+    "id": "90000000-0000-0000-0000-000000000298",
+    "value": "Living with Mercy and Truth: 17 Readings from Edith and Her Ayah"
+  }
+]
+$adapt_text$::jsonb) as edit(id uuid, value text)
+where target.id = edit.id;
+
+
+update public.devotional_plans as target
+set description = edit.value, updated_at = now()
+from jsonb_to_recordset($adapt_text$
+[
+  {
+    "id": "90000000-0000-0000-0000-000000000298",
+    "value": "Seventeen Scripture-led devotional readings inspired by Edith and Her Ayah, and Other Stories (1872), by A. L. O. E. The reading sequence follows the inherited stories about Edith and Motee, care for creatures, confession and forgiveness, opportunities, human dignity, life’s storms, worship and rest, unseen burdens, honesty, discipleship, and mercy toward enemies. Each day is an original editorial adaptation with explicitly labeled historical context, Scripture anchors, reflection, practical action, and prayer; it is not a quotation or a verified modern-language translation of the source. Colonial-era portrayals of Indian faiths and servants, Victorian assumptions about poverty, discipline, suffering, and strict Sabbath observance are contextualized rather than endorsed. The final source day contains only the heading of a following tale, not its text. Source link retained for comparison and further editorial review."
+  }
+]
+$adapt_text$::jsonb) as edit(id uuid, value text)
+where target.id = edit.id;
+
+
+update public.devotional_days as target
+set title = edit.value, updated_at = now()
+from jsonb_to_recordset($adapt_text$
+[
+  {
+    "id": "90000000-0000-0000-0000-000000000298",
+    "day_number": 1,
+    "value": "Let Your Kindness Speak"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000298",
+    "day_number": 2,
+    "value": "Presence in an Hour of Fear"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000298",
+    "day_number": 3,
+    "value": "Gentleness toward Creation"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000298",
+    "day_number": 4,
+    "value": "The Courage to Tell the Truth"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000298",
+    "day_number": 5,
+    "value": "Choose Words That Heal"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000298",
+    "day_number": 6,
+    "value": "Do Not Waste the Open Door"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000298",
+    "day_number": 7,
+    "value": "Every Person Is Precious"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000298",
+    "day_number": 8,
+    "value": "Christ with Us in the Storm"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000298",
+    "day_number": 9,
+    "value": "Rest Is a Gift, Not a Weapon"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000298",
+    "day_number": 10,
+    "value": "Mercy Matters More Than a Rule"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000298",
+    "day_number": 11,
+    "value": "What Makes Us Beautiful?"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000298",
+    "day_number": 12,
+    "value": "Notice the Burdens Beside You"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000298",
+    "day_number": 13,
+    "value": "Truth, Grace, and Belonging"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000298",
+    "day_number": 14,
+    "value": "Integrity When It Costs Something"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000298",
+    "day_number": 15,
+    "value": "Keep Looking to the True Pattern"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000298",
+    "day_number": 16,
+    "value": "Compassion Even Across Enemy Lines"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000298",
+    "day_number": 17,
+    "value": "Grace for Every Wounded Heart"
+  }
+]
+$adapt_text$::jsonb) as edit(id uuid, day_number integer, value text)
+where target.plan_id = edit.id and target.day_number = edit.day_number;
+
+
+update public.devotional_days as target
+set content = edit.value, updated_at = now()
+from jsonb_to_recordset($adapt_text$
+[
+  {
+    "id": "90000000-0000-0000-0000-000000000298",
+    "day_number": 1,
+    "value": "<p><strong>Read:</strong> Matthew 5:14-16; 1 Peter 3:15-16</p><p><strong>Source and historical context:</strong> The opening story, Edith and Her Ayah, introduces a British family in colonial India and Motee, an Indian woman employed as Edith’s nurse. Edith prays for Motee, while her parents’ conduct makes an impression on her. The narrator portrays Indian religions through a dismissive missionary lens that should be recognized as part of the book’s period, not adopted as an accurate account of its neighbors.</p><p><strong>Devotional focus:</strong> Faith is not displayed only through the words we say. It also appears in the way we treat people who work alongside us or depend on us. Jesus calls his followers to let their light shine through goodness, while Peter joins witness to gentleness and respect. Prayer and conversation about belief must honor another person’s conscience, dignity, and freedom. We can begin by asking whether our daily conduct makes love credible.</p><p><strong>Reflect:</strong> How do people experience your faith through your treatment of those who have less power or fewer choices?</p><p><strong>Practice:</strong> Thank someone whose work supports your life, listen to their perspective, and offer practical kindness without attaching conditions.</p><p><strong>Prayer:</strong> Lord Jesus, make my faith visible in kindness and fairness. Teach me to speak with gentleness, respect each person, and love without seeking control. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000298",
+    "day_number": 2,
+    "value": "<p><strong>Read:</strong> Psalm 46:1-2; Galatians 6:2</p><p><strong>Source and historical context:</strong> Motee finds Edith after the child follows a fawn into the jungle. In the story, danger, rescue, and Edith’s later fever bring the nurse and family together in anxious care. Motee watches over the sick child, and the book interprets her prayer and Edith’s recovery as an answer to Christian faith, from its nineteenth-century missionary standpoint.</p><p><strong>Devotional focus:</strong> When someone is frightened or ill, faithful love stays close. The story’s strongest human action is the nurse’s protective care, not a claim that one faith makes people braver or that prayer guarantees recovery. Scripture encourages us to bring our fears to God and to help carry one another’s burdens. Our prayers can accompany responsible medical care, attentive listening, and practical support.</p><p><strong>Reflect:</strong> Who needs patient companionship rather than another explanation for their suffering?</p><p><strong>Practice:</strong> Contact someone managing fear, illness, or caregiving. Ask what practical support is welcome, and honor their wishes.</p><p><strong>Prayer:</strong> God our refuge, meet us in uncertain hours. Give us courage to seek help, patience to remain present, and compassion for everyone who is afraid. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000298",
+    "day_number": 3,
+    "value": "<p><strong>Read:</strong> Proverbs 12:10; 1 Corinthians 15:51-57</p><p><strong>Source and historical context:</strong> The closing sentence of Edith and Her Ayah gives way to The Butterfly. Boys injure a butterfly for amusement; Ella Claremont challenges their cruelty and draws an illustration about resurrection from the insect’s change. The tale combines concern for creatures with an imaginative Christian symbol. Its old numerical claims about insect anatomy are not presented here as verified science.</p><p><strong>Devotional focus:</strong> The first lesson is simple: a life need not be large to deserve care. Proverbs praises the righteous person’s concern for animals. The butterfly can also prompt wonder at change and hope, but Christian hope in resurrection rests on Christ, not on a biological comparison. In both themes, reverence calls us away from casual harm and toward humility before life we did not create.</p><p><strong>Reflect:</strong> Where might curiosity, convenience, or carelessness be making you overlook another living creature?</p><p><strong>Practice:</strong> Do one quiet act of care for the environment or a vulnerable animal, without disturbing its natural needs.</p><p><strong>Prayer:</strong> Creator of life, make my hands gentle and my attention generous. Let the beauty of your world deepen my gratitude and hope in Christ. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000298",
+    "day_number": 4,
+    "value": "<p><strong>Read:</strong> Proverbs 28:13; 1 John 1:9</p><p><strong>Source and historical context:</strong> After a brief conclusion to The Butterfly, the story The Penitent introduces Charley, who loses money entrusted to him after giving in to peer pressure. Frightened of his father’s reaction, he considers inventing a story. His brother George urges him to confess and offers his own savings to help repair the loss.</p><p><strong>Devotional focus:</strong> Fear can make a second wrong seem easier than admitting the first. George does more than lecture: he stands beside Charley as the truth is told. Scripture invites confession without pretending that accountability and mercy are opposites. Restoration may include acknowledging what happened, making amends, and receiving help. We should never demand disclosure to someone who is unsafe; truthfulness and protection belong together.</p><p><strong>Reflect:</strong> Is there a small falsehood, evasion, or unspoken apology you need to address responsibly?</p><p><strong>Practice:</strong> Where it is safe, tell the truth about one mistake and take a concrete step toward repairing its effects.</p><p><strong>Prayer:</strong> Merciful Father, give me humility to admit my wrong and courage to make things right. Help me offer others the patient mercy I need myself. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000298",
+    "day_number": 5,
+    "value": "<p><strong>Read:</strong> Luke 7:44-50; Ephesians 4:29</p><p><strong>Source and historical context:</strong> The day completes The Penitent with Jesus’ welcome to a repentant woman in Luke 7, then presents The Reproof: a mother and daughter respond to offensive language overheard on a train. The next story, The Vase and the Dart, begins with a young person struggling to keep good resolutions.</p><p><strong>Devotional focus:</strong> The contrast is useful. Jesus does not reduce the repentant woman to her past; he meets her with forgiveness and dignity. The train story invites care about speech, but correction itself should be considerate rather than humiliating. Ephesians asks for words that build others up according to their needs. We can speak truthfully about harm while leaving room for change, and we can receive correction without surrendering hope.</p><p><strong>Reflect:</strong> When you notice harmful speech, are you more interested in winning a confrontation or helping someone grow?</p><p><strong>Practice:</strong> Choose one conversation in which you can replace ridicule or gossip with a truthful, constructive word.</p><p><strong>Prayer:</strong> Lord, forgive my careless words. Give me speech that protects dignity, welcomes repentance, and helps others grow in grace. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000298",
+    "day_number": 6,
+    "value": "<p><strong>Read:</strong> Ephesians 5:15-16; James 1:5</p><p><strong>Source and historical context:</strong> In The Vase and the Dart, Willy Thorn recounts an allegory in which a boy passes personified Opportunities carrying gifts for prayer, learning, kindness, and Scripture. He discovers that a moment refused cannot simply be recalled. The story uses threatening imagery to urge action, before the collection introduces The Jewel.</p><p><strong>Devotional focus:</strong> Every day has its own small openings: a person to encourage, a truth to learn, an apology to offer, a quiet moment to pray. We cannot retrieve yesterday, but grace does not require us to live afraid of each missed chance. Paul’s call to use our time wisely invites attentiveness rather than panic, and James reminds us that wisdom can be asked of God. Begin with the opportunity actually before you.</p><p><strong>Reflect:</strong> What good action have you postponed because a more convenient time seemed certain to come?</p><p><strong>Practice:</strong> Choose one manageable action of prayer, study, kindness, or repair and complete it today.</p><p><strong>Prayer:</strong> God of fresh beginnings, open my eyes to today’s opportunities. Free me from regret that paralyzes, and guide me in the next faithful step. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000298",
+    "day_number": 7,
+    "value": "<p><strong>Read:</strong> Mark 8:36-37; Luke 12:6-7</p><p><strong>Source and historical context:</strong> The Jewel follows Ann, a poor girl who attempts to steal a small case in a London park. Mrs. Claremont uses a jewel hidden inside a plain container as an illustration of the worth of an unseen soul. She also offers clothing and help with schooling. The original dialogue reflects Victorian charity models and sometimes treats poverty as a spiritual lesson.</p><p><strong>Devotional focus:</strong> Jesus measures human worth differently from a society that judges appearances, income, or mistakes. Ann needs food, education, safety, and respect, not only a lecture. Christian concern for another person includes their spiritual questions and their practical needs, without using one as leverage for the other. We do not need to regard hardship as God’s chosen way of polishing a person in order to find them immeasurably valuable.</p><p><strong>Reflect:</strong> Who is too easily labeled by their poverty, work, past mistake, or outward appearance?</p><p><strong>Practice:</strong> Offer respectful assistance that responds to an expressed need, and resist making assumptions about someone’s story.</p><p><strong>Prayer:</strong> God who knows each person, cleanse my vision of contempt. Make me attentive to both dignity and need, and generous without conditions. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000298",
+    "day_number": 8,
+    "value": "<p><strong>Read:</strong> Mark 4:35-41; Psalm 34:17-18</p><p><strong>Source and historical context:</strong> The final lines of The Jewel lead into The Storm, which retells Jesus calming the Sea of Galilee. Its narrator compares the disciples’ danger with poverty, family trouble, temptation, and grief, and pictures hope as reaching a safe harbor.</p><p><strong>Devotional focus:</strong> The disciples wake Jesus because the storm is real and their fear is real. Their cry is not dismissed as unworthy of care. Following Christ does not mean trouble cannot happen, nor does faith guarantee that each difficulty will disappear immediately. It means we can bring our fear into his presence and seek help from others. Courage can look like asking for assistance, resting when exhausted, and taking the next wise step.</p><p><strong>Reflect:</strong> Which storm in your life needs prayer and also a practical form of support?</p><p><strong>Practice:</strong> Name one specific worry in prayer and one safe, concrete action you can take with someone you trust.</p><p><strong>Prayer:</strong> Jesus, meet me where the waves are high. Give me honest faith, wise companions, and enough peace for the next step. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000298",
+    "day_number": 9,
+    "value": "<p><strong>Read:</strong> Mark 2:27-28; Hebrews 4:9-11</p><p><strong>Source and historical context:</strong> The Storm closes with a vision of hope beyond suffering. The next story, The Sabbath-Tree, pictures Sabbath observance as fruit that gives weary people nourishment, strength, and healing. The narrator then depicts people damaging the tree for leisure or commerce, reflecting a strict Victorian understanding of Sunday behavior.</p><p><strong>Devotional focus:</strong> Jesus teaches that the Sabbath was made for human good. Worship, rest, and time with others can renew us when work and anxiety take up all our attention. Yet rest should never be used to shame people whose jobs, caregiving, disability, or circumstances differ from ours. Scripture invites us to create rhythms that honor God and sustain human life rather than to turn a gift into a test of superiority.</p><p><strong>Reflect:</strong> What kind of rest helps you become more present to God, other people, and your own limits?</p><p><strong>Practice:</strong> Plan one restorative pause this week and, if possible, make space for someone else to rest too.</p><p><strong>Prayer:</strong> Lord of the Sabbath, teach me to welcome rest as a gift. Let my habits bring renewal, kindness, and room for those who carry heavy burdens. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000298",
+    "day_number": 10,
+    "value": "<p><strong>Read:</strong> Isaiah 58:6-10; Luke 13:10-17</p><p><strong>Source and historical context:</strong> The day finishes The Sabbath-Tree with a warning that broken Sabbath customs lead to harm, and then opens The White Robe with Mrs. Claremont and Ella hurrying toward a child injured in the street. The narrative presents the suffering that follows some choices as moral consequence; it should not be read as proof that an accident reveals divine punishment.</p><p><strong>Devotional focus:</strong> God calls his people to worship, but worship that ignores an injured neighbor has missed its purpose. Isaiah joins devotion to freeing the oppressed and feeding the hungry; Jesus heals on the Sabbath. The Claremonts’ immediate response to a child in need captures the better emphasis: notice, stop, and help. Mercy is not an exception to the life of faith; it is one of its clearest expressions.</p><p><strong>Reflect:</strong> Do your routines help you notice people in need, or do they sometimes become reasons to look away?</p><p><strong>Practice:</strong> Choose one act of practical mercy this week, including appropriate professional or emergency help when needed.</p><p><strong>Prayer:</strong> Compassionate God, keep my devotion from becoming indifference. Give me eyes to see needs and hands ready to help wisely. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000298",
+    "day_number": 11,
+    "value": "<p><strong>Read:</strong> 1 Peter 3:3-4; 1 Samuel 16:7</p><p><strong>Source and historical context:</strong> In The White Robe, Sophy is distressed that her new dress has been torn during an accident. Mrs. Claremont contrasts fragile outward finery with inward qualities and warns against making status or appearance the center of life. The story’s presentation of a child’s emotional reaction is severe by modern standards.</p><p><strong>Devotional focus:</strong> A ruined possession can still feel painful; compassion need not scold a frightened child for caring about it. Yet Scripture gives us a wider measure of beauty. God looks at the heart and values a gentle spirit. Clothes and possessions can be enjoyed without becoming the foundation of identity. When disappointment comes, we can tend to the person first and remember that dignity survives every torn garment and every change in circumstance.</p><p><strong>Reflect:</strong> Which outward measure of approval has been carrying too much weight in your sense of worth?</p><p><strong>Practice:</strong> Encourage someone today for a quality of character—kindness, courage, patience—rather than appearance or status.</p><p><strong>Prayer:</strong> Lord, remind me that your love is deeper than appearances. Make my heart gentle, my priorities wise, and my response to others compassionate. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000298",
+    "day_number": 12,
+    "value": "<p><strong>Read:</strong> Galatians 6:2; Romans 12:15</p><p><strong>Source and historical context:</strong> In Crosses, Ella returns to her Sunday school grieving her brother’s death. The narrator describes different children living with hunger, family violence, illness, abandonment, and loneliness. The children’s situations vary, but all carry burdens others may not see.</p><p><strong>Devotional focus:</strong> Scripture invites the church to weep with those who weep and carry one another’s burdens. That does not mean calling mistreatment or neglect a cross a child must simply endure. When someone lacks food, safety, medical care, or trustworthy protection, compassion should seek those things. We are not asked to compare grief or reward silent suffering. We are asked to take pain seriously and stand beside people in ways that make life safer and less lonely.</p><p><strong>Reflect:</strong> Whose struggle might you miss because they appear cheerful, quiet, capable, or well dressed?</p><p><strong>Practice:</strong> Check on someone with care and without pressure. Where safety is at stake, prioritize appropriate protection and help.</p><p><strong>Prayer:</strong> God of the brokenhearted, teach us to listen without judgment, to provide help rather than blame, and to carry burdens together. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000298",
+    "day_number": 13,
+    "value": "<p><strong>Read:</strong> Ephesians 4:25; 1 John 1:8-9</p><p><strong>Source and historical context:</strong> Crosses continues with children whose unseen struggles include fear, sorrow, and regret. The day then introduces The Two Countries, an allegory that imagines truthful and deceptive speech as signs of belonging to different spiritual homelands. Its stark divisions reflect the book’s preaching style.</p><p><strong>Devotional focus:</strong> Words matter because other people depend upon them. Truthfulness builds trust, while deception may damage relationships and leave the speaker isolated. Yet a person who has lied is not beyond the reach of grace. First John invites us to bring sin into the light and receive forgiveness. The aim of honesty is not to label others as permanently lost but to build relationships where truth, repentance, accountability, and renewed trust are possible.</p><p><strong>Reflect:</strong> Where would greater honesty make a relationship safer or more trustworthy?</p><p><strong>Practice:</strong> Practice one truthful, kind conversation and, if needed, take responsibility for a mistake without blaming someone else.</p><p><strong>Prayer:</strong> God of truth and mercy, steady my words and soften my heart. Help me repair broken trust and welcome others who are learning to change. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000298",
+    "day_number": 14,
+    "value": "<p><strong>Read:</strong> Proverbs 12:22; Colossians 3:9-10</p><p><strong>Source and historical context:</strong> The Two Countries gives examples of lying out of folly, greed, malice, and fear. It then portrays Margaret Lacy, a worker who tells the truth about losing a former position even though her honesty may cost her another job. Her employer later learns to trust her account of an accidental breakage.</p><p><strong>Devotional focus:</strong> Truthfulness often has a cost before its benefit is visible. Margaret’s example invites us to value integrity more than immediate approval. It is also important to notice the worker’s vulnerability: employers and others with power must not exploit honesty or punish people unfairly for speaking up. God’s call to truth reaches both sides of every relationship. We can be candid, fair, and accountable without promising that every honest decision will quickly be rewarded.</p><p><strong>Reflect:</strong> Are you facing pressure to conceal, exaggerate, or misrepresent something because honesty feels costly?</p><p><strong>Practice:</strong> Take one responsible step toward an accurate account—correct an error, clarify a promise, or document an important fact.</p><p><strong>Prayer:</strong> God of faithfulness, give me courage to speak truth without cruelty and wisdom to use power fairly. Help integrity take root in me. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000298",
+    "day_number": 15,
+    "value": "<p><strong>Read:</strong> Hebrews 12:1-3; 2 Corinthians 3:18</p><p><strong>Source and historical context:</strong> The conclusion of Do You Love God? tells of a child’s question that leads an adult to reconsider his life. The day then gives The Imperfect Copy, in which Edwin draws a face from memory, resists correction, and becomes discouraged when he compares his work with the actual model. His brother urges him to keep studying the original and learn patiently.</p><p><strong>Devotional focus:</strong> The story offers a picture of discipleship. A drawing improves not by pretending it is flawless or tearing it up at the first mistake, but by looking again and patiently adjusting. Christians look to Jesus as the pattern of faithful love. Growth in character is not a demand to be perfect immediately; it is a repeated turning toward Christ, open to correction and sustained by grace. We can value progress without making our worth depend on performance.</p><p><strong>Reflect:</strong> When corrected, do you tend to defend yourself or give up before you can learn?</p><p><strong>Practice:</strong> Choose one action of Jesus in the Gospels to imitate in an ordinary encounter today.</p><p><strong>Prayer:</strong> Patient Lord, keep me teachable without despair. Turn my eyes toward Jesus and form in me his humility, mercy, and faithfulness. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000298",
+    "day_number": 16,
+    "value": "<p><strong>Read:</strong> Luke 6:27-36; Matthew 25:35-40</p><p><strong>Source and historical context:</strong> A Story of the Crimea describes the aftermath of the Battle of the Alma and portrays a British surgeon named Thomson remaining to care for wounded Russian soldiers after his own forces move on. The source uses this account to illustrate costly mercy before drawing a comparison with Jesus’ compassion. Its historical details have not been independently verified here.</p><p><strong>Devotional focus:</strong> War and conflict encourage people to divide the world into those who deserve help and those who do not. Jesus challenges that instinct by teaching love for enemies. Providing medical care to a wounded person is not an endorsement of the war or the person’s actions; it is a refusal to abandon human dignity. We can begin closer to home by treating opponents fairly, telling the truth without hatred, and caring for people whose needs do not fit our loyalties.</p><p><strong>Reflect:</strong> Whose suffering are you tempted to overlook because you disagree with them or identify them with an opposing group?</p><p><strong>Practice:</strong> Offer respectful help or a fair hearing to someone outside your usual circle, without compromising safety or justice.</p><p><strong>Prayer:</strong> Merciful Christ, enlarge my compassion beyond my loyalties. Help me protect the vulnerable, pursue peace, and see your image in every person. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000298",
+    "day_number": 17,
+    "value": "<p><strong>Read:</strong> 1 John 1:8-9; Ephesians 2:8-10</p><p><strong>Source and historical context:</strong> The final inherited entry completes A Story of the Crimea by inviting readers to admit wrongdoing, seek forgiveness in Jesus, and turn toward a different way of living. After that conclusion, the source contains only the heading of the next story, I Have a Home, a Happy Home, and the word FINIS. No narrative from that next story is present in this inherited day.</p><p><strong>Devotional focus:</strong> Honest reflection is not meant to trap us in shame. John writes that we can confess our sins and find God faithful to forgive; Paul says salvation is a gift of grace that leads into good work. The earlier battlefield story spoke of people needing care, and this closing lesson turns to the hurts we cause and carry within. None of us needs to pretend we are beyond help. We can receive grace, make amends where possible, and practice love anew.</p><p><strong>Reflect:</strong> What confession, apology, or next step might help you move from regret into restoration?</p><p><strong>Practice:</strong> Take a safe step toward repair: tell the truth, ask forgiveness without demanding it, or offer care to someone you have overlooked.</p><p><strong>Prayer:</strong> Gracious God, meet me with mercy where I have fallen short. Give me courage to repair harm, accept your grace, and walk in newness of life. Amen.</p>"
+  }
+]
+$adapt_text$::jsonb) as edit(id uuid, day_number integer, value text)
+where target.plan_id = edit.id and target.day_number = edit.day_number;
+
+
+-- Only update plan Scripture references (user_id is null); leave user-authored records untouched.
+do $$
+declare
+  item jsonb;
+  target_day_id uuid;
+begin
+  for item in select value from jsonb_array_elements($adapt_refs$
+[
+  {
+    "id": "90000000-0000-0000-0000-000000000298",
+    "day_number": 1,
+    "references": [
+      "Matthew 5:14-16",
+      "1 Peter 3:15-16"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000298",
+    "day_number": 2,
+    "references": [
+      "Psalm 46:1-2",
+      "Galatians 6:2"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000298",
+    "day_number": 3,
+    "references": [
+      "Proverbs 12:10",
+      "1 Corinthians 15:51-57"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000298",
+    "day_number": 4,
+    "references": [
+      "Proverbs 28:13",
+      "1 John 1:9"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000298",
+    "day_number": 5,
+    "references": [
+      "Luke 7:44-50",
+      "Ephesians 4:29"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000298",
+    "day_number": 6,
+    "references": [
+      "Ephesians 5:15-16",
+      "James 1:5"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000298",
+    "day_number": 7,
+    "references": [
+      "Mark 8:36-37",
+      "Luke 12:6-7"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000298",
+    "day_number": 8,
+    "references": [
+      "Mark 4:35-41",
+      "Psalm 34:17-18"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000298",
+    "day_number": 9,
+    "references": [
+      "Mark 2:27-28",
+      "Hebrews 4:9-11"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000298",
+    "day_number": 10,
+    "references": [
+      "Isaiah 58:6-10",
+      "Luke 13:10-17"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000298",
+    "day_number": 11,
+    "references": [
+      "1 Peter 3:3-4",
+      "1 Samuel 16:7"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000298",
+    "day_number": 12,
+    "references": [
+      "Galatians 6:2",
+      "Romans 12:15"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000298",
+    "day_number": 13,
+    "references": [
+      "Ephesians 4:25",
+      "1 John 1:8-9"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000298",
+    "day_number": 14,
+    "references": [
+      "Proverbs 12:22",
+      "Colossians 3:9-10"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000298",
+    "day_number": 15,
+    "references": [
+      "Hebrews 12:1-3",
+      "2 Corinthians 3:18"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000298",
+    "day_number": 16,
+    "references": [
+      "Luke 6:27-36",
+      "Matthew 25:35-40"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000298",
+    "day_number": 17,
+    "references": [
+      "1 John 1:8-9",
+      "Ephesians 2:8-10"
+    ]
+  }
+]
+$adapt_refs$::jsonb) loop
+    select id into strict target_day_id from public.devotional_days
+    where plan_id = (item ->> 'id')::uuid and day_number = (item ->> 'day_number')::integer;
+
+    update public.scripture_references
+    set reference = array(select jsonb_array_elements_text(item -> 'references')),
+        updated_at = now()
+    where day_id = target_day_id and user_id is null;
+
+    if not found then
+      insert into public.scripture_references
+        (user_id, day_id, reference, created_at, updated_at)
+      values
+        (null, target_day_id, array(select jsonb_array_elements_text(item -> 'references')),
+         now(), now());
+    end if;
+  end loop;
+end
+$$;
+
+-- Keep the adaptation off published feeds until editorial approval.
+update public.devotional_plans
+set status = 'published', updated_at = now()
+where id = '90000000-0000-0000-0000-000000000298'::uuid;
+
+commit;
+-- END CONSOLIDATED SOURCE: 20261026140000_repair_draft_devotional_plans_wave_22.sql
+
+-- BEGIN CONSOLIDATED SOURCE: 20261026150000_repair_draft_devotional_plans_wave_23.sql sha256=25aaf37d5e910ec8c94a331d87d40fd3a500ade90616f2c48092446d25e67928
+-- Wave 23: Plan 311 — A Coal From The Altar, To Kindle The Holy Fire of Zeale (Samuel Ward).
+-- Fifteen source-grounded newly written devotional readings, NOT a transcription.
+-- Historical anti-Catholic polemic and coercive religious statecraft contextualized, not endorsed.
+-- Preserve the existing plan UUID, original day UUIDs, day numbers and reading progress.
+-- Reviewed for devotional suitability and approved for publication.
+
+begin;
+
+-- Fail safely if the existing seeded plan differs from the reviewed record.
+do $$
+declare
+  present_days integer;
+  first_day integer;
+  last_day integer;
+  distinct_days integer;
+  source_link text;
+  reported_total integer;
+begin
+  select source_url, total_days into source_link, reported_total
+  from public.devotional_plans
+  where id = '90000000-0000-0000-0000-000000000311'::uuid;
+  if not found then raise exception 'Plan 311 is missing'; end if;
+  if source_link is distinct from 'https://www.gutenberg.org/ebooks/16423'
+     or reported_total is distinct from 15 then
+    raise exception 'Plan 311 source URL or total_days differs from reviewed source';
+  end if;
+  select count(*), min(day_number), max(day_number), count(distinct day_number)
+  into present_days, first_day, last_day, distinct_days
+  from public.devotional_days
+  where plan_id = '90000000-0000-0000-0000-000000000311'::uuid;
+  if present_days <> 15 or first_day <> 1 or last_day <> 15 or distinct_days <> 15 then
+    raise exception 'Plan 311 must have exactly 15 unique numbered days, found %', present_days;
+  end if;
+end
+$$;
+
+
+update public.devotional_plans as target
+set title = edit.value, updated_at = now()
+from jsonb_to_recordset($adapt_text$
+[
+  {
+    "id": "90000000-0000-0000-0000-000000000311",
+    "value": "Zeal Tempered by Love: Fifteen Readings from Samuel Ward"
+  }
+]
+$adapt_text$::jsonb) as edit(id uuid, value text)
+where target.id = edit.id;
+
+
+update public.devotional_plans as target
+set description = edit.value, updated_at = now()
+from jsonb_to_recordset($adapt_text$
+[
+  {
+    "id": "90000000-0000-0000-0000-000000000311",
+    "value": "Fifteen original Scripture-led devotional readings inspired by Samuel Ward’s A Coal From The Altar, To Kindle The Holy Fire of Zeale. The series follows his sermon on the call to zeal, the Spirit’s work in our affections, the dangers of hypocrisy and blind or bitter zeal, courageous service, prayer and fellowship, sustainable discipleship, integrity in ministry, just leadership, and renewed fellowship with Christ. Each reading is a newly authored editorial adaptation with historical context, reflection, practical action, and prayer, not a verbatim modernization of Ward’s prose. Early modern Protestant polemics, anti-Catholic stereotypes, and calls for religious coercion are identified as historical claims rather than endorsed. The original source URL is retained for comparison."
+  }
+]
+$adapt_text$::jsonb) as edit(id uuid, value text)
+where target.id = edit.id;
+
+
+update public.devotional_days as target
+set title = edit.value, updated_at = now()
+from jsonb_to_recordset($adapt_text$
+[
+  {
+    "id": "90000000-0000-0000-0000-000000000311",
+    "day_number": 1,
+    "value": "Awaken Your Heart to Christ"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000311",
+    "day_number": 2,
+    "value": "Let Every Affection Serve Love"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000311",
+    "day_number": 3,
+    "value": "Recognize the Counterfeit Fire"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000311",
+    "day_number": 4,
+    "value": "Keep Your Motives in the Light"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000311",
+    "day_number": 5,
+    "value": "Conviction Guided by Wisdom"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000311",
+    "day_number": 6,
+    "value": "Offer God Your Best Energy"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000311",
+    "day_number": 7,
+    "value": "Courage with a Gentle Heart"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000311",
+    "day_number": 8,
+    "value": "Stay Steady Under Criticism"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000311",
+    "day_number": 9,
+    "value": "Feed the Flame with Daily Practices"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000311",
+    "day_number": 10,
+    "value": "Protect Your Heart without Neglecting Rest"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000311",
+    "day_number": 11,
+    "value": "Let Zeal Become Visible in Service"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000311",
+    "day_number": 12,
+    "value": "Lead by Faithful Example"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000311",
+    "day_number": 13,
+    "value": "Speak with Substance and Integrity"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000311",
+    "day_number": 14,
+    "value": "Justice without Favoritism"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000311",
+    "day_number": 15,
+    "value": "Open the Door to Renewal"
+  }
+]
+$adapt_text$::jsonb) as edit(id uuid, day_number integer, value text)
+where target.plan_id = edit.id and target.day_number = edit.day_number;
+
+
+update public.devotional_days as target
+set content = edit.value, updated_at = now()
+from jsonb_to_recordset($adapt_text$
+[
+  {
+    "id": "90000000-0000-0000-0000-000000000311",
+    "day_number": 1,
+    "value": "<p><strong>Read:</strong> Revelation 3:14-22; Romans 12:11</p><p><strong>Source and historical context:</strong> Samuel Ward begins his sermon with Christ’s call to the church at Laodicea: be zealous and repent. He worries that religious habit and outward comfort may dull love for God. His opening also addresses the church and ministers in his own England; his attempt to apply Revelation to his national moment is a historical interpretation, not a timetable for our age.</p><p><strong>Devotional focus:</strong> The risen Christ does not merely expose indifference; he invites his people to turn back toward fellowship with him. Zeal is not being constantly loud, busy, or emotionally intense. It begins when we allow Jesus to tell the truth about our hearts and renew our willingness to love him and our neighbors. We can ask whether faith still shapes what we do when no one is watching.</p><p><strong>Reflect:</strong> Where has my discipleship become more a familiar routine than a living response to Christ?</p><p><strong>Practice:</strong> Make room for an unhurried reading of Revelation 3:14–22. Name one neglected act of love and take a first step toward it.</p><p><strong>Prayer:</strong> Lord Jesus, where my heart is distracted or complacent, call me back with patience and truth. Kindle a love that becomes steady obedience and generous care. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000311",
+    "day_number": 2,
+    "value": "<p><strong>Read:</strong> Galatians 5:22-25; Ephesians 5:18-20</p><p><strong>Source and historical context:</strong> Ward asks what zeal really means. He disputes definitions that reduce it to love alone or a mixture of love and anger. His images of warmth, wings, sails, and Pentecost describe the whole life of feeling drawn into devotion. He speaks in the forceful rhetoric of his century, sometimes borrowing hostility as a metaphor for opposing sin.</p><p><strong>Devotional focus:</strong> Strong feeling by itself does not prove spiritual maturity. The Spirit produces love, joy, peace, patience, kindness, goodness, faithfulness, gentleness, and self-control. These fruits help us judge whether our intensity is leading us toward Christ or away from him. Our grief at injustice, joy in mercy, and hope for renewal can all become energy for faithful service without being turned into contempt for other people.</p><p><strong>Reflect:</strong> When my convictions grow intense, which fruit of the Spirit is most likely to become difficult for me?</p><p><strong>Practice:</strong> Before a difficult conversation, name the good you are seeking and choose a patient, gentle way to seek it.</p><p><strong>Prayer:</strong> Holy Spirit, shape all my feelings by the character of Jesus. Keep my convictions strong and my conduct humble, peaceful, and kind. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000311",
+    "day_number": 3,
+    "value": "<p><strong>Read:</strong> Matthew 23:23-28; 1 John 3:17-18</p><p><strong>Source and historical context:</strong> Ward turns from genuine zeal to its imitations. He criticizes public displays of holiness that ignore generosity, outward drama that conceals inward disorder, and severe attention to minor rules while greater duties go undone. He also warns against cruelty and the desire to scrutinize others while avoiding the truth about oneself.</p><p><strong>Devotional focus:</strong> Jesus rebukes religious show when justice, mercy, and faithfulness are missing. A person may speak convincingly about moral principles and still withhold practical help. Likewise, a quiet person may love God deeply without attracting attention. The test is not the volume of our words but the consistency of our conduct, especially toward those who need protection, patience, and care.</p><p><strong>Reflect:</strong> Am I more attentive to how my faith appears than to the needs of people near me?</p><p><strong>Practice:</strong> Choose one concrete, private act of mercy today, with no need to announce or document it.</p><p><strong>Prayer:</strong> God of truth, expose the distance between my appearance and my actions. Make my love practical, my correction humble, and my compassion sincere. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000311",
+    "day_number": 4,
+    "value": "<p><strong>Read:</strong> Matthew 6:1-4; Philippians 2:3-4</p><p><strong>Source and historical context:</strong> Ward classifies false zeal as counterfeit, blind, or turbulent. In this portion he concentrates on counterfeit zeal: using religious language to gain status, money, influence, or advantage over others. He recalls examples of people who invoked holy causes while pursuing private benefit.</p><p><strong>Devotional focus:</strong> Jesus teaches generosity that is not performed for applause. Paul urges believers to reject selfish ambition and attend to the interests of others. The question is not whether good work brings any recognition but whether recognition has become its controlling purpose. Honest motives are often mixed, so we need patient self-examination and trusted people who can ask difficult questions.</p><p><strong>Reflect:</strong> If no one praised or rewarded this good action, would I still want to do it?</p><p><strong>Practice:</strong> Review one commitment and identify any self-serving incentive. Quietly redirect some time, attention, or money toward another person’s genuine need.</p><p><strong>Prayer:</strong> Father, free me from using your name to advance myself. Give me integrity in public and in private, and joy in doing good without applause. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000311",
+    "day_number": 5,
+    "value": "<p><strong>Read:</strong> Romans 10:1-4; James 3:13-18</p><p><strong>Source and historical context:</strong> Ward distinguishes zeal without knowledge from zeal overwhelmed by bitterness. He directs sharp confessional criticism at Catholics, separatists, and other groups of his time, while also arguing that needless quarrels can injure the church. Those polemical descriptions reflect early modern Protestant conflicts and should not be adopted as characterizations of present-day communities.</p><p><strong>Devotional focus:</strong> Paul can recognize sincere religious passion while urging a deeper understanding of God’s righteousness. James says wisdom from above is peaceable, gentle, open to reason, and full of mercy. We can hold convictions without declaring entire groups ignorant or dangerous. Seeking truth requires listening, checking our understanding, naming injustice carefully, and refusing intimidation or coercion.</p><p><strong>Reflect:</strong> When I disagree with someone about faith, do I look for understanding or mainly for a way to defeat them?</p><p><strong>Practice:</strong> Speak with someone whose view differs from yours. Ask a sincere question, listen fully, and describe your own position without insult.</p><p><strong>Prayer:</strong> God of wisdom, rescue my convictions from pride and hostility. Give me understanding, courage, and the peaceable spirit that grows good fruit. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000311",
+    "day_number": 6,
+    "value": "<p><strong>Read:</strong> Galatians 4:18; Mark 12:29-31</p><p><strong>Source and historical context:</strong> Ward begins his praise of true zeal by asking why people can be enthusiastic about work, possessions, or recreation yet offer God only reluctant attention. He praises earnest prayer, repentance, cheerful generosity, and service. His comparisons can overstate the importance of visible intensity as a measure of faith.</p><p><strong>Devotional focus:</strong> Jesus names wholehearted love of God and love of neighbor as the great commandments. The point of giving God our best is not to sustain maximum effort without rest or to compare our emotional temperature with someone else’s. It is to let love order our priorities. For one person that may mean time in prayer; for another, patient caregiving, integrity at work, or a difficult act of forgiveness.</p><p><strong>Reflect:</strong> Which ordinary commitment would look different if love of God and neighbor guided it more clearly?</p><p><strong>Practice:</strong> Bring your full attention to one neglected responsibility, and do it as an act of love rather than a performance.</p><p><strong>Prayer:</strong> Lord, receive my time, skills, and attention. Teach me to love you wholeheartedly and use my energy faithfully without pride or exhaustion. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000311",
+    "day_number": 7,
+    "value": "<p><strong>Read:</strong> Acts 20:22-24; 2 Timothy 1:7</p><p><strong>Source and historical context:</strong> Ward pictures the zealous believer as courageous in the face of obstacles, recalling Paul, Nehemiah, and others who persisted in costly callings. He also addresses accusations that fervent Christians are unreasonable. Some of his imagery is combative, shaped by the persecution and conflict he understood.</p><p><strong>Devotional focus:</strong> Paul’s courage was the willingness to fulfill a ministry of grace despite uncertainty, not a license to injure an opponent. The Spirit gives power together with love and self-control. Faithful courage may involve naming wrongdoing, resisting pressure, defending a vulnerable neighbor, or remaining honest at personal cost. We should distinguish that from aggression, reckless risk, or the need to appear fearless.</p><p><strong>Reflect:</strong> Where do I need courage to do good without becoming harsh or careless of consequences?</p><p><strong>Practice:</strong> Take one prudent step toward a good but difficult duty: speak truth respectfully, request accountability, or stand beside someone treated unfairly.</p><p><strong>Prayer:</strong> God of courage, strengthen me to do what is right. Let your love guard my words and your wisdom guide my actions when I am afraid. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000311",
+    "day_number": 8,
+    "value": "<p><strong>Read:</strong> 1 Peter 4:12-16; Luke 11:9-13</p><p><strong>Source and historical context:</strong> Ward addresses the ridicule and social pressure that can meet religious conviction. He warns readers not to confuse fear of appearing unusual with genuine wisdom. Near the end of this segment, he moves into practical advice for sustaining zeal, beginning with prayer.</p><p><strong>Devotional focus:</strong> Criticism is not always persecution; it may reveal a blind spot that deserves attention. Yet faithful actions can also be misunderstood. Peter urges believers to examine why they suffer and to do good without shame. Jesus invites his followers to ask, seek, and knock. Prayer can help us respond to resistance without either abandoning a good purpose or hardening our hearts toward correction.</p><p><strong>Reflect:</strong> Which criticism should I consider carefully, and which fear of disapproval is keeping me from a loving action?</p><p><strong>Practice:</strong> Bring one concern to prayer. Seek wise feedback, then continue a good action if it remains truthful, safe, and loving.</p><p><strong>Prayer:</strong> Faithful God, give me a teachable spirit and a steady heart. Help me accept correction, resist empty pressure, and pray with trust. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000311",
+    "day_number": 9,
+    "value": "<p><strong>Read:</strong> Colossians 3:16-17; Hebrews 10:23-25</p><p><strong>Source and historical context:</strong> Ward advises prayer, Scripture, songs, reflection, examples of faithful people, and fellowship to nurture spiritual zeal. He compares these practices to fuel that keeps a fire alive and warns against isolation and sporadic devotion.</p><p><strong>Devotional focus:</strong> Spiritual growth usually takes shape through ordinary rhythms rather than a single dramatic moment. Scripture, prayer, worship, and honest companionship remind us who God is and how we are to love. These practices are gifts, not instruments for proving superiority. Their purpose is to help us persevere, encourage one another, and make room for grace in a crowded week.</p><p><strong>Reflect:</strong> What simple practice genuinely helps me remember Christ and care for others, and what repeatedly displaces it?</p><p><strong>Practice:</strong> Choose a sustainable rhythm for the next seven days: a short Scripture reading, an honest prayer, or a conversation with a trusted believer.</p><p><strong>Prayer:</strong> Lord, let your word dwell richly in me. Give me companions who encourage love and good works, and help me return to you each day. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000311",
+    "day_number": 10,
+    "value": "<p><strong>Read:</strong> John 15:4-5; 1 John 2:15-17</p><p><strong>Source and historical context:</strong> Ward acknowledges that excessive study, prayer, and effort can produce weariness, even as he stresses that zeal can fade through neglect, habitual wrongdoing, or an absorbing pursuit of wealth and status. His strong contrasts require balance: physical limits, illness, and the need for rest are not signs of spiritual failure.</p><p><strong>Devotional focus:</strong> Jesus describes fruitfulness as remaining in him, like a branch connected to the vine. Remaining does not mean forcing ourselves into constant activity. We can care for our bodies, ask for help, confess wrongdoing, and refuse to let possessions define us. The goal is a sustainable life of love in which work, rest, honesty, and dependence on Christ belong together.</p><p><strong>Reflect:</strong> What is draining my spiritual attention: distraction, unaddressed wrong, isolation, or trying to do too much?</p><p><strong>Practice:</strong> Choose one restorative boundary. Set aside an unhealthy distraction, make an honest apology, or schedule needed rest.</p><p><strong>Prayer:</strong> Jesus, keep me close to you. Help me release what competes with your love, care for my limits, and grow in steady faithfulness. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000311",
+    "day_number": 11,
+    "value": "<p><strong>Read:</strong> James 2:14-17; Ephesians 5:15-16</p><p><strong>Source and historical context:</strong> Ward tests the excuses people give for neglecting prayer, generosity, worship, and service: lack of time, lack of ability, fear of trouble, or the claim that inward devotion needs no outward expression. His words are blunt and sometimes assume capacities or resources that are not equal for everyone.</p><p><strong>Devotional focus:</strong> James asks what good faith means if we notice material need and never respond. Genuine love seeks expression, though its form depends on each person’s health, circumstances, gifts, and responsibilities. Someone unable to give money may listen, pray, share knowledge, or ask for assistance on another’s behalf. Faithfulness is not a contest of output; it is using what we actually have to love wisely.</p><p><strong>Reflect:</strong> What specific kind of service is possible within my real responsibilities and limits?</p><p><strong>Practice:</strong> Offer one practical gift you can afford today: a helpful message, shared information, a meal, time, or another act of care.</p><p><strong>Prayer:</strong> Lord, show me what love asks of me today. Free me from excuses and from unfair comparison, and teach me to serve with what I have. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000311",
+    "day_number": 12,
+    "value": "<p><strong>Read:</strong> 1 Timothy 4:12-16; 2 Timothy 4:1-5</p><p><strong>Source and historical context:</strong> In the sixth part Ward turns directly to ministers, urging prayer, careful teaching, and a consistent public and private life. He also praises the monarch of his time in language associated with sharp anti-Catholic conflict and violent biblical imagery. Those appeals to political or religious force are historical features, not guidance for modern discipleship.</p><p><strong>Devotional focus:</strong> Paul calls Timothy to attend to teaching and to set an example in speech, conduct, love, faith, and purity. Leadership is not proved by aggression or by claiming divine authority for coercion. It is shown in patient truthfulness, protecting people from harm, answering questions responsibly, and living what we teach. Everyone who influences another person can practice these habits.</p><p><strong>Reflect:</strong> Do my actions make it easier or harder for people to trust the good words I speak?</p><p><strong>Practice:</strong> Ask a trusted colleague or friend for feedback on one place where your example and your stated values may differ.</p><p><strong>Prayer:</strong> God of truth, help every leader be humble, accountable, and compassionate. Let my conduct support my words and make room for others to flourish. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000311",
+    "day_number": 13,
+    "value": "<p><strong>Read:</strong> 1 Peter 5:2-4; 1 Corinthians 13:1-3</p><p><strong>Source and historical context:</strong> Ward challenges ministers who rely on showy wordplay or occasional preaching without pastoral care. He values messages that help people know Christ and notes the contradiction of powerful speeches paired with selfish or harmful behavior.</p><p><strong>Devotional focus:</strong> Paul writes that eloquent speech without love is empty noise. Peter tells spiritual shepherds to serve willingly, not for dishonest gain or by domineering over others. Communication matters, but volume and flair cannot substitute for truth, preparation, care, or integrity. Whether we teach Scripture, mentor a coworker, or guide a family, the most persuasive message is one matched by a trustworthy life.</p><p><strong>Reflect:</strong> Where am I tempted to sound impressive instead of being clear, helpful, and accountable?</p><p><strong>Practice:</strong> Simplify one message or piece of advice so that it serves the listener’s needs; then follow through on something you have promised.</p><p><strong>Prayer:</strong> Christ our Shepherd, give me speech rooted in love and actions that match it. Keep me from using influence for applause or control. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000311",
+    "day_number": 14,
+    "value": "<p><strong>Read:</strong> Micah 6:8; Proverbs 29:4</p><p><strong>Source and historical context:</strong> Ward turns from preachers to civil magistrates. He condemns bribery, self-interest, and cowardice, but also advocates harsh enforcement of religious conformity and attacks Catholics and other religious groups. Such demands reflect the coercive church-state politics of his period and should be clearly separated from the call for integrity in public office.</p><p><strong>Devotional focus:</strong> The prophets connect faithful leadership with justice, mercy, and humility. Officials and other people in authority should protect those with less power, reject corruption, apply rules impartially, and respect freedom of conscience. Courage is valuable when it restrains abuse, not when it imposes faith by force. These principles matter in government, workplaces, churches, and homes alike.</p><p><strong>Reflect:</strong> How do I use the authority or influence I have, especially when someone cannot easily challenge my decision?</p><p><strong>Practice:</strong> Examine one decision for favoritism or self-interest. Where possible, make a fairer choice and invite appropriate accountability.</p><p><strong>Prayer:</strong> Just and merciful God, guide those entrusted with power. Make us courageous against corruption, humble in judgment, and protective of every person’s dignity. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000311",
+    "day_number": 15,
+    "value": "<p><strong>Read:</strong> Revelation 3:19-20; Joshua 24:15</p><p><strong>Source and historical context:</strong> Ward closes by returning to the Laodicean call. He urges the people of his congregation to open their hearts to Christ, recommit themselves to worship and service, and ask God for understanding joined with zeal. The ending is a pastoral invitation expressed in vivid, sometimes threatening language typical of the sermon.</p><p><strong>Devotional focus:</strong> Christ stands at the door and knocks. Renewal is not a command to manufacture intense emotion but an invitation to respond to his presence with repentance, trust, and love. Joshua’s household declaration reminds us that faith shapes everyday choices. We can finish this series by choosing one relationship to mend, one habit to cultivate, and one way to serve, trusting grace to sustain the beginning.</p><p><strong>Reflect:</strong> What would opening the door to Christ look like in my ordinary life over the coming week?</p><p><strong>Practice:</strong> Write down one realistic next step in prayer, reconciliation, or service. Share it with a trusted person if that would help you follow through.</p><p><strong>Prayer:</strong> Lord Jesus, thank you for seeking fellowship with us. Renew my heart, steady my commitments, and let my faith become patient love in action. Amen.</p>"
+  }
+]
+$adapt_text$::jsonb) as edit(id uuid, day_number integer, value text)
+where target.plan_id = edit.id and target.day_number = edit.day_number;
+
+
+-- Replace only plan-owned global Scripture references; preserve user-created note links.
+do $$
+declare
+  item jsonb;
+  target_day_id uuid;
+begin
+  for item in select value from jsonb_array_elements($adapt_refs$
+[
+  {
+    "id": "90000000-0000-0000-0000-000000000311",
+    "day_number": 1,
+    "references": [
+      "Revelation 3:14-22",
+      "Romans 12:11"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000311",
+    "day_number": 2,
+    "references": [
+      "Galatians 5:22-25",
+      "Ephesians 5:18-20"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000311",
+    "day_number": 3,
+    "references": [
+      "Matthew 23:23-28",
+      "1 John 3:17-18"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000311",
+    "day_number": 4,
+    "references": [
+      "Matthew 6:1-4",
+      "Philippians 2:3-4"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000311",
+    "day_number": 5,
+    "references": [
+      "Romans 10:1-4",
+      "James 3:13-18"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000311",
+    "day_number": 6,
+    "references": [
+      "Galatians 4:18",
+      "Mark 12:29-31"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000311",
+    "day_number": 7,
+    "references": [
+      "Acts 20:22-24",
+      "2 Timothy 1:7"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000311",
+    "day_number": 8,
+    "references": [
+      "1 Peter 4:12-16",
+      "Luke 11:9-13"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000311",
+    "day_number": 9,
+    "references": [
+      "Colossians 3:16-17",
+      "Hebrews 10:23-25"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000311",
+    "day_number": 10,
+    "references": [
+      "John 15:4-5",
+      "1 John 2:15-17"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000311",
+    "day_number": 11,
+    "references": [
+      "James 2:14-17",
+      "Ephesians 5:15-16"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000311",
+    "day_number": 12,
+    "references": [
+      "1 Timothy 4:12-16",
+      "2 Timothy 4:1-5"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000311",
+    "day_number": 13,
+    "references": [
+      "1 Peter 5:2-4",
+      "1 Corinthians 13:1-3"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000311",
+    "day_number": 14,
+    "references": [
+      "Micah 6:8",
+      "Proverbs 29:4"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000311",
+    "day_number": 15,
+    "references": [
+      "Revelation 3:19-20",
+      "Joshua 24:15"
+    ]
+  }
+]
+$adapt_refs$::jsonb) loop
+    select id into strict target_day_id from public.devotional_days
+    where plan_id = (item ->> 'id')::uuid and day_number = (item ->> 'day_number')::integer;
+
+    update public.scripture_references
+    set reference = array(select jsonb_array_elements_text(item -> 'references')),
+        updated_at = now()
+    where day_id = target_day_id and user_id is null;
+
+    if not found then
+      insert into public.scripture_references
+        (user_id, day_id, reference, created_at, updated_at)
+      values
+        (null, target_day_id, array(select jsonb_array_elements_text(item -> 'references')),
+         now(), now());
+    end if;
+  end loop;
+end
+$$;
+
+update public.devotional_plans
+set status = 'published', updated_at = now()
+where id = '90000000-0000-0000-0000-000000000311'::uuid;
+
+commit;
+-- END CONSOLIDATED SOURCE: 20261026150000_repair_draft_devotional_plans_wave_23.sql
+
+-- BEGIN CONSOLIDATED SOURCE: 20261026160000_repair_draft_devotional_plans_wave_24.sql sha256=493af9f10c17532b066caa86c5da4b455226f3ddefe146af7a3089501b3d032a
+-- Wave 24: Plan 317 — Letters to a Daughter and A Little Sermon to School-Girls (Helen Ekin Starrett).
+-- 20 original, source-grounded daily devotional adaptations, not a word-for-word modernization.
+-- Gender/class/health prejudices are historically contextualized rather than endorsed.
+-- Reviewed for devotional suitability and approved for publication.
+-- The migration does not delete or recreate day records, protecting existing progress.
+-- IMPORTANT: apply AFTER prior 2026-10-21 modernization migrations to avoid overwrites.
+
+begin;
+
+do $$
+declare
+  expected_source text;
+  expected_total integer;
+  present_days integer;
+  first_day integer;
+  last_day integer;
+  distinct_days integer;
+begin
+  select source_url, total_days into expected_source, expected_total
+  from public.devotional_plans
+  where id = '90000000-0000-0000-0000-000000000317'::uuid;
+  if not found then raise exception 'Plan 317 is missing'; end if;
+  if expected_source is distinct from 'https://www.gutenberg.org/ebooks/15419' or expected_total is distinct from 20 then
+    raise exception 'Plan 317 source URL or total_days differs from reviewed source';
+  end if;
+  select count(*), min(day_number), max(day_number), count(distinct day_number)
+  into present_days, first_day, last_day, distinct_days
+  from public.devotional_days where plan_id = '90000000-0000-0000-0000-000000000317'::uuid;
+  if present_days <> 20 or first_day <> 1 or last_day <> 20 or distinct_days <> 20 then
+    raise exception 'Plan 317 must have exactly 20 unique numbered days; found %', present_days;
+  end if;
+end
+$$;
+
+update public.devotional_plans as target
+set title = edit.value, updated_at = now()
+from jsonb_to_recordset($adapt_text$
+[
+  {
+    "id": "90000000-0000-0000-0000-000000000317",
+    "value": "A Life of Wisdom and Kindness: 20 Readings Inspired by Helen Ekin Starrett"
+  }
+]
+$adapt_text$::jsonb) as edit(id uuid, value text)
+where target.id = edit.id;
+
+update public.devotional_plans as target
+set description = edit.value, updated_at = now()
+from jsonb_to_recordset($adapt_text$
+[
+  {
+    "id": "90000000-0000-0000-0000-000000000317",
+    "value": "Twenty original Scripture-led devotional readings inspired by Helen Ekin Starrett’s Letters to a Daughter and A Little Sermon to School-Girls (1886). Following the book’s original sequence, the readings explore character at home, respectful speech, self-control, learning, purposeful work, healthy limits, stewardship, mindful conversation, friendship, wise boundaries, tact, hospitality, compassion in grief, Scripture, and dignity across social differences. The readings are newly authored editorial adaptations, not quotations or sentence-by-sentence modernizations of Starrett. Gender prescriptions, class expectations, appearance-based judgments, and assumptions about disability, health, fatigue, and blame are identified as historical limitations and are not endorsed. Original attribution and Project Gutenberg source link are retained for comparison."
+  }
+]
+$adapt_text$::jsonb) as edit(id uuid, value text)
+where target.id = edit.id;
+
+update public.devotional_days as target
+set title = edit.value, updated_at = now()
+from jsonb_to_recordset($adapt_text$
+[
+  {
+    "id": "90000000-0000-0000-0000-000000000317",
+    "day_number": 1,
+    "value": "Character Begins Close to Home"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000317",
+    "day_number": 2,
+    "value": "Respect with an Honest Voice"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000317",
+    "day_number": 3,
+    "value": "The Freedom of Self-Control"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000317",
+    "day_number": 4,
+    "value": "Learn Deeply, Choose Freely"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000317",
+    "day_number": 5,
+    "value": "Skills and Health are Gifts, Not Measures of Worth"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000317",
+    "day_number": 6,
+    "value": "Make Space for What Matters"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000317",
+    "day_number": 7,
+    "value": "Be Present and Keep Your Commitments"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000317",
+    "day_number": 8,
+    "value": "Let Curiosity Replace Performance"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000317",
+    "day_number": 9,
+    "value": "Listen Well and Choose Friends Wisely"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000317",
+    "day_number": 10,
+    "value": "Boundaries without Contempt"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000317",
+    "day_number": 11,
+    "value": "Friendship Should Make Room for Others"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000317",
+    "day_number": 12,
+    "value": "Tact is Empathy in Action"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000317",
+    "day_number": 13,
+    "value": "Respect Is More than a Social Label"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000317",
+    "day_number": 14,
+    "value": "Let Learning Transform Character"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000317",
+    "day_number": 15,
+    "value": "Faith that Comforts, Not Frightens"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000317",
+    "day_number": 16,
+    "value": "Let the Word Form a Loving Heart"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000317",
+    "day_number": 17,
+    "value": "Offer Kindness without Humiliation"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000317",
+    "day_number": 18,
+    "value": "The Golden Rule Needs Imagination"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000317",
+    "day_number": 19,
+    "value": "Grace Goes Beyond the Rulebook"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000317",
+    "day_number": 20,
+    "value": "Quiet Character Makes a Lasting Difference"
+  }
+]
+$adapt_text$::jsonb) as edit(id uuid, day_number integer, value text)
+where target.plan_id = edit.id and target.day_number = edit.day_number;
+
+update public.devotional_days as target
+set content = edit.value, updated_at = now()
+from jsonb_to_recordset($adapt_text$
+[
+  {
+    "id": "90000000-0000-0000-0000-000000000317",
+    "day_number": 1,
+    "value": "<p><strong>Read:</strong> Colossians 3:12-14; Romans 12:9-13</p><p><strong>Source and historical context:</strong> In her opening letter, Helen Ekin Starrett tells a daughter that attractive social manners are rooted in daily character. She recalls a capable student whose skill and charm at school did not carry into her treatment of family members. Her nineteenth-century expectations about how girls should appear in public are part of the historical setting, not a universal measure of faith.</p><p><strong>Devotional focus:</strong> Paul describes the character of Christian community as compassion, kindness, humility, patience, forgiveness, and love. These qualities matter most when no audience is watching. We may find it easy to be courteous to visitors while withholding patience from people at home. Faithful love invites us to close that gap, without assuming that every home is safe or that respect requires accepting mistreatment.</p><p><strong>Reflect:</strong> Who experiences my ordinary behavior when I am tired, distracted, or frustrated—and what would genuine kindness look like for them?</p><p><strong>Practice:</strong> Offer one practical act of care to someone you live or work with. If you have spoken sharply, acknowledge it without making excuses.</p><p><strong>Prayer:</strong> Lord, grow honest kindness in me. Let the care I show in public be present also in my closest relationships. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000317",
+    "day_number": 2,
+    "value": "<p><strong>Read:</strong> James 1:19-20; 1 Peter 3:8-9</p><p><strong>Source and historical context:</strong> Starrett continues her discussion of manners with gentleness, measured speech, and respect for elders. She objects to interruption and exaggeration, but also treats conspicuous speech by young women as particularly improper. The enduring lesson is thoughtful communication, not the demand that girls or anyone else become invisible.</p><p><strong>Devotional focus:</strong> James calls believers to listen readily, speak thoughtfully, and resist anger that harms others. Respect does not mean never disagreeing with a parent, teacher, leader, or older person. A humble voice can also be clear and courageous. Good listening makes space for others; truthful speaking makes space for conscience. Both matter in relationships shaped by mutual dignity.</p><p><strong>Reflect:</strong> When do I interrupt or dismiss others, and when do I stay silent even though a respectful truth needs to be said?</p><p><strong>Practice:</strong> In one conversation today, let the other person finish before responding. Then say what you mean clearly and kindly.</p><p><strong>Prayer:</strong> God of wisdom, give me patient ears and an honest voice. Teach me to honor people without surrendering truth. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000317",
+    "day_number": 3,
+    "value": "<p><strong>Read:</strong> Galatians 5:22-23; James 3:2-10</p><p><strong>Source and historical context:</strong> In her second letter, Starrett presents self-control as the foundation of study, reliable work, and careful speech. She especially warns that temper and gossip can hurt relationships. Her confidence that determination overcomes almost every obstacle needs qualification: fatigue, disability, economic demands, and illness cannot simply be willed away.</p><p><strong>Devotional focus:</strong> Self-control is named among the fruit of the Spirit. It is not a demand to suppress every feeling or work beyond our limits; it is freedom to choose what serves love. A pause before speaking can stop a wound. A modest daily routine can make learning possible. And when we fail, confession and repair matter more than pretending we never struggle.</p><p><strong>Reflect:</strong> What recurring moment makes it hardest for me to choose a patient response?</p><p><strong>Practice:</strong> Choose a short pause before replying when frustrated today. If possible, plan one manageable period for work or study and one for needed rest.</p><p><strong>Prayer:</strong> Holy Spirit, strengthen my choices without hardening my heart. Help me use words that heal and habits that sustain good work. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000317",
+    "day_number": 4,
+    "value": "<p><strong>Read:</strong> Proverbs 4:5-7; Philippians 4:8-9</p><p><strong>Source and historical context:</strong> Starrett urges disciplined reading and invokes divine help in forming habits. Midway through this source segment she turns to the prospects of marriage and home management, presenting them as the central aims of a young woman. This advice reflects her age; readers today may be called to many different forms of family life, work, friendship, and service.</p><p><strong>Devotional focus:</strong> Scripture values wisdom and invites the mind to dwell on what is true, honorable, just, and worthy of praise. Deep learning is not a contest of fashionable books. Nor is a meaningful future limited to one domestic or professional pattern. We can cultivate discernment, develop abilities, and approach relationships with honesty and consent while remaining open to the paths God may unfold.</p><p><strong>Reflect:</strong> Which choice about learning or my future comes mainly from social pressure rather than thoughtful conviction?</p><p><strong>Practice:</strong> Spend twenty focused minutes learning something worthwhile. Write one sentence naming a hope you hold freely, not merely because it is expected.</p><p><strong>Prayer:</strong> Father, guide my mind and my decisions. Give me courage to learn, wisdom in relationships, and freedom to serve where I am called. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000317",
+    "day_number": 5,
+    "value": "<p><strong>Read:</strong> Colossians 3:23-24; Mark 6:30-32</p><p><strong>Source and historical context:</strong> Starrett encourages young women to earn useful skills and financial independence, even as she ranks marriage and homemaking above other callings. She also recommends protecting physical health, but sometimes describes illness or untidiness as evidence of character defects. Those judgments should not be imposed on people with chronic illness, disabilities, or limited resources.</p><p><strong>Devotional focus:</strong> Work can be a place to practice service, creativity, and stewardship. Jesus also invites exhausted disciples to rest. A person is not more precious because they can earn more, look healthy, or perform every task without help. We honor God by using what we have responsibly and honoring the limits of our bodies. Receiving assistance can be as faithful as offering it.</p><p><strong>Reflect:</strong> Do I treat my work, appearance, or stamina as proof of my value?</p><p><strong>Practice:</strong> Practice one skill that serves others. Also make one reasonable choice to care for your wellbeing, without comparing yourself to someone else.</p><p><strong>Prayer:</strong> God, receive my work and my limitations. Teach me to care for my body and honor the dignity of every person, whatever their capacity. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000317",
+    "day_number": 6,
+    "value": "<p><strong>Read:</strong> Luke 10:38-42; 1 Corinthians 14:40</p><p><strong>Source and historical context:</strong> Starrett describes a simply furnished room kept with care, contrasting it with clutter and needless ornament. She uses the room, clothing, and personal grooming as signals of a woman’s refinement. These details reflect Victorian norms and available resources; neatness is a useful practice but not a reliable test of someone’s goodness.</p><p><strong>Devotional focus:</strong> Martha’s concern with household tasks was real, yet Jesus gently reminded her that love and attention matter more than anxious activity. Some order can free time and attention, while perfectionism can consume them. We do not have to earn belonging through spotless surroundings. The purpose of caring for our space is to make everyday life more hospitable, practical, and peaceful.</p><p><strong>Reflect:</strong> Is there one part of my environment I can care for without allowing the task to become a judgment on myself or others?</p><p><strong>Practice:</strong> Clear or organize one small area for ten minutes. Use the time or calm it creates to be present with someone or in prayer.</p><p><strong>Prayer:</strong> Jesus, help me value people over appearances. Let the spaces I tend support welcome, rest, and generous attention. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000317",
+    "day_number": 7,
+    "value": "<p><strong>Read:</strong> Ephesians 5:15-17; Romans 12:10-11</p><p><strong>Source and historical context:</strong> Starrett recalls a turning point when she began arriving promptly at family meals and noticed that this allowed her to assist her mother. The segment then opens a letter about society, conversation, and the broad knowledge that helps people exchange ideas. Her account reflects a household where much labor fell to women.</p><p><strong>Devotional focus:</strong> Using time wisely is not just about punctuality for its own sake. Arriving as promised, sharing practical work fairly, and preparing to participate in conversation communicate respect. Yet loving people also requires flexibility when illness, caregiving, transit, or other constraints disrupt plans. Reliability grows from honest communication, not from shaming those who struggle.</p><p><strong>Reflect:</strong> Which small commitment could I keep more attentively because it affects someone else’s day?</p><p><strong>Practice:</strong> Follow through on one promise promptly, or communicate early if you cannot. Ask whose invisible work you could help share.</p><p><strong>Prayer:</strong> Lord, make me faithful in ordinary commitments and considerate when plans change. Let my time become a gift of love. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000317",
+    "day_number": 8,
+    "value": "<p><strong>Read:</strong> Proverbs 18:13; James 1:19</p><p><strong>Source and historical context:</strong> Starrett quotes a social scene in which a young woman tries to sound well-read and is embarrassed by gaps in her knowledge. She then criticizes self-centered speech, loud laughter, and sarcasm. Some of her objections concern status and femininity rather than morality; the more lasting concern is whether conversation makes room for truth and for others.</p><p><strong>Devotional focus:</strong> We do not need to pretend to know everything in order to contribute. Proverbs cautions against answering before listening, and James commends slow, attentive speech. A genuine question can open a richer exchange than rehearsed cleverness. Humor can be a gift when shared kindly, but sarcasm that humiliates others poisons trust. Humility is both the courage to admit uncertainty and the willingness to learn.</p><p><strong>Reflect:</strong> When do I try to impress people rather than connect with them?</p><p><strong>Practice:</strong> Ask someone a sincere question about a subject they know. If you do not understand, say so without apology or pretence.</p><p><strong>Prayer:</strong> God of truth, free me from the need to appear impressive. Give me curiosity, attentive listening, and speech that builds connection. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000317",
+    "day_number": 9,
+    "value": "<p><strong>Read:</strong> Philippians 2:3-4; Proverbs 13:20</p><p><strong>Source and historical context:</strong> At the end of her conversation advice, Starrett urges readers to listen without interrupting. She then turns to friendships and the influence of companions. Her period’s tendency to judge people through reputation, respectability, and family background should not determine who deserves warmth or dignity.</p><p><strong>Devotional focus:</strong> Listening is a practice of considering another person’s interests, not merely waiting for a turn to speak. Friendship also shapes us: shared habits can encourage truthfulness, learning, and compassion, or make cruelty feel normal. Wisdom asks us to attend to patterns of behavior while remembering that people can grow and that every person deserves courtesy. Our close confidants need not be identical to us; they should help us become more truthful and loving.</p><p><strong>Reflect:</strong> Do my closest conversations create room for other people’s thoughts, and do my friendships encourage growth?</p><p><strong>Practice:</strong> Give a friend uninterrupted attention. Thank someone whose character has helped you learn or act kindly.</p><p><strong>Prayer:</strong> Lord, teach me to listen well and choose relationships shaped by integrity. Make me a friend who strengthens rather than diminishes others. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000317",
+    "day_number": 10,
+    "value": "<p><strong>Read:</strong> 1 Thessalonians 5:14-15; Proverbs 4:23</p><p><strong>Source and historical context:</strong> Starrett lists traits she regards as dangers in companions: dishonesty, gossip, idleness, disrespect, showiness, and tolerance of undue familiarity. Some examples unfairly blame young women for others’ disrespectful behavior, and she interprets tiredness as a failure of discipline. Those claims are not carried into this reading.</p><p><strong>Devotional focus:</strong> It is wise to protect trust, personal boundaries, and the people for whom we are responsible. Paul also asks believers to encourage the fainthearted, help the weak, and be patient with everyone. The call is neither to overlook harmful patterns nor to despise people who struggle. Healthy friendship allows an honest no, consent, accountability, and compassion. A person who violates your boundaries is responsible for that conduct.</p><p><strong>Reflect:</strong> Where do I need a clearer boundary, and where do I need more patience?</p><p><strong>Practice:</strong> State one boundary kindly and firmly when needed. Offer support to someone facing difficulty rather than assuming their struggle is laziness.</p><p><strong>Prayer:</strong> God of mercy and truth, give me wise boundaries without bitterness and compassion without denial. Help me act with courage and care. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000317",
+    "day_number": 11,
+    "value": "<p><strong>Read:</strong> Proverbs 17:17; Hebrews 10:24-25</p><p><strong>Source and historical context:</strong> Starrett recommends friendships that encourage high aims, warns against intense attachments that become exclusive, and describes how a considerate guest follows household rhythms. Her observations are set in a formal domestic culture, but the insight about sharing attention and responsibilities extends far beyond that setting.</p><p><strong>Devotional focus:</strong> A loyal friend is present in difficulty and notices the needs of people beyond the immediate friendship. Companionship can become possessive if it demands that others abandon work, family, or rest to prove affection. Hebrews calls believers to encourage one another toward love and good deeds. Mutuality means respecting a person’s time, supporting their commitments, and welcoming people who might otherwise be left out.</p><p><strong>Reflect:</strong> Does one of my relationships ask for more attention than either person can freely and wisely give?</p><p><strong>Practice:</strong> Check in with a friend about what would support them this week. When visiting or gathering, notice a task or person who needs consideration.</p><p><strong>Prayer:</strong> Lord, make my friendships steady, generous, and free. Teach me to honor others’ responsibilities and widen the circle of care. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000317",
+    "day_number": 12,
+    "value": "<p><strong>Read:</strong> Ephesians 4:29; Romans 12:18</p><p><strong>Source and historical context:</strong> Starrett ends her discussion of visits and begins a letter on tact. She describes a guest whose blunt criticism of a meal embarrassed the hosts, then suggests that tact grows from understanding how comments affect others. Her polished rules of etiquette are historically specific; kindness and consideration are the deeper concern.</p><p><strong>Devotional focus:</strong> Paul urges speech that meets the need of the moment and builds up the listener. Tact is not dishonest flattery or silence in the face of injustice; it is choosing a fitting moment, tone, and way to express truth. We can decline a meal without insulting its cook, disagree without belittling a person, and offer correction privately when public embarrassment would serve no good purpose.</p><p><strong>Reflect:</strong> When has being factually correct tempted me to overlook how my words landed?</p><p><strong>Practice:</strong> Before one difficult comment, ask: Is it true? Is it needed? Is it kind in its manner? Adjust your words without hiding the truth.</p><p><strong>Prayer:</strong> Jesus, make me both truthful and gentle. Let my words protect dignity and bring clarity rather than needless pain. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000317",
+    "day_number": 13,
+    "value": "<p><strong>Read:</strong> James 2:1-4; 1 Corinthians 13:4-7</p><p><strong>Source and historical context:</strong> Starrett moves from unobtrusive manners to asking who deserves to be called cultivated. She contrasts outward polish and wealth with inner consideration, though she still assumes particular upper-class norms of speech and behavior. These customs may reveal social training, but they are not trustworthy measures of intelligence, holiness, or worth.</p><p><strong>Devotional focus:</strong> James explicitly warns against giving the well-dressed or wealthy a favored place in the community. Love, according to Paul, is patient and kind, not boastful or self-seeking. Christian hospitality notices the person who lacks status and creates a place for them. Real refinement is less about knowing fashionable codes than about respecting the dignity of people whose accents, clothes, habits, or circumstances differ from ours.</p><p><strong>Reflect:</strong> Whose contribution might I overlook because they do not fit the image of someone impressive or accomplished?</p><p><strong>Practice:</strong> Include a person who is regularly ignored in a discussion or gathering. Hear their perspective without trying to correct their style.</p><p><strong>Prayer:</strong> God who shows no favoritism, expose my hidden rankings. Teach me to welcome people for who they are, not for the status they carry. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000317",
+    "day_number": 14,
+    "value": "<p><strong>Read:</strong> Micah 6:8; 2 Timothy 3:14-17</p><p><strong>Source and historical context:</strong> Starrett cites Emerson to argue that a genuinely cultivated spirit rests on moral concern. She notes that possessions, artistic accomplishments, and expensive surroundings can be acquired without kindness. Near the end of the segment she turns to religious education, remembering the strict devotional customs of earlier generations.</p><p><strong>Devotional focus:</strong> Knowledge and skill are valuable, but learning reaches deeper when it forms our conduct. Micah joins justice, mercy, and humility; Scripture teaches and equips people for good work. Neither aesthetic taste nor religious routine automatically produces those qualities. We can appreciate education while asking how it helps us respond to suffering, use power fairly, and practice integrity. Spiritual teaching should form love rather than fear or superiority.</p><p><strong>Reflect:</strong> What have I learned recently that ought to change how I treat someone?</p><p><strong>Practice:</strong> Choose one idea from your reading or worship and turn it into a small act of justice, kindness, or responsibility today.</p><p><strong>Prayer:</strong> Lord, do not let my knowledge outrun my love. Form in me a character that seeks justice, loves mercy, and walks humbly with you. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000317",
+    "day_number": 15,
+    "value": "<p><strong>Read:</strong> Psalm 34:17-18; Matthew 11:28-30</p><p><strong>Source and historical context:</strong> Starrett reflects on older family worship practices that sometimes relied on severe threats and fear. She then worries that religious instruction has weakened, while also recognizing how loss, disappointment, and grief awaken questions about God. Her sweeping claim that only one response can sustain every sufferer is stronger than the experiences of all people warrant.</p><p><strong>Devotional focus:</strong> The psalmist tells us that God is near the brokenhearted. Jesus invites the weary to come to him for rest. Faith need not be produced through terror, and grief does not mean a person has failed to trust. Prayer, Scripture, trustworthy relationships, and practical help may accompany one another in suffering. We can offer consolation without insisting that someone interpret their pain as a lesson or hurry toward cheerfulness.</p><p><strong>Reflect:</strong> When have I used pressure where an invitation to hope would be more fitting?</p><p><strong>Practice:</strong> Offer a listening presence to someone bearing a burden, or tell God honestly about your own sorrow without editing your feelings.</p><p><strong>Prayer:</strong> Compassionate Lord, meet us in grief and weariness. Teach me to offer the comfort I have received without judgment or pressure. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000317",
+    "day_number": 16,
+    "value": "<p><strong>Read:</strong> Psalm 119:105; Romans 12:10-12</p><p><strong>Source and historical context:</strong> In the close of her letters, Starrett urges personal choice, Bible reading, and turning to God for comfort. The text then introduces her Little Sermon to School-Girls, opening with Romans 12:10 and 1 Peter 3:4 and asking what makes someone genuinely lovable. It is a transition between two distinct works bound into one book.</p><p><strong>Devotional focus:</strong> The Bible does more than supply rules for appearances; it teaches us to walk in the light of God’s love. Romans calls Christians to honor one another and remain patient in trouble, steadfast in prayer. Becoming loving is not the same as making everyone like us. We can act with grace while still setting boundaries or facing rejection. God invites a free, growing response rather than compulsory conformity.</p><p><strong>Reflect:</strong> Where would Scripture help me exchange anxiety about approval for faithful love?</p><p><strong>Practice:</strong> Read Romans 12:9–18 slowly. Choose one phrase to guide a conversation or decision today.</p><p><strong>Prayer:</strong> God, let your word give light to my choices. Root my identity in your love and teach me to honor others sincerely. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000317",
+    "day_number": 17,
+    "value": "<p><strong>Read:</strong> James 2:1-5; Mark 10:13-16</p><p><strong>Source and historical context:</strong> Starrett’s school sermon contrasts a professor who corrects a student without humiliating him with a pupil who publicly mocks a newer student for an unfamiliar custom. She also notices that attractive or entertaining classmates can receive more attention than quieter students. Her descriptions of appearance are dated, but her concern about ridicule and exclusion remains important.</p><p><strong>Devotional focus:</strong> James warns believers against ranking people by outward appearance, and Jesus welcomes those whom others overlook. Teaching can be firm without cruelty. We need not deny a boundary to be kind: a simple explanation can protect health or property while preserving another person’s dignity. Communities flourish when newcomers can ask questions, make mistakes, and grow without becoming the subject of jokes.</p><p><strong>Reflect:</strong> Who may feel embarrassed or invisible in the group I belong to?</p><p><strong>Practice:</strong> Welcome someone new or overlooked. If a correction is necessary, give it respectfully and, when appropriate, in private.</p><p><strong>Prayer:</strong> Lord Jesus, guard my words from scorn. Give me the courage to welcome, the patience to explain, and the grace to protect another’s dignity. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000317",
+    "day_number": 18,
+    "value": "<p><strong>Read:</strong> Matthew 7:12; Ephesians 4:31-32</p><p><strong>Source and historical context:</strong> Starrett returns to Jesus’ Golden Rule and asks readers to imagine the experience of a person who feels awkward or uninformed. She argues that inner character becomes visible through restraint and thoughtfulness toward parents, teachers, and peers. Her examples rely on conventional etiquette, but the heart of her argument is attentiveness to other people’s feelings and needs.</p><p><strong>Devotional focus:</strong> Kindness grows when we recognize that another person’s situation may be different from ours. The Golden Rule is not a command to assume everyone wants the same treatment; it invites us to extend the care we would hope to receive. Sometimes that means asking what would help rather than guessing. Forgiveness, patience, and listening are practical forms of spiritual maturity that no class or age exclusively possesses.</p><p><strong>Reflect:</strong> Is there someone whose experience I have judged without first trying to understand it?</p><p><strong>Practice:</strong> Ask a person what support or respect looks like to them. Act on their answer where possible, instead of relying on assumptions.</p><p><strong>Prayer:</strong> Father, open my eyes to other people’s burdens and hopes. Make my kindness thoughtful, humble, and responsive. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000317",
+    "day_number": 19,
+    "value": "<p><strong>Read:</strong> Colossians 3:12-17; Galatians 5:22-23</p><p><strong>Source and historical context:</strong> Near the end of the school sermon, Starrett questions endless lists of social rules and commends common sense, healthy habits, and sincere cultivation of mind and heart. She still presents admittance to refined society as a reward for good conduct and sometimes judges people by health or outward presentation. Such social acceptance is not the Christian measure of a life.</p><p><strong>Devotional focus:</strong> The fruit of the Spirit cannot be purchased through finishing school, polished clothes, or the right vocabulary. Compassion and patience are learned in actual relationships. Good practical habits matter when they serve life, not when they become tests by which we exclude others. We can keep reasonable social customs while remembering that Christ calls us first to love and gratitude, not to impress a gatekeeping audience.</p><p><strong>Reflect:</strong> Which rule or expectation am I treating as a measure of someone’s value?</p><p><strong>Practice:</strong> Let go of one unnecessary judgment today. Replace it with a concrete act of hospitality or encouragement.</p><p><strong>Prayer:</strong> Holy Spirit, cultivate your fruit in me. Help me practice thoughtful habits without confusing social approval with goodness. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000317",
+    "day_number": 20,
+    "value": "<p><strong>Read:</strong> 1 Samuel 16:7; Luke 14:12-14</p><p><strong>Source and historical context:</strong> Starrett closes with two university-educated women seeking recognition in an influential literary circle. One is richly supported but portrayed as self-centered; the other works through hardship and gains respect through careful scholarship and kindness. Her conclusion favors deep character over conspicuous wealth, though it still assumes elite acceptance is a sign of success.</p><p><strong>Devotional focus:</strong> God looks at the heart rather than outward appearance. Jesus also challenges our habit of extending welcome chiefly to people who can repay us with status or invitations. Meaningful life is not a competition to enter prestigious circles. Excellence matters, but so do humility, solidarity, and care for those with no influence. The quiet worker and the visible leader alike can use their gifts to open doors for others.</p><p><strong>Reflect:</strong> What would I pursue if the reward were making life better for others rather than winning recognition?</p><p><strong>Practice:</strong> Use one skill to encourage someone who has fewer opportunities. Give credit generously and invite a voice that is too often excluded.</p><p><strong>Prayer:</strong> Lord, teach me to value the heart above display. May my gifts create room for others, and may my life seek your good rather than applause. Amen.</p>"
+  }
+]
+$adapt_text$::jsonb) as edit(id uuid, day_number integer, value text)
+where target.plan_id = edit.id and target.day_number = edit.day_number;
+
+-- Only modify plan-owned global Scripture reference rows; preserve user-created notes/references.
+do $$
+declare
+  item jsonb;
+  target_day_id uuid;
+begin
+  for item in select value from jsonb_array_elements($adapt_refs$
+[
+  {
+    "id": "90000000-0000-0000-0000-000000000317",
+    "day_number": 1,
+    "references": [
+      "Colossians 3:12-14",
+      "Romans 12:9-13"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000317",
+    "day_number": 2,
+    "references": [
+      "James 1:19-20",
+      "1 Peter 3:8-9"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000317",
+    "day_number": 3,
+    "references": [
+      "Galatians 5:22-23",
+      "James 3:2-10"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000317",
+    "day_number": 4,
+    "references": [
+      "Proverbs 4:5-7",
+      "Philippians 4:8-9"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000317",
+    "day_number": 5,
+    "references": [
+      "Colossians 3:23-24",
+      "Mark 6:30-32"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000317",
+    "day_number": 6,
+    "references": [
+      "Luke 10:38-42",
+      "1 Corinthians 14:40"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000317",
+    "day_number": 7,
+    "references": [
+      "Ephesians 5:15-17",
+      "Romans 12:10-11"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000317",
+    "day_number": 8,
+    "references": [
+      "Proverbs 18:13",
+      "James 1:19"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000317",
+    "day_number": 9,
+    "references": [
+      "Philippians 2:3-4",
+      "Proverbs 13:20"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000317",
+    "day_number": 10,
+    "references": [
+      "1 Thessalonians 5:14-15",
+      "Proverbs 4:23"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000317",
+    "day_number": 11,
+    "references": [
+      "Proverbs 17:17",
+      "Hebrews 10:24-25"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000317",
+    "day_number": 12,
+    "references": [
+      "Ephesians 4:29",
+      "Romans 12:18"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000317",
+    "day_number": 13,
+    "references": [
+      "James 2:1-4",
+      "1 Corinthians 13:4-7"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000317",
+    "day_number": 14,
+    "references": [
+      "Micah 6:8",
+      "2 Timothy 3:14-17"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000317",
+    "day_number": 15,
+    "references": [
+      "Psalm 34:17-18",
+      "Matthew 11:28-30"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000317",
+    "day_number": 16,
+    "references": [
+      "Psalm 119:105",
+      "Romans 12:10-12"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000317",
+    "day_number": 17,
+    "references": [
+      "James 2:1-5",
+      "Mark 10:13-16"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000317",
+    "day_number": 18,
+    "references": [
+      "Matthew 7:12",
+      "Ephesians 4:31-32"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000317",
+    "day_number": 19,
+    "references": [
+      "Colossians 3:12-17",
+      "Galatians 5:22-23"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000317",
+    "day_number": 20,
+    "references": [
+      "1 Samuel 16:7",
+      "Luke 14:12-14"
+    ]
+  }
+]
+$adapt_refs$::jsonb) loop
+    select id into strict target_day_id
+    from public.devotional_days
+    where plan_id = (item ->> 'id')::uuid and day_number = (item ->> 'day_number')::integer;
+
+    update public.scripture_references
+    set reference = array(select jsonb_array_elements_text(item -> 'references')),
+        updated_at = now()
+    where day_id = target_day_id and user_id is null;
+
+    if not found then
+      insert into public.scripture_references
+        (user_id, day_id, reference, created_at, updated_at)
+      values
+        (null, target_day_id, array(select jsonb_array_elements_text(item -> 'references')),
+         now(), now());
+    end if;
+  end loop;
+end
+$$;
+
+update public.devotional_plans
+set status = 'published', updated_at = now()
+where id = '90000000-0000-0000-0000-000000000317'::uuid;
+
+commit;
+-- END CONSOLIDATED SOURCE: 20261026160000_repair_draft_devotional_plans_wave_24.sql
+
+-- BEGIN CONSOLIDATED SOURCE: 20261026170000_repair_draft_devotional_plans_wave_25.sql sha256=c0dad0ef70f34e5e7dca0df6d3abb362474ca0e4947d53b776376bfbe4e97c2b
+-- Wave 25: Plan 325 — Experiments of Spiritual Life & Health (Roger Williams).
+-- Original, Scripture-led editorial adaptation of all 22 supplied source segments.
+-- Preserve existing plan/day IDs and all progress; publish after review.
+-- Deploy AFTER the earlier 2026-10-21 modernization migrations, including part 09.
+-- No copyrighted modern Bible translation is reproduced.
+
+begin;
+
+do $$
+declare
+  current_source text;
+  current_total integer;
+  row_count integer;
+  first_day integer;
+  last_day integer;
+  unique_days integer;
+begin
+  select source_url, total_days into current_source, current_total
+  from public.devotional_plans
+  where id = '90000000-0000-0000-0000-000000000325'::uuid;
+  if not found then raise exception 'Plan 325 is missing'; end if;
+  if current_source is distinct from 'https://www.gutenberg.org/ebooks/62944' or current_total is distinct from 22 then
+    raise exception 'Plan 325 source URL or total_days differs from reviewed source';
+  end if;
+  select count(*), min(day_number), max(day_number), count(distinct day_number)
+  into row_count, first_day, last_day, unique_days
+  from public.devotional_days where plan_id = '90000000-0000-0000-0000-000000000325'::uuid;
+  if row_count <> 22 or first_day <> 1 or last_day <> 22 or unique_days <> 22 then
+    raise exception 'Plan 325 must have 22 unique numbered days; found %', row_count;
+  end if;
+end
+$$;
+
+update public.devotional_plans as target
+set title = edit.value, updated_at = now()
+from jsonb_to_recordset($adapt_text$
+[
+  {
+    "id": "90000000-0000-0000-0000-000000000325",
+    "value": "Signs of Life: 22 Readings on Grace, Growth, and Spiritual Care"
+  }
+]
+$adapt_text$::jsonb) as edit(id uuid, value text)
+where target.id = edit.id;
+
+update public.devotional_plans as target
+set description = edit.value, updated_at = now()
+from jsonb_to_recordset($adapt_text$
+[
+  {
+    "id": "90000000-0000-0000-0000-000000000325",
+    "value": "Twenty-two newly written Scripture-led readings inspired by Roger Williams’s Experiments of Spiritual Life & Health, and Their Preservatives (1652). Explore assurance for fragile faith, spiritual renewal, humility, prayer, compassionate correction, and persevering hope. Historical language and judgments are placed in context. For editorial review, not a transcription of the source."
+  }
+]
+$adapt_text$::jsonb) as edit(id uuid, value text)
+where target.id = edit.id;
+
+update public.devotional_days as target
+set title = edit.value, updated_at = now()
+from jsonb_to_recordset($adapt_text$
+[
+  {
+    "id": "90000000-0000-0000-0000-000000000325",
+    "day_number": 1,
+    "value": "Grace for the Weakest Heart"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000325",
+    "day_number": 2,
+    "value": "Test What Leads Toward Love"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000325",
+    "day_number": 3,
+    "value": "A Little Faith Is Still Faith"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000325",
+    "day_number": 4,
+    "value": "Renewed on the Inside"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000325",
+    "day_number": 5,
+    "value": "Learning to Call God Father"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000325",
+    "day_number": 6,
+    "value": "Help My Unbelief"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000325",
+    "day_number": 7,
+    "value": "Return to the One Who Welcomes"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000325",
+    "day_number": 8,
+    "value": "Admire Grace, Keep Growing"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000325",
+    "day_number": 9,
+    "value": "Wonder, Worship, and Quiet Prayer"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000325",
+    "day_number": 10,
+    "value": "Prayer without Performance"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000325",
+    "day_number": 11,
+    "value": "Humility That Makes Room for Obedience"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000325",
+    "day_number": 12,
+    "value": "Confession That Leads to Restoration"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000325",
+    "day_number": 13,
+    "value": "Seek Christ Beyond the Appearance"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000325",
+    "day_number": 14,
+    "value": "Contentment without Indifference"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000325",
+    "day_number": 15,
+    "value": "Let Your Words and Work Bless Others"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000325",
+    "day_number": 16,
+    "value": "Compassion Is Stronger Than Contempt"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000325",
+    "day_number": 17,
+    "value": "Correction with Gentleness and Courage"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000325",
+    "day_number": 18,
+    "value": "A Faith That Examines and Renews"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000325",
+    "day_number": 19,
+    "value": "Guard the Flame with Gentle Rhythms"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000325",
+    "day_number": 20,
+    "value": "Repentance Held in Mercy"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000325",
+    "day_number": 21,
+    "value": "Justice and Mercy in a Wounded World"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000325",
+    "day_number": 22,
+    "value": "Live Today in the Light of Hope"
+  }
+]
+$adapt_text$::jsonb) as edit(id uuid, day_number integer, value text)
+where target.plan_id = edit.id and target.day_number = edit.day_number;
+
+update public.devotional_days as target
+set content = edit.value, updated_at = now()
+from jsonb_to_recordset($adapt_text$
+[
+  {
+    "id": "90000000-0000-0000-0000-000000000325",
+    "day_number": 1,
+    "value": "<p><strong>Read:</strong> Isaiah 42:3; Matthew 11:28-30</p><p><strong>Source and historical context:</strong> Roger Williams first wrote these reflections as a private encouragement to his wife after a dangerous illness; friends later circulated them, and an 1862 editor reintroduced the seventeenth-century work. Williams promises that even an unsure believer may find signs of spiritual life. His language of spiritual sickness is a metaphor, not a diagnosis of anyone’s medical condition.</p><p><strong>Devotional focus:</strong> Jesus does not crush a bruised reed. He invites weary people to come to him, not only the confident and accomplished. Faith can be genuine while a person is frightened, exhausted, uncertain, or still learning. A fragile beginning is not nothing. We can meet ourselves and others with the same gentleness we receive from Christ, refusing to make strength or visible achievement a condition of welcome.</p><p><strong>Reflect:</strong> Where have I treated weakness as proof that God has given up on me or someone else?</p><p><strong>Practice:</strong> Write down one small sign of hope, love, or desire for God that you have overlooked. Offer a gentle word to someone going through a difficult season.</p><p><strong>Prayer:</strong> Jesus, meet me with mercy in my frailty. Help me see your care in small beginnings and extend that care to others. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000325",
+    "day_number": 2,
+    "value": "<p><strong>Read:</strong> 1 John 4:1-3; James 3:17-18</p><p><strong>Source and historical context:</strong> In his dedication and address to readers, Williams asks people to examine spiritual claims rather than trust outward appearances. He also uses contemptuous descriptions of Indigenous communities and Muhammad, reflecting the religious hostility of his era. Those descriptions are historical prejudices and are not adopted in this devotional.</p><p><strong>Devotional focus:</strong> Christian discernment does not mean believing every confident religious voice, nor does it require suspicion or contempt toward people of other faiths. James describes heavenly wisdom as peaceable, gentle, reasonable, merciful, and sincere. These qualities help us ask whether a message encourages truth, responsibility, and love. We can test teachings with Scripture, wise counsel, and attention to their effects on vulnerable people.</p><p><strong>Reflect:</strong> What makes a spiritual claim persuasive to me: confidence, status, fear, or its consistency with Christlike love?</p><p><strong>Practice:</strong> When you encounter a powerful religious claim, pause to examine its context and consequences before repeating it. Seek a thoughtful second perspective.</p><p><strong>Prayer:</strong> God of truth, give me discernment without arrogance. Lead me toward wisdom that is sincere, gentle, and full of good fruit. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000325",
+    "day_number": 3,
+    "value": "<p><strong>Read:</strong> Matthew 5:3-6; Philippians 1:6</p><p><strong>Source and historical context:</strong> Williams reassures readers who feel their faith is small and urges more experienced believers to keep growing. The segment includes the personal letter that followed his wife’s recovery, where he offers his words as a small bouquet for her and their children. His affection is set within an intense awareness of human mortality.</p><p><strong>Devotional focus:</strong> Jesus blesses the poor in spirit, not merely those who appear spiritually strong. A longing for mercy, however faint, can be brought honestly into prayer. The same God who begins a work of grace can continue it patiently. Recovery from physical illness is not evidence of superior faith, and ongoing illness is not evidence of inferior faith. The invitation is to receive companionship and hope in whatever condition we face.</p><p><strong>Reflect:</strong> What small desire for God might I dismiss because it does not feel impressive?</p><p><strong>Practice:</strong> Pray a single honest sentence today. If someone you love is unwell, offer practical care without asking them to prove their faith.</p><p><strong>Prayer:</strong> Father, thank you that you know my heart without exaggeration. Grow what is good in me, one faithful day at a time. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000325",
+    "day_number": 4,
+    "value": "<p><strong>Read:</strong> 2 Corinthians 4:16-18; Romans 8:38-39</p><p><strong>Source and historical context:</strong> Continuing the letter to his wife, Williams distinguishes bodily frailty from the renewal of the inner person. He also differentiates weakness, spiritual struggle, and outright loss of faith. His seventeenth-century imagery describes spiritual life as health and illness; it should not be used to blame, diagnose, or shame people experiencing actual sickness.</p><p><strong>Devotional focus:</strong> Paul writes that the inner person can be renewed day by day even while the outward person is worn by hardship. This promise does not erase pain or require constant cheerfulness. It says that suffering and decline do not have the final word about our relationship with God. Growth may look like asking for help, choosing one truthful response, or returning after a difficult day. God’s love is not canceled by our limitations.</p><p><strong>Reflect:</strong> How might I recognize renewal without demanding immediate relief, perfect emotions, or constant productivity?</p><p><strong>Practice:</strong> Take five minutes to acknowledge a burden and a source of support. Reach out for practical assistance if your body or mind needs it.</p><p><strong>Prayer:</strong> Lord, renew me where I am weary. Teach me to honor my limits while remaining open to your sustaining presence. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000325",
+    "day_number": 5,
+    "value": "<p><strong>Read:</strong> Galatians 4:6-7; 1 Peter 2:2-3</p><p><strong>Source and historical context:</strong> Williams begins his signs of spiritual life with the believer’s relationship to God as Father. He then describes the desire to learn and the hunger for Scripture and faithful instruction. Though he contrasts authentic believers with hypocrites in severe terms, his starting point is the tenderness of a child reaching toward a trusted parent.</p><p><strong>Devotional focus:</strong> A new believer does not need to master every question to begin trusting God. In Galatians, the Spirit enables God’s children to cry out as sons and daughters. That cry may be as simple as a request for help. Like infants who need nourishment to grow, disciples learn through repeated attention, questions, community, and Scripture. Curiosity is not disloyalty; honest learning can be an expression of love.</p><p><strong>Reflect:</strong> What question about God have I avoided because I feared it would make my faith look weak?</p><p><strong>Practice:</strong> Read the Scripture passage slowly and write one honest question. Share it with a trustworthy mentor or explore its context.</p><p><strong>Prayer:</strong> Abba, Father, receive my questions and my need. Give me patience to learn and courage to keep drawing near. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000325",
+    "day_number": 6,
+    "value": "<p><strong>Read:</strong> Mark 9:23-24; Galatians 5:16-17</p><p><strong>Source and historical context:</strong> Williams names a desire to do God’s will despite repeated failure, resistance to known wrongdoing, and a willingness to seek God rather than use religion for personal gain. He recalls the father who asked Jesus to help his unbelief. This source section is concerned with inner conflict rather than the claim that mature Christians never struggle.</p><p><strong>Devotional focus:</strong> Belief and doubt can share the same prayer. The father in Mark did not hide his need from Jesus, and Jesus received his plea. The Spirit calls us away from harmful choices while also giving grace to begin again. Spiritual progress is not measured by how mercilessly we judge ourselves. It is seen in truthful confession, repair of harm, renewed dependence, and choices that become more loving over time.</p><p><strong>Reflect:</strong> Where do I need to confess both a sincere desire to follow Jesus and a real struggle?</p><p><strong>Practice:</strong> Name one behavior you want to change. Take one safe, realistic action toward repair or accountability, and ask for help where needed.</p><p><strong>Prayer:</strong> Jesus, I believe; help my unbelief. Strengthen my honesty and teach me to turn from harm toward your life-giving way. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000325",
+    "day_number": 7,
+    "value": "<p><strong>Read:</strong> Psalm 103:8-14; Hebrews 10:24-25</p><p><strong>Source and historical context:</strong> Williams continues his account of frail faith by describing acceptance of hardship, longing for worship with other believers, and distress when one’s actions rupture communion with God. His strict contrast between true children and pretenders should not make sufferers assume that every illness, loss, or anxious thought is God’s punishment.</p><p><strong>Devotional focus:</strong> Psalm 103 describes the Lord as compassionate and mindful of human frailty. Community and worship can support us, even if participation is difficult during illness, grief, disability, or isolation. When conscience reveals that we have hurt someone, we can seek forgiveness and make amends. But an anxious or painful feeling by itself is not proof of wrongdoing. Christ calls us toward reconciliation, not perpetual self-accusation.</p><p><strong>Reflect:</strong> Is there a broken relationship I can begin to repair, or a burden of guilt I need to release?</p><p><strong>Practice:</strong> If you owe someone an apology, offer it sincerely. Otherwise reach out to a safe community connection or ask someone to pray with you.</p><p><strong>Prayer:</strong> Merciful Father, lead me from fear toward truth and peace. Restore what I can repair and hold me in your compassion. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000325",
+    "day_number": 8,
+    "value": "<p><strong>Read:</strong> Hebrews 12:1-2; 2 Peter 3:18</p><p><strong>Source and historical context:</strong> Williams’s final sign of fragile spiritual life is the ability to notice and value God’s grace in other people, even when we feel unable to imitate their courage. He then turns from signs of life to signs of mature spiritual strength. He explicitly cautions readers not to confuse his coming examples of maturity with requirements for the very existence of faith.</p><p><strong>Devotional focus:</strong> We can admire another person’s faithfulness without turning their life into a weapon against ourselves. Hebrews invites believers to learn from a cloud of witnesses while fixing their eyes on Jesus. Growth happens at different speeds and in different circumstances. The strength to celebrate someone else’s good work may itself be a small grace. Gratitude gives us a path forward that comparison cannot.</p><p><strong>Reflect:</strong> Whose faithfulness inspires me, and how can I learn from it without resenting or copying their circumstances?</p><p><strong>Practice:</strong> Thank someone for a concrete act of courage or kindness. Choose one modest way to practice the same virtue in your own situation.</p><p><strong>Prayer:</strong> Lord, open my eyes to grace in others. Free me from competition and help me grow with patience and joy. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000325",
+    "day_number": 9,
+    "value": "<p><strong>Read:</strong> Psalm 8:1-9; Matthew 6:5-6</p><p><strong>Source and historical context:</strong> At the start of his second part, Williams groups maturity under holiness, righteousness, and sobriety. He begins with reverence before God, a desire to honor God in ordinary responsibilities, sincerity when unobserved, and prayer woven through daily life.</p><p><strong>Devotional focus:</strong> The heavens invite the psalmist into wonder, not self-display. Reverence can make the ordinary world astonishing again and remind us that our work is more than the pursuit of applause. Jesus encourages prayer that is sincere even when no one sees. A quiet moment of awe, a private act of honesty, or an unadvertised prayer can be a meaningful expression of love. Mature worship directs attention toward God and neighbor, not toward our religious reputation.</p><p><strong>Reflect:</strong> What small part of ordinary life invites awe, gratitude, or honest prayer today?</p><p><strong>Practice:</strong> Notice a detail of creation and give thanks. Do one good deed without announcing it to anyone.</p><p><strong>Prayer:</strong> Creator God, deepen my wonder and make my faith sincere in hidden places. Let your goodness shape my daily work. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000325",
+    "day_number": 10,
+    "value": "<p><strong>Read:</strong> Luke 11:1-13; Romans 8:26-27</p><p><strong>Source and historical context:</strong> Williams considers prayer as heartfelt communion rather than a religious performance. He observes that believers may leave prayer feeling just as heavy as when they began, while urging perseverance and honest dependence. Some of his rhetoric about hypocrites is harsh and should not be used to judge other people’s motives.</p><p><strong>Devotional focus:</strong> Jesus teaches his disciples to pray simply, and Paul says the Spirit helps us when words fail. The purpose of prayer is not to impress an audience or guarantee a particular feeling. We may pray with gratitude, confusion, grief, doubt, or silence. Persistence is not a competition over length or emotional intensity; it is the freedom to return. If we are too tired to form many words, even a brief cry for mercy is welcome.</p><p><strong>Reflect:</strong> Do I measure my prayers by how eloquent, long, or emotionally rewarding they seem?</p><p><strong>Practice:</strong> Offer a two-minute prayer with no need to perform: name one gratitude, one worry, and one person in need. Sit quietly afterward.</p><p><strong>Prayer:</strong> Holy Spirit, meet me where language ends. Teach me to pray with honesty and trust rather than striving to impress. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000325",
+    "day_number": 11,
+    "value": "<p><strong>Read:</strong> Micah 6:8; John 14:15-17</p><p><strong>Source and historical context:</strong> Williams associates spiritual maturity with humility, heartfelt desire for God, joyful obedience, and an honest response to hardships. He contrasts these with outward religious formality, and sometimes uses severe language about human unworthiness. The positive thread is a heart becoming available to God’s direction.</p><p><strong>Devotional focus:</strong> Humility is neither pretending we have no gifts nor rehearsing self-hatred. Micah describes the good life as justice, mercy, and humble walking with God. Obedience grows from love and is made visible in how we treat others. We can ask whether our routines form compassion rather than whether they make us look impressive. Even when duties feel hard, we can seek help without mistaking fatigue or grief for rebellion.</p><p><strong>Reflect:</strong> Which practice of justice or mercy would make my faith more truthful this week?</p><p><strong>Practice:</strong> Choose one responsibility that affects someone else and carry it out carefully. Make room to rest instead of treating exhaustion as a badge of holiness.</p><p><strong>Prayer:</strong> God, keep me humble and steady. Let love, mercy, and justice give shape to the choices I make. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000325",
+    "day_number": 12,
+    "value": "<p><strong>Read:</strong> 1 John 1:8-9; Psalm 51:10-12</p><p><strong>Source and historical context:</strong> Williams describes the honest confession of sin, restoration after a failure, and a longing for worship centered on Christ. His discussion reflects debates over true forms of church life in seventeenth-century Christianity. Those ecclesiastical disagreements should not be recast as tests of whether someone belongs to God.</p><p><strong>Devotional focus:</strong> Confession becomes life-giving when it names a wrong without disguising it and opens a path toward forgiveness and change. John reminds believers that God is faithful to forgive. Repair may also require listening to the person harmed, accepting consequences, or making restitution. Christian worship can nurture this honesty, though people may practice their faith in different traditions. The center is Christ’s mercy, not our success at appearing flawless.</p><p><strong>Reflect:</strong> Is there something I need to name plainly instead of excusing—or a forgiven wrong I keep using to condemn myself?</p><p><strong>Practice:</strong> Confess one concrete fault to God and, when appropriate and safe, take a respectful step to repair its effect on another person.</p><p><strong>Prayer:</strong> God of mercy, give me a clean heart and a willing spirit. Let forgiveness move me toward truthful and loving action. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000325",
+    "day_number": 13,
+    "value": "<p><strong>Read:</strong> John 4:23-24; Psalm 139:23-24</p><p><strong>Source and historical context:</strong> Williams warns against mistaking outward religious practices for communion with Christ. He also describes readiness to follow God into difficult duties and the need to recognize our own failings. His seventeenth-century judgments about other churches belong to a historical controversy and are not reproduced as verdicts on other Christians.</p><p><strong>Devotional focus:</strong> Jesus says true worship is offered in spirit and truth. Buildings, schedules, traditions, and words can be meaningful gifts, but they are not replacements for love of God and neighbor. When we examine ourselves, the goal is not to intensify shame until we despair. The psalmist invites God to search the heart and lead it toward an everlasting way. A receptive heart can learn, repent, and remain open to unfamiliar forms of service.</p><p><strong>Reflect:</strong> Which visible religious habit helps me love more deeply, and which has become an end in itself?</p><p><strong>Practice:</strong> During your next act of worship, name the purpose behind it. Afterwards, put that purpose into action through kindness or honesty.</p><p><strong>Prayer:</strong> Jesus, draw me beyond appearances into truthful worship. Search my heart gently and lead me in your way. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000325",
+    "day_number": 14,
+    "value": "<p><strong>Read:</strong> Philippians 4:11-13; Hebrews 13:5-6</p><p><strong>Source and historical context:</strong> In this section Williams describes inner struggle, self-denial, contentment, endurance, and freedom from the hold of worldly possessions. He answers many objections about whether a person’s inward disposition is genuine. The passage can sound like a demand to embrace deprivation; that is not how these reflections apply it.</p><p><strong>Devotional focus:</strong> Paul learned contentment in seasons of plenty and need, drawing strength from Christ. Contentment does not mean accepting abuse, refusing needed help, or telling people in poverty to be satisfied with injustice. It means our worth and hope are not owned by possessions or status. We may enjoy good gifts gratefully, share them generously, and still work to address unmet needs. The discipline is to hold created things without making them our final security.</p><p><strong>Reflect:</strong> What possession, achievement, or public opinion has become too powerful over my sense of peace?</p><p><strong>Practice:</strong> Practice gratitude for one ordinary gift. Share a resource where you can, or seek needed support without shame.</p><p><strong>Prayer:</strong> Lord, teach me to receive enough with gratitude and pursue justice with courage. Free my heart from fear of losing status. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000325",
+    "day_number": 15,
+    "value": "<p><strong>Read:</strong> Ephesians 4:29-32; Galatians 6:9-10</p><p><strong>Source and historical context:</strong> Williams moves from self-discipline and guarding speech to the mature believer’s responsibility to seek the good of others. He recalls Christ and the apostles caring for people, including those in bodily distress. Miraculous healings appear in the historical argument; they are not a promise that faith or prayer will replace healthcare.</p><p><strong>Devotional focus:</strong> Words can build up or tear down. Paul calls believers to speech that gives grace and to patient perseverance in doing good. A life shaped by Christ looks outward: it listens, protects confidence, shares practical help, and notices neglected needs. Service should honor a person’s dignity, consent, and limits. We do not need extraordinary abilities to offer useful kindness, and we should not judge someone’s faith by whether a physical healing occurs.</p><p><strong>Reflect:</strong> Who would be genuinely helped by my time, attention, words, or practical skills this week?</p><p><strong>Practice:</strong> Offer one specific, manageable act of help. Ask what the person wants rather than assuming you know their needs.</p><p><strong>Prayer:</strong> Christ, make my words and work useful to others. Give me compassion that respects people and perseverance that does not seek applause. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000325",
+    "day_number": 16,
+    "value": "<p><strong>Read:</strong> John 13:34-35; Romans 12:15-18</p><p><strong>Source and historical context:</strong> Williams emphasizes affection for fellow believers while also urging mercy toward all people, including enemies. He acknowledges that Christians can wound one another and that grief over suffering may overwhelm even a well-intentioned person. The source sometimes frames forceful correction as love; this reading centers safety and compassion instead.</p><p><strong>Devotional focus:</strong> Jesus marks discipleship by love for one another. Love protects rather than humiliates, and it does not erase the dignity of people outside our own community. Paul invites us to rejoice with those who rejoice, weep with those who weep, and pursue peace where possible. Compassion is not weakness. It may require naming harm, supporting a person’s boundaries, or staying with someone through a grief that cannot be quickly solved.</p><p><strong>Reflect:</strong> Who have I judged from a distance when I could have listened more carefully?</p><p><strong>Practice:</strong> Listen to someone without rushing to advise them. If a situation involves harm, offer safe, practical support rather than pressuring quick reconciliation.</p><p><strong>Prayer:</strong> Jesus, widen my compassion. Teach me to care for those who suffer and to resist contempt, even during disagreement. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000325",
+    "day_number": 17,
+    "value": "<p><strong>Read:</strong> Galatians 6:1-2; Proverbs 15:1; James 1:19</p><p><strong>Source and historical context:</strong> Williams connects bearing others’ burdens with correcting wrongdoing, resisting temptations, and accepting correction ourselves. He also discusses separation from unrepentant behavior within Christian communities. Some of the source’s language is severe, so its call for accountability needs to be understood without endorsing threats or religious coercion.</p><p><strong>Devotional focus:</strong> Paul calls the spiritually mature to restore someone gently, mindful of their own vulnerability. Truth should not be replaced with flattery, but loving correction considers timing, relationship, evidence, and the listener’s dignity. We also need humility to receive feedback and change. Firm boundaries may be necessary where harm continues; they are not proof that another person deserves cruelty. Courage and gentleness belong together.</p><p><strong>Reflect:</strong> When I confront a problem, do I aim to help repair it or to win the argument?</p><p><strong>Practice:</strong> Before giving feedback, ask permission where appropriate and name the issue specifically. Invite one trusted person to tell you how you can improve.</p><p><strong>Prayer:</strong> God of wisdom, make my words truthful and kind. Help me welcome correction and defend others without becoming harsh. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000325",
+    "day_number": 18,
+    "value": "<p><strong>Read:</strong> Lamentations 3:40-41; 1 Corinthians 11:28; Matthew 6:16-18</p><p><strong>Source and historical context:</strong> Williams completes his signs of spiritual maturity and begins a final section on preserving spiritual wellbeing. He recommends examining one’s life, seeking Christ in worship, and periods of fasting and prayer. Fasting is a historical spiritual practice, but it is not required for everyone and can be unsuitable for medical or other personal reasons.</p><p><strong>Devotional focus:</strong> Lamentations invites us to examine our ways and return to the Lord. Reflection can be healthy when it leads to gratitude, confession, and a next step rather than endless fear. Jesus also assumes fasting may have a place in a disciple’s life, while warning against public display. We can cultivate attentive prayer and renewal through many safe practices: silence, Scripture, generosity, rest, and thoughtful conversation. No single discipline proves someone’s worth.</p><p><strong>Reflect:</strong> What recurring habit helps me notice my life honestly and return to God with hope?</p><p><strong>Practice:</strong> Spend ten minutes reflecting on one gratitude, one regret, and one next step. Choose a sustainable practice, without fasting if it would be unsafe.</p><p><strong>Prayer:</strong> Lord, teach me to examine my heart with honesty and hope. Guide me into practices that nourish love instead of fear. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000325",
+    "day_number": 19,
+    "value": "<p><strong>Read:</strong> Colossians 3:15-17; 1 Timothy 4:7-8</p><p><strong>Source and historical context:</strong> Williams recommends guarding against spiritual dullness, undue attachment to comforts, and discouragement, while remembering future hope. He uses seventeenth-century medical images of colds, excess, and bitter treatments as analogies for spiritual life. They are not medical advice or evidence that illness results from sin.</p><p><strong>Devotional focus:</strong> Paul encourages believers to let the peace of Christ rule and to fill their lives with teaching, gratitude, and song. Faithfulness is often strengthened by ordinary rhythms rather than dramatic pressure: time for Scripture, a trusted companion, honest prayer, wise limits, and enough rest. We can enjoy family, food, work, and other gifts without making any of them our sole source of identity. When a practice is wearing us down, it may need to change, not become more severe.</p><p><strong>Reflect:</strong> Which rhythm genuinely nourishes me, and which expectation has become burdensome?</p><p><strong>Practice:</strong> Choose one brief, sustainable spiritual practice for the coming week. Include time for sleep, meals, and needed physical care.</p><p><strong>Prayer:</strong> God of peace, renew my attention through simple faithful rhythms. Give me gratitude for your gifts and freedom from needless pressure. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000325",
+    "day_number": 20,
+    "value": "<p><strong>Read:</strong> Psalm 51:1-12; 1 John 4:16-19</p><p><strong>Source and historical context:</strong> Williams recommends remembering wrongdoing and contemplating divine judgment so that believers remain alert to the seriousness of sin. He uses threatening images and historical calamities to intensify reverence. Such claims need pastoral caution: they are not grounds for telling a specific suffering person that God caused their pain as punishment.</p><p><strong>Devotional focus:</strong> Repentance begins with honesty, but it need not end in terror. Psalm 51 joins confession with a plea for renewal, and John says that mature love drives out fear associated with punishment. We do not honor God by replaying shame without hope. A wise conscience can name wrongs, receive mercy, make repairs, and learn to act differently. God’s holiness and compassion invite reverence grounded in love.</p><p><strong>Reflect:</strong> Have I confused taking sin seriously with refusing to receive forgiveness?</p><p><strong>Practice:</strong> Bring one regret to God in clear words. Then write one constructive act of repair or a commitment to turn toward what is good.</p><p><strong>Prayer:</strong> Merciful God, create in me a clean heart. Let your love free me from despair and move me toward faithful change. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000325",
+    "day_number": 21,
+    "value": "<p><strong>Read:</strong> Micah 6:8; Romans 12:15; Luke 13:1-5</p><p><strong>Source and historical context:</strong> Williams looks at biblical judgments, wars, famine, pestilence, and religious conflict, interpreting disasters of his era through divine punishment. He also uses hostile language toward Islam and Catholicism and draws sweeping conclusions about peoples and cultures. These are historically situated assertions, not verified explanations for human catastrophes.</p><p><strong>Devotional focus:</strong> Jesus rejects the easy assumption that victims of tragedy must be worse sinners than others. Paul commands us to grieve with those who grieve, and Micah calls us toward justice and mercy. When we see suffering, a faithful first response is solidarity and practical aid, not speculation about whose guilt caused it. We can reject religious hatred and work for peace while taking seriously our shared responsibility to resist injustice.</p><p><strong>Reflect:</strong> When hearing about a tragedy, am I more inclined to assign blame or offer compassion?</p><p><strong>Practice:</strong> Learn about one community experiencing hardship from a credible source. Offer support, prayer, or a concrete act of solidarity within your ability.</p><p><strong>Prayer:</strong> God of justice, keep me from easy blame and indifference. Teach me to mourn with the hurting and seek peace with courage. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000325",
+    "day_number": 22,
+    "value": "<p><strong>Read:</strong> Psalm 90:12-17; John 11:25-26; Galatians 6:9-10</p><p><strong>Source and historical context:</strong> Williams ends with vivid meditation on mortality, the brevity of life, and the need to use our remaining days wisely. His imagery includes graves, judgment, eternity, gratitude for necessities, refusal of revenge, and service to others. Its severe descriptions of the dead and the afterlife are elements of a seventeenth-century devotional style, not instructions to cultivate panic or disgust.</p><p><strong>Devotional focus:</strong> The psalmist asks God to teach us to number our days so we may gain wisdom of heart. Jesus offers hope beyond death. Remembering life’s limits can make us more attentive to people rather than fearful of the future. Today is an opportunity to give thanks, reconcile where possible, protect the vulnerable, and do good. Hope does not deny grief or uncertainty. It offers a reason to live generously in the time we have.</p><p><strong>Reflect:</strong> If I treated today as a precious gift, what relationship or act of love would deserve more attention?</p><p><strong>Practice:</strong> Express gratitude to someone while you can. Take one small step toward an unfinished responsibility that matters more than status or possessions.</p><p><strong>Prayer:</strong> Living Christ, teach me to number my days with wisdom and hope. Let my remaining time be marked by gratitude, reconciliation, and love. Amen.</p>"
+  }
+]
+$adapt_text$::jsonb) as edit(id uuid, day_number integer, value text)
+where target.plan_id = edit.id and target.day_number = edit.day_number;
+
+-- Only update plan-level global reference rows. User-owned Scripture notes remain unchanged.
+do $$
+declare
+  item jsonb;
+  target_day_id uuid;
+begin
+  for item in select value from jsonb_array_elements($adapt_refs$
+[
+  {
+    "id": "90000000-0000-0000-0000-000000000325",
+    "day_number": 1,
+    "references": [
+      "Isaiah 42:3",
+      "Matthew 11:28-30"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000325",
+    "day_number": 2,
+    "references": [
+      "1 John 4:1-3",
+      "James 3:17-18"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000325",
+    "day_number": 3,
+    "references": [
+      "Matthew 5:3-6",
+      "Philippians 1:6"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000325",
+    "day_number": 4,
+    "references": [
+      "2 Corinthians 4:16-18",
+      "Romans 8:38-39"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000325",
+    "day_number": 5,
+    "references": [
+      "Galatians 4:6-7",
+      "1 Peter 2:2-3"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000325",
+    "day_number": 6,
+    "references": [
+      "Mark 9:23-24",
+      "Galatians 5:16-17"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000325",
+    "day_number": 7,
+    "references": [
+      "Psalm 103:8-14",
+      "Hebrews 10:24-25"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000325",
+    "day_number": 8,
+    "references": [
+      "Hebrews 12:1-2",
+      "2 Peter 3:18"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000325",
+    "day_number": 9,
+    "references": [
+      "Psalm 8:1-9",
+      "Matthew 6:5-6"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000325",
+    "day_number": 10,
+    "references": [
+      "Luke 11:1-13",
+      "Romans 8:26-27"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000325",
+    "day_number": 11,
+    "references": [
+      "Micah 6:8",
+      "John 14:15-17"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000325",
+    "day_number": 12,
+    "references": [
+      "1 John 1:8-9",
+      "Psalm 51:10-12"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000325",
+    "day_number": 13,
+    "references": [
+      "John 4:23-24",
+      "Psalm 139:23-24"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000325",
+    "day_number": 14,
+    "references": [
+      "Philippians 4:11-13",
+      "Hebrews 13:5-6"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000325",
+    "day_number": 15,
+    "references": [
+      "Ephesians 4:29-32",
+      "Galatians 6:9-10"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000325",
+    "day_number": 16,
+    "references": [
+      "John 13:34-35",
+      "Romans 12:15-18"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000325",
+    "day_number": 17,
+    "references": [
+      "Galatians 6:1-2",
+      "Proverbs 15:1",
+      "James 1:19"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000325",
+    "day_number": 18,
+    "references": [
+      "Lamentations 3:40-41",
+      "1 Corinthians 11:28",
+      "Matthew 6:16-18"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000325",
+    "day_number": 19,
+    "references": [
+      "Colossians 3:15-17",
+      "1 Timothy 4:7-8"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000325",
+    "day_number": 20,
+    "references": [
+      "Psalm 51:1-12",
+      "1 John 4:16-19"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000325",
+    "day_number": 21,
+    "references": [
+      "Micah 6:8",
+      "Romans 12:15",
+      "Luke 13:1-5"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000325",
+    "day_number": 22,
+    "references": [
+      "Psalm 90:12-17",
+      "John 11:25-26",
+      "Galatians 6:9-10"
+    ]
+  }
+]
+$adapt_refs$::jsonb) loop
+    select id into strict target_day_id
+    from public.devotional_days
+    where plan_id = (item ->> 'id')::uuid and day_number = (item ->> 'day_number')::integer;
+
+    update public.scripture_references
+    set reference = array(select jsonb_array_elements_text(item -> 'references')),
+        updated_at = now()
+    where day_id = target_day_id and user_id is null;
+
+    if not found then
+      insert into public.scripture_references
+        (user_id, day_id, reference, created_at, updated_at)
+      values
+        (null, target_day_id,
+         array(select jsonb_array_elements_text(item -> 'references')), now(), now());
+    end if;
+  end loop;
+end
+$$;
+
+update public.devotional_plans
+set status = 'published', updated_at = now()
+where id = '90000000-0000-0000-0000-000000000325'::uuid;
+
+commit;
+-- END CONSOLIDATED SOURCE: 20261026170000_repair_draft_devotional_plans_wave_25.sql
+
+-- BEGIN CONSOLIDATED SOURCE: 20261026180000_repair_draft_devotional_plans_wave_26.sql sha256=b68e6a6e8639e8cc9253e08e59a41625b3f76c484064654fa95b42b4ed719eea
+-- Wave 26: Plan 328 — Dave Ranney (autobiographical memoir).
+-- Thirty-two new Scripture-led readings drawn from the supplied source segments.
+-- In-place updates retain existing IDs/day numbers/progress; publish after review.
+-- Run AFTER all 2026-10-21 modernization migrations (especially parts 03 and 09).
+-- No copyrighted modern Bible translation is reproduced.
+
+begin;
+
+do $$
+declare
+  current_source text;
+  current_total integer;
+  day_count integer;
+  first_day integer;
+  last_day integer;
+  unique_days integer;
+begin
+  select source_url, total_days into current_source, current_total
+  from public.devotional_plans
+  where id = '90000000-0000-0000-0000-000000000328'::uuid;
+  if not found then raise exception 'Plan 328 missing'; end if;
+  if current_source is distinct from 'https://www.gutenberg.org/ebooks/13889' or current_total is distinct from 32 then
+    raise exception 'Plan 328 metadata differs from source reviewed for Wave 26';
+  end if;
+  select count(*), min(day_number), max(day_number), count(distinct day_number)
+  into day_count, first_day, last_day, unique_days
+  from public.devotional_days where plan_id = '90000000-0000-0000-0000-000000000328'::uuid;
+  if day_count <> 32 or first_day <> 1 or last_day <> 32 or unique_days <> 32 then
+    raise exception 'Plan 328 must contain 32 distinct numbered days; found %', day_count;
+  end if;
+end
+$$;
+
+update public.devotional_plans as target
+set title = edit.value, updated_at = now()
+from jsonb_to_recordset($adapt_text$
+[
+  {
+    "id": "90000000-0000-0000-0000-000000000328",
+    "value": "From the Bowery to a Life of Service: 32 Readings from Dave Ranney"
+  }
+]
+$adapt_text$::jsonb) as edit(id uuid, value text)
+where target.id = edit.id;
+
+update public.devotional_plans as target
+set description = edit.value, updated_at = now()
+from jsonb_to_recordset($adapt_text$
+[
+  {
+    "id": "90000000-0000-0000-0000-000000000328",
+    "value": "Thirty-two newly written, Scripture-led devotional readings inspired by Dave Ranney’s autobiographical account of childhood, addiction, homelessness, conversion, work, family relationships, and mission service in New York. Historical claims are presented as personal testimony and interpreted with compassion, safeguarding, and respect for people experiencing hardship. This is a modern editorial adaptation, not a transcription of the memoir."
+  }
+]
+$adapt_text$::jsonb) as edit(id uuid, value text)
+where target.id = edit.id;
+
+update public.devotional_days as target
+set title = edit.value, updated_at = now()
+from jsonb_to_recordset($adapt_text$
+[
+  {
+    "id": "90000000-0000-0000-0000-000000000328",
+    "day_number": 1,
+    "value": "What We Sow, What We Can Change"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000328",
+    "day_number": 2,
+    "value": "A Way Home After Fear"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000328",
+    "day_number": 3,
+    "value": "What Deserves Our Attention"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000328",
+    "day_number": 4,
+    "value": "The Moment Before a Wrong Choice"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000328",
+    "day_number": 5,
+    "value": "When Concealment Spreads"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000328",
+    "day_number": 6,
+    "value": "The Courage to Resist Pressure"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000328",
+    "day_number": 7,
+    "value": "A Mother’s Prayer and the Truth"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000328",
+    "day_number": 8,
+    "value": "Worth Is Not Lost in a Hard Season"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000328",
+    "day_number": 9,
+    "value": "Grief Without Self-Destruction"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000328",
+    "day_number": 10,
+    "value": "A Meal Instead of a Blow"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000328",
+    "day_number": 11,
+    "value": "Dignity Before Demands"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000328",
+    "day_number": 12,
+    "value": "Grace Opens a New Beginning"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000328",
+    "day_number": 13,
+    "value": "Small Steps Toward Stability"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000328",
+    "day_number": 14,
+    "value": "Kindness Opens Doors"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000328",
+    "day_number": 15,
+    "value": "A Different Answer to an Old Invitation"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000328",
+    "day_number": 16,
+    "value": "Repairing Relationships Takes Time"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000328",
+    "day_number": 17,
+    "value": "When Plans Scatter"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000328",
+    "day_number": 18,
+    "value": "Apologies and Grief Are Both Real"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000328",
+    "day_number": 19,
+    "value": "A Promise in the Midst of Loss"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000328",
+    "day_number": 20,
+    "value": "Speak Firmly, Act Peacefully"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000328",
+    "day_number": 21,
+    "value": "Shelter Is an Act of Welcome"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000328",
+    "day_number": 22,
+    "value": "Help Her Get to Safety"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000328",
+    "day_number": 23,
+    "value": "Do Not Give Up on the Missing"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000328",
+    "day_number": 24,
+    "value": "A Past That Can Serve Justice"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000328",
+    "day_number": 25,
+    "value": "The Coat and the Guest"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000328",
+    "day_number": 26,
+    "value": "Make Room for Someone’s Gifts"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000328",
+    "day_number": 27,
+    "value": "A Second Beginning Is Still a Beginning"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000328",
+    "day_number": 28,
+    "value": "Tools, Work, and Reconnection"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000328",
+    "day_number": 29,
+    "value": "See the Person Beyond the Label"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000328",
+    "day_number": 30,
+    "value": "Go with Someone Who Is Afraid"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000328",
+    "day_number": 31,
+    "value": "A Return Shaped by Mercy"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000328",
+    "day_number": 32,
+    "value": "A Life That Keeps the Door Open"
+  }
+]
+$adapt_text$::jsonb) as edit(id uuid, day_number integer, value text)
+where target.plan_id = edit.id and target.day_number = edit.day_number;
+
+update public.devotional_days as target
+set content = edit.value, updated_at = now()
+from jsonb_to_recordset($adapt_text$
+[
+  {
+    "id": "90000000-0000-0000-0000-000000000328",
+    "day_number": 1,
+    "value": "<p><strong>Read:</strong> Galatians 6:7-10; Lamentations 3:22-23</p><p><strong>Source and historical context:</strong> Ranney begins his memoir with rival childhood neighborhoods, his mother’s concern, early exposure to alcohol, and regret about later years. He writes from the perspective of someone looking back on his choices, not from the viewpoint of a child who could foresee his future.</p><p><strong>Devotional focus:</strong> Small decisions do shape us, but no one is reducible to the worst pattern they learned. The call to sow what is good invites us to tend habits, relationships, and the people whose lives our choices touch. God’s mercies also meet us when the past cannot be undone. Responsibility and hope belong together: we can name real harm without deciding that a person’s future is already lost.</p><p><strong>Reflect:</strong> Which small habit is shaping my relationships, and which hopeful habit could I begin today?</p><p><strong>Practice:</strong> Choose one ordinary act of honesty or care you can repeat this week. If an old pattern is hard to change, identify someone safe who can support you.</p><p><strong>Prayer:</strong> Merciful God, teach me to take my choices seriously without giving up on your power to renew a life. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000328",
+    "day_number": 2,
+    "value": "<p><strong>Read:</strong> Psalm 34:17-18; Luke 15:20-24</p><p><strong>Source and historical context:</strong> Skipping school leads young Dave to the river, where another boy drowns. Later, frightened of punishment, he runs away with Mike, sleeps in a haystack, and returns to a family afraid he had died. These are recollections of danger and grief, not proof that tragedy was God’s punishment.</p><p><strong>Devotional focus:</strong> Fear can make an already difficult situation more dangerous. When a young person hides trouble, what they need most is a safe path toward help and truth. In the story, the family’s relief at Dave’s return speaks louder than a threatened whipping. God’s welcome calls us to be people to whom the frightened can come, and to seek help before a crisis grows.</p><p><strong>Reflect:</strong> Am I making it easier or harder for someone to admit a mistake and ask for help?</p><p><strong>Practice:</strong> Reassure someone in your care that telling the truth will be met with listening. If you are afraid to go home or face someone, contact a safe, trusted adult or support person.</p><p><strong>Prayer:</strong> God of refuge, help frightened people find safety and give me a welcoming heart. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000328",
+    "day_number": 3,
+    "value": "<p><strong>Read:</strong> Philippians 4:8-9; Proverbs 4:23</p><p><strong>Source and historical context:</strong> Ranney remembers improvising clothes so he could play baseball despite being kept home, then warns against the sensational adventure stories he once devoured. His dismissal of an entire kind of fiction reflects his opinion and era.</p><p><strong>Devotional focus:</strong> Our attention is precious. Games and stories can bring imagination and joy, while certain patterns of consumption leave us agitated, dishonest, or careless. The question is not whether every adventure is corrupting; it is whether what we repeatedly choose helps us become truthful, considerate, and wise. Wisdom learns to examine its influences rather than simply ban whatever seems unfamiliar.</p><p><strong>Reflect:</strong> What do my favorite entertainments produce in my speech, mood, and treatment of others?</p><p><strong>Practice:</strong> Notice how one program, game, or reading habit affects you today. Keep what nourishes your life and set a thoughtful limit on what does not.</p><p><strong>Prayer:</strong> Lord, guide my attention toward things that deepen wisdom, joy, and love. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000328",
+    "day_number": 4,
+    "value": "<p><strong>Read:</strong> James 1:13-15; Proverbs 28:13</p><p><strong>Source and historical context:</strong> At his first office job, Dave begins taking cigars. Later he secretly takes a wage check his mother had put away, feels troubled, and cashes it. He recalls moments when he could have stopped and told the truth.</p><p><strong>Devotional focus:</strong> Moral failure rarely arrives without a moment of decision. We may explain away a small act, then work harder to hide what follows. Yet conscience can be an invitation to turn back rather than a sentence of permanent disgrace. Confession is not merely feeling guilty; it means naming what happened, making what repair is possible, and learning to choose differently.</p><p><strong>Reflect:</strong> Is there a small dishonesty I am protecting because I am afraid of what truth will cost?</p><p><strong>Practice:</strong> Tell the truth to the appropriate person where it is safe to do so. Identify a practical step of repair, such as returning something or correcting a misleading statement.</p><p><strong>Prayer:</strong> God of truth, give me courage to stop hiding and strength to make things right. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000328",
+    "day_number": 5,
+    "value": "<p><strong>Read:</strong> Ephesians 4:25-28; Psalm 51:6-12</p><p><strong>Source and historical context:</strong> Dave pretends to help search for the check he has already cashed. In the same period, he takes money from his grandfather, loses one office position, and receives another opportunity to work. His account mixes remorse with descriptions of employers who showed trust.</p><p><strong>Devotional focus:</strong> One deception can pull more people into its consequences. The cost is not only money but trust: a mother searches, a family worries, and a worker loses credibility. Still, a new opportunity need not erase accountability, and accountability need not forbid a new start. God invites honesty that is practical enough to rebuild trust, even when rebuilding takes time.</p><p><strong>Reflect:</strong> Where has keeping up an appearance cost more than a truthful apology would?</p><p><strong>Practice:</strong> Write a simple account of one unresolved wrong: what happened, who was affected, and what proportionate repair is possible now. Seek guidance before a difficult disclosure.</p><p><strong>Prayer:</strong> Holy God, make me honest in private and faithful with the trust others place in me. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000328",
+    "day_number": 6,
+    "value": "<p><strong>Read:</strong> 1 Corinthians 10:12-13; Proverbs 13:20</p><p><strong>Source and historical context:</strong> At a new job, Dave meets Mike again, visits a saloon, and drinks when others ridicule his hesitation. His drinking and gambling begin to undermine work. The memoir presents this as a painful turning point in a longer story.</p><p><strong>Devotional focus:</strong> Belonging matters, which is why mockery can be so powerful. Courage is not the absence of longing to fit in; it is finding a different response when the crowd pushes us toward harm. For people dealing with dependence, choosing differently may also require sustained professional care, community, and a recovery plan. Faith can strengthen that effort without replacing needed help.</p><p><strong>Reflect:</strong> Whose approval makes it difficult for me to honor my values or limits?</p><p><strong>Practice:</strong> Prepare one sentence you can use when pressured into something harmful. Identify a trustworthy friend or support group that will respect your boundaries.</p><p><strong>Prayer:</strong> Lord, give me wise companions and courage to choose life when pressure is loud. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000328",
+    "day_number": 7,
+    "value": "<p><strong>Read:</strong> James 5:16; John 8:31-32</p><p><strong>Source and historical context:</strong> After a night of drinking, Dave awakens to his mother praying beside him. He later lies to an employer about missing work and loses the job; his evasions at home continue. His mother’s love and his concealment appear side by side.</p><p><strong>Devotional focus:</strong> Prayer and truth belong together. A loved one may pray faithfully while the person they love remains tangled in mistakes. Such care is not wasted, but neither does it give anyone control over another person’s choices. Truth can feel costly when we fear disappointing people; nevertheless, honest conversation creates a real starting point for help and repair.</p><p><strong>Reflect:</strong> Is there a person whose concern I have answered with evasion rather than honesty?</p><p><strong>Practice:</strong> Thank someone who has cared for you without demanding perfection. Where safe, replace one excuse with a clear and truthful account of what you need.</p><p><strong>Prayer:</strong> God, hear the prayers of worried families and lead us into truth without shame or coercion. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000328",
+    "day_number": 8,
+    "value": "<p><strong>Read:</strong> Psalm 139:13-18; Isaiah 61:1-3</p><p><strong>Source and historical context:</strong> Ranney describes theft, arrest, work found and lost, a brief marriage marked by addiction and hardship, and years of drifting between towns. His memoir includes the suffering of his wife and family as well as his own.</p><p><strong>Devotional focus:</strong> Destructive choices have consequences for others; love must not excuse neglect or make an injured spouse responsible for saving someone. At the same time, a person who has harmed relationships or lost stable work has not lost human dignity. Renewal requires accountability, safe boundaries for those affected, and patient steps toward a different pattern.</p><p><strong>Reflect:</strong> How can I acknowledge the impact of someone’s actions without denying anyone’s dignity?</p><p><strong>Practice:</strong> Consider one neglected responsibility or relationship. Choose an accountable next step and respect the boundaries of people who have been hurt.</p><p><strong>Prayer:</strong> God of justice and mercy, help me face harm clearly and honor the safety of everyone involved. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000328",
+    "day_number": 9,
+    "value": "<p><strong>Read:</strong> Psalm 147:3; Romans 8:38-39</p><p><strong>Source and historical context:</strong> Dave remembers his mother pleading with him while seriously ill. After her death, he describes drinking through the funeral, wandering, imprisonment, and promises made during confinement that did not last.</p><p><strong>Devotional focus:</strong> Grief can expose how little control we have over the past. Regret is real, but it cannot tell the whole story of a relationship or establish that one person caused another’s death. God’s compassion meets mourners, including those who struggle with addiction or shame. Healing may involve grief support, treatment, repentance, and repeated attempts rather than one dramatic moment.</p><p><strong>Reflect:</strong> What regret about someone I have lost needs to be spoken with greater gentleness and truth?</p><p><strong>Practice:</strong> Name one person or community that can help you carry sorrow. If grief is bringing harmful urges, reach out for support before facing them alone.</p><p><strong>Prayer:</strong> Compassionate Lord, hold those who mourn and help us seek care instead of hiding in shame. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000328",
+    "day_number": 10,
+    "value": "<p><strong>Read:</strong> Matthew 25:35-40; Romans 12:20-21</p><p><strong>Source and historical context:</strong> By autumn 1892, Ranney says he is homeless and hungry on the Bowery. Planning to rob someone, he instead meets a man who offers him dinner and an invitation to a mission gathering. A simple act interrupts a dangerous encounter.</p><p><strong>Devotional focus:</strong> A stranger’s hunger is not an invitation to judge them by clothing or reputation. Mercy may begin with a meal, a question, and attention to someone’s immediate need. Ranney later credits these gestures with opening a path he had not imagined. Meeting material needs is not merely a strategy for changing people; it is a worthy act of care in its own right.</p><p><strong>Reflect:</strong> When have I overlooked a practical need because I was focused on someone’s past or appearance?</p><p><strong>Practice:</strong> Offer an appropriate meal, resource, or respectful conversation through a trusted local service. Do so without attaching conditions to the person’s dignity.</p><p><strong>Prayer:</strong> Jesus, teach me to see need clearly and answer it with compassionate action. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000328",
+    "day_number": 11,
+    "value": "<p><strong>Read:</strong> Luke 10:33-37; James 2:14-17</p><p><strong>Source and historical context:</strong> At the mission, Alexander Irvine invites Dave to bathe, gives him clean clothes, listens to his story, and only then speaks about faith. Dave is suspicious because people with his arrest record rarely received such trust.</p><p><strong>Devotional focus:</strong> Care is more believable when it does something tangible. A person facing homelessness may need a safe place, clothing, food, privacy, and patient listening before they can think about anything else. The kindness of Christ does not ask people to prove that they deserve help. We are called to offer assistance that preserves choice, dignity, and trust.</p><p><strong>Reflect:</strong> Do I expect vulnerable people to earn respect before I offer practical kindness?</p><p><strong>Practice:</strong> Identify one local service or ministry meeting basic needs. Support it with time, supplies, or money, and listen to the people it serves rather than assuming what they need.</p><p><strong>Prayer:</strong> Jesus, make my faith visible in respectful, practical love. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000328",
+    "day_number": 12,
+    "value": "<p><strong>Read:</strong> John 3:16-17; 2 Corinthians 5:17-19</p><p><strong>Source and historical context:</strong> Alexander Irvine invites Ranney to pray. Dave describes rising with unexpected peace, choosing to seek a sober life, and beginning a long friendship with Irvine. This is the central conversion episode in his own testimony.</p><p><strong>Devotional focus:</strong> Grace does not require a polished history. Christianity announces that God meets people while their need is real and calls them into a new life. Ranney’s turning point matters, but a testimony should not become a rule that every person’s recovery must be instant. Faith, supportive relationships, practical work, and ongoing care can belong to the same process of change.</p><p><strong>Reflect:</strong> Where do I need to receive God’s welcome without pretending I have already finished growing?</p><p><strong>Practice:</strong> Write a short prayer of trust and one concrete next step toward health or reconciliation. Invite a safe person to accompany you in that step.</p><p><strong>Prayer:</strong> Lord Jesus, thank you that your grace welcomes us and calls us toward a hopeful future. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000328",
+    "day_number": 13,
+    "value": "<p><strong>Read:</strong> Colossians 3:23-24; Galatians 6:9</p><p><strong>Source and historical context:</strong> Irvine pays for a week of lodging and food and helps Dave find modest work tending a furnace. Dave feels frustrated by low pay, yet a recommendation, consistent work, and help with meals allow him to begin rebuilding.</p><p><strong>Devotional focus:</strong> After a major change, ordinary work can seem disappointingly slow. But reliability is built through many small actions: showing up, learning, accepting assistance, and taking the next step. No job determines anyone’s worth, and no one should be expected to accept exploitation as a spiritual duty. Still, steady opportunities and fair support can help someone regain stability and confidence.</p><p><strong>Reflect:</strong> Am I dismissing a small but meaningful beginning because it does not look impressive yet?</p><p><strong>Practice:</strong> Identify the next manageable step in an important commitment. Thank one person who makes your progress possible, and offer that support to someone else when you can.</p><p><strong>Prayer:</strong> God, bless honest work, fair opportunity, and the patience to grow one step at a time. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000328",
+    "day_number": 14,
+    "value": "<p><strong>Read:</strong> Proverbs 19:17; 1 Peter 4:10</p><p><strong>Source and historical context:</strong> After harassment in a crowded lodging house, Dave helps deliver Thanksgiving meals. Mrs. Bainbridge arranges a needed winter coat. Later, experience from earlier lumber work helps him find a new job after delivering telephone directories.</p><p><strong>Devotional focus:</strong> Hospitality is often concrete: warm clothing, a meal, a fair introduction, or the chance to use a skill that someone has overlooked. These gifts do not erase a person’s effort; they make effort possible. The memoir also recalls retaliating against harassment, which is not a model for peaceful conflict resolution. We can protect ourselves and others without reproducing harm.</p><p><strong>Reflect:</strong> Which practical kindness made a difference for me when I was struggling?</p><p><strong>Practice:</strong> Offer useful clothing, a reliable work lead, or a warm introduction through an appropriate channel. If you face harassment, seek safe support rather than revenge.</p><p><strong>Prayer:</strong> Generous God, show me how to make room for others through thoughtful, tangible care. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000328",
+    "day_number": 15,
+    "value": "<p><strong>Read:</strong> Titus 2:11-12; 1 Corinthians 10:13</p><p><strong>Source and historical context:</strong> Working at a lumberyard, Dave faces repeated invitations to drink during difficult physical labor. He eventually explains his decision to his coworkers and later offers food and encouragement to men he knew from those days.</p><p><strong>Devotional focus:</strong> Old habits can reappear in familiar places, especially when exhaustion and social pressure meet. A boundary becomes stronger when we can explain it without shaming other people. Saying no can be an act of freedom. People facing substance dependence may need a fuller plan involving evidence-based care and trusted support; spiritual resolve need not carry the entire burden alone.</p><p><strong>Reflect:</strong> Where do familiar circumstances weaken a boundary I need to protect?</p><p><strong>Practice:</strong> Practice a courteous refusal and arrange a safer alternative for one triggering situation. Encourage someone trying to change without policing their progress.</p><p><strong>Prayer:</strong> Lord, steady my choices and make me compassionate toward others facing hard patterns. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000328",
+    "day_number": 16,
+    "value": "<p><strong>Read:</strong> Ephesians 4:31-32; Luke 15:20-24</p><p><strong>Source and historical context:</strong> Irvine asks Ranney to serve at the Sea and Land Church. Dave explains that his wife Mary has suffered during their marriage; she must decide whether to rejoin him. The family eventually reunites, including a son Dave had barely known, and he begins church work.</p><p><strong>Devotional focus:</strong> Reconciliation can be beautiful, but it cannot be demanded from the person who was hurt. Changed conduct, patient trust-building, consent, and a safe environment matter more than a moving reunion scene. Ranney’s joy in knowing his son shows what a renewed commitment can make possible. Christ’s love calls us to become trustworthy, not simply to ask others to forget the past.</p><p><strong>Reflect:</strong> Where might I need to prove change over time rather than seek immediate reassurance?</p><p><strong>Practice:</strong> Choose an action that demonstrates dependability. Honor another person’s right to take time, set limits, or decline reconciliation.</p><p><strong>Prayer:</strong> Father, teach me to rebuild what I can with humility and respect for the choices of others. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000328",
+    "day_number": 17,
+    "value": "<p><strong>Read:</strong> 2 Corinthians 12:9-10; 1 Corinthians 2:1-5</p><p><strong>Source and historical context:</strong> Preparing to lead a church meeting, Dave relies on written notes. A gust from an opened window scatters the pages, and he speaks instead about his life and faith. He later recalls a friend whose experiences at the mission were complicated by an argument.</p><p><strong>Devotional focus:</strong> We sometimes confuse being prepared with being in control. Good preparation is valuable, yet an unexpected interruption can remind us that humility matters more than performance. A truthful story told with care may help people where polished words do not. The test of a witness is not dramatic delivery but whether speech and life point toward love, integrity, and grace.</p><p><strong>Reflect:</strong> How do I react when my plans fail in front of other people?</p><p><strong>Practice:</strong> Prepare for one responsibility carefully, then allow room for honest words and flexibility. If you have spoken harshly to someone, consider making an apology.</p><p><strong>Prayer:</strong> God, use even my awkward moments to teach me humility and truthful love. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000328",
+    "day_number": 18,
+    "value": "<p><strong>Read:</strong> Romans 12:15-18; Psalm 34:18</p><p><strong>Source and historical context:</strong> A former companion recounts a painful argument with Ranney and later publicly apologizes. The narrative then shifts to Mary’s serious illness and death, with Dave describing anger, temptation, and distress as he mourns.</p><p><strong>Devotional focus:</strong> An apology can help mend a relationship even when two people disagree about faith. And grief can make ordinary problems feel unbearable; it does not reveal a failure of belief. The compassionate response is to listen, protect relationships from retaliation, and sit with sorrow. God’s nearness is not measured by whether grief quickly disappears.</p><p><strong>Reflect:</strong> What unfinished apology or unacknowledged sorrow might need gentle attention?</p><p><strong>Practice:</strong> Offer a sincere apology without expecting an immediate response. Make space for someone who is grieving, without explaining away their pain.</p><p><strong>Prayer:</strong> Lord, help me seek peace where I have caused hurt, and stay near to those who mourn. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000328",
+    "day_number": 19,
+    "value": "<p><strong>Read:</strong> Psalm 46:1-3; Galatians 6:2</p><p><strong>Source and historical context:</strong> On the day of Mary’s funeral in March 1902, Dave and his son speak about fears he might start drinking again. They pray together, and he promises to pursue sobriety. He later steps away from church employment as the memories remain painful.</p><p><strong>Devotional focus:</strong> A difficult anniversary can awaken old urges and fears. In this scene, a son does not cure his father’s grief; instead, they name a shared concern and seek help. Recovery is strengthened by honest relationships and practical plans, especially in seasons of loss. Changing roles or leaving a place associated with grief can also be a thoughtful response, not a defeat.</p><p><strong>Reflect:</strong> Who can I turn to when grief makes old habits or fears return?</p><p><strong>Practice:</strong> Make a simple support plan for difficult days: people to call, safe places, and help you can request. Offer companionship without making yourself responsible for someone else’s recovery.</p><p><strong>Prayer:</strong> God of refuge, be with families in sorrow and guide us toward support that helps life continue. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000328",
+    "day_number": 20,
+    "value": "<p><strong>Read:</strong> James 1:19-20; Matthew 5:9</p><p><strong>Source and historical context:</strong> Before Mary’s death, Ranney helps run a Chinatown mission in New York. At one crowded gathering he strikes a disruptive man and later praises the action as a way of gaining the audience’s respect.</p><p><strong>Devotional focus:</strong> Passion for a good cause does not excuse violence. A gathering needs safety, clear boundaries, and care for everyone present, including an agitated person. Ranney’s courage and his familiarity with the neighborhood are important parts of his story; his punch is not a pattern Christians should copy. Jesus calls peacemakers blessed, and anger must be governed by wisdom and restraint.</p><p><strong>Reflect:</strong> How do I respond when someone challenges my authority or disrupts my plans?</p><p><strong>Practice:</strong> Think through a nonviolent safety response for a tense situation: calm words, distance, support from others, and appropriate trained help when needed.</p><p><strong>Prayer:</strong> Prince of Peace, keep my convictions strong and my actions gentle and safe. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000328",
+    "day_number": 21,
+    "value": "<p><strong>Read:</strong> Isaiah 58:6-10; Hebrews 13:1-3</p><p><strong>Source and historical context:</strong> The mission hosts many people without a safe place to sleep. Dave sometimes keeps it open overnight, offering warmth and a floor or chair; he recalls both gratitude and objections from health officials. The section then shifts to people living in difficult social conditions.</p><p><strong>Devotional focus:</strong> Compassion sees the cold before it evaluates a person’s reputation. Warmth, rest, and shelter are urgent needs, not prizes for good behavior. Yet protecting people also means providing safe, healthy accommodations. We can honor Ranney’s impulse to welcome strangers while recognizing that a humane community needs sustainable, safe housing and support beyond one room.</p><p><strong>Reflect:</strong> Do I see people without housing first as neighbors or as problems to solve?</p><p><strong>Practice:</strong> Support a reputable shelter or housing service and learn what resources are most needed. Offer help in ways that preserve safety and dignity.</p><p><strong>Prayer:</strong> God who welcomes strangers, stir us to create safe places of rest and belonging. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000328",
+    "day_number": 22,
+    "value": "<p><strong>Read:</strong> Proverbs 31:8-9; Luke 10:33-37</p><p><strong>Source and historical context:</strong> At a Bowery entertainment venue, a distressed young woman named Annie describes being deceived and trapped in exploitation. Ranney and a visitor contact her aunt, arrange travel, and help her leave. Later, a man approaches Dave about his own missing sister.</p><p><strong>Devotional focus:</strong> A person caught in exploitation needs to be believed, treated with dignity, and offered real choices. The focus belongs on those using threats and deception, not on blaming the person targeted. In the memoir, practical help involves listening, contacting someone Annie trusts, and accompanying her toward safety. Today such situations also call for qualified safeguarding and survivor-centered services.</p><p><strong>Reflect:</strong> When someone describes danger, do I listen first or question why they became vulnerable?</p><p><strong>Practice:</strong> Learn how to contact a trusted local anti-trafficking or safeguarding organization. If a person discloses exploitation, prioritize their immediate safety and wishes, and avoid confrontations that raise risk.</p><p><strong>Prayer:</strong> God of justice, protect people facing exploitation and make us wise, respectful helpers. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000328",
+    "day_number": 23,
+    "value": "<p><strong>Read:</strong> Psalm 10:14-18; Romans 12:15</p><p><strong>Source and historical context:</strong> After hearing the account of Annie’s escape, a minister tells Ranney about his sister, who disappeared years earlier, and asks him to keep watch for news. This brief segment offers no resolution to her disappearance.</p><p><strong>Devotional focus:</strong> Some families live with unanswered questions for years. Their sorrow deserves companionship, not a quickly invented happy ending. Being faithful may mean remembering a name, sharing information responsibly, and staying present when answers do not come. Christian hope does not require pretending we know what happened or promising a reunion we cannot guarantee.</p><p><strong>Reflect:</strong> Who is carrying unresolved grief that I could accompany without offering easy explanations?</p><p><strong>Practice:</strong> Reach out to someone living with loss or uncertainty. Listen, ask what practical help would be welcome, and avoid speculation or spreading unverified information.</p><p><strong>Prayer:</strong> Lord of mercy, remember missing people and comfort those who still search and wait. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000328",
+    "day_number": 24,
+    "value": "<p><strong>Read:</strong> Proverbs 31:8-9; 2 Corinthians 5:18-20</p><p><strong>Source and historical context:</strong> Ranney returns to serve in Bowery missions and describes helping people who knew him from his earlier life. When a former prisoner is accused of robbery, Dave testifies about what he personally knows of the man’s whereabouts.</p><p><strong>Devotional focus:</strong> People can change, and their past should not cancel their right to fairness. Genuine advocacy does not require exaggeration: we speak to what we know, respect evidence, and seek due process. Ranney sees meaning in being able to stand in court as someone whose character others now trust. A restored reputation becomes most valuable when used to defend another person’s dignity.</p><p><strong>Reflect:</strong> Can I speak up for someone who is judged only by an old label?</p><p><strong>Practice:</strong> In one conversation, challenge a dismissive label with accurate, respectful language. Where justice is involved, support truthful testimony and fair procedures.</p><p><strong>Prayer:</strong> Righteous God, let my words serve truth, justice, and the dignity of my neighbors. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000328",
+    "day_number": 25,
+    "value": "<p><strong>Read:</strong> Matthew 25:36-40; James 2:1-5</p><p><strong>Source and historical context:</strong> At a mission meeting, a man without a coat receives one from a visitor. Ranney later learns the generous stranger is a French count studying charitable work, and the visitor provides food for many at the mission.</p><p><strong>Devotional focus:</strong> The gift matters before the giver’s title becomes known. A coat protects someone from the cold whether it comes from a noble, a neighbor, or a stranger. Jesus warns against ranking people by status and calls us to care for those in need. Generosity is strongest when the person receiving help is seen as a fellow human being, not as a prop in a public story.</p><p><strong>Reflect:</strong> Would I value an act of kindness differently if the giver had no title or recognition?</p><p><strong>Practice:</strong> Offer useful supplies or a contribution to a trusted community resource without seeking credit. Ask what recipients actually need.</p><p><strong>Prayer:</strong> Generous Jesus, teach me to honor the one who receives help as much as the one who gives it. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000328",
+    "day_number": 26,
+    "value": "<p><strong>Read:</strong> 1 Peter 4:10-11; Romans 12:4-8</p><p><strong>Source and historical context:</strong> Ranney befriends a musician whose drinking has disrupted his life and who begins contributing music to mission gatherings. He also describes meeting an employed father after a street meeting and trying to help him reconsider his choices.</p><p><strong>Devotional focus:</strong> A person is more than the struggle currently visible. Skill, memory, creativity, and hope can remain present through hardship. Helping someone recover a place to contribute can be as important as meeting immediate needs. But a helper must not turn another person into a success story on demand; patient support respects their agency and circumstances.</p><p><strong>Reflect:</strong> Whose talents have I stopped noticing because I focus only on their difficulties?</p><p><strong>Practice:</strong> Invite someone to share a skill or interest in a safe, respectful setting. Listen to what kind of support they want before proposing a solution.</p><p><strong>Prayer:</strong> Creator God, help me see the gifts in every person and make room for them to flourish. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000328",
+    "day_number": 27,
+    "value": "<p><strong>Read:</strong> Lamentations 3:22-23; Galatians 6:1-2</p><p><strong>Source and historical context:</strong> Ranney speaks about alcohol’s harm to a man’s family, then turns to Jim, a skilled bricklayer separated from his wife and children. Jim comes forward at a mission but slips back into drinking before returning to seek help again.</p><p><strong>Devotional focus:</strong> A setback can be painful without proving that the person’s desire to change was false. The call to restore gently means resisting contempt and keeping pathways to support open. Relationships may need boundaries and professional treatment may be necessary. People deserve encouragement grounded in realistic care, not public pressure or promises that one attempt will solve everything.</p><p><strong>Reflect:</strong> How can I support change without turning a setback into a verdict on someone’s character?</p><p><strong>Practice:</strong> Replace one judgmental phrase with a compassionate question. Help identify a next step, whether practical assistance, peer support, or professional care.</p><p><strong>Prayer:</strong> God of new mercies, give us patience to begin again and love that does not shame the struggling. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000328",
+    "day_number": 28,
+    "value": "<p><strong>Read:</strong> James 2:15-17; 1 John 3:16-18</p><p><strong>Source and historical context:</strong> When Jim sustains a period of sobriety, Dave helps recover his pawned work tools and find a bricklaying job. Jim saves money, reaches out to his wife, and the family eventually reconnects. The memoir presents these as important practical supports.</p><p><strong>Devotional focus:</strong> Hope becomes tangible through tools, work, honest communication, and stable relationships. Faithful care asks not only what someone believes but what they need to live safely and responsibly. Reconciliation with family must remain voluntary, especially when past conduct has caused harm. No one should have to return to an unsafe situation to validate another person’s recovery.</p><p><strong>Reflect:</strong> What practical obstacle could I help remove without taking away another person’s choice?</p><p><strong>Practice:</strong> Consider donating tools, mentoring, supporting employment access, or helping someone connect with a legitimate service. Respect privacy and any family member’s boundaries.</p><p><strong>Prayer:</strong> God, let our love take practical shape, and help every home seek safety and trust. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000328",
+    "day_number": 29,
+    "value": "<p><strong>Read:</strong> Isaiah 58:7-11; Luke 15:1-7</p><p><strong>Source and historical context:</strong> Ranney describes overcrowded Bowery lodging houses and people who had once held respected positions. At the Squirrel Inn he offers food and lodging assistance; he recounts helping a man living with anger over a long-ago injury, then meeting a young worker in distress.</p><p><strong>Devotional focus:</strong> A neighborhood’s reputation is never the full story of its residents. Homelessness is shaped by many circumstances, not by a single moral cause. Listening well means seeing the individual with a history, gifts, and needs. Forgiveness may help heal resentment, but it does not erase injustice or require renewed contact with someone who harmed us.</p><p><strong>Reflect:</strong> Whose humanity have I hidden behind words like failure, addict, or outsider?</p><p><strong>Practice:</strong> Speak about someone facing hardship without reducing them to a label. Support material help alongside opportunities for their voice to be heard.</p><p><strong>Prayer:</strong> God of steadfast love, teach me to recognize the dignity you give every neighbor. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000328",
+    "day_number": 30,
+    "value": "<p><strong>Read:</strong> Luke 15:20-24; Ecclesiastes 4:9-10</p><p><strong>Source and historical context:</strong> A young man who left his job becomes stranded after spending his money. Ranney offers lodging and accompanies him home, where his family welcomes him. He then begins a longer account of another young man, Tom, drawn toward New York by promises of easy pleasure.</p><p><strong>Devotional focus:</strong> Sometimes the hardest part of returning is facing people we fear we disappointed. Companionship can make that first step possible, but it should be offered only when home is safe. Ranney’s story highlights the value of going alongside someone rather than merely giving instructions. When we welcome people back, patience and safety are more useful than a speech about their mistakes.</p><p><strong>Reflect:</strong> Who may need accompaniment more than advice right now?</p><p><strong>Practice:</strong> Offer to accompany someone to a safe, meaningful appointment or conversation. Do not push them toward an unsafe home or relationship.</p><p><strong>Prayer:</strong> Father of compassion, give us courage to ask for help and grace to accompany one another. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000328",
+    "day_number": 31,
+    "value": "<p><strong>Read:</strong> Luke 15:17-24; Micah 6:8</p><p><strong>Source and historical context:</strong> The story of Tom continues: he loses money and housing in New York, visits a mission, and begins writing home with Ranney’s help. After months, Tom’s father provides money for a return. Ranney presents this as a prodigal-son story and later reports Tom rebuilding his life.</p><p><strong>Devotional focus:</strong> Jesus’ parable centers on a father who runs to embrace his child. The point is not that hunger and humiliation are useful punishments; no one should be deprived of basic care to teach a lesson. Honest responsibility and safe restoration can go together. A person returning from a hard season needs welcome, material support, and room to grow rather than endless reminders of failure.</p><p><strong>Reflect:</strong> Am I withholding compassion until someone has suffered enough to deserve it?</p><p><strong>Practice:</strong> Offer help that meets immediate needs while also supporting long-term stability. If reconciliation is possible and safe, lead with listening and welcome.</p><p><strong>Prayer:</strong> Loving Father, free me from pride and teach me to welcome others with generous mercy. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000328",
+    "day_number": 32,
+    "value": "<p><strong>Read:</strong> Philippians 1:6; Hebrews 13:1-2</p><p><strong>Source and historical context:</strong> In his closing pages, Ranney encounters a police officer who remembers his arrests and recalls being treated suspiciously in Atlantic City. Later he returns there to speak publicly. He ends by inviting readers to visit him at the Squirrel Inn mission.</p><p><strong>Devotional focus:</strong> A person may carry the memory of an old label long after their life has changed. Our task is not to deny history but to let truth, accountability, and new conduct shape the present. Ranney closes not by claiming perfection but by keeping a door open to people who need welcome. The most convincing testimony is often a place at the table and a willingness to serve.</p><p><strong>Reflect:</strong> What door of belonging could I open to someone others have written off?</p><p><strong>Practice:</strong> Reach out to a person who may feel excluded, and offer specific, respectful welcome. Keep that invitation free of pressure or demands for a dramatic story.</p><p><strong>Prayer:</strong> Lord, continue your good work in us, and make our homes and communities places of welcome. Amen.</p>"
+  }
+]
+$adapt_text$::jsonb) as edit(id uuid, day_number integer, value text)
+where target.plan_id = edit.id and target.day_number = edit.day_number;
+
+-- Update only global (plan-level) Scripture references. Never alter user-owned notes.
+do $$
+declare
+  item jsonb;
+  target_day_id uuid;
+begin
+  for item in select value from jsonb_array_elements($adapt_refs$
+[
+  {
+    "id": "90000000-0000-0000-0000-000000000328",
+    "day_number": 1,
+    "references": [
+      "Galatians 6:7-10",
+      "Lamentations 3:22-23"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000328",
+    "day_number": 2,
+    "references": [
+      "Psalm 34:17-18",
+      "Luke 15:20-24"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000328",
+    "day_number": 3,
+    "references": [
+      "Philippians 4:8-9",
+      "Proverbs 4:23"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000328",
+    "day_number": 4,
+    "references": [
+      "James 1:13-15",
+      "Proverbs 28:13"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000328",
+    "day_number": 5,
+    "references": [
+      "Ephesians 4:25-28",
+      "Psalm 51:6-12"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000328",
+    "day_number": 6,
+    "references": [
+      "1 Corinthians 10:12-13",
+      "Proverbs 13:20"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000328",
+    "day_number": 7,
+    "references": [
+      "James 5:16",
+      "John 8:31-32"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000328",
+    "day_number": 8,
+    "references": [
+      "Psalm 139:13-18",
+      "Isaiah 61:1-3"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000328",
+    "day_number": 9,
+    "references": [
+      "Psalm 147:3",
+      "Romans 8:38-39"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000328",
+    "day_number": 10,
+    "references": [
+      "Matthew 25:35-40",
+      "Romans 12:20-21"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000328",
+    "day_number": 11,
+    "references": [
+      "Luke 10:33-37",
+      "James 2:14-17"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000328",
+    "day_number": 12,
+    "references": [
+      "John 3:16-17",
+      "2 Corinthians 5:17-19"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000328",
+    "day_number": 13,
+    "references": [
+      "Colossians 3:23-24",
+      "Galatians 6:9"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000328",
+    "day_number": 14,
+    "references": [
+      "Proverbs 19:17",
+      "1 Peter 4:10"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000328",
+    "day_number": 15,
+    "references": [
+      "Titus 2:11-12",
+      "1 Corinthians 10:13"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000328",
+    "day_number": 16,
+    "references": [
+      "Ephesians 4:31-32",
+      "Luke 15:20-24"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000328",
+    "day_number": 17,
+    "references": [
+      "2 Corinthians 12:9-10",
+      "1 Corinthians 2:1-5"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000328",
+    "day_number": 18,
+    "references": [
+      "Romans 12:15-18",
+      "Psalm 34:18"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000328",
+    "day_number": 19,
+    "references": [
+      "Psalm 46:1-3",
+      "Galatians 6:2"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000328",
+    "day_number": 20,
+    "references": [
+      "James 1:19-20",
+      "Matthew 5:9"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000328",
+    "day_number": 21,
+    "references": [
+      "Isaiah 58:6-10",
+      "Hebrews 13:1-3"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000328",
+    "day_number": 22,
+    "references": [
+      "Proverbs 31:8-9",
+      "Luke 10:33-37"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000328",
+    "day_number": 23,
+    "references": [
+      "Psalm 10:14-18",
+      "Romans 12:15"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000328",
+    "day_number": 24,
+    "references": [
+      "Proverbs 31:8-9",
+      "2 Corinthians 5:18-20"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000328",
+    "day_number": 25,
+    "references": [
+      "Matthew 25:36-40",
+      "James 2:1-5"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000328",
+    "day_number": 26,
+    "references": [
+      "1 Peter 4:10-11",
+      "Romans 12:4-8"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000328",
+    "day_number": 27,
+    "references": [
+      "Lamentations 3:22-23",
+      "Galatians 6:1-2"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000328",
+    "day_number": 28,
+    "references": [
+      "James 2:15-17",
+      "1 John 3:16-18"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000328",
+    "day_number": 29,
+    "references": [
+      "Isaiah 58:7-11",
+      "Luke 15:1-7"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000328",
+    "day_number": 30,
+    "references": [
+      "Luke 15:20-24",
+      "Ecclesiastes 4:9-10"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000328",
+    "day_number": 31,
+    "references": [
+      "Luke 15:17-24",
+      "Micah 6:8"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000328",
+    "day_number": 32,
+    "references": [
+      "Philippians 1:6",
+      "Hebrews 13:1-2"
+    ]
+  }
+]
+$adapt_refs$::jsonb) loop
+    select id into strict target_day_id
+    from public.devotional_days
+    where plan_id = (item ->> 'id')::uuid
+      and day_number = (item ->> 'day_number')::integer;
+
+    update public.scripture_references
+    set reference = array(select jsonb_array_elements_text(item -> 'references')),
+        updated_at = now()
+    where day_id = target_day_id and user_id is null;
+
+    if not found then
+      insert into public.scripture_references
+        (user_id, day_id, reference, created_at, updated_at)
+      values
+        (null, target_day_id,
+         array(select jsonb_array_elements_text(item -> 'references')), now(), now());
+    end if;
+  end loop;
+end
+$$;
+
+update public.devotional_plans
+set status = 'published', updated_at = now()
+where id = '90000000-0000-0000-0000-000000000328'::uuid;
+
+commit;
+-- END CONSOLIDATED SOURCE: 20261026180000_repair_draft_devotional_plans_wave_26.sql
+
+-- BEGIN CONSOLIDATED SOURCE: 20261026190000_repair_draft_devotional_plans_wave_27.sql sha256=56dca372ec6699e623f5583812026062970b1c8a848beade8df73a23fdc26ce4
+-- Wave 27: Plan 329 — Catherine Booth — a Sketch, by Mildred Duff.
+-- Twenty-seven newly written, Scripture-led readings, mapped to original source segments.
+-- Update records in place to preserve IDs, day numbers and existing user progress.
+-- Apply AFTER all 2026-10-21 modernization migrations (including parts 03 and 09).
+-- This is an editorial adaptation, not a modern Bible translation reproduction.
+
+begin;
+
+do $$
+declare
+  current_source text;
+  current_total integer;
+  day_count integer;
+  first_day integer;
+  last_day integer;
+  unique_days integer;
+begin
+  select source_url, total_days into current_source, current_total
+  from public.devotional_plans
+  where id = '90000000-0000-0000-0000-000000000329'::uuid;
+  if not found then raise exception 'Plan 329 missing'; end if;
+  if current_source is distinct from 'https://www.gutenberg.org/ebooks/7125' or current_total is distinct from 27 then
+    raise exception 'Plan 329 metadata differs from source reviewed for Wave 27';
+  end if;
+  select count(*), min(day_number), max(day_number), count(distinct day_number)
+  into day_count, first_day, last_day, unique_days
+  from public.devotional_days where plan_id = '90000000-0000-0000-0000-000000000329'::uuid;
+  if day_count <> 27 or first_day <> 1 or last_day <> 27 or unique_days <> 27 then
+    raise exception 'Plan 329 must contain 27 distinct numbered days; found %', day_count;
+  end if;
+end
+$$;
+
+update public.devotional_plans as target
+set title = edit.value, updated_at = now()
+from jsonb_to_recordset($adapt_text$
+[
+  {
+    "id": "90000000-0000-0000-0000-000000000329",
+    "value": "Courage, Compassion, and Calling: 27 Readings from Catherine Booth’s Life"
+  }
+]
+$adapt_text$::jsonb) as edit(id uuid, value text)
+where target.id = edit.id;
+
+update public.devotional_plans as target
+set description = edit.value, updated_at = now()
+from jsonb_to_recordset($adapt_text$
+[
+  {
+    "id": "90000000-0000-0000-0000-000000000329",
+    "value": "Twenty-seven original, Scripture-led devotional readings inspired by Mildred Duff’s historical sketch of Catherine Booth: her childhood compassion, vocational courage, partnership, preaching, family life, service, faith in adversity, and enduring legacy. Each reading connects with a corresponding source section and includes historical context, reflection, practical action, and prayer. This is a new devotional adaptation rather than a full-text modernization or an independently verified biography."
+  }
+]
+$adapt_text$::jsonb) as edit(id uuid, value text)
+where target.id = edit.id;
+
+update public.devotional_days as target
+set title = edit.value, updated_at = now()
+from jsonb_to_recordset($adapt_text$
+[
+  {
+    "id": "90000000-0000-0000-0000-000000000329",
+    "day_number": 1,
+    "value": "Compassion Begins Close to Home"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000329",
+    "day_number": 2,
+    "value": "Strength in an Unchosen Season"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000329",
+    "day_number": 3,
+    "value": "Faith That Can Ask Honest Questions"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000329",
+    "day_number": 4,
+    "value": "Courage in Small Beginnings"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000329",
+    "day_number": 5,
+    "value": "A Partnership of Shared Conviction"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000329",
+    "day_number": 6,
+    "value": "Love Makes Room for Growth"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000329",
+    "day_number": 7,
+    "value": "A Home with an Open Purpose"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000329",
+    "day_number": 8,
+    "value": "Making Hard Choices Together"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000329",
+    "day_number": 9,
+    "value": "Faith in an Unsettled Journey"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000329",
+    "day_number": 10,
+    "value": "The Legacy of a Shared Life"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000329",
+    "day_number": 11,
+    "value": "Finding a Voice to Serve"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000329",
+    "day_number": 12,
+    "value": "Speak with Preparation and Love"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000329",
+    "day_number": 13,
+    "value": "One Message, Every Person Matters"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000329",
+    "day_number": 14,
+    "value": "Teach Children with Love and Respect"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000329",
+    "day_number": 15,
+    "value": "Words That Build, Words That Wound"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000329",
+    "day_number": 16,
+    "value": "Encourage a Calling, Honor a Choice"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000329",
+    "day_number": 17,
+    "value": "Wise Boundaries and Lasting Care"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000329",
+    "day_number": 18,
+    "value": "Faithful Work, Visible Kindness"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000329",
+    "day_number": 19,
+    "value": "Truthfulness Joined with Mercy"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000329",
+    "day_number": 20,
+    "value": "Resting in Grace, Learning to Trust"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000329",
+    "day_number": 21,
+    "value": "Love That Notices People"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000329",
+    "day_number": 22,
+    "value": "Care That Outlasts a Conversation"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000329",
+    "day_number": 23,
+    "value": "Courage That Challenges Unjust Limits"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000329",
+    "day_number": 24,
+    "value": "Faith Through Darkness, with Support"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000329",
+    "day_number": 25,
+    "value": "When Strength Changes, Love Remains"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000329",
+    "day_number": 26,
+    "value": "Grieving Together in Hope"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000329",
+    "day_number": 27,
+    "value": "A Legacy Measured in Love"
+  }
+]
+$adapt_text$::jsonb) as edit(id uuid, day_number integer, value text)
+where target.plan_id = edit.id and target.day_number = edit.day_number;
+
+update public.devotional_days as target
+set content = edit.value, updated_at = now()
+from jsonb_to_recordset($adapt_text$
+[
+  {
+    "id": "90000000-0000-0000-0000-000000000329",
+    "day_number": 1,
+    "value": "<p><strong>Read:</strong> Colossians 3:12-14; Proverbs 12:10</p><p><strong>Source and historical context:</strong> Mildred Duff recalls Catherine Mumford’s early Bible study, honest confession, distress when sheep were mistreated, concern for other pupils, and years of childhood illness. The sketch is an admiring Salvation Army portrait, not an independent account of every event.</p><p><strong>Devotional focus:</strong> Compassion is more than feeling deeply. The child who grieved for injured animals also tried to help classmates who struggled. Scripture calls us to clothe ourselves with kindness, patience, and love in the ordinary places where we live. We can value truth without shaming a child for making a mistake, and care for suffering creatures without judging those who respond differently.</p><p><strong>Reflect:</strong> Who near me needs patient attention rather than an impressive speech?</p><p><strong>Practice:</strong> Offer a practical kindness to someone overlooked, and respond gently if a child or friend admits a mistake.</p><p><strong>Prayer:</strong> Lord, give me truthful words and a tender heart that notices those who suffer. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000329",
+    "day_number": 2,
+    "value": "<p><strong>Read:</strong> 2 Corinthians 4:16-18; Psalm 119:105</p><p><strong>Source and historical context:</strong> During a prolonged spinal illness, young Catherine read Scripture and other works, wrote summaries, and sewed when her strength permitted. Duff later interprets the enforced solitude as preparation for public ministry; that is the biographer’s retrospective understanding.</p><p><strong>Devotional focus:</strong> Illness is not evidence of spiritual failure, nor must suffering be justified by later achievements. Yet a constrained season can still contain gifts: learning, gentle companionship, prayer, and creative work at a sustainable pace. God’s light is available not only when we accomplish much, but also when our bodies require rest. The worth of a person does not depend on productivity.</p><p><strong>Reflect:</strong> How might I receive today’s limits without treating them as a judgment on my worth?</p><p><strong>Practice:</strong> Choose a small, life-giving activity within your capacity; allow yourself or someone else to rest without guilt.</p><p><strong>Prayer:</strong> God of comfort, meet me in limitation and teach me to value people beyond what they can produce. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000329",
+    "day_number": 3,
+    "value": "<p><strong>Read:</strong> 2 Corinthians 6:14; Romans 8:15-16</p><p><strong>Source and historical context:</strong> The biography describes Catherine ending a youthful courtship because she believed their commitments conflicted, followed by weeks of spiritual anxiety before finding assurance through a familiar hymn. The relationship decision is described in terms of her convictions and historical church expectations.</p><p><strong>Devotional focus:</strong> Shared values matter in close relationships, but respect does not require contempt for people who believe differently. Catherine’s longing for assurance also reminds us that faith can involve uncertainty before it involves joy. God’s invitation is not to perform certainty for others; it is to bring our whole heart, fears included, into the light of grace.</p><p><strong>Reflect:</strong> Am I seeking clarity because it leads toward love, or only because I fear being judged?</p><p><strong>Practice:</strong> Name one honest question in prayer. In a close relationship, discuss values respectfully without pressuring another person.</p><p><strong>Prayer:</strong> Father, guide my commitments and hold me when confidence comes slowly. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000329",
+    "day_number": 4,
+    "value": "<p><strong>Read:</strong> 2 Timothy 1:7; Philippians 1:6</p><p><strong>Source and historical context:</strong> Catherine struggles to pray aloud, records one small victory in her diary, studies Scripture with renewed discipline, and grieves over her father’s estrangement from faith. Duff later reports the father’s return to church.</p><p><strong>Devotional focus:</strong> Courage is not the absence of a racing heart. Sometimes it is offering a few imperfect words, receiving support, or beginning again tomorrow. Private practices of prayer and reading can nurture a lifelong vocation, but they should not become a burden that ignores bodily needs. We cannot control another person’s faith, even when we deeply love them.</p><p><strong>Reflect:</strong> What modest act of courage is possible without demanding perfection from myself?</p><p><strong>Practice:</strong> Make a manageable plan for prayer or Scripture this week. Encourage a shy person rather than forcing them to perform.</p><p><strong>Prayer:</strong> Spirit of God, give me patience for gradual growth and love for those whose journeys differ from mine. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000329",
+    "day_number": 5,
+    "value": "<p><strong>Read:</strong> Amos 3:3; Ephesians 4:15-16</p><p><strong>Source and historical context:</strong> Catherine meets William Booth, discovers their common concern for evangelism and alcohol-related harm, and exchanges letters about their future. She repeatedly insists that William must make his own conscientious decisions.</p><p><strong>Devotional focus:</strong> A strong partnership is not built by one person disappearing into the other’s mission. Shared purpose flourishes when each person can think, disagree, pray, and choose freely. The letters show a woman whose counsel mattered and whose respect made room for another person’s conscience. Love tells the truth while guarding the other’s dignity.</p><p><strong>Reflect:</strong> Do the people I love have room to make a decision that I would not choose?</p><p><strong>Practice:</strong> Ask a partner or friend what matters most to them, and listen without trying to engineer their answer.</p><p><strong>Prayer:</strong> God of wisdom, teach us to support one another in truth and freedom. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000329",
+    "day_number": 6,
+    "value": "<p><strong>Read:</strong> Proverbs 27:17; 1 Corinthians 13:4-7</p><p><strong>Source and historical context:</strong> Their engagement letters show Catherine urging William to pray, study, resist ambition, and prepare his sermons. William values the outlines she sends. The section leads toward their wedding on June 15, 1855.</p><p><strong>Devotional focus:</strong> Encouragement is more useful than flattery. Catherine treated William’s capacities as gifts worth developing, not as a reason to pursue applause. Wise companions sharpen one another while respecting limits, fatigue, and personal agency. Marriage, friendship, and ministry are healthiest when growth is mutual and correction is gracious, never controlling.</p><p><strong>Reflect:</strong> How do my words help someone grow without making them feel managed?</p><p><strong>Practice:</strong> Offer a specific word of encouragement, then invite honest feedback about how you can be more supportive.</p><p><strong>Prayer:</strong> Lord, keep our affection humble and make our partnerships places of mutual growth. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000329",
+    "day_number": 7,
+    "value": "<p><strong>Read:</strong> Matthew 5:14-16; Joshua 24:15</p><p><strong>Source and historical context:</strong> The brief closing segment of the engagement chapter quotes Catherine’s longing to see William and her shared intention that their home make Christ known. It looks ahead to their married work without narrating new events.</p><p><strong>Devotional focus:</strong> A home can be a place of real tenderness and a place of welcome to others. Service does not erase the need for intimacy, privacy, and rest. The desire to make Christ known begins in how people within the household are treated: with honesty, kindness, listening, and room to flourish.</p><p><strong>Reflect:</strong> Does my idea of serving others also include caring well for those closest to me?</p><p><strong>Practice:</strong> Plan one unhurried moment of connection at home, and one simple act of hospitality that fits your circumstances.</p><p><strong>Prayer:</strong> Jesus, let our closest relationships shine with the peace and kindness we hope to share. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000329",
+    "day_number": 8,
+    "value": "<p><strong>Read:</strong> Luke 14:28-30; James 1:5</p><p><strong>Source and historical context:</strong> Early married life brings constant travel and little stability. The Booths face pressure to accept settled ministry instead of itinerant evangelism, weighing income, children, and health against their sense of calling.</p><p><strong>Devotional focus:</strong> Faith does not mean refusing to count the cost. It means bringing the cost into honest prayer and wise conversation. The Booths’ choice was their choice; it is not a universal rule that families should abandon financial security. Courageous discernment takes account of dependents, consent, resources, and the different ways people may serve God faithfully.</p><p><strong>Reflect:</strong> When facing a decision, have I named both my hopes and the needs of people affected?</p><p><strong>Practice:</strong> List the practical costs, people affected, and available support before making one difficult commitment.</p><p><strong>Prayer:</strong> God, give us wisdom to serve faithfully without neglecting those entrusted to our care. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000329",
+    "day_number": 9,
+    "value": "<p><strong>Read:</strong> Philippians 4:11-13; Micah 6:8</p><p><strong>Source and historical context:</strong> After leaving a secure post, the Booths travel with four children. Catherine admits the exhaustion of frequent separation and lodging. Later William proposes serving poor communities in London’s East End, and she consents despite financial uncertainty.</p><p><strong>Devotional focus:</strong> Calling may require change, but a holy purpose does not cancel ordinary exhaustion or the need for stability. Catherine spoke plainly about how difficult the travel felt. Her openness is instructive: we can love the mission and still acknowledge the strain. The East End also reminds us that good news is inseparable from recognizing the dignity and real needs of neighbors experiencing poverty.</p><p><strong>Reflect:</strong> Where have I mistaken honest weariness for a lack of faith?</p><p><strong>Practice:</strong> Check in on a caregiver or community worker, offering a concrete form of practical support rather than only praise.</p><p><strong>Prayer:</strong> Lord, sustain people who carry heavy responsibilities and help us serve our neighbors with dignity. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000329",
+    "day_number": 10,
+    "value": "<p><strong>Read:</strong> 1 Thessalonians 4:13-14; Romans 12:15</p><p><strong>Source and historical context:</strong> The concluding pages of “A Life of Sacrifice” look forward to William Booth’s grief at Catherine’s graveside. He describes her as friend, counselor, and helper, and laments the loss of their shared life.</p><p><strong>Devotional focus:</strong> The depth of grief often reflects the depth of companionship. Christian hope does not demand that mourners suppress their tears. We honor those we love by remembering the particular ways they cared, advised, corrected, and accompanied us. Faith can sit beside loss without explaining it away.</p><p><strong>Reflect:</strong> Whose quiet care has shaped my life, and have I made room to express gratitude?</p><p><strong>Practice:</strong> Write down one treasured act of care from someone living or deceased. If that person is living, thank them.</p><p><strong>Prayer:</strong> God of comfort, be near to those who grieve and help us remember love with gratitude. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000329",
+    "day_number": 11,
+    "value": "<p><strong>Read:</strong> Acts 2:17-18; 1 Peter 4:10-11</p><p><strong>Source and historical context:</strong> The chapter “The Speaker” recalls a time when public preaching by women was contested. Catherine rises to speak in a service despite her former fear, and the biography describes subsequent invitations and her growing public voice.</p><p><strong>Devotional focus:</strong> A gift should not be dismissed because its bearer does not fit an expectation. The early church describes sons and daughters speaking as God’s Spirit enables them. Catherine’s first step was not a performance of confidence but an act of conviction. We can make communities safer for people whose voices have been overlooked and ensure opportunities are shared rather than guarded.</p><p><strong>Reflect:</strong> Whose voice am I quick to underestimate, and what might I learn by listening?</p><p><strong>Practice:</strong> Invite someone who is rarely heard to contribute, without forcing them to speak before they are ready.</p><p><strong>Prayer:</strong> Spirit of truth, open doors for gifts that have been overlooked and give us ears that listen. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000329",
+    "day_number": 12,
+    "value": "<p><strong>Read:</strong> Colossians 4:5-6; 2 Timothy 2:15</p><p><strong>Source and historical context:</strong> Catherine describes intense preparation, prayer, vulnerability before large meetings, and her concern that the message reach real people. Duff gives examples from campaigns where listeners responded to her preaching.</p><p><strong>Devotional focus:</strong> Good communication is neither a polished performance nor a demand for a dramatic response. It requires careful thought, truthful speech, humility, and attention to the people listening. Preparation is a form of respect; prayer helps keep the speaker from treating people as an audience to conquer. Our words should be understandable, gracious, and open to honest questions.</p><p><strong>Reflect:</strong> Am I more concerned with sounding impressive than with helping someone understand?</p><p><strong>Practice:</strong> Before an important conversation, identify your main point and one question that invites the other person’s perspective.</p><p><strong>Prayer:</strong> Lord, make my speech clear, humble, and worthy of the trust others place in me. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000329",
+    "day_number": 13,
+    "value": "<p><strong>Read:</strong> James 2:1-4; 2 Corinthians 5:18-20</p><p><strong>Source and historical context:</strong> The final section on preaching includes reported responses from sisters in a publican’s family, large meetings, and Catherine’s resolve to speak consistently to both wealthy and poor listeners. The numbers are claims of the historical narrative.</p><p><strong>Devotional focus:</strong> The gospel cannot become one message for the influential and another for the disregarded. James warns against giving special honor to wealth. If we speak of reconciliation, our relationships should show it: patient listening, equal dignity, no manipulation, and an invitation rather than pressure. The worth of a life is greater than any attendance total or public result.</p><p><strong>Reflect:</strong> Am I treating someone’s social position as a measure of their importance?</p><p><strong>Practice:</strong> Practice equal attention today: greet, listen to, and assist someone who receives little recognition.</p><p><strong>Prayer:</strong> God, free me from favoritism and make my message and conduct consistent. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000329",
+    "day_number": 14,
+    "value": "<p><strong>Read:</strong> Deuteronomy 6:6-7; Mark 10:13-16</p><p><strong>Source and historical context:</strong> Duff portrays Catherine as an attentive mother who taught faith at home, prayed for her children, involved them in acts of giving, and maintained a simple household. The text also reports physical punishment and pressure around conversion.</p><p><strong>Devotional focus:</strong> Children need nurture, safety, and room to grow. Their questions and consciences deserve care, not fear or coercion. Catherine’s encouragement of generosity can inspire us, while harsh discipline and compelled religious responses should not be copied. Jesus welcomed children and took their dignity seriously. Spiritual formation grows best through trustworthy examples, conversation, and patient love.</p><p><strong>Reflect:</strong> Do the children in my care experience faith as welcome, or as pressure to please adults?</p><p><strong>Practice:</strong> Listen to a child’s question without correcting it immediately. Offer age-appropriate opportunities to help someone by choice.</p><p><strong>Prayer:</strong> Jesus, teach us to safeguard children and to guide them with gentleness and joy. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000329",
+    "day_number": 15,
+    "value": "<p><strong>Read:</strong> Ephesians 4:29-32; James 3:5-10</p><p><strong>Source and historical context:</strong> Catherine’s letters advise her children on diligence, care for others, speaking naturally in public, and guarding against harmful joking or idle talk. She also grapples with whether a daughter is ready for street preaching.</p><p><strong>Devotional focus:</strong> A parent’s words can become a source of courage or a burden someone carries for years. James reminds us how powerful the tongue can be. Good guidance calls out gifts without crushing the learner and addresses harmful speech without humiliating anyone. Children and young adults need permission to grow at their own pace and to exercise sound judgment about public safety.</p><p><strong>Reflect:</strong> When I offer advice, does the other person leave more capable or merely more afraid?</p><p><strong>Practice:</strong> Replace one harsh correction with a specific, encouraging suggestion. Check that a young person feels safe before a public responsibility.</p><p><strong>Prayer:</strong> God, guard my tongue and help me use words that restore and strengthen. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000329",
+    "day_number": 16,
+    "value": "<p><strong>Read:</strong> Romans 12:4-8; Isaiah 41:10</p><p><strong>Source and historical context:</strong> Letters in this segment urge Catherine’s sons and daughters toward public mission, while she also comforts a discouraged child and tells another not to worry. Her religious aspirations for her children are explicit and strong.</p><p><strong>Devotional focus:</strong> Parents and mentors may recognize remarkable potential, yet a gift becomes fruitful when the person can freely discern how to use it. Encouragement should not make love conditional on choosing the same career or ministry. Catherine’s counsel not to panic after doing what one can is a healthier model: act with faith, accept limits, and trust that worth is not measured by achievements.</p><p><strong>Reflect:</strong> Am I encouraging someone’s gifts or trying to choose their future for them?</p><p><strong>Practice:</strong> Affirm a loved one’s strength while making it clear that your care does not depend on their following your plan.</p><p><strong>Prayer:</strong> Father, guide the next generation in freedom, courage, and wise discernment. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000329",
+    "day_number": 17,
+    "value": "<p><strong>Read:</strong> Proverbs 4:23; 1 Corinthians 13:4-7</p><p><strong>Source and historical context:</strong> The last pages on motherhood offer stern advice on courtship and suitable partners. They also describe Catherine’s painful separation from adult children serving abroad and the affection of the wider Salvation Army who called her “Army Mother.”</p><p><strong>Devotional focus:</strong> Healthy love pays attention to character, shared commitments, and safety, but it never reduces people to a single prescribed life path. Wise boundaries are compatible with tenderness and with respect for another adult’s decision. Catherine’s care for a much wider family invites us to nurture people beyond our household without claiming ownership over their choices.</p><p><strong>Reflect:</strong> What boundary would protect love, and where do I need to loosen my grip?</p><p><strong>Practice:</strong> Consider one relationship in which you can express concern clearly and then honor the other person’s agency.</p><p><strong>Prayer:</strong> God of love, help me protect what is good without confusing care with control. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000329",
+    "day_number": 18,
+    "value": "<p><strong>Read:</strong> Colossians 3:23-24; Galatians 6:9-10</p><p><strong>Source and historical context:</strong> In “The Worker,” Duff describes Catherine’s careful household labor, repaired children’s clothing shared with another family, patient teaching of domestic skills, and a pair of slippers embroidered during her last illness.</p><p><strong>Devotional focus:</strong> Some of our most meaningful service looks ordinary: mending what is worn, sharing what we have, or patiently teaching a skill. Work does not need an audience to matter. At the same time, diligence should never become a demand to work through pain or exhaustion. The gift of these stories is the love carried within small actions, not an impossible standard of tirelessness.</p><p><strong>Reflect:</strong> What unnoticed task could become an act of practical love today?</p><p><strong>Practice:</strong> Share a useful item, teach a skill kindly, or thank someone whose labor is normally taken for granted.</p><p><strong>Prayer:</strong> Lord, bless the quiet work of caring and show us when it is time to serve and when it is time to rest. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000329",
+    "day_number": 19,
+    "value": "<p><strong>Read:</strong> Micah 6:8; John 8:31-32</p><p><strong>Source and historical context:</strong> The “Goodness” chapter remembers Catherine’s frugality, insistence on plain speaking, and pursuit of holiness. It also includes severe judgments about people considered idle and an account of her intense prayer for a clean heart.</p><p><strong>Devotional focus:</strong> Integrity includes truth, but truth is not a license for contempt. We cannot infer a person’s character from unemployment, fatigue, or unfamiliar circumstances. The good life is marked by justice, mercy, and humility together. Catherine’s desire for holiness can become an invitation to examine our own motives rather than an excuse to rank others by how hard they work.</p><p><strong>Reflect:</strong> When have I mistaken bluntness for courage or efficiency for goodness?</p><p><strong>Practice:</strong> Speak a needed truth today with gentleness, and ask whether you understand the circumstances of someone you are tempted to judge.</p><p><strong>Prayer:</strong> Holy God, let truth grow together with humility and mercy in me. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000329",
+    "day_number": 20,
+    "value": "<p><strong>Read:</strong> Matthew 11:28-30; Hebrews 4:9-11</p><p><strong>Source and historical context:</strong> Catherine describes an experience of spiritual peace after sustained prayer and speaks about financial uncertainties during itinerant ministry. Duff presents her trust as hard-won rather than effortless.</p><p><strong>Devotional focus:</strong> Rest in Christ is not a reward for having prayed with perfect intensity. Grace welcomes weary people before they have solved every problem. Anxiety about provision calls for wise practical planning and support as well as prayer. Catherine’s account can encourage hope, but no testimony requires others to feel peace on a fixed schedule or deny real financial risks.</p><p><strong>Reflect:</strong> Which worry can I name before God while also taking one responsible practical step?</p><p><strong>Practice:</strong> Write down an immediate need, a possible source of help, and a brief prayer. Take the safe next step available to you.</p><p><strong>Prayer:</strong> Gentle Savior, give rest to weary hearts and wisdom for practical needs. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000329",
+    "day_number": 21,
+    "value": "<p><strong>Read:</strong> 1 Corinthians 13:4-7; Matthew 25:35-40</p><p><strong>Source and historical context:</strong> The chapter “Love” portrays Catherine’s concern for people facing poverty, addiction, rejection, and spiritual discouragement. It describes her meetings and correspondence, and the many people who sought her counsel.</p><p><strong>Devotional focus:</strong> Love cannot be measured only by how intensely we feel for strangers. It takes shape in listening, food, shelter, safety, and patient companionship. When serving people who struggle, we must see neighbors with agency rather than projects to rescue. Christian love makes space for practical help and for the recipient’s own needs, voice, and decisions.</p><p><strong>Reflect:</strong> Who might need me to listen before I decide what help to offer?</p><p><strong>Practice:</strong> Ask someone facing difficulty what kind of support they would welcome; follow through without making it conditional on sharing your beliefs.</p><p><strong>Prayer:</strong> Jesus, deepen our compassion and teach us to honor every person we meet. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000329",
+    "day_number": 22,
+    "value": "<p><strong>Read:</strong> Luke 10:33-37; Galatians 6:2</p><p><strong>Source and historical context:</strong> Even while gravely ill, Catherine reportedly asks her daughter to remember an imprisoned man and his family. Duff records the mother’s continuing prayers for people far beyond her immediate circle.</p><p><strong>Devotional focus:</strong> Compassion keeps names and needs in view when a moving meeting has ended. The Samaritan’s help was concrete, attentive, and costly. We cannot meet every need ourselves, but we can connect people with safe resources, respect their privacy, and remain dependable. Caring for someone in prison also means recognizing their humanity and the needs of their family.</p><p><strong>Reflect:</strong> Whose needs have I heard about but not followed up on?</p><p><strong>Practice:</strong> Follow up on one request for help, offering a specific action or connecting the person to appropriate support.</p><p><strong>Prayer:</strong> Lord, widen our concern and give us wisdom to turn compassion into reliable care. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000329",
+    "day_number": 23,
+    "value": "<p><strong>Read:</strong> Acts 18:24-26; Galatians 3:26-28</p><p><strong>Source and historical context:</strong> In “The Warrior,” Catherine defends her theological convictions, opposes harmful drinking, and fights resistance to women preaching in public. The sketch also records longstanding bodily suffering and periods of exhaustion.</p><p><strong>Devotional focus:</strong> Conviction is strongest when it serves truth and justice without trampling others. Catherine’s resistance to restrictions on women’s voices remains a meaningful challenge to communities that overlook gifts. Her witness does not require us to accept every social judgment or medical claim in the biography. Courage also includes asking for care when our bodies are in pain.</p><p><strong>Reflect:</strong> Where should I make room for a gifted person whom convention has kept out?</p><p><strong>Practice:</strong> Support an overlooked leader or learner, and respect the limits of anyone facing illness rather than urging them to push through it.</p><p><strong>Prayer:</strong> God of courage, free us from unfair barriers and help us defend others with humility. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000329",
+    "day_number": 24,
+    "value": "<p><strong>Read:</strong> Psalm 42:5-11; 2 Corinthians 1:3-4</p><p><strong>Source and historical context:</strong> The memoir of her public work tells of Catherine’s episodes of depression, poverty, lonely ministry campaigns, and her effort to distinguish faith from felt assurance during her final illness.</p><p><strong>Devotional focus:</strong> Depression is not proof that someone lacks faith, and no one should be asked to fight it alone. The psalmist can speak both despair and hope. Prayer, friendship, rest, and professional mental-health support can belong together. Catherine’s persistence is meaningful, but so is the need for comfort and practical help. Faith does not demand that a person feel victorious every day.</p><p><strong>Reflect:</strong> Can I speak honestly about emotional darkness and receive support without shame?</p><p><strong>Practice:</strong> Reach out to a trustworthy person if you feel overwhelmed. If someone confides in you, listen and offer help accessing appropriate care.</p><p><strong>Prayer:</strong> Compassionate God, stay near those in darkness and make us faithful companions. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000329",
+    "day_number": 25,
+    "value": "<p><strong>Read:</strong> Isaiah 46:3-4; 2 Corinthians 12:9</p><p><strong>Source and historical context:</strong> In February 1888 Catherine receives a diagnosis of cancer. Over the following years she gradually gives up meetings, correspondence, drives, and then leaving her room, while continuing to care about the work and children around her. Duff tells this through the language of sacrifice.</p><p><strong>Devotional focus:</strong> A life’s meaning is not erased when illness removes familiar abilities. Love can be given and received in a whisper, a remembered name, or a quiet presence. Christ’s grace is sufficient for weakness; it does not mean that suffering must be welcomed or denied. Good caregiving takes physical pain seriously and honors a sick person’s dignity, preferences, and need for rest.</p><p><strong>Reflect:</strong> How can I show someone with limited strength that their presence matters more than their output?</p><p><strong>Practice:</strong> Offer a gentle visit, a message, a practical errand, or quiet companionship according to the person’s wishes.</p><p><strong>Prayer:</strong> Lord, surround the suffering with tenderness and let them know they remain deeply valued. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000329",
+    "day_number": 26,
+    "value": "<p><strong>Read:</strong> John 14:1-3; Romans 12:15</p><p><strong>Source and historical context:</strong> The biography describes Catherine’s final hours in October 1890, surrounded by family, hymns, and Scripture. It then recounts public viewing at Congress Hall and the many people who came to mourn her.</p><p><strong>Devotional focus:</strong> At the edge of death, presence can matter more than explanations. Families do not all grieve alike, and peace is not measured by whether someone can speak brave words. Jesus speaks hope to troubled hearts, while Scripture also tells us to weep with those who weep. Shared songs, quiet prayer, and practical care can make space for both sorrow and trust.</p><p><strong>Reflect:</strong> How can I be present for someone’s grief without asking them to be strong for me?</p><p><strong>Practice:</strong> Reach out to a bereaved person with one concrete offer of care; let them choose whether to talk, pray, or simply rest.</p><p><strong>Prayer:</strong> God of resurrection hope, hold those who mourn and strengthen those who care for them. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000329",
+    "day_number": 27,
+    "value": "<p><strong>Read:</strong> Hebrews 12:1-2; Matthew 5:16</p><p><strong>Source and historical context:</strong> The final segment remembers the graveside service at Abney Park, hymns, and closing biographical dates including Catherine’s death on October 4, 1890 and funeral on October 11. The text offers a retrospective portrait of her influence.</p><p><strong>Devotional focus:</strong> A faithful legacy is not simply the size of a movement or the number of people who gather at a funeral. It is also the honesty, welcome, service, and courage that others carry into ordinary days. We can learn from Catherine’s life without copying every choice or treating an admiring account as infallible. The call is to follow Christ, not to imitate a hero uncritically.</p><p><strong>Reflect:</strong> What example of love would I most hope people remember from my ordinary life?</p><p><strong>Practice:</strong> Choose one sustainable act of service you can repeat, and thank someone whose example has shaped you for good.</p><p><strong>Prayer:</strong> Jesus, keep our eyes on you and make the fruit of our lives a blessing to others. Amen.</p>"
+  }
+]
+$adapt_text$::jsonb) as edit(id uuid, day_number integer, value text)
+where target.plan_id = edit.id and target.day_number = edit.day_number;
+
+-- Replace only plan-level daily Scripture reference arrays. User-owned rows remain untouched.
+do $$
+declare
+  item jsonb;
+  target_day_id uuid;
+begin
+  for item in select value from jsonb_array_elements($adapt_refs$
+[
+  {
+    "id": "90000000-0000-0000-0000-000000000329",
+    "day_number": 1,
+    "references": [
+      "Colossians 3:12-14",
+      "Proverbs 12:10"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000329",
+    "day_number": 2,
+    "references": [
+      "2 Corinthians 4:16-18",
+      "Psalm 119:105"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000329",
+    "day_number": 3,
+    "references": [
+      "2 Corinthians 6:14",
+      "Romans 8:15-16"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000329",
+    "day_number": 4,
+    "references": [
+      "2 Timothy 1:7",
+      "Philippians 1:6"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000329",
+    "day_number": 5,
+    "references": [
+      "Amos 3:3",
+      "Ephesians 4:15-16"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000329",
+    "day_number": 6,
+    "references": [
+      "Proverbs 27:17",
+      "1 Corinthians 13:4-7"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000329",
+    "day_number": 7,
+    "references": [
+      "Matthew 5:14-16",
+      "Joshua 24:15"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000329",
+    "day_number": 8,
+    "references": [
+      "Luke 14:28-30",
+      "James 1:5"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000329",
+    "day_number": 9,
+    "references": [
+      "Philippians 4:11-13",
+      "Micah 6:8"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000329",
+    "day_number": 10,
+    "references": [
+      "1 Thessalonians 4:13-14",
+      "Romans 12:15"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000329",
+    "day_number": 11,
+    "references": [
+      "Acts 2:17-18",
+      "1 Peter 4:10-11"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000329",
+    "day_number": 12,
+    "references": [
+      "Colossians 4:5-6",
+      "2 Timothy 2:15"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000329",
+    "day_number": 13,
+    "references": [
+      "James 2:1-4",
+      "2 Corinthians 5:18-20"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000329",
+    "day_number": 14,
+    "references": [
+      "Deuteronomy 6:6-7",
+      "Mark 10:13-16"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000329",
+    "day_number": 15,
+    "references": [
+      "Ephesians 4:29-32",
+      "James 3:5-10"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000329",
+    "day_number": 16,
+    "references": [
+      "Romans 12:4-8",
+      "Isaiah 41:10"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000329",
+    "day_number": 17,
+    "references": [
+      "Proverbs 4:23",
+      "1 Corinthians 13:4-7"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000329",
+    "day_number": 18,
+    "references": [
+      "Colossians 3:23-24",
+      "Galatians 6:9-10"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000329",
+    "day_number": 19,
+    "references": [
+      "Micah 6:8",
+      "John 8:31-32"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000329",
+    "day_number": 20,
+    "references": [
+      "Matthew 11:28-30",
+      "Hebrews 4:9-11"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000329",
+    "day_number": 21,
+    "references": [
+      "1 Corinthians 13:4-7",
+      "Matthew 25:35-40"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000329",
+    "day_number": 22,
+    "references": [
+      "Luke 10:33-37",
+      "Galatians 6:2"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000329",
+    "day_number": 23,
+    "references": [
+      "Acts 18:24-26",
+      "Galatians 3:26-28"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000329",
+    "day_number": 24,
+    "references": [
+      "Psalm 42:5-11",
+      "2 Corinthians 1:3-4"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000329",
+    "day_number": 25,
+    "references": [
+      "Isaiah 46:3-4",
+      "2 Corinthians 12:9"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000329",
+    "day_number": 26,
+    "references": [
+      "John 14:1-3",
+      "Romans 12:15"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000329",
+    "day_number": 27,
+    "references": [
+      "Hebrews 12:1-2",
+      "Matthew 5:16"
+    ]
+  }
+]
+$adapt_refs$::jsonb) loop
+    select id into strict target_day_id
+    from public.devotional_days
+    where plan_id = (item ->> 'id')::uuid
+      and day_number = (item ->> 'day_number')::integer;
+
+    update public.scripture_references
+    set reference = array(select jsonb_array_elements_text(item -> 'references')),
+        updated_at = now()
+    where day_id = target_day_id and user_id is null;
+
+    if not found then
+      insert into public.scripture_references
+        (user_id, day_id, reference, created_at, updated_at)
+      values
+        (null, target_day_id,
+         array(select jsonb_array_elements_text(item -> 'references')), now(), now());
+    end if;
+  end loop;
+end
+$$;
+
+update public.devotional_plans
+set status = 'published', updated_at = now()
+where id = '90000000-0000-0000-0000-000000000329'::uuid;
+
+commit;
+-- END CONSOLIDATED SOURCE: 20261026190000_repair_draft_devotional_plans_wave_27.sql
+
+-- BEGIN CONSOLIDATED SOURCE: 20261026200000_repair_draft_devotional_plans_wave_28.sql sha256=858f7c78a8acfc77bb166820e9c56d63d43255a2f8345b016a6c10276bea1538
+-- Wave 28: Plan 338 — Thoughts and Counsels of the Saints for Every Day of the Year.
+-- Eleven newly written Scripture-led readings from 11 mechanically split calendar segments.
+-- Preserves existing identifiers and user reading progress; retains Catholic source context.
+-- Apply AFTER October 21 modernization migrations (including part 10).
+-- Reviewed editorial adaptation; not a Bible translation reproduction or full 365-day edition.
+
+begin;
+
+do $$
+declare
+  current_source text;
+  current_total integer;
+  day_count integer;
+  first_day integer;
+  last_day integer;
+  unique_days integer;
+begin
+  select source_url, total_days into current_source, current_total
+  from public.devotional_plans
+  where id = '90000000-0000-0000-0000-000000000338'::uuid;
+  if not found then raise exception 'Plan 338 missing'; end if;
+  if current_source is distinct from 'https://www.gutenberg.org/ebooks/33649' or current_total is distinct from 11 then
+    raise exception 'Plan 338 metadata differs from source reviewed for Wave 28';
+  end if;
+  select count(*), min(day_number), max(day_number), count(distinct day_number)
+  into day_count, first_day, last_day, unique_days
+  from public.devotional_days where plan_id = '90000000-0000-0000-0000-000000000338'::uuid;
+  if day_count <> 11 or first_day <> 1 or last_day <> 11 or unique_days <> 11 then
+    raise exception 'Plan 338 must contain 11 distinct numbered days; found %', day_count;
+  end if;
+end
+$$;
+
+update public.devotional_plans as target
+set title = edit.value, updated_at = now()
+from jsonb_to_recordset($adapt_text$
+[
+  {
+    "id": "90000000-0000-0000-0000-000000000338",
+    "value": "Daily Wisdom of the Saints: Eleven Scripture-Led Reflections"
+  }
+]
+$adapt_text$::jsonb) as edit(id uuid, value text)
+where target.id = edit.id;
+
+update public.devotional_plans as target
+set description = edit.value, updated_at = now()
+from jsonb_to_recordset($adapt_text$
+[
+  {
+    "id": "90000000-0000-0000-0000-000000000338",
+    "value": "Eleven original, Scripture-led readings inspired by Rev. Bonaventure Hammer’s collection of Catholic saints’ counsels across the calendar year. Each reading draws from its corresponding source segment and offers historical context, thoughtful reflection, practical action, and prayer. Distinctively Catholic devotions are named as such rather than treated as direct Bible quotations. This is a new eleven-day thematic adaptation, not a complete 365/366-day quotation calendar or a sentence-by-sentence modernization."
+  }
+]
+$adapt_text$::jsonb) as edit(id uuid, value text)
+where target.id = edit.id;
+
+update public.devotional_days as target
+set title = edit.value, updated_at = now()
+from jsonb_to_recordset($adapt_text$
+[
+  {
+    "id": "90000000-0000-0000-0000-000000000338",
+    "day_number": 1,
+    "value": "Begin with Humility and Prayer"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000338",
+    "day_number": 2,
+    "value": "Let Love Become a Practice"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000338",
+    "day_number": 3,
+    "value": "A Faith That Refuses Hatred"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000338",
+    "day_number": 4,
+    "value": "Learn Humility from Mary’s Song"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000338",
+    "day_number": 5,
+    "value": "Love of God, Love of Neighbor"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000338",
+    "day_number": 6,
+    "value": "Give Thanks with an Honest Heart"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000338",
+    "day_number": 7,
+    "value": "Correct with Gentleness"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000338",
+    "day_number": 8,
+    "value": "Teach Faith by Example"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000338",
+    "day_number": 9,
+    "value": "Share One Another’s Joy and Sorrow"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000338",
+    "day_number": 10,
+    "value": "Seek the Good of Others"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000338",
+    "day_number": 11,
+    "value": "Receive This Day as a Gift"
+  }
+]
+$adapt_text$::jsonb) as edit(id uuid, day_number integer, value text)
+where target.plan_id = edit.id and target.day_number = edit.day_number;
+
+update public.devotional_days as target
+set content = edit.value, updated_at = now()
+from jsonb_to_recordset($adapt_text$
+[
+  {
+    "id": "90000000-0000-0000-0000-000000000338",
+    "day_number": 1,
+    "value": "<p><strong>Read:</strong> Psalm 145:1-3; James 4:6-10</p><p><strong>Source and historical context:</strong> The collection opens with a call to bless God daily. In the January sayings, Catherine of Siena describes prayer as a place where virtues are nourished; Teresa of Ávila and Vincent de Paul also place humility before self-congratulation. Bonaventure Hammer gathered these words as daily Catholic spiritual counsel, not as a continuous sermon.</p><p><strong>Devotional focus:</strong> The first step in a faithful life is not proving that we are already strong. It is returning to the God who loves us and learning to listen. Prayer can make room for honesty, gratitude, repentance, and wise action. Humility does not require despising ourselves or refusing care. It means knowing that wisdom is a gift, not a trophy, and using what we receive for others.</p><p><strong>Reflect:</strong> Where am I tempted to appear spiritually accomplished rather than honestly present before God?</p><p><strong>Practice:</strong> Begin with a quiet prayer and identify one small act of kindness that can grow from it today.</p><p><strong>Prayer:</strong> God of wisdom, teach me to pray with a humble heart and to put love into practice. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000338",
+    "day_number": 2,
+    "value": "<p><strong>Read:</strong> 1 John 3:16-18; Luke 10:33-37</p><p><strong>Source and historical context:</strong> This portion continues February’s short sayings. Ignatius stresses that love is shown in actions rather than merely spoken, Vincent de Paul commends practical resolutions, and Louis of Granada urges a person who falls to begin again. The closing lines enter March, where the collection asks readers to consider their intentions carefully.</p><p><strong>Devotional focus:</strong> Beautiful intentions matter, but neighbors experience love through patient choices. A visit, a truthful apology, a fair decision, or a meal may carry more weight than impressive declarations. When we fail, honest repentance opens a way forward; it need not become endless self-accusation. The saints’ vigorous language about discipline is best heard as an invitation to grow in compassion, not a license to punish ourselves.</p><p><strong>Reflect:</strong> Which person needs a concrete act of care from me more than another promise?</p><p><strong>Practice:</strong> Choose one manageable loving action, carry it out, and if you have hurt someone, begin a sincere repair.</p><p><strong>Prayer:</strong> Lord Jesus, move my concern from words to deeds and strengthen me to begin again when I fail. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000338",
+    "day_number": 3,
+    "value": "<p><strong>Read:</strong> 1 John 4:19-21; Matthew 5:23-24</p><p><strong>Source and historical context:</strong> The March section begins with Louis de Blois warning that even fasting, giving, and regular prayer lose their meaning when a person holds hatred toward a brother. Other sayings in this span discuss restraint of speech, mercy, courage, and humble service. In the Catholic collection these stand beside devotions to St. Joseph and the saints.</p><p><strong>Devotional focus:</strong> Religious habits cannot substitute for the way we treat people. Worship should soften our response to those with whom we disagree, especially when an argument has made us defensive. Reconciliation is not the same as accepting mistreatment; it can include truthful boundaries, justice, and the need for safety. Love asks us to resist contempt while taking harm seriously.</p><p><strong>Reflect:</strong> Has any resentment begun to shape the way I speak about another person?</p><p><strong>Practice:</strong> Pray for a heart free of contempt, then take one safe, honest step toward peace or a healthier boundary.</p><p><strong>Prayer:</strong> God of mercy, keep devotion from becoming a mask for bitterness. Teach me truth, courage, and love. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000338",
+    "day_number": 4,
+    "value": "<p><strong>Read:</strong> Luke 1:39-55; John 2:1-11</p><p><strong>Source and historical context:</strong> This segment moves from April counsel about prayer and reflection into May, where Marian devotion dominates. On May 1, a saying attributed to Alphonsus praises Mary’s union with God’s will; later quotations present Catholic beliefs about Mary’s intercession and the saints. These devotional claims belong to the tradition of the source and are not direct quotations from Scripture.</p><p><strong>Devotional focus:</strong> In Luke’s account, Mary responds to God with trust and sings about mercy, the lifting up of the lowly, and the humbling of the proud. Christians differ about the place of Marian intercession in prayer, yet the biblical scene invites all readers to notice courage, humility, and concern for the overlooked. Let Mary’s song turn our attention not toward status or self-importance, but toward the God whose mercy upends them.</p><p><strong>Reflect:</strong> How might Mary’s song reshape the way I see people who are overlooked?</p><p><strong>Practice:</strong> Read the Magnificat slowly. Name one practical way to honor someone whose dignity is often ignored.</p><p><strong>Prayer:</strong> God of mercy, give me a willing heart and eyes that recognize your care for the lowly. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000338",
+    "day_number": 5,
+    "value": "<p><strong>Read:</strong> Mark 12:28-34; James 2:14-17</p><p><strong>Source and historical context:</strong> The remainder of May continues the collection’s explicitly Marian prayers and images. In June, the subject expands to the heart of Jesus, generosity, repentance, and everyday work. Gregory the Great describes love of God and love of neighbor as forces that sustain each other.</p><p><strong>Devotional focus:</strong> Devotion is not a competition between loving God and loving people. Jesus joins those commands, and James insists that compassion should reach people’s real needs. Some sayings here speak of penance or suffering in severe terms; faithful love does not require neglecting health or denying legitimate joy. Giving care, telling the truth, and honoring another’s dignity are meaningful ways to keep faith visible.</p><p><strong>Reflect:</strong> Does my spiritual routine make me more attentive to the needs around me?</p><p><strong>Practice:</strong> Offer help with a specific need today, listening first to what the person actually wants.</p><p><strong>Prayer:</strong> Jesus, deepen love for you until it becomes generous and respectful care for my neighbor. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000338",
+    "day_number": 6,
+    "value": "<p><strong>Read:</strong> Colossians 3:15-17; James 1:17</p><p><strong>Source and historical context:</strong> In the July quotations, Vincent de Paul commends gratitude for graces already received, while other counsels discuss careful speech, conscience, mercy, and the integrity of good work. This portion also includes Catholic claims about the pope and Mary, which reflect the collection’s confessional setting. The final lines reach the first days of August.</p><p><strong>Devotional focus:</strong> Gratitude does not pretend that every circumstance is good or that pain is easy. It notices what has been received while making room for what is still hard. Remembering a gift can lead to giving one: encouragement, integrity at work, or an apology that restores trust. Rather than measuring our worth against another person’s achievements, we can receive this day as a chance to respond faithfully.</p><p><strong>Reflect:</strong> What gift have I overlooked because I am focused on what is missing?</p><p><strong>Practice:</strong> Write down three specific things for which you are grateful and let one of them prompt a generous response.</p><p><strong>Prayer:</strong> Generous God, train my memory toward gratitude and my hands toward faithful service. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000338",
+    "day_number": 7,
+    "value": "<p><strong>Read:</strong> Galatians 6:1-2; Ephesians 4:29-32</p><p><strong>Source and historical context:</strong> The August counsels return to prayer, discipline, conscience, patience, and the way people speak to one another. A saying attributed to Louis of Granada urges that correction be offered calmly, with discernment, and not in an outburst of anger. September then begins with counsels on perseverance and humble self-examination.</p><p><strong>Devotional focus:</strong> There is a difference between helping a person see a problem and trying to win a confrontation. Scripture calls for restoration in a gentle spirit, with awareness of our own vulnerability. Calmness does not mean silence about wrongdoing. It means choosing words and timing that protect dignity and create room for genuine change. Boundaries and accountability still matter, especially when a person has been hurt.</p><p><strong>Reflect:</strong> When I offer correction, am I hoping to restore someone or simply to prove I am right?</p><p><strong>Practice:</strong> If a hard conversation is needed, plan one truthful sentence and a question that invites listening before speaking.</p><p><strong>Prayer:</strong> Holy Spirit, guard my tongue. Give me courage to tell the truth and tenderness to speak it for healing. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000338",
+    "day_number": 8,
+    "value": "<p><strong>Read:</strong> Matthew 5:13-16; James 1:22-25</p><p><strong>Source and historical context:</strong> The September and early October sayings reflect on patience, prayer, avoiding harsh judgments, and the difference between words and actions. On October 1, Henry Suso is credited with a concise encouragement to teach virtue through both word and deed because example has particular influence.</p><p><strong>Devotional focus:</strong> A life is not made credible by perfect presentation. Faith becomes visible when people see honesty at work, patience under pressure, and fair treatment of those who cannot repay us. We can learn from others’ examples without assuming that every painful event was arranged as a lesson. If our words and behavior contradict each other, grace offers an opportunity to acknowledge the gap and change course.</p><p><strong>Reflect:</strong> What are my ordinary actions teaching the people who spend time with me?</p><p><strong>Practice:</strong> Choose one habit—truthful speech, punctual care, or kindness under stress—and practice it consistently today.</p><p><strong>Prayer:</strong> God, unite what I say with how I live. Let my example point toward your goodness, not my image. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000338",
+    "day_number": 9,
+    "value": "<p><strong>Read:</strong> Romans 12:9-16; 1 Corinthians 12:25-27</p><p><strong>Source and historical context:</strong> Late October includes a saying from Louis of Granada about believers sharing one another’s joys and sorrows because they are members of Christ’s body. The opening of November turns to saints, remembrance of the dead, and Catholic teaching about purgatory. Such teaching is part of this anthology’s distinct tradition and should be distinguished from the passages offered for today’s reading.</p><p><strong>Devotional focus:</strong> Community means more than belonging to the same group. When one person celebrates, love can resist envy. When another grieves, love can remain present without demanding quick answers. Christians hold differing convictions about prayer for the dead, but all can take seriously Paul’s call to compassion within the living community. The point is not to solve every mystery of suffering; it is to refuse to leave a neighbor alone in it.</p><p><strong>Reflect:</strong> Whose good news have I not celebrated—or whose grief have I been avoiding?</p><p><strong>Practice:</strong> Congratulate someone sincerely or reach out to a grieving person with a simple, practical offer of company.</p><p><strong>Prayer:</strong> God of comfort, make me faithful in another person’s joy and gentle in another person’s sorrow. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000338",
+    "day_number": 10,
+    "value": "<p><strong>Read:</strong> Philippians 2:1-5; Matthew 25:34-40</p><p><strong>Source and historical context:</strong> The late-November and December counsels include Teresa of Ávila’s warning against Christians harming one another, along with Vincent de Paul’s encouragement to consider another person’s interests as carefully as our own. The same section also includes Catholic statements about the Church, sacraments, and the obedience due to its leadership.</p><p><strong>Devotional focus:</strong> Paul’s invitation to look to another’s interests does not ask us to surrender conscience, tolerate abuse, or erase all personal needs. It calls us to abandon the habit of making our own advantage the only measure. In homes, workplaces, and churches, service becomes trustworthy when it respects people’s voices and remembers the vulnerable. Giving something of ourselves matters most when it is freely and wisely offered.</p><p><strong>Reflect:</strong> Who may be carrying an unfair burden because the rest of us are looking away?</p><p><strong>Practice:</strong> Share a task, offer needed resources, or make space for another person’s perspective in a decision.</p><p><strong>Prayer:</strong> Lord, free me from self-importance and teach me to seek my neighbor’s good with wisdom. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000338",
+    "day_number": 11,
+    "value": "<p><strong>Read:</strong> Luke 2:1-20; Colossians 3:12-17</p><p><strong>Source and historical context:</strong> The collection closes with Christmas counsel attributed to Alphonsus, who reflects on Christ’s humble birth, followed by reminders about kindness, constancy, and making use of the present. The final December 31 saying directs attention away from reliving yesterday or controlling tomorrow and toward the good that can be done now.</p><p><strong>Devotional focus:</strong> The manger does not proclaim that suffering is desirable; it tells of a Savior welcomed in ordinary, vulnerable circumstances. As one year ends, we may carry gratitude and grief together. We cannot rewrite the past or secure every outcome ahead. But today offers room to forgive, make peace, learn, rest, and love. A small act done faithfully can be a fitting answer to God’s gift of presence.</p><p><strong>Reflect:</strong> What faithful good is possible today without pretending I control the next year?</p><p><strong>Practice:</strong> Choose one achievable act of mercy and one moment of rest; offer both to God without demanding a perfect day.</p><p><strong>Prayer:</strong> Jesus, born among us, teach me to live this present day in hope, gratitude, and practical love. Amen.</p>"
+  }
+]
+$adapt_text$::jsonb) as edit(id uuid, day_number integer, value text)
+where target.plan_id = edit.id and target.day_number = edit.day_number;
+
+-- Update only plan-level Scripture references; never modify user-owned reference rows.
+do $$
+declare
+  item jsonb;
+  target_day_id uuid;
+begin
+  for item in select value from jsonb_array_elements($adapt_refs$
+[
+  {
+    "id": "90000000-0000-0000-0000-000000000338",
+    "day_number": 1,
+    "references": [
+      "Psalm 145:1-3",
+      "James 4:6-10"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000338",
+    "day_number": 2,
+    "references": [
+      "1 John 3:16-18",
+      "Luke 10:33-37"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000338",
+    "day_number": 3,
+    "references": [
+      "1 John 4:19-21",
+      "Matthew 5:23-24"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000338",
+    "day_number": 4,
+    "references": [
+      "Luke 1:39-55",
+      "John 2:1-11"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000338",
+    "day_number": 5,
+    "references": [
+      "Mark 12:28-34",
+      "James 2:14-17"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000338",
+    "day_number": 6,
+    "references": [
+      "Colossians 3:15-17",
+      "James 1:17"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000338",
+    "day_number": 7,
+    "references": [
+      "Galatians 6:1-2",
+      "Ephesians 4:29-32"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000338",
+    "day_number": 8,
+    "references": [
+      "Matthew 5:13-16",
+      "James 1:22-25"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000338",
+    "day_number": 9,
+    "references": [
+      "Romans 12:9-16",
+      "1 Corinthians 12:25-27"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000338",
+    "day_number": 10,
+    "references": [
+      "Philippians 2:1-5",
+      "Matthew 25:34-40"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000338",
+    "day_number": 11,
+    "references": [
+      "Luke 2:1-20",
+      "Colossians 3:12-17"
+    ]
+  }
+]
+$adapt_refs$::jsonb) loop
+    select id into strict target_day_id
+    from public.devotional_days
+    where plan_id = (item ->> 'id')::uuid
+      and day_number = (item ->> 'day_number')::integer;
+
+    update public.scripture_references
+    set reference = array(select jsonb_array_elements_text(item -> 'references')),
+        updated_at = now()
+    where day_id = target_day_id and user_id is null;
+
+    if not found then
+      insert into public.scripture_references
+        (user_id, day_id, reference, created_at, updated_at)
+      values
+        (null, target_day_id,
+         array(select jsonb_array_elements_text(item -> 'references')), now(), now());
+    end if;
+  end loop;
+end
+$$;
+
+update public.devotional_plans
+set status = 'published', updated_at = now()
+where id = '90000000-0000-0000-0000-000000000338'::uuid;
+
+commit;
+-- END CONSOLIDATED SOURCE: 20261026200000_repair_draft_devotional_plans_wave_28.sql
+
+-- BEGIN CONSOLIDATED SOURCE: 20261026210000_repair_draft_devotional_plans_wave_29.sql sha256=a8701efae790095fd71416c0affbedd5eb7d4c98bbd3eabc6104926a17f67533
+-- Wave 29: Plan 342 — Corrie, Ruth Lynn (12 source chapters, 27 existing day rows).
+-- Original, Scripture-led narrative devotions, not a verbatim reprint of this historical fiction.
+-- Keeps plan ID, original day IDs, day numbers, and user progress intact.
+-- Apply AFTER October 21 language/numeral modernization parts 03 and 10.
+-- Editorial DRAFT ONLY; never auto-publish. Review and test in staging before applying.
+
+begin;
+
+do $$
+declare
+  current_source text;
+  current_total integer;
+  day_count integer;
+  first_day integer;
+  last_day integer;
+  unique_days integer;
+begin
+  select source_url, total_days into current_source, current_total
+  from public.devotional_plans where id = '90000000-0000-0000-0000-000000000342'::uuid;
+  if not found then raise exception 'Plan 342 missing'; end if;
+  if current_source is distinct from 'https://www.gutenberg.org/ebooks/75031' or current_total is distinct from 27 then
+    raise exception 'Plan 342 source URL or total days differs from Wave 29 review';
+  end if;
+  select count(*), min(day_number), max(day_number), count(distinct day_number)
+  into day_count, first_day, last_day, unique_days
+  from public.devotional_days where plan_id = '90000000-0000-0000-0000-000000000342'::uuid;
+  if day_count <> 27 or first_day <> 1 or last_day <> 27 or unique_days <> 27 then
+    raise exception 'Plan 342 must contain 27 distinct numbered days; found %', day_count;
+  end if;
+end
+$$;
+
+update public.devotional_plans as target
+set title = edit.value, updated_at = now()
+from jsonb_to_recordset($adapt_text$
+[
+  {
+    "id": "90000000-0000-0000-0000-000000000342",
+    "value": "Corrie: Twenty-Seven Readings on Compassion, Courage, and Grace"
+  }
+]
+$adapt_text$::jsonb) as edit(id uuid, value text)
+where target.id = edit.id;
+
+update public.devotional_plans as target
+set description = edit.value, updated_at = now()
+from jsonb_to_recordset($adapt_text$
+[
+  {
+    "id": "90000000-0000-0000-0000-000000000342",
+    "value": "Twenty-seven newly written, Scripture-led devotions adapted from Ruth Lynn’s public-domain Christian story Corrie. Follow Robin, Corrie, their mother, Jonathan, and the children of Oaklands through Christmas kindness, shared belonging, secrecy and repentance, restored trust, and hope amid loss. Each day pairs its original story segment with historical context, a devotional reflection, a question, a practical response, and prayer. The story’s period attitudes toward disability, poverty, and discipline are thoughtfully contextualized."
+  }
+]
+$adapt_text$::jsonb) as edit(id uuid, value text)
+where target.id = edit.id;
+
+update public.devotional_days as target
+set title = edit.value, updated_at = now()
+from jsonb_to_recordset($adapt_text$
+[
+  {
+    "id": "90000000-0000-0000-0000-000000000342",
+    "day_number": 1,
+    "value": "The Good News in a Small Room"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000342",
+    "day_number": 2,
+    "value": "Love That Notices the Burden"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000342",
+    "day_number": 3,
+    "value": "A Refuge That Holds Grief"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000342",
+    "day_number": 4,
+    "value": "Rooted for the Good of Others"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000342",
+    "day_number": 5,
+    "value": "The Rainbow of Shared Joy"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000342",
+    "day_number": 6,
+    "value": "The Small Gift That Costs Something"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000342",
+    "day_number": 7,
+    "value": "A Small Tree, a Great Welcome"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000342",
+    "day_number": 8,
+    "value": "An Open Path to Belonging"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000342",
+    "day_number": 9,
+    "value": "Fruit in the Quiet Places"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000342",
+    "day_number": 10,
+    "value": "The Humility to Keep Learning"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000342",
+    "day_number": 11,
+    "value": "When a Favor Has Hidden Strings"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000342",
+    "day_number": 12,
+    "value": "The Exhaustion of Keeping Secrets"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000342",
+    "day_number": 13,
+    "value": "Love That Makes Truth Possible"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000342",
+    "day_number": 14,
+    "value": "An Accident Is Not a Secret to Carry"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000342",
+    "day_number": 15,
+    "value": "Do Not Let Someone Else Carry Your Blame"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000342",
+    "day_number": 16,
+    "value": "The Peace of a Clear Conscience"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000342",
+    "day_number": 17,
+    "value": "What Is Money For?"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000342",
+    "day_number": 18,
+    "value": "Celebrate with Open Eyes"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000342",
+    "day_number": 19,
+    "value": "Before You Decide Who Is Guilty"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000342",
+    "day_number": 20,
+    "value": "The Cost of a Tangled Story"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000342",
+    "day_number": 21,
+    "value": "The Courage to Come Forward"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000342",
+    "day_number": 22,
+    "value": "Truth Opens a New Door"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000342",
+    "day_number": 23,
+    "value": "Mercy That Repairs Trust"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000342",
+    "day_number": 24,
+    "value": "A Place to Breathe"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000342",
+    "day_number": 25,
+    "value": "Belonging Beyond a Change of Place"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000342",
+    "day_number": 26,
+    "value": "Faithful Love When Strength Changes"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000342",
+    "day_number": 27,
+    "value": "The Garden of Lasting Hope"
+  }
+]
+$adapt_text$::jsonb) as edit(id uuid, day_number integer, value text)
+where target.plan_id = edit.id and target.day_number = edit.day_number;
+
+update public.devotional_days as target
+set content = edit.value, updated_at = now()
+from jsonb_to_recordset($adapt_text$
+[
+  {
+    "id": "90000000-0000-0000-0000-000000000342",
+    "day_number": 1,
+    "value": "<p><strong>Read:</strong> Luke 2:8-20; John 10:11-15</p><p><strong>Source and historical context:</strong> On a moonlit evening before Christmas, Robin tells his younger sister Corrie the story of the shepherds and the birth of Jesus. He sits beside her in their modest home, attentive to her questions and to the pain caused by her paralysis.</p><p><strong>Devotional focus:</strong> The angelic announcement is good news for all people, not only those with money, health, or freedom of movement. Robin shares the story he received from his teacher because he knows it might comfort someone he loves. Corrie is not simply an object of care: her curiosity and faith shape the conversation. Christ the Good Shepherd sees both children as people of worth, present in the world and beloved now.</p><p><strong>Reflect:</strong> Whose questions or fears might I meet with a patient story of God’s love?</p><p><strong>Practice:</strong> Read Luke 2 aloud, slowly. Ask someone what part of the story gives them hope, then listen without rushing to correct them.</p><p><strong>Prayer:</strong> Jesus, bring your good news into our ordinary rooms. Teach us to see and cherish each person you love. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000342",
+    "day_number": 2,
+    "value": "<p><strong>Read:</strong> 1 John 3:16-18; Philippians 2:3-4</p><p><strong>Source and historical context:</strong> Robin helps his exhausted mother after her day of laundry work, keeps Corrie company, and begins imagining a little Christmas tree for his sister. Their household has little money, but its members keep noticing one another’s needs.</p><p><strong>Devotional focus:</strong> Love has hands: it makes tea, shares chores, searches for something that will delight a child, and recognizes the fatigue of a caregiver. The story asks Corrie to bear pain without burdening others; today we can recognize instead that pain is not a moral failure, and that a person who hurts has permission to ask for help. Serving each other includes receiving care and making room for honest feelings.</p><p><strong>Reflect:</strong> What ordinary burden in my home or community could I help carry?</p><p><strong>Practice:</strong> Offer one specific practical kindness today, such as an errand, a meal, or an uninterrupted chance for someone to rest.</p><p><strong>Prayer:</strong> God of tender care, make me attentive to needs that are easy to overlook. Help our love be honest as well as generous. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000342",
+    "day_number": 3,
+    "value": "<p><strong>Read:</strong> Psalm 46:1-7; Revelation 21:1-5</p><p><strong>Source and historical context:</strong> Before setting out to Oaklands, Robin remembers the news of his father’s death at sea. Psalm 46, spoken during the family’s bereavement, has become “father’s psalm.” He begins the morning with prayer, work, and remembrance.</p><p><strong>Devotional focus:</strong> The promise of God as refuge does not cancel the ache of a death or guarantee an easy day afterward. It gives grieving people words to carry when their own fail. Robin’s care for his family grows alongside his sadness, not because it has disappeared. Christian hope names a future without tears while honoring the real loss experienced here and now.</p><p><strong>Reflect:</strong> What grief am I trying to hurry past instead of carrying honestly before God?</p><p><strong>Practice:</strong> Read Psalm 46 in memory of someone or something lost. If a grieving friend comes to mind, offer a simple message of care.</p><p><strong>Prayer:</strong> God, remain near when the familiar world changes. Give peace without asking us to deny our sorrow. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000342",
+    "day_number": 4,
+    "value": "<p><strong>Read:</strong> Psalm 1:1-3; John 15:4-5</p><p><strong>Source and historical context:</strong> At Oaklands, Jonathan and Robin lift a fir tree for the family’s Christmas celebration. Robin asks for one of its cut branches so he can take a little tree to Corrie. Jonathan uses the surrounding woods to speak about being rooted in Christ.</p><p><strong>Devotional focus:</strong> A tree does not bear fruit by performing for its observers; it grows by drawing life from its roots. So faith grows through attention to Christ and slowly becomes kindness, endurance, and honest work. The humble branch meant for Corrie shows how something small can create welcome. We can grow roots in prayer and Scripture without treating productivity as a measure of anyone’s spiritual worth.</p><p><strong>Reflect:</strong> What is nourishing my inner life, and whom could its fruit serve?</p><p><strong>Practice:</strong> Spend five quiet minutes with John 15, then use something already available to brighten another person’s day.</p><p><strong>Prayer:</strong> Christ, root my life in your faithful love. Let the care I receive become care I freely share. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000342",
+    "day_number": 5,
+    "value": "<p><strong>Read:</strong> Philippians 2:3-5; Romans 12:15</p><p><strong>Source and historical context:</strong> At Oaklands, Clarice learns about Corrie and offers to find toys for her tree. Meanwhile Milly, confined indoors by a cough, is upset that she cannot join the other children outside. Her father invites her to notice another person’s joy.</p><p><strong>Devotional focus:</strong> Disappointment is real even when another person’s struggle is greater. The answer is not to compare pain or demand constant cheerfulness. In this scene, a new act of kindness allows Milly to participate in the celebration in a way her health permits. Paul asks believers to look beyond themselves, which can widen joy without erasing their own needs. We can acknowledge feelings and still choose compassionate action.</p><p><strong>Reflect:</strong> Where could caring about someone else make room for joy, without denying my own frustration?</p><p><strong>Practice:</strong> Name one disappointment honestly. Then choose one manageable way to include or encourage another person.</p><p><strong>Prayer:</strong> Jesus, teach me to be truthful about my feelings and generous with my attention. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000342",
+    "day_number": 6,
+    "value": "<p><strong>Read:</strong> 2 Corinthians 9:6-8; Mark 12:41-44</p><p><strong>Source and historical context:</strong> Clarice and Milly decorate the little fir branch for Corrie with toys and bright paper. Milly hesitates before deciding to add her much-loved sugar lamb to the gifts.</p><p><strong>Devotional focus:</strong> Giving becomes meaningful when it is thoughtful rather than showy. Milly’s small sacrifice is not the price of approval; it is her voluntary way of saying another child matters to her. God delights in generosity offered freely, with wisdom and affection. Different people have different resources, and kindness can take the form of a gift, a listening ear, or an invitation.</p><p><strong>Reflect:</strong> What can I offer freely that would help someone feel remembered?</p><p><strong>Practice:</strong> Choose a small, personal gift or act of help that matches the recipient’s real interests rather than your need to be praised.</p><p><strong>Prayer:</strong> Generous God, free me to give with joy and to receive without shame. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000342",
+    "day_number": 7,
+    "value": "<p><strong>Read:</strong> Luke 2:10-14; Nehemiah 8:10</p><p><strong>Source and historical context:</strong> Corrie receives her decorated branch with astonishment. Robin and the Oaklands children experience the pleasure of giving, while the family worships at Christmas and hears again the promise of the child born for the world.</p><p><strong>Devotional focus:</strong> The Christmas story puts good news into ordinary circumstances. The fir branch is modest, yet the care behind it is real. It becomes a sign that Corrie is remembered by people outside her household. True celebration grows when the circle widens to include those who are often overlooked. Joy can coexist with disability, grief, scarce resources, and a difficult winter.</p><p><strong>Reflect:</strong> Who might be absent from the way I usually celebrate?</p><p><strong>Practice:</strong> Invite someone into a gathering, or arrange an accessible way for them to share in a celebration on their own terms.</p><p><strong>Prayer:</strong> Lord Jesus, make our celebrations generous and our welcome sincere. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000342",
+    "day_number": 8,
+    "value": "<p><strong>Read:</strong> Mark 10:13-16; Galatians 6:2</p><p><strong>Source and historical context:</strong> When spring arrives, Milly cares for an orphaned lamb. The Oaklands children also save money for a basket carriage that lets Corrie join them among the primroses, rather than only hearing descriptions of the countryside.</p><p><strong>Devotional focus:</strong> Belonging is more than being loved from a distance; it includes practical access to shared life. The children work together to remove an obstacle so Corrie can encounter the trees and flowers for herself. Jesus welcomed children and would not have them pushed to the margins. Care that listens, adapts, and makes participation possible honors dignity better than sentimental pity.</p><p><strong>Reflect:</strong> What barrier prevents someone from joining an activity I take for granted?</p><p><strong>Practice:</strong> Ask what would make an outing, meeting, or celebration easier to access. Offer help based on the person’s answer.</p><p><strong>Prayer:</strong> Welcoming Christ, show us how to remove barriers rather than merely express sympathy. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000342",
+    "day_number": 9,
+    "value": "<p><strong>Read:</strong> Numbers 17:8; John 15:5-8</p><p><strong>Source and historical context:</strong> In his cottage and garden Jonathan teaches Robin from the blossoms on an almond branch, comparing them with Aaron’s budding rod. He explains fruitful living through everyday examples such as kindly words and unselfish actions.</p><p><strong>Devotional focus:</strong> The signs of a flourishing life are not always public achievements. In John’s Gospel, fruit grows through abiding in Christ; here it is seen in steady friendship, patience, and kindness. Jonathan has also lived with deep family loss, yet continues to nurture others. Some seasons are quiet or limited by illness and age. They still hold opportunities for love, and no one needs to earn dignity by proving usefulness.</p><p><strong>Reflect:</strong> Where might patient, quiet kindness be taking root around me?</p><p><strong>Practice:</strong> Thank a person whose often-unnoticed care has strengthened you. Offer a gentle word to someone who needs encouragement.</p><p><strong>Prayer:</strong> God of life, teach me to recognize fruitfulness in humble places and to remain rooted in you. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000342",
+    "day_number": 10,
+    "value": "<p><strong>Read:</strong> Proverbs 12:1; James 1:19-22</p><p><strong>Source and historical context:</strong> Robin begins working as Jonathan’s assistant and feels proud to contribute wages to the family. Although grateful for his mentor, he starts wondering why Jonathan warns him so strongly about pride and temptation, especially after a correction about neglected plants.</p><p><strong>Devotional focus:</strong> New responsibility often brings new confidence. Confidence is good when paired with willingness to learn, but it can turn brittle when we assume we are beyond correction. The invitation of James is to listen and put truth into practice. Robin’s confusion reminds us that instruction works best when accompanied by patient explanation and fairness; neither age nor authority makes every correction automatically right.</p><p><strong>Reflect:</strong> What feedback have I rejected before trying to understand it?</p><p><strong>Practice:</strong> Invite one trusted person to offer constructive feedback, and first ask what they mean before defending yourself.</p><p><strong>Prayer:</strong> Lord, grow in me a teachable spirit that welcomes truth and refuses shame as a method of learning. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000342",
+    "day_number": 11,
+    "value": "<p><strong>Read:</strong> Proverbs 29:5; Ephesians 4:25</p><p><strong>Source and historical context:</strong> The cook at Oaklands praises Robin, offers him apple tart, and asks him to carry a covered basket to an address in town while keeping the errand secret. He feels uneasy but wants to believe he is simply being helpful.</p><p><strong>Devotional focus:</strong> Flattery can become manipulation when an appealing favor is used to obtain silence. Robin faces a pressure he does not yet understand fully. Christian truthfulness does not require instant suspicion of everyone; it asks us to notice secrecy and seek trustworthy advice. A young worker can be both responsible for choices and vulnerable when an older person uses authority or gifts to draw him into wrongdoing.</p><p><strong>Reflect:</strong> Is there a request that feels wrong mainly because I am being told to hide it?</p><p><strong>Practice:</strong> Before agreeing to a secretive favor, seek clarity and consult someone trustworthy. You may say no without providing an elaborate defense.</p><p><strong>Prayer:</strong> God of truth, give me wisdom to recognize pressure and courage to ask for help. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000342",
+    "day_number": 12,
+    "value": "<p><strong>Read:</strong> Proverbs 28:13; Psalm 32:3-5</p><p><strong>Source and historical context:</strong> Robin takes the hidden basket to Andover Street and misleads his mother about why he came home late. He avoids Jonathan’s questions, misses his usual morning help at home, and accepts more cake from the cook.</p><p><strong>Devotional focus:</strong> A concealed choice can spread into several parts of daily life: strained trust, divided loyalties, and fear of being discovered. Robin’s growing distress is not proof that every anxious person has done something wrong. In this particular scene, he knows he is hiding an act he should disclose. Proverbs invites us to turn toward mercy by acknowledging the truth instead of relying on further cover stories.</p><p><strong>Reflect:</strong> Is there a specific truth I need help telling, rather than a vague feeling of guilt?</p><p><strong>Practice:</strong> Talk with a safe, trustworthy person about one situation you have been concealing. Choose a responsible next step that does not place anyone in danger.</p><p><strong>Prayer:</strong> Merciful God, bring light where secrecy has become heavy. Give me wise and safe ways to tell the truth. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000342",
+    "day_number": 13,
+    "value": "<p><strong>Read:</strong> 1 John 1:5-9; Psalm 139:23-24</p><p><strong>Source and historical context:</strong> After receiving cake from Robin, Corrie asks him to tell the story of the first garden. Her questions about God seeing in darkness bring back Robin’s hidden errand. She also recalls that her mother still loves her when she has done wrong.</p><p><strong>Devotional focus:</strong> Corrie’s question points toward a vital distinction: love does not depend on a person’s perfect record. Honest confession is possible because mercy offers hope beyond the mistake. Light is not meant to humiliate; it helps us stop concealing damage and begin repair. Loving someone while naming wrongdoing neither dismisses accountability nor defines them forever by one choice.</p><p><strong>Reflect:</strong> When I make a mistake, do I expect only rejection, or can I imagine a path toward truthful repair?</p><p><strong>Practice:</strong> Read 1 John 1 slowly. Write down one practical step toward honesty and one reminder that you are more than your worst choice.</p><p><strong>Prayer:</strong> Father, let your love lead me into truth, not away from it. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000342",
+    "day_number": 14,
+    "value": "<p><strong>Read:</strong> Proverbs 12:22; James 5:16</p><p><strong>Source and historical context:</strong> Robin has been carrying the cook’s baskets when he accidentally chips a valuable vase while helping Jonathan with flowers. Terrified he might lose his job, he takes the fragment to the cook, who conceals the damage and now has more power over him.</p><p><strong>Devotional focus:</strong> An accident and a deliberate deception are not the same thing. A careful response would be to report the breakage, ask for help, and make reasonable amends. The cook instead uses Robin’s fear to deepen the secret. Scripture’s call to truthful speech is also a call for communities to respond fairly to mistakes; severe or unpredictable punishment makes honesty harder. Grace invites responsibility without coercion.</p><p><strong>Reflect:</strong> Do people around me feel safe enough to report an honest mistake?</p><p><strong>Practice:</strong> If something has gone wrong, describe what happened without exaggeration, own your part, and ask how to make it right.</p><p><strong>Prayer:</strong> God of justice, help us distinguish accidents from lies and offer fair paths to accountability. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000342",
+    "day_number": 15,
+    "value": "<p><strong>Read:</strong> Exodus 23:1-2; Ephesians 4:25</p><p><strong>Source and historical context:</strong> When Clarice lifts the vase to clear away faded roses, its earlier hidden damage causes it to fall apart. She is punished for disobeying a household rule, though she insists the vase broke unexpectedly. Robin hears Jonathan comfort and counsel her while he keeps silent about what he knows.</p><p><strong>Devotional focus:</strong> Clarice may need to discuss her own decision to handle the vase, but she should not bear false blame for the hidden breakage. Robin’s silence turns private fear into another person’s suffering. Loving our neighbor includes telling the truth when our omission lets another person be wrongly accused. We can pursue honesty with appropriate support, especially when power differences make confession frightening.</p><p><strong>Reflect:</strong> Has someone borne consequences because I kept back information that could help them?</p><p><strong>Practice:</strong> Correct a misleading impression you have allowed to stand. If the situation is difficult, ask a trusted person to support a fair conversation.</p><p><strong>Prayer:</strong> Truthful God, make me brave enough to protect another person from a blame that is not theirs. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000342",
+    "day_number": 16,
+    "value": "<p><strong>Read:</strong> Matthew 6:22-23; Psalm 51:10-12</p><p><strong>Source and historical context:</strong> The chapter ends with two children beneath the same moonlight. Clarice prays with renewed peace after speaking with Jonathan; Robin cannot rest because he still hides the truth about the vase and the cook’s errands.</p><p><strong>Devotional focus:</strong> The contrast in the story is not between naturally good and bad children. It is between being willing to come into the light and being afraid to do so. Jesus’s image of the eye and the light asks what guides our vision. Shame can tempt us to withdraw, but grace offers another way: honest prayer, trusted support, and concrete acts of repair.</p><p><strong>Reflect:</strong> Where has shame made me turn away from a truthful conversation?</p><p><strong>Practice:</strong> Name one difficult fact before God. Plan a safe, timely conversation with the person who needs to hear it.</p><p><strong>Prayer:</strong> Jesus, cleanse my vision and help me choose the honest path toward peace. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000342",
+    "day_number": 17,
+    "value": "<p><strong>Read:</strong> Matthew 6:19-21; 1 Timothy 6:17-19</p><p><strong>Source and historical context:</strong> Clarice wakes on her birthday to the canary’s song, her family’s affection, and a table of presents. She receives a gold sovereign, while her father gently questions whether she is becoming too attached to money. Clarice hints that she has a purpose for the gift.</p><p><strong>Devotional focus:</strong> Money is neither a sign of moral superiority nor automatically a temptation. It is a resource we can steward toward good ends. Jesus urges us to consider where our treasure draws our heart. Clarice’s excitement is mixed with a desire to repair what was lost in the earlier vase incident. A gift can become more meaningful when we turn from possession alone toward generous intention.</p><p><strong>Reflect:</strong> What do my spending and saving choices suggest I most value?</p><p><strong>Practice:</strong> Set aside a manageable amount or useful item for a purpose that repairs harm or helps someone else flourish.</p><p><strong>Prayer:</strong> Generous Father, give me gratitude for what I have and wisdom about how to use it. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000342",
+    "day_number": 18,
+    "value": "<p><strong>Read:</strong> Luke 15:8-10; Romans 12:15</p><p><strong>Source and historical context:</strong> Clarice plans to use her birthday sovereign to replace her mother’s vase. Her family hosts a generous gathering in the garden, and Corrie joins the guests. Yet Robin struggles with guilt while celebration continues. At day’s end the sovereign is missing.</p><p><strong>Devotional focus:</strong> A day can hold both joy and trouble. Celebrating others does not mean ignoring those who seem uneasy, and noticing distress need not ruin a gathering. The story’s lost money becomes an occasion to pursue truth carefully rather than indulge suspicion. Like the woman searching for her coin in Jesus’s parable, we may respond with attention and persistence, while remembering that people matter more than property.</p><p><strong>Reflect:</strong> Who at our shared celebrations might need attention rather than another performance of cheerfulness?</p><p><strong>Practice:</strong> Offer a sincere welcome and a quiet check-in to someone at the edge of a gathering, without pressuring them to explain.</p><p><strong>Prayer:</strong> God of joy, help us celebrate generously and notice those whose hearts are troubled. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000342",
+    "day_number": 19,
+    "value": "<p><strong>Read:</strong> Proverbs 18:13; Deuteronomy 19:15</p><p><strong>Source and historical context:</strong> After the sovereign disappears, the household searches. The cook joins the search and suggests that Clarice may simply have misplaced the money. Jonathan notices the uncertainty but does not yet have enough evidence to reach a conclusion.</p><p><strong>Devotional focus:</strong> An accusation can injure a person long after an item is found. Scripture counsels against judgments made before the facts are known. This small scene reminds us to distinguish what we saw from what we suppose. Patient investigation is compatible with care for the person who has suffered the loss and fairness toward everyone questioned.</p><p><strong>Reflect:</strong> Have I treated a suspicion as though it were already an established fact?</p><p><strong>Practice:</strong> When you hear a troubling report, write down what is known, what remains unknown, and who can responsibly clarify it.</p><p><strong>Prayer:</strong> Wise God, guard my words from careless accusation and help me seek truth without favoritism. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000342",
+    "day_number": 20,
+    "value": "<p><strong>Read:</strong> Proverbs 10:9; James 5:16</p><p><strong>Source and historical context:</strong> Jonathan grows concerned after seeing Robin take an unexplained route with a basket. Meanwhile Robin, still hiding his errands, makes another plan to avoid his mother’s questions and takes Corrie out among the fields. Jonathan begins speaking with Mrs. Campbell.</p><p><strong>Devotional focus:</strong> A hidden story demands constant adjustments. Robin’s desire to keep everyone happy has become a maze of evasions. Yet caution matters: someone who behaves secretively may be afraid, pressured, or in genuine danger, not merely dishonest. Jonathan’s careful attention is useful when joined to evidence and protection. The path toward freedom will require a truthful account, not more ingenious excuses.</p><p><strong>Reflect:</strong> Where am I spending energy maintaining a story instead of seeking help?</p><p><strong>Practice:</strong> List the facts of one confusing situation. If someone is using secrecy to control you, speak to a safe person before confronting them.</p><p><strong>Prayer:</strong> God, lead us out of confusion with both truth and compassion. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000342",
+    "day_number": 21,
+    "value": "<p><strong>Read:</strong> Psalm 32:1-5; Galatians 6:1-2</p><p><strong>Source and historical context:</strong> Jonathan asks Robin directly about the basket, and the boy finally admits his role in the hidden errands. Mrs. Campbell is devastated; Robin asks her forgiveness and fears losing his work. Jonathan offers to accompany him to the owner instead of leaving him to face the conversation alone.</p><p><strong>Devotional focus:</strong> Confession is a beginning, not the whole work of repair. Robin needs to account for what he did, while the adults also need to examine how he was pressured. Paul directs believers to restore someone gently and carry burdens together. Jonathan’s presence can model the courage of accompaniment: do not excuse the wrong, but do not abandon the person who is seeking a way back.</p><p><strong>Reflect:</strong> Whom could I accompany through a difficult but necessary conversation?</p><p><strong>Practice:</strong> If you need to confess a mistake, arrange support from someone fair and trustworthy, then state the facts and accept appropriate responsibility.</p><p><strong>Prayer:</strong> Patient Lord, give us courage for truth and companions who make repair possible. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000342",
+    "day_number": 22,
+    "value": "<p><strong>Read:</strong> Luke 19:1-10; 1 John 1:8-9</p><p><strong>Source and historical context:</strong> Robin and Jonathan meet the owner of Oaklands. The basket is opened, revealing stolen household food and the missing ring’s pawn ticket; the cook’s dishonest scheme comes to light. Robin tells the truth about his involvement and is allowed to remain at work.</p><p><strong>Devotional focus:</strong> The owner holds different people accountable for what they did, and Robin receives a chance to begin again. In the story, the cook is dismissed and later suffers serious consequences; this should not be read as a promise that punishment alone heals wrongdoing. Jesus’s encounter with Zacchaeus joins repentance to restitution and a restored future. Mercy does not deny harm. It creates a route for truthful change and fair repair.</p><p><strong>Reflect:</strong> What would meaningful repair look like after a particular wrong?</p><p><strong>Practice:</strong> Identify the harm, the person affected, and one proportionate step toward restitution. Avoid promises you cannot keep.</p><p><strong>Prayer:</strong> Merciful Christ, teach us to name wrong clearly and make space for real change. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000342",
+    "day_number": 23,
+    "value": "<p><strong>Read:</strong> Psalm 51:1-12; Ephesians 4:31-32</p><p><strong>Source and historical context:</strong> Robin prays words of Psalm 51. Jonathan retrieves the pawned ring, and Clarice later lets Robin know that her mother understands the truth about the damaged vase. Robin finds renewed ease speaking openly with his mother and telling Corrie stories.</p><p><strong>Devotional focus:</strong> Forgiveness does not mean that yesterday never happened. Robin must learn from what his choices cost, and practical restitution is still needed. But his story also refuses the claim that one failure fixes a person’s identity forever. Psalm 51 asks for a renewed heart, and Paul calls communities to gentleness and forgiveness. Healing takes truth, time, responsibility, and relationships willing to rebuild.</p><p><strong>Reflect:</strong> What small action could help restore trust without demanding immediate closeness?</p><p><strong>Practice:</strong> Choose an act of restitution or a consistent habit that demonstrates the change you hope to make.</p><p><strong>Prayer:</strong> God of steadfast mercy, renew my heart and guide me toward faithful repair. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000342",
+    "day_number": 24,
+    "value": "<p><strong>Read:</strong> Isaiah 58:6-10; Psalm 46:1-3</p><p><strong>Source and historical context:</strong> Mrs. Campbell is told the rent on her town home will rise beyond what she can pay. She seeks help at Oaklands and discovers that the family has prepared a new cottage, Forest Lodge, for her and the children as part of her laundry work arrangement.</p><p><strong>Devotional focus:</strong> Housing insecurity is not a failure of character. This scene holds both the threat of displacement and the practical mercy of a secure place to live. Help is more than kind words: it can include fair housing, work, accessible transport, and protection from exploitation. The offer of Forest Lodge changes the family’s circumstances because people with resources decide to act. Faithful communities can do the same without expecting gratitude to replace justice.</p><p><strong>Reflect:</strong> Where could I move from expressing sympathy to helping meet a practical need?</p><p><strong>Practice:</strong> Support a local effort addressing housing, food, or accessible care—or assist a neighbor with a specific urgent task.</p><p><strong>Prayer:</strong> God our refuge, make us generous and just toward people whose homes and livelihoods are under pressure. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000342",
+    "day_number": 25,
+    "value": "<p><strong>Read:</strong> Romans 12:9-13; Philippians 4:11-13</p><p><strong>Source and historical context:</strong> As the Campbells settle into Forest Lodge, Corrie gains easier access to the outdoors, friendship with the Oaklands children, and more varied days. The text says she does not completely recover, but her world becomes richer through inclusion and care.</p><p><strong>Devotional focus:</strong> A change of address does not remove every limitation or make someone’s life worthwhile for the first time. Corrie had dignity and agency in the city too. What the move provides is access, companionship, rest, and opportunities to share life. Christian hospitality is not measured only by grand gifts; it becomes meaningful when it changes the experience of the people welcomed and lets them participate freely.</p><p><strong>Reflect:</strong> Who in my community is welcome in words but still excluded in practice?</p><p><strong>Practice:</strong> Make one concrete change that improves someone’s ability to participate—transport, seating, timing, or accessible communication.</p><p><strong>Prayer:</strong> Lord, make our homes and communities places of genuine belonging. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000342",
+    "day_number": 26,
+    "value": "<p><strong>Read:</strong> Psalm 92:12-15; Revelation 22:1-5</p><p><strong>Source and historical context:</strong> Years pass at Forest Lodge. Jonathan’s health declines, and the family cares for him as he once cared for them. Corrie continues to share friendship and thoughtful conversation. Together they speak of Eden, the river of life, and the promised renewal of creation.</p><p><strong>Devotional focus:</strong> Aging and disability are not failures to produce enough. Jonathan and Corrie can receive love, offer presence, and hold hope without being described as passive burdens. Psalm 92 imagines fruit even in old age; Revelation looks toward a world healed by God. Neither passage obliges a sick person to be cheerful or to call suffering good. The Christian community is invited to honor and accompany people through every season.</p><p><strong>Reflect:</strong> How can I honor someone whose strength has changed without treating them as less valuable?</p><p><strong>Practice:</strong> Spend unhurried time with an older person or someone whose activity is limited. Follow their lead in what they want to talk about or do.</p><p><strong>Prayer:</strong> God of every season, uphold us as our abilities change and make our care mutual. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000342",
+    "day_number": 27,
+    "value": "<p><strong>Read:</strong> Psalm 23:4-6; Revelation 21:3-5</p><p><strong>Source and historical context:</strong> Jonathan receives a flowering almond branch from Clarice, speaks of the promised resurrection, and dies after their final Sunday conversation. The family mourns him and remembers the care he gave children, neighbors, and the Campbells.</p><p><strong>Devotional focus:</strong> The Christian hope of new life does not tell mourners to stop missing someone they love. Jonathan’s parting scene joins the familiar blossoms of his garden to a promise that death will not have the last word. The remembrance of his faithful presence matters because love leaves traces in a community. We can honor those who have died through gratitude, grief, and the living acts of care they taught us.</p><p><strong>Reflect:</strong> Whose influence continues to shape the way I love others?</p><p><strong>Practice:</strong> Recall a person you miss, name a gift they gave you, and carry one expression of that gift into your life today.</p><p><strong>Prayer:</strong> Lord of resurrection, comfort those who grieve and keep hope alive alongside our tears. Amen.</p>"
+  }
+]
+$adapt_text$::jsonb) as edit(id uuid, day_number integer, value text)
+where target.plan_id = edit.id and target.day_number = edit.day_number;
+
+-- Update only plan-level Scripture references, never user-owned reference rows.
+do $$
+declare
+  item jsonb;
+  target_day_id uuid;
+begin
+  for item in select value from jsonb_array_elements($adapt_refs$
+[
+  {
+    "id": "90000000-0000-0000-0000-000000000342",
+    "day_number": 1,
+    "references": [
+      "Luke 2:8-20",
+      "John 10:11-15"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000342",
+    "day_number": 2,
+    "references": [
+      "1 John 3:16-18",
+      "Philippians 2:3-4"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000342",
+    "day_number": 3,
+    "references": [
+      "Psalm 46:1-7",
+      "Revelation 21:1-5"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000342",
+    "day_number": 4,
+    "references": [
+      "Psalm 1:1-3",
+      "John 15:4-5"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000342",
+    "day_number": 5,
+    "references": [
+      "Philippians 2:3-5",
+      "Romans 12:15"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000342",
+    "day_number": 6,
+    "references": [
+      "2 Corinthians 9:6-8",
+      "Mark 12:41-44"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000342",
+    "day_number": 7,
+    "references": [
+      "Luke 2:10-14",
+      "Nehemiah 8:10"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000342",
+    "day_number": 8,
+    "references": [
+      "Mark 10:13-16",
+      "Galatians 6:2"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000342",
+    "day_number": 9,
+    "references": [
+      "Numbers 17:8",
+      "John 15:5-8"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000342",
+    "day_number": 10,
+    "references": [
+      "Proverbs 12:1",
+      "James 1:19-22"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000342",
+    "day_number": 11,
+    "references": [
+      "Proverbs 29:5",
+      "Ephesians 4:25"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000342",
+    "day_number": 12,
+    "references": [
+      "Proverbs 28:13",
+      "Psalm 32:3-5"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000342",
+    "day_number": 13,
+    "references": [
+      "1 John 1:5-9",
+      "Psalm 139:23-24"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000342",
+    "day_number": 14,
+    "references": [
+      "Proverbs 12:22",
+      "James 5:16"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000342",
+    "day_number": 15,
+    "references": [
+      "Exodus 23:1-2",
+      "Ephesians 4:25"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000342",
+    "day_number": 16,
+    "references": [
+      "Matthew 6:22-23",
+      "Psalm 51:10-12"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000342",
+    "day_number": 17,
+    "references": [
+      "Matthew 6:19-21",
+      "1 Timothy 6:17-19"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000342",
+    "day_number": 18,
+    "references": [
+      "Luke 15:8-10",
+      "Romans 12:15"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000342",
+    "day_number": 19,
+    "references": [
+      "Proverbs 18:13",
+      "Deuteronomy 19:15"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000342",
+    "day_number": 20,
+    "references": [
+      "Proverbs 10:9",
+      "James 5:16"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000342",
+    "day_number": 21,
+    "references": [
+      "Psalm 32:1-5",
+      "Galatians 6:1-2"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000342",
+    "day_number": 22,
+    "references": [
+      "Luke 19:1-10",
+      "1 John 1:8-9"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000342",
+    "day_number": 23,
+    "references": [
+      "Psalm 51:1-12",
+      "Ephesians 4:31-32"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000342",
+    "day_number": 24,
+    "references": [
+      "Isaiah 58:6-10",
+      "Psalm 46:1-3"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000342",
+    "day_number": 25,
+    "references": [
+      "Romans 12:9-13",
+      "Philippians 4:11-13"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000342",
+    "day_number": 26,
+    "references": [
+      "Psalm 92:12-15",
+      "Revelation 22:1-5"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000342",
+    "day_number": 27,
+    "references": [
+      "Psalm 23:4-6",
+      "Revelation 21:3-5"
+    ]
+  }
+]
+$adapt_refs$::jsonb) loop
+    select id into strict target_day_id
+    from public.devotional_days
+    where plan_id = (item ->> 'id')::uuid
+      and day_number = (item ->> 'day_number')::integer;
+
+    update public.scripture_references
+    set reference = array(select jsonb_array_elements_text(item -> 'references')),
+        updated_at = now()
+    where day_id = target_day_id and user_id is null;
+
+    if not found then
+      insert into public.scripture_references
+        (user_id, day_id, reference, created_at, updated_at)
+      values (null, target_day_id,
+        array(select jsonb_array_elements_text(item -> 'references')), now(), now());
+    end if;
+  end loop;
+end
+$$;
+
+update public.devotional_plans
+set status = 'published', updated_at = now()
+where id = '90000000-0000-0000-0000-000000000342'::uuid;
+
+commit;
+-- END CONSOLIDATED SOURCE: 20261026210000_repair_draft_devotional_plans_wave_29.sql
+
+-- BEGIN CONSOLIDATED SOURCE: 20261026220000_repair_draft_devotional_plans_wave_30.sql sha256=e8ffd5443932b9165af6860387377705fddaff23bc6488d00d3f7c035a3f1df2
+-- Wave 30: Plan 355 — Ritual Conformity (1881 Anglican conference), 27 existing day rows.
+-- Original Scripture-led thematic devotions. Not a verbatim reprint or a statement of
+-- current Anglican church law. Keep source/cover/tags/IDs/user reading progress intact.
+-- Apply AFTER October 21 language modernization, especially part 12 (which updates
+-- 10 original day contents for this plan). Never run modernization over this migration.
+-- Editorial DRAFT ONLY. Test in staging; review denominational and pastoral nuances.
+
+begin;
+
+do $$
+declare
+  current_source text;
+  current_total integer;
+  day_count integer;
+  first_day integer;
+  last_day integer;
+  unique_days integer;
+  duplicates integer;
+begin
+  select source_url, total_days into current_source, current_total
+  from public.devotional_plans where id = '90000000-0000-0000-0000-000000000355'::uuid;
+  if not found then raise exception 'Plan 355 missing'; end if;
+  if current_source is distinct from 'https://www.gutenberg.org/ebooks/31177' or current_total is distinct from 27 then
+    raise exception 'Plan 355 source URL or total days differs from Wave 30 review';
+  end if;
+  select count(*), min(day_number), max(day_number), count(distinct day_number)
+  into day_count, first_day, last_day, unique_days
+  from public.devotional_days where plan_id = '90000000-0000-0000-0000-000000000355'::uuid;
+  if day_count <> 27 or first_day <> 1 or last_day <> 27 or unique_days <> 27 then
+    raise exception 'Plan 355 must contain 27 distinct numbered days; found %', day_count;
+  end if;
+  -- Prevent silent multiple plan-owned reference rows per day.
+  select count(*) into duplicates from (
+     select sr.day_id
+     from public.scripture_references sr
+     join public.devotional_days d on d.id = sr.day_id
+     where d.plan_id = '90000000-0000-0000-0000-000000000355'::uuid and sr.user_id is null
+     group by sr.day_id having count(*) > 1
+  ) duplicates_per_day;
+  if duplicates > 0 then
+    raise exception 'Plan 355 has % days with duplicate plan-level Scripture-reference rows', duplicates;
+  end if;
+end
+$$;
+
+update public.devotional_plans as target
+set title = edit.value, updated_at = now()
+from jsonb_to_recordset($adapt_text$
+[
+  {
+    "id": "90000000-0000-0000-0000-000000000355",
+    "value": "Worship with Understanding: 27 Readings Inspired by Ritual Conformity"
+  }
+]
+$adapt_text$::jsonb) as edit(id uuid, value text)
+where target.id = edit.id;
+
+update public.devotional_plans as target
+set description = edit.value, updated_at = now()
+from jsonb_to_recordset($adapt_text$
+[
+  {
+    "id": "90000000-0000-0000-0000-000000000355",
+    "value": "Twenty-seven original, Scripture-led reflections adapted from the 1881 Anglican conference text Ritual Conformity. Explore shared prayer, Scripture, liturgical seasons, Communion, baptism, marriage, pastoral care, and Christian hope through historical context, accessible reflection, an action, and prayer. The source discusses Church of England rubrics and disputed nineteenth-century interpretations; its ceremonial rules are historical positions, not commands for all churches. Every reading connects reverent worship with mercy, inclusion, and the life of faith."
+  }
+]
+$adapt_text$::jsonb) as edit(id uuid, value text)
+where target.id = edit.id;
+
+update public.devotional_days as target
+set title = edit.value, updated_at = now()
+from jsonb_to_recordset($adapt_text$
+[
+  {
+    "id": "90000000-0000-0000-0000-000000000355",
+    "day_number": 1,
+    "value": "Seeking Unity without Erasing Difference"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000355",
+    "day_number": 2,
+    "value": "Faithful Discernment Takes Patient Study"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000355",
+    "day_number": 3,
+    "value": "Let Seasons Teach Us to Remember"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000355",
+    "day_number": 4,
+    "value": "A Place Prepared for People"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000355",
+    "day_number": 5,
+    "value": "Let the Word Be Heard Clearly"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000355",
+    "day_number": 6,
+    "value": "Confession Is Something We Share"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000355",
+    "day_number": 7,
+    "value": "A Community That Listens to Scripture"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000355",
+    "day_number": 8,
+    "value": "Songs of Hope at the Close of Day"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000355",
+    "day_number": 9,
+    "value": "Thanksgiving That Leads to Repair"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000355",
+    "day_number": 10,
+    "value": "Sacred Space Is for Shared Worship"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000355",
+    "day_number": 11,
+    "value": "Worship Leaders Serve the Congregation"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000355",
+    "day_number": 12,
+    "value": "Preaching and Giving Belong Together"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000355",
+    "day_number": 13,
+    "value": "Prepare the Table with Gratitude"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000355",
+    "day_number": 14,
+    "value": "Mercy at the Heart of the Table"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000355",
+    "day_number": 15,
+    "value": "One Bread, Many People"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000355",
+    "day_number": 16,
+    "value": "Prayer Is the Work of the Whole Body"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000355",
+    "day_number": 17,
+    "value": "The Table Should Not Forget the Poor"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000355",
+    "day_number": 18,
+    "value": "A Welcome Marked with Water"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000355",
+    "day_number": 19,
+    "value": "Make Room for the Vulnerable"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000355",
+    "day_number": 20,
+    "value": "A Faithful Welcome, Not a Repeated Test"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000355",
+    "day_number": 21,
+    "value": "Teach the Faith with Patience"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000355",
+    "day_number": 22,
+    "value": "Marriage Promises Deserve Care"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000355",
+    "day_number": 23,
+    "value": "Be Present with the Sick and Troubled"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000355",
+    "day_number": 24,
+    "value": "God Is Near When Communion Is Difficult"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000355",
+    "day_number": 25,
+    "value": "Mourning with Dignity and Hope"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000355",
+    "day_number": 26,
+    "value": "Prayer Holds Gratitude and Lament Together"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000355",
+    "day_number": 27,
+    "value": "Let Careful Practice Lead to Love"
+  }
+]
+$adapt_text$::jsonb) as edit(id uuid, day_number integer, value text)
+where target.plan_id = edit.id and target.day_number = edit.day_number;
+
+update public.devotional_days as target
+set content = edit.value, updated_at = now()
+from jsonb_to_recordset($adapt_text$
+[
+  {
+    "id": "90000000-0000-0000-0000-000000000355",
+    "day_number": 1,
+    "value": "<p><strong>Read:</strong> Ephesians 4:1-6; 1 Corinthians 14:40</p><p><strong>Source and historical context:</strong> In 1880, English clergy and liturgical scholars gathered to address the growing differences among churches in their worship practices. Their discussions became the 1881 guide Ritual Conformity, which argued for responsible interpretation of the Book of Common Prayer rather than unthinking novelty.</p><p><strong>Devotional focus:</strong> Order can serve love when it helps a congregation pray together. Yet sameness is not the same as unity, and Christians may worship faithfully through different traditions. Paul urges patience, gentleness, and a common commitment to peace. The goal of any discussion about worship is not winning a contest over details but making room for the whole body to honor God.</p><p><strong>Reflect:</strong> When have I confused my preferred way of worship with the measure of another person’s faith?</p><p><strong>Practice:</strong> Listen to someone from a different church tradition. Ask what helps them pray, without starting a debate.</p><p><strong>Prayer:</strong> God of peace, teach us to cherish truth with humility and to seek unity without contempt. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000355",
+    "day_number": 2,
+    "value": "<p><strong>Read:</strong> Proverbs 15:22; Colossians 3:16-17</p><p><strong>Source and historical context:</strong> The conference explained that its interpretations came from research, experience in parish ministry, and discussions requiring broad agreement. It then traced the prayer book through revisions in 1549, 1552, and 1662, noting that words must be understood in their historical setting.</p><p><strong>Devotional focus:</strong> No one participant knows everything. When questions about worship become difficult, we need careful listening, knowledge of the past, and attention to the needs of present congregations. Scripture invites believers to teach and admonish one another with wisdom. Patience protects us both from careless change and from using tradition as an excuse to stop learning.</p><p><strong>Reflect:</strong> Whose experience should I seek before deciding what is best for a community?</p><p><strong>Practice:</strong> Before arguing about a church practice, read its background and invite a thoughtful question from someone affected by it.</p><p><strong>Prayer:</strong> Lord, give me wisdom that welcomes correction and counsel that serves others well. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000355",
+    "day_number": 3,
+    "value": "<p><strong>Read:</strong> Ecclesiastes 3:1-8; Romans 14:5-6</p><p><strong>Source and historical context:</strong> This segment lists the precedence of church festivals when holy days overlap. It also distinguishes periods of fasting and abstinence within a historical Anglican calendar, including Lent, Ember days, Rogation days, and Fridays.</p><p><strong>Devotional focus:</strong> A church calendar can slow our busy lives so that we remember Christ’s coming, suffering, resurrection, and continuing call. Yet Paul cautions believers not to turn differences over days into mutual judgment. The value of a season lies in the gratitude, repentance, and care it nurtures, not in perfect mastery of a complicated timetable.</p><p><strong>Reflect:</strong> What season or sacred moment could help me attend more carefully to God?</p><p><strong>Practice:</strong> Choose one upcoming Christian observance and learn its meaning. Consider one simple act of prayer or generosity connected to it.</p><p><strong>Prayer:</strong> God of all our days, help the rhythms of worship direct our hearts toward you and our neighbors. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000355",
+    "day_number": 4,
+    "value": "<p><strong>Read:</strong> 1 Peter 2:4-5; James 2:1-4</p><p><strong>Source and historical context:</strong> The guide discusses where morning and evening prayer should be offered, the architecture of chancels, and church ornaments linked to sixteenth-century Anglican law. It also admits that restoring a practice abruptly can be unwise when worshippers do not desire it.</p><p><strong>Devotional focus:</strong> Buildings, furnishings, and vestments can carry memory and beauty, but they are not the living heart of the church. Peter calls believers living stones, and James warns against allowing visible status to determine whom we honor. A well-prepared worship space should serve prayer, welcome, and participation rather than distract from the people gathered there.</p><p><strong>Reflect:</strong> Do our worship spaces make visitors, people with disabilities, and those with little money feel welcome?</p><p><strong>Practice:</strong> Notice one barrier to participation in a worship space and suggest a practical, respectful improvement.</p><p><strong>Prayer:</strong> Lord Jesus, build us into a welcoming people whose reverence makes room for everyone. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000355",
+    "day_number": 5,
+    "value": "<p><strong>Read:</strong> Nehemiah 8:1-8; 1 Corinthians 14:9</p><p><strong>Source and historical context:</strong> After discussing the colors of historic church vestments, the authors turn to Morning Prayer. They distinguish between reading, saying, and singing Scripture, and ask how the congregation will best hear and understand the opening sentences.</p><p><strong>Devotional focus:</strong> Music and ceremony can deepen attention, but clarity matters more than display. At the public reading of the Law in Nehemiah, the people were helped to understand what they heard. Paul likewise values speech that benefits listeners. Whether a passage is spoken or sung, love asks that it be audible, intelligible, and accessible to the community.</p><p><strong>Reflect:</strong> Could someone unfamiliar with our worship actually understand the words being spoken?</p><p><strong>Practice:</strong> Read a short Bible passage aloud at a comfortable pace, then share its meaning in plain language.</p><p><strong>Prayer:</strong> Speaking God, let your word reach our ears and shape our actions. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000355",
+    "day_number": 6,
+    "value": "<p><strong>Read:</strong> 1 John 1:8-9; Psalm 51:10-12</p><p><strong>Source and historical context:</strong> The rubrical notes explain why the congregation repeats a general confession after the minister and discusses the shared response “Amen.” The authors also describe how the Lord’s Prayer, psalms, and other responses are voiced by the worshipping assembly.</p><p><strong>Devotional focus:</strong> Shared confession is not meant to single out the most vulnerable or invite public humiliation. It tells the truth that everyone needs grace. When we say “Amen” to a prayer, we take part rather than leaving worship to a leader. Forgiveness opens a path toward honesty and repair; it should not become pressure to disclose private experiences without consent or safety.</p><p><strong>Reflect:</strong> Where do I need to exchange defensiveness for truthful, humble prayer?</p><p><strong>Practice:</strong> Pray Psalm 51 slowly. If you have harmed someone, consider a safe and specific step toward making amends.</p><p><strong>Prayer:</strong> Merciful God, meet our confession with grace and help our words become changed lives. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000355",
+    "day_number": 7,
+    "value": "<p><strong>Read:</strong> 2 Timothy 3:16-17; Luke 24:27-32</p><p><strong>Source and historical context:</strong> The guide sets out when the appointed psalms and Bible lessons may be changed and explains how Scripture readings, responses, and the Lord’s Prayer fit together in Morning Prayer. It treats regular listening to the full range of Scripture as a communal discipline.</p><p><strong>Devotional focus:</strong> It is easy to return only to the verses we already enjoy. A regular pattern of reading can introduce voices, questions, and promises we might otherwise miss. Scripture forms us over time as we hear Christ’s story and learn to respond. The practice should lead toward understanding, not merely the completion of a reading schedule.</p><p><strong>Reflect:</strong> Which part of Scripture have I avoided because it seems unfamiliar or difficult?</p><p><strong>Practice:</strong> Read a passage outside your usual favorites, then write one honest question you would like to explore.</p><p><strong>Prayer:</strong> Lord, open our minds to your word and make us willing listeners. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000355",
+    "day_number": 8,
+    "value": "<p><strong>Read:</strong> Luke 1:46-55; Luke 2:25-32</p><p><strong>Source and historical context:</strong> The notes on Evening Prayer recommend retaining the Magnificat and the Nunc Dimittis whenever possible. They also discuss litanies, set prayers, and how congregations may remember specific people in common intercession.</p><p><strong>Devotional focus:</strong> Mary’s song announces a God who notices the lowly, and Simeon’s song welcomes the promised light. These biblical prayers can teach us how to end a day: not by pretending all is well, but by remembering what God has done and holding the world in hope. Shared intercession makes space for needs beyond our own.</p><p><strong>Reflect:</strong> What part of today needs to be entrusted to God in gratitude or sorrow?</p><p><strong>Practice:</strong> Pray the Magnificat or Nunc Dimittis this evening. Include one neighbor or community concern in your prayer.</p><p><strong>Prayer:</strong> Faithful God, gather our joys and griefs into the light of Christ. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000355",
+    "day_number": 9,
+    "value": "<p><strong>Read:</strong> Psalm 100:1-5; Matthew 5:23-24</p><p><strong>Source and historical context:</strong> The guide describes the General Thanksgiving and prayers used when people return thanks. It then turns to preparation for Holy Communion, including the expectation that those who have seriously harmed others should seek reconciliation and make restitution where possible.</p><p><strong>Devotional focus:</strong> Gratitude is more than a pleasant feeling. Remembering God’s goodness can lead us to notice what we owe one another in honesty and care. Jesus connects worship with the work of reconciliation. Restoration cannot always be immediate, and it must not demand unsafe contact or ignore serious harm, but truthful repentance seeks concrete change.</p><p><strong>Reflect:</strong> Is there a relationship or obligation I have avoided while asking God to bless my worship?</p><p><strong>Practice:</strong> Give thanks for one mercy today, then take one safe, proportionate action to correct a wrong or honor a neglected commitment.</p><p><strong>Prayer:</strong> God of mercy, make our thanks sincere and our repentance practical. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000355",
+    "day_number": 10,
+    "value": "<p><strong>Read:</strong> Hebrews 10:24-25; Luke 22:24-27</p><p><strong>Source and historical context:</strong> The writers compare church customs for positioning the communion table, the minister, and attendants. Their discussion engages historic English practice, the north side of the altar, and legal disputes about the physical arrangement of worship.</p><p><strong>Devotional focus:</strong> Different traditions understand these arrangements differently. What every Christian community can ask is whether its space helps people gather, remember Jesus, and care for one another. The Lord placed service, not ceremonial prestige, at the center of leadership. Reverence should strengthen fellowship rather than make worshippers feel that they are merely an audience.</p><p><strong>Reflect:</strong> In our gatherings, whose needs are considered when arrangements are made?</p><p><strong>Practice:</strong> Ask a fellow worshipper what helps them feel able to participate, and carry one suggestion to a responsible leader.</p><p><strong>Prayer:</strong> Servant King, keep our worship centered on your welcome and teach us to serve rather than seek importance. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000355",
+    "day_number": 11,
+    "value": "<p><strong>Read:</strong> 1 Corinthians 14:26; Mark 10:42-45</p><p><strong>Source and historical context:</strong> The guide expressly reminds clergy that the Communion service is meant for the congregation and should not be delayed by the priest’s private devotions. It goes on to discuss public prayers, Bible readings, the Gospel, and church announcements.</p><p><strong>Devotional focus:</strong> Christian leadership carries responsibility for other people’s time, attention, and access to worship. Jesus defined greatness through service. Thoughtful preparation can make worship more welcoming, while a leader’s humility allows others to hear Scripture and respond without unnecessary obstacles. This applies beyond churches whenever one person guides a group.</p><p><strong>Reflect:</strong> Does my role in a group make participation easier for others or revolve around my preferences?</p><p><strong>Practice:</strong> If you lead, prepare one activity with participants’ needs in mind. If you attend, thank a person who quietly makes space for others.</p><p><strong>Prayer:</strong> Jesus, shape our leadership after your generosity and patience. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000355",
+    "day_number": 12,
+    "value": "<p><strong>Read:</strong> James 2:14-17; 2 Corinthians 9:6-8</p><p><strong>Source and historical context:</strong> The guide describes the sermon, the collection of alms, and the preparation of bread and wine for Communion. It recalls that offerings were once brought to a single basin and notes the practical needs of larger congregations.</p><p><strong>Devotional focus:</strong> The word proclaimed in worship should shape what a congregation does with its resources. James asks what faith means when a neighbor lacks food or clothing; Paul emphasizes giving freely, not under compulsion. Worshipful generosity protects dignity by serving actual needs rather than seeking attention or controlling recipients.</p><p><strong>Reflect:</strong> How does the faith I hear on Sunday influence my choices about time and money?</p><p><strong>Practice:</strong> Offer a modest contribution or practical help to a trustworthy effort meeting real needs, without expecting praise.</p><p><strong>Prayer:</strong> Generous Lord, join our listening to loving action. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000355",
+    "day_number": 13,
+    "value": "<p><strong>Read:</strong> 1 Corinthians 11:23-26; Luke 22:19-20</p><p><strong>Source and historical context:</strong> The authors discuss the historical practice of mixing a little water with Eucharistic wine, preparing the elements, and allowing sufficient time for a communal confession. These are directions within a particular Anglican liturgical debate, not universal Christian requirements.</p><p><strong>Devotional focus:</strong> The heart of Communion is the remembrance of Jesus and the grace he shares with his people. Careful preparation can invite attention to that gift, but small ritual details should not obscure the story of Christ’s self-giving love. We approach the table neither to display expertise nor to prove ourselves worthy, but to remember him together.</p><p><strong>Reflect:</strong> What could help me approach Communion with attentiveness instead of habit or anxiety?</p><p><strong>Practice:</strong> Before your next Communion, read 1 Corinthians 11:23–26 and thank Christ for his generosity.</p><p><strong>Prayer:</strong> Lord Jesus, turn our attention from performance to your love, remembered and shared. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000355",
+    "day_number": 14,
+    "value": "<p><strong>Read:</strong> Hebrews 4:14-16; 1 Corinthians 11:28-29</p><p><strong>Source and historical context:</strong> The notes discuss who may lead the confession, how a minister offers words of forgiveness, and where to stand during the prayer of consecration. They also compare historic customs for lifting the bread and chalice.</p><p><strong>Devotional focus:</strong> The setting may vary across churches, yet the deeper invitation remains: examine ourselves with sincerity and come before Christ with trust in his mercy. Self-examination is not an excuse for public shaming or endless fear. When the church speaks of forgiveness, it should make room for repentance, healing, and faithful care.</p><p><strong>Reflect:</strong> Do I approach God mainly with fear of failure, or with honest trust in his grace?</p><p><strong>Practice:</strong> Read Hebrews 4:14–16 slowly; name one place where you need both accountability and mercy.</p><p><strong>Prayer:</strong> Compassionate Savior, receive us truthfully and lead us toward your healing grace. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000355",
+    "day_number": 15,
+    "value": "<p><strong>Read:</strong> 1 Corinthians 10:16-17; Romans 14:19</p><p><strong>Source and historical context:</strong> This section explains gestures at the words of institution and the way people receive Communion. It urges the celebrant not to enforce needless uniformity in the manner of reception when people act reverently.</p><p><strong>Devotional focus:</strong> Paul’s image of one bread points beyond individual technique to shared participation in Christ. Respectful practices can differ, and a community need not insist on every physical detail as a test of belonging. What matters pastorally is that worshippers are treated with patience, the sacraments are handled responsibly, and people are not turned into spectacles over minor differences.</p><p><strong>Reflect:</strong> When have I focused on another worshipper’s gesture more than on our shared faith?</p><p><strong>Practice:</strong> At your next gathering, choose to encourage one another’s participation rather than critique harmless differences.</p><p><strong>Prayer:</strong> Christ, unite us in gratitude and help us honor one another at your table. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000355",
+    "day_number": 16,
+    "value": "<p><strong>Read:</strong> Acts 2:42-47; 1 Corinthians 12:12-13</p><p><strong>Source and historical context:</strong> After discussing Communion gestures, the guide moves through prayers following Communion, the Gloria, and the number of people needed for a celebration. Its detailed requirements reflect a particular historical discipline.</p><p><strong>Devotional focus:</strong> The early believers prayed, broke bread, and shared life as a community. Public worship is more than a service performed by one expert while everyone else observes. It is the shared response of people with different gifts and needs. We can make room for active participation while respecting how various traditions order their services.</p><p><strong>Reflect:</strong> In what way could I help someone experience worship as belonging rather than observing?</p><p><strong>Practice:</strong> Invite another person to join a prayer, song, reading, or act of service, without pressuring them to participate.</p><p><strong>Prayer:</strong> Holy Spirit, make us attentive members of one body, generous in our welcome. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000355",
+    "day_number": 17,
+    "value": "<p><strong>Read:</strong> 1 Corinthians 11:20-22; James 2:1-5</p><p><strong>Source and historical context:</strong> This segment considers minimum numbers of communicants, the practice of receiving Communion through the church year, and the suitability of bread and wine. The authors also note that church authorities lack grounds to dismiss people merely for not receiving that day.</p><p><strong>Devotional focus:</strong> Paul rebuked the Corinthian church when its shared meal humiliated those with little. Reverence includes the way people are treated, not only the quality of vessels or ingredients. Whatever a denomination’s Communion discipline, communities should resist favoritism and offer patient pastoral care to people whose circumstances affect their participation.</p><p><strong>Reflect:</strong> Who might feel left out or ashamed in the way our community practices worship?</p><p><strong>Practice:</strong> Speak with a church leader about one respectful way to support the participation of a person who is overlooked.</p><p><strong>Prayer:</strong> God of the shared table, keep us from dishonoring those whom you love. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000355",
+    "day_number": 18,
+    "value": "<p><strong>Read:</strong> Matthew 28:18-20; Ephesians 4:4-6</p><p><strong>Source and historical context:</strong> The authors describe the reverent consumption of consecrated elements after Communion and then turn to the public baptism of children. They discuss the font, ministers’ clothing, and the value of baptisms taking place when the congregation can gather.</p><p><strong>Devotional focus:</strong> Water is an ordinary gift, and Christian baptism gives it a place in the church’s account of belonging to Christ. Traditions differ about its recipients and meaning, but all can recognize a call to treat persons with dignity and to take promises of care seriously. Public worship can become a setting where a community commits to accompany people in faith.</p><p><strong>Reflect:</strong> What does it mean for my community to welcome and support someone beyond the day of a ceremony?</p><p><strong>Practice:</strong> Offer practical support to a new member, parent, or person exploring faith; ask what would actually be helpful.</p><p><strong>Prayer:</strong> Jesus, make our promises of welcome visible in patient, everyday love. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000355",
+    "day_number": 19,
+    "value": "<p><strong>Read:</strong> Mark 10:13-16; Isaiah 43:1-3</p><p><strong>Source and historical context:</strong> The guide gives detailed rubrics for baptism using water and discusses both public ceremonies and the private baptism of infants who are unwell. Its instructions reflect an Anglican sacramental framework and the medical uncertainties of its time.</p><p><strong>Devotional focus:</strong> Jesus welcomed children who were being kept away from him. Churches can honor that welcome by taking vulnerability seriously and not treating someone’s illness as a reason for neglect or exclusion. Spiritual care should complement appropriate medical care, not replace it. The child and family deserve respect rather than an argument about ceremonial perfection.</p><p><strong>Reflect:</strong> Who needs gentle and practical attention in my community right now?</p><p><strong>Practice:</strong> Ask a parent, caregiver, or person facing illness what support would make their next week more manageable.</p><p><strong>Prayer:</strong> Welcoming Lord, help us protect the vulnerable and make room for their full dignity. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000355",
+    "day_number": 20,
+    "value": "<p><strong>Read:</strong> Acts 8:26-39; Ephesians 2:19-22</p><p><strong>Source and historical context:</strong> These pages explain how clergy assessed whether a child had previously been baptized, followed by ceremonies for children and adults. The writers emphasize valid administration according to the rules of their historical church.</p><p><strong>Devotional focus:</strong> Rules about baptism differ among Christian traditions, and the historical authors spoke from within one of them. Beneath the procedural questions is a human one: how do we receive and accompany someone seeking to belong? In Acts, the Ethiopian official asks about baptism, and the story centers on welcome to the good news of Jesus. A church’s care should extend to understanding, discipleship, and ongoing community.</p><p><strong>Reflect:</strong> Have I made another person feel that belonging depends on passing my private test?</p><p><strong>Practice:</strong> Welcome someone who is exploring faith. Offer to listen to their questions without pressing for a premature commitment.</p><p><strong>Prayer:</strong> Lord Jesus, guide seekers toward truth and give our communities generous hearts. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000355",
+    "day_number": 21,
+    "value": "<p><strong>Read:</strong> Deuteronomy 6:6-7; 1 Peter 3:15-16</p><p><strong>Source and historical context:</strong> The guide moves from adult baptism to confirmation, catechism, and the preparation of candidates. It then introduces the public notice given before marriage. The authors expect church leaders to take teaching and communal responsibilities seriously.</p><p><strong>Devotional focus:</strong> Faith formation takes time, questions, and relationships. Deuteronomy imagines teaching woven into ordinary life, and Peter urges gentleness when explaining hope. Preparation for major commitments is not simply a checklist of correct answers; it is an opportunity for informed, willing participation and care from the people surrounding us.</p><p><strong>Reflect:</strong> When I teach or advise, do I leave room for honest questions?</p><p><strong>Practice:</strong> Ask a younger believer or new member what they find confusing, and look for an answer together without embarrassment.</p><p><strong>Prayer:</strong> Patient God, help our communities teach faithfully and listen with gentleness. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000355",
+    "day_number": 22,
+    "value": "<p><strong>Read:</strong> Ephesians 5:21; 1 Corinthians 13:4-7</p><p><strong>Source and historical context:</strong> The marriage section describes where the couple stands, the officiant’s role, vows, the ring, prayers, and other ceremonial details. Some recommendations assume Victorian gender roles and the Church of England’s legal arrangements.</p><p><strong>Devotional focus:</strong> A wedding service should direct attention beyond its beauty to the responsibility of love. Paul calls Christians to mutual care, and 1 Corinthians describes love as patient and kind. A meaningful promise requires free consent, honesty, respect, and safety; no ritual detail should be used to justify coercion, unequal dignity, or the concealment of abuse.</p><p><strong>Reflect:</strong> What qualities matter most in the commitments I make to people I love?</p><p><strong>Practice:</strong> Talk with someone you trust about how kindness, consent, and faithful accountability appear in real relationships.</p><p><strong>Prayer:</strong> God of faithful love, teach us to honor promises without diminishing another person’s freedom or worth. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000355",
+    "day_number": 23,
+    "value": "<p><strong>Read:</strong> James 5:13-16; Psalm 34:17-18</p><p><strong>Source and historical context:</strong> The guide concludes its notes on marriage and introduces prayers for visiting people who are ill, including a prayer for those troubled in mind or conscience. It discusses pastoral advice, personal prayer, and practical choices about the service.</p><p><strong>Devotional focus:</strong> Illness and distress are not failures of faith. James describes prayer and care around the sick, while the psalmist says the Lord is near to the brokenhearted. Religious visitors should bring listening, comfort, and practical help—not pressure, speculation about blame, or promises of a specific outcome. Pastoral prayer belongs alongside sound medical and mental-health support.</p><p><strong>Reflect:</strong> How can I accompany someone who is unwell without assuming I know what they need?</p><p><strong>Practice:</strong> Send a gentle check-in to someone facing illness or anxiety. Offer one specific, optional form of help.</p><p><strong>Prayer:</strong> God of compassion, strengthen the weary and guide us to care with wisdom. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000355",
+    "day_number": 24,
+    "value": "<p><strong>Read:</strong> Romans 8:38-39; 2 Corinthians 4:16-18</p><p><strong>Source and historical context:</strong> The Communion of the Sick section addresses serious illness, epidemics, and practical difficulty swallowing bread or wine. One rubric recognizes that physical incapacity does not separate someone from the benefits of Communion.</p><p><strong>Devotional focus:</strong> The bodily limitations of illness can interrupt familiar religious practices. They do not erase a person’s dignity or place in God’s love. Paul writes that nothing can separate believers from Christ. We can offer prayer and pastoral care with sensitivity to health, personal consent, and denominational practice rather than making fragile bodies carry spiritual guilt.</p><p><strong>Reflect:</strong> Have I unintentionally treated physical limitation as a failure of devotion?</p><p><strong>Practice:</strong> Ask how to include an ill or homebound member in community prayer or fellowship while respecting their health and choices.</p><p><strong>Prayer:</strong> God who stays near, hold us in love when ordinary practices become difficult. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000355",
+    "day_number": 25,
+    "value": "<p><strong>Read:</strong> John 11:25-26; Romans 12:15</p><p><strong>Source and historical context:</strong> The guide discusses visits during contagious illness and the burial service. Some historical restrictions concern people who died without baptism, under excommunication, or by suicide; these reflect the church rules and social assumptions of the period.</p><p><strong>Devotional focus:</strong> At Lazarus’s grave, Jesus spoke of resurrection and also wept. Christian hope does not require families to hide grief, and a person’s death should never be used as an occasion for speculation or shame. Those bereaved by suicide or other painful circumstances deserve especially tender care, practical support, and freedom to lament. The historical exclusions described here should not be mistaken for universal judgments about a person’s eternal fate.</p><p><strong>Reflect:</strong> How can I respond to bereavement without rushing to explain or correct someone’s sorrow?</p><p><strong>Practice:</strong> Reach out to a grieving person with a simple message of remembrance or an offer of practical support.</p><p><strong>Prayer:</strong> Christ of resurrection, meet mourners with compassion and sustain hope without silencing grief. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000355",
+    "day_number": 26,
+    "value": "<p><strong>Read:</strong> Psalm 116:1-9; Luke 18:9-14</p><p><strong>Source and historical context:</strong> This segment finishes the historical Thanksgiving of Women after Childbirth and proceeds to the Commination prayers for repentance. It even discusses what psalm to use when a newborn child has died, acknowledging joy and profound sorrow near the same service.</p><p><strong>Devotional focus:</strong> Human life is not tidy enough to fit one emotion at a time. Gratitude, exhaustion, relief, guilt, and grief may exist together. The psalms give language for being heard by God, and Jesus warns against prayer that congratulates itself by despising others. We can come as we are, asking for mercy without pretending that pain or repentance follows a schedule.</p><p><strong>Reflect:</strong> What feeling have I been told to hide in a moment when I needed prayer?</p><p><strong>Practice:</strong> Pray Psalm 116 thoughtfully, leaving space to name one gratitude and one grief without trying to resolve both today.</p><p><strong>Prayer:</strong> Merciful God, welcome our thanks and our tears, and teach us humility without humiliation. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000355",
+    "day_number": 27,
+    "value": "<p><strong>Read:</strong> Micah 6:8; 1 Corinthians 14:40</p><p><strong>Source and historical context:</strong> The closing notes revisit old legal interpretations of vestments and marriage rubrics and even the proper cleansing of Communion vessels. The authors sought practical consistency across disputes about worship that mattered deeply in their Anglican context.</p><p><strong>Devotional focus:</strong> Details can carry reverence and history. They can also become an endless argument that forgets the people worship is meant to serve. Micah describes the life God seeks as justice, mercy, and humble walking. Thoughtful practice has its place when it supports these ends. Let us take care with traditions while refusing to measure another believer only by ceremonial precision.</p><p><strong>Reflect:</strong> Has attention to religious detail strengthened my love, or displaced it?</p><p><strong>Practice:</strong> Identify one meaningful tradition worth understanding better, and one act of mercy you can put into practice this week.</p><p><strong>Prayer:</strong> God of truth and mercy, let the care we give to worship bear fruit in justice and love. Amen.</p>"
+  }
+]
+$adapt_text$::jsonb) as edit(id uuid, day_number integer, value text)
+where target.plan_id = edit.id and target.day_number = edit.day_number;
+
+-- Modify only plan-owned Scripture references. Never touch user-owned notes/references.
+do $$
+declare
+  item jsonb;
+  target_day_id uuid;
+begin
+  for item in select value from jsonb_array_elements($adapt_refs$
+[
+  {
+    "id": "90000000-0000-0000-0000-000000000355",
+    "day_number": 1,
+    "references": [
+      "Ephesians 4:1-6",
+      "1 Corinthians 14:40"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000355",
+    "day_number": 2,
+    "references": [
+      "Proverbs 15:22",
+      "Colossians 3:16-17"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000355",
+    "day_number": 3,
+    "references": [
+      "Ecclesiastes 3:1-8",
+      "Romans 14:5-6"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000355",
+    "day_number": 4,
+    "references": [
+      "1 Peter 2:4-5",
+      "James 2:1-4"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000355",
+    "day_number": 5,
+    "references": [
+      "Nehemiah 8:1-8",
+      "1 Corinthians 14:9"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000355",
+    "day_number": 6,
+    "references": [
+      "1 John 1:8-9",
+      "Psalm 51:10-12"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000355",
+    "day_number": 7,
+    "references": [
+      "2 Timothy 3:16-17",
+      "Luke 24:27-32"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000355",
+    "day_number": 8,
+    "references": [
+      "Luke 1:46-55",
+      "Luke 2:25-32"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000355",
+    "day_number": 9,
+    "references": [
+      "Psalm 100:1-5",
+      "Matthew 5:23-24"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000355",
+    "day_number": 10,
+    "references": [
+      "Hebrews 10:24-25",
+      "Luke 22:24-27"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000355",
+    "day_number": 11,
+    "references": [
+      "1 Corinthians 14:26",
+      "Mark 10:42-45"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000355",
+    "day_number": 12,
+    "references": [
+      "James 2:14-17",
+      "2 Corinthians 9:6-8"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000355",
+    "day_number": 13,
+    "references": [
+      "1 Corinthians 11:23-26",
+      "Luke 22:19-20"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000355",
+    "day_number": 14,
+    "references": [
+      "Hebrews 4:14-16",
+      "1 Corinthians 11:28-29"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000355",
+    "day_number": 15,
+    "references": [
+      "1 Corinthians 10:16-17",
+      "Romans 14:19"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000355",
+    "day_number": 16,
+    "references": [
+      "Acts 2:42-47",
+      "1 Corinthians 12:12-13"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000355",
+    "day_number": 17,
+    "references": [
+      "1 Corinthians 11:20-22",
+      "James 2:1-5"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000355",
+    "day_number": 18,
+    "references": [
+      "Matthew 28:18-20",
+      "Ephesians 4:4-6"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000355",
+    "day_number": 19,
+    "references": [
+      "Mark 10:13-16",
+      "Isaiah 43:1-3"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000355",
+    "day_number": 20,
+    "references": [
+      "Acts 8:26-39",
+      "Ephesians 2:19-22"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000355",
+    "day_number": 21,
+    "references": [
+      "Deuteronomy 6:6-7",
+      "1 Peter 3:15-16"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000355",
+    "day_number": 22,
+    "references": [
+      "Ephesians 5:21",
+      "1 Corinthians 13:4-7"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000355",
+    "day_number": 23,
+    "references": [
+      "James 5:13-16",
+      "Psalm 34:17-18"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000355",
+    "day_number": 24,
+    "references": [
+      "Romans 8:38-39",
+      "2 Corinthians 4:16-18"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000355",
+    "day_number": 25,
+    "references": [
+      "John 11:25-26",
+      "Romans 12:15"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000355",
+    "day_number": 26,
+    "references": [
+      "Psalm 116:1-9",
+      "Luke 18:9-14"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000355",
+    "day_number": 27,
+    "references": [
+      "Micah 6:8",
+      "1 Corinthians 14:40"
+    ]
+  }
+]
+$adapt_refs$::jsonb) loop
+    select id into strict target_day_id
+    from public.devotional_days
+    where plan_id = (item ->> 'id')::uuid
+      and day_number = (item ->> 'day_number')::integer;
+
+    update public.scripture_references
+    set reference = array(select jsonb_array_elements_text(item -> 'references')),
+        updated_at = now()
+    where day_id = target_day_id and user_id is null;
+
+    if not found then
+      insert into public.scripture_references
+        (user_id, day_id, reference, created_at, updated_at)
+      values (null, target_day_id,
+        array(select jsonb_array_elements_text(item -> 'references')), now(), now());
+    end if;
+  end loop;
+end
+$$;
+
+update public.devotional_plans
+set status = 'published', updated_at = now()
+where id = '90000000-0000-0000-0000-000000000355'::uuid;
+
+commit;
+-- END CONSOLIDATED SOURCE: 20261026220000_repair_draft_devotional_plans_wave_30.sql
+
+-- BEGIN CONSOLIDATED SOURCE: 20261026230000_repair_draft_devotional_plans_wave_31.sql sha256=4c3b9ba0dd52d2037252c53424eba9d590d77f40ee8c5c64fffeb34008b32b6b
+-- Wave 31: Plan 362 — Gloria Crucis, J. H. Beibitz (addresses 1907, published 1908).
+-- Thirty original Scripture-led thematic readings, not verbatim sermon transcripts.
+-- Beibitz's atonement arguments are historically contextualized, not presented as
+-- universal doctrinal consensus. Preserve existing plan/day IDs, counts, metadata,
+-- progress and any user-owned Scripture references.
+-- Apply AFTER October 21 language modernization, particularly part 12, which edits
+-- existing Plan 362 day contents. Do not reapply that modernization afterward.
+-- Editorial DRAFT ONLY. Review in staging before publication.
+
+begin;
+
+do $$
+declare
+  current_source text;
+  current_total integer;
+  day_count integer;
+  first_day integer;
+  last_day integer;
+  unique_days integer;
+  duplicates integer;
+begin
+  select source_url, total_days into current_source, current_total
+  from public.devotional_plans where id = '90000000-0000-0000-0000-000000000362'::uuid;
+  if not found then raise exception 'Plan 362 missing'; end if;
+  if current_source is distinct from 'https://www.gutenberg.org/ebooks/24153' or current_total is distinct from 30 then
+    raise exception 'Plan 362 source URL or total days differs from Wave 31 review';
+  end if;
+  select count(*), min(day_number), max(day_number), count(distinct day_number)
+  into day_count, first_day, last_day, unique_days
+  from public.devotional_days where plan_id = '90000000-0000-0000-0000-000000000362'::uuid;
+  if day_count <> 30 or first_day <> 1 or last_day <> 30 or unique_days <> 30 then
+    raise exception 'Plan 362 must contain 30 distinct numbered days; found %', day_count;
+  end if;
+  select count(*) into duplicates from (
+     select sr.day_id
+     from public.scripture_references sr
+     join public.devotional_days d on d.id = sr.day_id
+     where d.plan_id = '90000000-0000-0000-0000-000000000362'::uuid and sr.user_id is null
+     group by sr.day_id having count(*) > 1
+  ) duplicates_per_day;
+  if duplicates > 0 then
+    raise exception 'Plan 362 has % days with duplicate plan-level Scripture-reference rows', duplicates;
+  end if;
+end
+$$;
+
+update public.devotional_plans as target
+set title = edit.value, updated_at = now()
+from jsonb_to_recordset($adapt_text$
+[
+  {
+    "id": "90000000-0000-0000-0000-000000000362",
+    "value": "The Glory of the Cross: 30 Readings on Love, Repentance, and Hope"
+  }
+]
+$adapt_text$::jsonb) as edit(id uuid, value text)
+where target.id = edit.id;
+
+update public.devotional_plans as target
+set description = edit.value, updated_at = now()
+from jsonb_to_recordset($adapt_text$
+[
+  {
+    "id": "90000000-0000-0000-0000-000000000362",
+    "value": "Thirty Scripture-led devotional readings inspired by J. H. Beibitz’s Gloria Crucis, delivered during Holy Week and Good Friday at Lichfield Cathedral in 1907. Reflect on the Cross, conscience, the meaning of sin, repentance, grace, sacrificial love, the Seven Last Words of Jesus, and resurrection hope. Each reading includes historical and theological context, a reflection, a practical response, and prayer. Beibitz’s distinctive atonement arguments are presented as his interpretation, not the settled view of all Christian traditions; the devotions focus on mercy, truthful change, and compassionate service."
+  }
+]
+$adapt_text$::jsonb) as edit(id uuid, value text)
+where target.id = edit.id;
+
+update public.devotional_days as target
+set title = edit.value, updated_at = now()
+from jsonb_to_recordset($adapt_text$
+[
+  {
+    "id": "90000000-0000-0000-0000-000000000362",
+    "day_number": 1,
+    "value": "The Cross and the Healing of Our Hearts"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000362",
+    "day_number": 2,
+    "value": "Justice, Mercy, and Honest Questions"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000362",
+    "day_number": 3,
+    "value": "A Mystery Greater Than Any Theory"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000362",
+    "day_number": 4,
+    "value": "Conscience and the Nearness of God"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000362",
+    "day_number": 5,
+    "value": "The Cross Within Real History"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000362",
+    "day_number": 6,
+    "value": "A Living Faith Must Love People"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000362",
+    "day_number": 7,
+    "value": "Sin Matters, but Pain Is Not a Verdict"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000362",
+    "day_number": 8,
+    "value": "Learning from Experience and Conscience"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000362",
+    "day_number": 9,
+    "value": "Reading Genesis with Care"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000362",
+    "day_number": 10,
+    "value": "Good Desires Need Wise Direction"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000362",
+    "day_number": 11,
+    "value": "Human Dignity and Moral Responsibility"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000362",
+    "day_number": 12,
+    "value": "Love Looks Toward Another’s Good"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000362",
+    "day_number": 13,
+    "value": "When Wrongdoing Damages Fellowship"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000362",
+    "day_number": 14,
+    "value": "Repentance Means a Changed Direction"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000362",
+    "day_number": 15,
+    "value": "Grace Gives Us Strength to Grow"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000362",
+    "day_number": 16,
+    "value": "Obedience Is the Shape of Love"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000362",
+    "day_number": 17,
+    "value": "Grace Is Offered, Faith Responds"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000362",
+    "day_number": 18,
+    "value": "God Meets Us in Embodied Life"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000362",
+    "day_number": 19,
+    "value": "Sacrifice and the Gift of Communion"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000362",
+    "day_number": 20,
+    "value": "The Cross Calls Us Into Service"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000362",
+    "day_number": 21,
+    "value": "Learning Christ in the Seven Last Words"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000362",
+    "day_number": 22,
+    "value": "Forgiveness Without Denying Harm"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000362",
+    "day_number": 23,
+    "value": "Grace for the One Who Turns to Christ"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000362",
+    "day_number": 24,
+    "value": "Love Begins with Those Near Us"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000362",
+    "day_number": 25,
+    "value": "When Jesus Cried Out in Anguish"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000362",
+    "day_number": 26,
+    "value": "The Humanity of Christ in “I Thirst”"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000362",
+    "day_number": 27,
+    "value": "Compassion in the Shadow of the Cross"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000362",
+    "day_number": 28,
+    "value": "“It Is Finished”: Faithful Love Endures"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000362",
+    "day_number": 29,
+    "value": "Entrusting Life and Death to God"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000362",
+    "day_number": 30,
+    "value": "Easter Hope for a Changed Life"
+  }
+]
+$adapt_text$::jsonb) as edit(id uuid, day_number integer, value text)
+where target.plan_id = edit.id and target.day_number = edit.day_number;
+
+update public.devotional_days as target
+set content = edit.value, updated_at = now()
+from jsonb_to_recordset($adapt_text$
+[
+  {
+    "id": "90000000-0000-0000-0000-000000000362",
+    "day_number": 1,
+    "value": "<p><strong>Read:</strong> Galatians 6:14; 2 Corinthians 5:18-19</p><p><strong>Source and historical context:</strong> The opening of J. H. Beibitz’s Holy Week addresses, delivered at Lichfield Cathedral in 1907 and published in 1908, questions accounts of the atonement framed as a bargain between Father and Son. He argues that Christ comes to heal the alienation of sin and restore fellowship with God.</p><p><strong>Devotional focus:</strong> The cross is not a puzzle to master before we can receive love. Paul points to God reconciling the world in Christ. Different Christian traditions describe the mystery of atonement differently; these addresses especially invite us to notice the restoration Christ begins within us. Grace is not an excuse to disregard harm. It opens a way to confession, trust, and change.</p><p><strong>Reflect:</strong> When I think of the cross, do I first imagine punishment, distant theology, or God drawing near?</p><p><strong>Practice:</strong> Read Galatians 6:14 slowly. Name one relationship or habit in which you long for reconciliation.</p><p><strong>Prayer:</strong> God of reconciling love, help me see Jesus clearly and welcome the renewal his cross makes possible. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000362",
+    "day_number": 2,
+    "value": "<p><strong>Read:</strong> Romans 3:21-26; 1 John 4:9-10</p><p><strong>Source and historical context:</strong> Beibitz challenges a popular picture of the Father directing vengeance at an innocent Son. He names problems of justice, ethical transformation, and the unity of God. These are his objections to particular atonement explanations, not a neutral summary of every Christian tradition.</p><p><strong>Devotional focus:</strong> Serious questions about the cross need not be treated as disloyalty. Scripture speaks both of God’s justice and of love revealed through Jesus. It is possible to listen carefully when Christians disagree over how those truths fit together. What should remain visible in our discussion is the character of Christ: one who refuses to abandon sinners and calls them into a different life.</p><p><strong>Reflect:</strong> Can I discuss a difficult doctrine without belittling the faith or intelligence of another believer?</p><p><strong>Practice:</strong> Write one genuine question about the cross. Explore a Scripture passage before rushing to win an argument.</p><p><strong>Prayer:</strong> Holy God, make my searching humble, my speech fair, and my trust anchored in your love. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000362",
+    "day_number": 3,
+    "value": "<p><strong>Read:</strong> 1 Corinthians 1:18-25; Ephesians 3:16-19</p><p><strong>Source and historical context:</strong> After criticizing one theory of atonement, Beibitz argues that no single theological model exhausts the meaning of the cross. He connects Christ’s death with questions about human existence and the moral direction of the world.</p><p><strong>Devotional focus:</strong> The gospel is deeper than a slogan. We can learn from faithful thinkers of earlier centuries without imagining our own vocabulary settles everything. Paul calls the cross God’s wisdom even when human expectations are overturned. That does not forbid patient reasoning; it invites reasoning joined to reverence, knowing that Christ’s love exceeds the limits of our explanations.</p><p><strong>Reflect:</strong> Which familiar explanation have I treated as though it were larger than Christ himself?</p><p><strong>Practice:</strong> Read the passages and write one thing you know, one thing you wonder, and one thing you can live out today.</p><p><strong>Prayer:</strong> Lord Jesus, enlarge my understanding without allowing certainty to harden into pride. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000362",
+    "day_number": 4,
+    "value": "<p><strong>Read:</strong> Romans 2:14-16; Acts 17:24-28</p><p><strong>Source and historical context:</strong> In this section Beibitz reflects on the human sense that righteousness matters, then describes God as present to creation rather than an isolated being far away. He understands sin as alienation from the divine life that gives human relationships their unity.</p><p><strong>Devotional focus:</strong> Conscience can awaken us to what is good, yet conscience itself needs education and correction. Paul says we live and move in God, not beyond God’s notice or reach. Instead of using divine nearness to deny wrongdoing, we can let it call us to honesty: our choices touch both our inner lives and the people around us. The cross opens a path toward restored fellowship.</p><p><strong>Reflect:</strong> Where has my conscience been warning me about a choice that harms another person?</p><p><strong>Practice:</strong> Make one quiet examination of conscience. Seek advice if a situation is complex, then take a truthful next step.</p><p><strong>Prayer:</strong> God who is near, shape my conscience through your word and lead me toward integrity. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000362",
+    "day_number": 5,
+    "value": "<p><strong>Read:</strong> Acts 2:22-24; Luke 23:13-25</p><p><strong>Source and historical context:</strong> Beibitz begins a new address by tracing the historical circumstances of Jesus’ execution. He names entrenched expectations, religious resistance, and political interests, while insisting that theological reflection must start with the gospel accounts.</p><p><strong>Devotional focus:</strong> Jesus did not suffer in an imaginary world. Fear, misuse of authority, and the refusal to reconsider assumptions can destroy lives. The responsibility of the particular actors described in the Gospels must never be turned into collective blame against Jewish people. Reading the Passion should first examine our own readiness to follow truth when it challenges us.</p><p><strong>Reflect:</strong> How do fear or loyalty to a group make it harder for me to hear an uncomfortable truth?</p><p><strong>Practice:</strong> Read Luke’s account of the trial without assigning guilt to an entire people. Identify one place to choose honesty over convenience.</p><p><strong>Prayer:</strong> Jesus, truthful and merciful, free me from prejudice and from the desire to protect myself at another’s cost. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000362",
+    "day_number": 6,
+    "value": "<p><strong>Read:</strong> Mark 7:6-13; Matthew 23:23-28</p><p><strong>Source and historical context:</strong> The author critiques inherited rules that crowd out love and describes the political incentives of some Jerusalem leaders. His sweeping characterizations of Pharisees and Sadducees reflect the language and historical assumptions of his era.</p><p><strong>Devotional focus:</strong> Jesus confronts hypocrisy wherever it appears, including in the church today. The answer is not to speak contemptuously of Judaism or portray Jewish religious life as lifeless. Rather, we should ask whether our own traditions make room for mercy, justice, and attention to real people. Good habits can nurture faith; they become distorted when we use them to excuse indifference.</p><p><strong>Reflect:</strong> Have I ever defended a religious habit while overlooking someone who needed kindness?</p><p><strong>Practice:</strong> Choose one act of practical mercy that expresses what you say you believe.</p><p><strong>Prayer:</strong> Living God, preserve the best of our traditions and correct the habits that obscure your love. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000362",
+    "day_number": 7,
+    "value": "<p><strong>Read:</strong> 1 Corinthians 15:3-4; James 1:13-17</p><p><strong>Source and historical context:</strong> Beibitz distinguishes the historical causes of Jesus’ death from the deeper spiritual question of sin. He also begins asking why moral wrongdoing differs from experiences of physical suffering or misfortune.</p><p><strong>Devotional focus:</strong> The cross takes moral evil seriously because harmful choices matter. Yet a person’s illness, disability, grief, or poverty does not establish that they have committed some special sin. James refuses to portray God as the tempter of humanity. Christian repentance concerns our own actions and their effects; compassion concerns how we accompany people who are suffering.</p><p><strong>Reflect:</strong> Do I sometimes confuse someone’s suffering with a judgment about their character?</p><p><strong>Practice:</strong> Offer support to a person in difficulty without asking what they did to deserve it.</p><p><strong>Prayer:</strong> Merciful Christ, teach me to repent of harm and to meet suffering with compassion. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000362",
+    "day_number": 8,
+    "value": "<p><strong>Read:</strong> Psalm 139:23-24; Romans 7:18-25</p><p><strong>Source and historical context:</strong> Here the author appeals to lived experience, remorse, and conscience in order to explain why moral failure is not merely an unpleasant event. He then turns toward the relationship between scientific accounts of human development and the Genesis narrative.</p><p><strong>Devotional focus:</strong> Remorse can help us recognize where we have acted against love, but constant self-accusation is not the same as repentance. Paul is honest about conflict within the self while also looking toward deliverance in Christ. Wisdom asks for both truthful self-examination and hope: we can acknowledge what we have done without making our failures our entire identity.</p><p><strong>Reflect:</strong> Is there an action I need to face honestly without sliding into hopeless shame?</p><p><strong>Practice:</strong> Ask God to search your heart. Name one repair you can make, and one burden of shame to bring to grace.</p><p><strong>Prayer:</strong> Search me, O God, and make room in my life for truth, mercy, and change. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000362",
+    "day_number": 9,
+    "value": "<p><strong>Read:</strong> Genesis 3:1-13; 2 Timothy 3:14-17</p><p><strong>Source and historical context:</strong> Beibitz sets a contemporary account of human moral development beside Genesis 3. He reads the early Genesis narrative as spiritual teaching expressed in story form, and he argues that its moral insights can remain useful amid changing scientific explanations.</p><p><strong>Devotional focus:</strong> Christians hold different convictions about the genre and historical interpretation of Genesis. What is shared in this passage is a searching account of desire, mistrust, concealment, and broken fellowship. Scripture invites us to ask what temptation promises, what it conceals, and how our choices affect others. Humility matters both when reading an ancient text and when discussing science.</p><p><strong>Reflect:</strong> Which part of the temptation story feels uncomfortably familiar in my own decisions?</p><p><strong>Practice:</strong> Read Genesis 3 and trace the movement from desire to hiding. Write one truthful alternative at each step.</p><p><strong>Prayer:</strong> Creator God, teach me to receive Scripture wisely and answer temptation with truth. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000362",
+    "day_number": 10,
+    "value": "<p><strong>Read:</strong> 1 John 3:16-18; Galatians 5:13-16</p><p><strong>Source and historical context:</strong> The author draws lessons from Eve’s encounter with the tree, arguing that bodily needs, desire for beauty, and the search for knowledge can be good but become destructive when detached from love and wisdom. He then opens a discussion of the divine image and the meaning of self-giving love.</p><p><strong>Devotional focus:</strong> Spiritual growth is not hostility toward our bodies or curiosity. Food, beauty, learning, and rest are gifts to steward. Problems arise when desire becomes an excuse to deceive or use another person. John points us toward the love revealed by Jesus, a love that moves from words to action. The question is not whether desire exists, but how it is ordered.</p><p><strong>Reflect:</strong> Which good desire has recently become so urgent that I am tempted to ignore someone else?</p><p><strong>Practice:</strong> Enjoy a gift gratefully today while setting one healthy boundary that protects love and truth.</p><p><strong>Prayer:</strong> God of wisdom, teach my desires to serve life rather than rule it. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000362",
+    "day_number": 11,
+    "value": "<p><strong>Read:</strong> Genesis 1:26-27; Romans 8:5-11</p><p><strong>Source and historical context:</strong> Beibitz uses evolutionary language to distinguish ordinary survival impulses from responsible moral choices. He locates moral wrongdoing in the will rather than treating the body or animal life as evil.</p><p><strong>Devotional focus:</strong> Scripture describes people as bearing God’s image, which means their dignity cannot be reduced to performance, strength, or self-control. Our bodily needs are real and deserve care. The Spirit calls us to make choices that protect neighbors and cultivate life. We should not turn the author’s dated hierarchy of development into a judgment about other people, cultures, or those with disabilities.</p><p><strong>Reflect:</strong> Where do I need to accept a human need while taking responsibility for how I act on it?</p><p><strong>Practice:</strong> Attend to a basic need—rest, food, or safety—and consider one choice that expresses love at the same time.</p><p><strong>Prayer:</strong> Image-making God, help me honor the dignity and needs of every person. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000362",
+    "day_number": 12,
+    "value": "<p><strong>Read:</strong> Philippians 2:1-8; 1 John 4:7-12</p><p><strong>Source and historical context:</strong> The author contrasts self-protective impulses with the self-giving love he sees displayed at the cross. He describes that love as the revelation of what human life is intended to become, then turns to the lasting effects of wrongdoing.</p><p><strong>Devotional focus:</strong> Jesus’ humility is not an invitation to accept exploitation or erase all personal boundaries. Love seeks the real good of another, and sometimes that means speaking honestly, asking for help, or saying no. Paul calls believers to consider others without denying that they, too, are persons worthy of care. Christ-like life is generous, truthful, and free from contempt.</p><p><strong>Reflect:</strong> Does my picture of sacrificial love leave room for wisdom and protection from harm?</p><p><strong>Practice:</strong> Do one specific kindness freely, without treating your own needs or another person’s boundaries as unimportant.</p><p><strong>Prayer:</strong> Jesus, form in me a love that serves without controlling and gives without despising. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000362",
+    "day_number": 13,
+    "value": "<p><strong>Read:</strong> Isaiah 59:1-2; 2 Corinthians 5:17-21</p><p><strong>Source and historical context:</strong> Beibitz argues that sin does lasting harm to a person and creates alienation from God and others. He discusses divine wrath as God’s settled opposition to what destroys love, before turning to reconciliation in Christ.</p><p><strong>Devotional focus:</strong> We should not minimize the consequences of wrongdoing: trust may need to be rebuilt, and the damage done to others must be taken seriously. Yet alienation is not the last word of the gospel. Paul speaks of God making reconciliation possible through Christ. Restoration is more than declaring everything fine; it involves truthful acknowledgment, grace, and sometimes long, patient repair.</p><p><strong>Reflect:</strong> What relationship or responsibility has been affected by a choice I need to acknowledge?</p><p><strong>Practice:</strong> Where it is safe and appropriate, take one concrete step toward restitution or accountability.</p><p><strong>Prayer:</strong> Reconciling God, help me face the truth and participate in your patient work of restoration. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000362",
+    "day_number": 14,
+    "value": "<p><strong>Read:</strong> Mark 1:14-15; Romans 12:1-2</p><p><strong>Source and historical context:</strong> This reading comes from Beibitz’s explanation of the Greek word metanoia as a change of mind. He connects repentance with sharing Christ’s opposition to sin and with faith understood as a surrender of self-centered control.</p><p><strong>Devotional focus:</strong> Repentance is not a performance of despair. It is turning toward the good, receiving grace, and becoming willing to change what we can. Jesus’ call to repent is paired with the invitation to believe good news. A transformed mind learns to name wrongdoing accurately, reject its false promises, and practice something different.</p><p><strong>Reflect:</strong> What would change in my routine if repentance were more than regret?</p><p><strong>Practice:</strong> Choose one repeated harmful pattern. Identify its trigger and plan one small, truthful alternative.</p><p><strong>Prayer:</strong> Lord Jesus, renew my mind and strengthen my next obedient step. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000362",
+    "day_number": 15,
+    "value": "<p><strong>Read:</strong> Galatians 2:19-21; Philippians 1:6</p><p><strong>Source and historical context:</strong> Beibitz describes the believer’s union with Christ in language drawn from Paul: dying to sin and living toward God. He insists that Christ’s work is not only outside us but also at work through the Spirit in our continuing efforts to grow.</p><p><strong>Devotional focus:</strong> Faith is not self-improvement powered only by willpower. Neither is it a claim that every struggle ends immediately. Paul can speak of Christ living in him, while another letter trusts God to continue a work not yet complete. Grace meets us in unfinished lives, leading us toward habits of love, courage, and truthful repair without reducing spiritual maturity to perfectionism.</p><p><strong>Reflect:</strong> Where have I mistaken slow growth for the complete absence of God’s work?</p><p><strong>Practice:</strong> Thank God for one real step of growth. Ask for help with one next step rather than demanding instant success.</p><p><strong>Prayer:</strong> Faithful God, continue what you have begun and make me patient with the work of grace. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000362",
+    "day_number": 16,
+    "value": "<p><strong>Read:</strong> Hebrews 5:7-9; John 15:9-12</p><p><strong>Source and historical context:</strong> The author discusses humanity’s longing for fullness and Christ’s lifelong obedience culminating in the cross. He describes baptism and Communion as ways believers share in Christ’s life, reflecting his Anglican sacramental theology.</p><p><strong>Devotional focus:</strong> Christ’s obedience is not blind submission to cruelty; it is faithfulness to the Father’s love even amid opposition. Jesus commands his followers to remain in his love and to love one another. Different churches explain the sacraments in different ways, but the call to imitate Christ’s faithful service reaches ordinary decisions: speak truth, protect the vulnerable, and refuse harm.</p><p><strong>Reflect:</strong> Where might faithfulness require courage rather than simply following the strongest voice?</p><p><strong>Practice:</strong> Carry out one neglected responsibility with care, especially if it benefits someone with less power.</p><p><strong>Prayer:</strong> Obedient Savior, let love guide my choices and give me courage when doing good is costly. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000362",
+    "day_number": 17,
+    "value": "<p><strong>Read:</strong> John 15:1-8; Ephesians 2:8-10</p><p><strong>Source and historical context:</strong> Beibitz reflects on Christ’s shared humanity and the image of the vine, then describes faith as receiving what grace gives. He begins to explain how outward signs and physical things can communicate inward realities.</p><p><strong>Devotional focus:</strong> A branch does not make itself fruitful apart from the vine. Jesus invites his disciples to remain in him, not merely to admire him from a distance. Paul holds grace and purposeful good work together: we are not saved by impressive performance, yet grace opens a fruitful way of living. Receiving does not mean passivity; it means drawing strength from a relationship we did not create.</p><p><strong>Reflect:</strong> Am I treating faith as a list of achievements or as a living relationship that bears fruit?</p><p><strong>Practice:</strong> Spend ten quiet minutes with John 15 and choose one act of love that could grow from it.</p><p><strong>Prayer:</strong> Christ our vine, help me receive your life and bear fruit that nourishes others. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000362",
+    "day_number": 18,
+    "value": "<p><strong>Read:</strong> 1 Corinthians 10:16-17; Colossians 1:15-20</p><p><strong>Source and historical context:</strong> The author uses sunsets, bodies, and material objects to explain what he calls a sacramental principle. He connects this theme with Christian Communion and warns against treating the sacrament like a magical mechanism that bypasses the believer’s response.</p><p><strong>Devotional focus:</strong> Faith is not practiced in an imaginary, disembodied place. Bread shared at a table, care offered through our hands, and the beauty of creation can remind us that ordinary life matters to God. Churches differ in their understanding of sacramental presence; this reflection does not settle those differences. It asks us to approach worship with gratitude and respond to it through love.</p><p><strong>Reflect:</strong> What ordinary material thing can remind me today that worship should affect how I live?</p><p><strong>Practice:</strong> Share a meal or practical help with someone. Receive the moment with gratitude rather than haste.</p><p><strong>Prayer:</strong> Lord, meet us in the ordinary and shape our worship into living care. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000362",
+    "day_number": 19,
+    "value": "<p><strong>Read:</strong> Hebrews 9:11-14; Romans 12:1-2</p><p><strong>Source and historical context:</strong> Beibitz surveys ancient sacrificial practices and argues that their deepest meaning involves self-offering and shared life. Some of his historical claims about the origins of sacrifice reflect early twentieth-century scholarship and require independent checking.</p><p><strong>Devotional focus:</strong> The New Testament calls Christ’s sacrifice decisive and invites believers to present their lives in service to God. We do not need to recreate the ancient rites to hear the ethical call: worship should move us away from cruelty and toward mercy. Historical theories can be discussed carefully without confusing them with the biblical text itself.</p><p><strong>Reflect:</strong> When I use the word sacrifice, am I thinking of costly love or of pain as an end in itself?</p><p><strong>Practice:</strong> Read Hebrews 9 and Romans 12. Choose one way to give time or attention for another person’s good.</p><p><strong>Prayer:</strong> Holy God, purify my motives and let my worship become generous service. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000362",
+    "day_number": 20,
+    "value": "<p><strong>Read:</strong> Mark 10:42-45; Hebrews 13:15-16</p><p><strong>Source and historical context:</strong> This section identifies the cross as the completion of Jesus’ life of self-giving obedience. Beibitz argues that Christ’s sacrifice enables believers to offer themselves in loving service, rather than merely escaping responsibility.</p><p><strong>Devotional focus:</strong> Jesus came to serve and give his life. That service is not a demand that vulnerable people endure mistreatment silently; it challenges those with power to use it for others. Praise and doing good belong together in Hebrews. The cross turns us outward: forgiven people can seek justice, share resources, and take responsibility for their neighbors.</p><p><strong>Reflect:</strong> How does my view of Jesus’ sacrifice affect the way I treat someone who depends on me?</p><p><strong>Practice:</strong> Give practical help in a way that respects the other person’s wishes and dignity.</p><p><strong>Prayer:</strong> Servant Lord, turn my gratitude into wise and courageous care. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000362",
+    "day_number": 21,
+    "value": "<p><strong>Read:</strong> Ephesians 4:20-24; Luke 23:32-34</p><p><strong>Source and historical context:</strong> After completing his addresses on sacrifice, Beibitz introduces a Good Friday devotion centered on the Seven Last Words. He describes meditation as a way to learn the mind and character of Jesus, beginning with the prayer for forgiveness of those involved in his execution.</p><p><strong>Devotional focus:</strong> Learning Christ is more than collecting facts. It means allowing his mercy, truthfulness, and courage to shape us. At the cross, Jesus refuses to answer violence with vengeance. We should receive these words carefully, remembering that Christian faith never requires a victim to remain unsafe or disregard justice. His mercy can inform our response even as wrongdoing is named.</p><p><strong>Reflect:</strong> What do Jesus’ words reveal about the kind of person he calls me to become?</p><p><strong>Practice:</strong> Read Luke 23:32-34. Pray for the courage to tell the truth without nourishing revenge.</p><p><strong>Prayer:</strong> Jesus, help me learn your ways and resist the cycle of harm. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000362",
+    "day_number": 22,
+    "value": "<p><strong>Read:</strong> Matthew 5:43-48; Romans 12:17-21</p><p><strong>Source and historical context:</strong> The next segment expands on Jesus’ first word from the cross, arguing that forgiveness is strong rather than cowardly. The author urges believers to abandon personal resentment and recognizes the ignorance often involved in wrongdoing.</p><p><strong>Devotional focus:</strong> Forgiveness can loosen the hold of retaliation while still affirming that evil was evil. It is not the same as instant trust, compulsory reconciliation, or the removal of consequences. Paul tells believers not to repay evil with evil and to overcome evil with good. In circumstances involving abuse or danger, wisdom includes boundaries, support, and appropriate protection.</p><p><strong>Reflect:</strong> What is the difference between letting go of revenge and pretending that nothing happened?</p><p><strong>Practice:</strong> Bring one resentment honestly into prayer. If safety is involved, seek trustworthy support instead of forcing contact.</p><p><strong>Prayer:</strong> Merciful Christ, guard my heart against vengeance and help me pursue truth and safety. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000362",
+    "day_number": 23,
+    "value": "<p><strong>Read:</strong> Luke 23:39-43; 1 John 1:8-9</p><p><strong>Source and historical context:</strong> Beibitz considers Jesus’ promise to the repentant criminal. He identifies contrition, confession, and amendment as features of repentance and insists that forgiveness can be received without delay, while the consequences of past actions may still remain.</p><p><strong>Devotional focus:</strong> The man beside Jesus has no opportunity to assemble an impressive record of good works. He turns to Christ in honesty and hope. This is encouragement for those who fear they are too late or too stained to ask for mercy. It is not a reason to avoid making amends when we can. Grace welcomes the penitent and gives courage to begin a changed direction.</p><p><strong>Reflect:</strong> Is shame keeping me from turning toward the mercy Christ offers?</p><p><strong>Practice:</strong> Pray with the words “Jesus, remember me.” Where possible, make one honest repair.</p><p><strong>Prayer:</strong> Lord Jesus, remember me in mercy and guide me into truthful repentance. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000362",
+    "day_number": 24,
+    "value": "<p><strong>Read:</strong> John 19:25-27; 1 Timothy 5:4-8</p><p><strong>Source and historical context:</strong> The author turns to Jesus’ words to his mother and the beloved disciple. He treats Christ’s concern for Mary as a model of practical consideration and speaks of renewed friendship that becomes visible through service. The next section introduces Jesus’ cry of abandonment.</p><p><strong>Devotional focus:</strong> Even in profound suffering, Jesus notices a person who will need care. Christian love should not be measured only by dramatic sacrifices far away; it is tested in patient attention to people close to us. Caring wisely may involve relatives, friends, trusted communities, and professional help. It is not a demand that a single person shoulder every burden alone.</p><p><strong>Reflect:</strong> Whose need is easy for me to overlook because it is familiar or inconvenient?</p><p><strong>Practice:</strong> Ask someone close to you what concrete support would help, and respond within your capacity.</p><p><strong>Prayer:</strong> Caring Christ, teach me to see nearby needs and build dependable circles of support. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000362",
+    "day_number": 25,
+    "value": "<p><strong>Read:</strong> Psalm 22:1-24; Mark 15:33-39</p><p><strong>Source and historical context:</strong> Beibitz analyzes the Fourth Word, “My God, my God, why have you forsaken me?” He considers the agony of isolation, death, and sin, and interprets the cry as a real expression of Jesus’ human suffering.</p><p><strong>Devotional focus:</strong> Jesus’ cry gives believers language for pain that cannot be made tidy. The opening of Psalm 22 is a prayer of anguish, not a sign that someone who suffers has less faith. We must not tell grieving or ill people that their distress proves divine rejection. The cross allows honest lament to stand within the story of God’s love; community is called to stay present rather than explain another person’s pain away.</p><p><strong>Reflect:</strong> What sorrow have I been afraid to speak honestly in prayer?</p><p><strong>Practice:</strong> Read Psalm 22 aloud or in silence. Offer presence, not a quick explanation, to someone who grieves.</p><p><strong>Prayer:</strong> God who hears the forsaken, receive our cries and keep us close in suffering. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000362",
+    "day_number": 26,
+    "value": "<p><strong>Read:</strong> John 19:28-30; Hebrews 4:14-16</p><p><strong>Source and historical context:</strong> The Fifth Word begins with Jesus’ bodily thirst. Beibitz reflects on the reality of physical pain and treats Christ’s deliberate speech as evidence of courage. He also develops a broad argument that hardship can train spiritual life.</p><p><strong>Devotional focus:</strong> Jesus is not a distant spectator of bodily need. His thirst tells us that hunger, pain, exhaustion, and vulnerability belong within the story of incarnation. Physical suffering is not inherently holy, nor should it be romanticized as necessary for growth. Christians may pursue treatment, rest, and relief while asking God for endurance and companionship through what cannot immediately be changed.</p><p><strong>Reflect:</strong> Do I treat my own bodily limits, or someone else’s, as something embarrassing to ignore?</p><p><strong>Practice:</strong> Attend to a real physical need today. Offer water, rest, or practical assistance to someone who needs it.</p><p><strong>Prayer:</strong> Compassionate Savior, teach me to honor bodies and respond to suffering with care. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000362",
+    "day_number": 27,
+    "value": "<p><strong>Read:</strong> Matthew 25:34-40; John 19:29-30</p><p><strong>Source and historical context:</strong> The author finishes discussing Christ’s thirst by drawing attention to the person who offered him drink. He then introduces the Sixth Word, “It is finished,” and reads the cross as the culmination of Jesus’ faithful mission rather than an isolated episode.</p><p><strong>Devotional focus:</strong> The simple act of offering relief matters. Jesus says that care given to the hungry, thirsty, and vulnerable is not forgotten. His completed work does not excuse indifference; it frees us to participate in love. We need not understand every theory of the cross before beginning to practice mercy. A cup of water can become a genuine response to God’s costly love.</p><p><strong>Reflect:</strong> What small act of relief is within my reach right now?</p><p><strong>Practice:</strong> Help one person with a concrete need today, without making them feel indebted or inferior.</p><p><strong>Prayer:</strong> Lord Jesus, let the fullness of your love make my hands ready to serve. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000362",
+    "day_number": 28,
+    "value": "<p><strong>Read:</strong> John 19:30; Philippians 2:5-11</p><p><strong>Source and historical context:</strong> Beibitz reflects on the Sixth Word as the victory of a life of obedience. In the same segment he introduces the Seventh Word, Jesus entrusting his spirit to the Father, and contrasts joyful trust with passive resignation.</p><p><strong>Devotional focus:</strong> When Jesus says that his work is finished, he does not announce that human suffering is good or that his followers need never act again. He brings his costly mission of love to its completion. We are invited to persevere in faithful service, not to measure ourselves against a burden we cannot carry. Trust grows as we learn to recognize the goodness of God’s will.</p><p><strong>Reflect:</strong> Where do I need to distinguish faithful perseverance from exhaustion or harmful pressure?</p><p><strong>Practice:</strong> Complete one manageable act of service, and then receive rest without guilt.</p><p><strong>Prayer:</strong> Faithful Jesus, teach me the courage to serve and the humility to rest. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000362",
+    "day_number": 29,
+    "value": "<p><strong>Read:</strong> Luke 23:44-49; Romans 6:3-5</p><p><strong>Source and historical context:</strong> At the close of the Seven Words, Beibitz presents surrender to the Father as confidence in divine love. He then moves to the burial of Jesus and baptismal imagery for dying to an old way of living and being raised into new life.</p><p><strong>Devotional focus:</strong> The words “into your hands” are an act of trust, not a demand to feel untroubled in the face of loss. Christian hope can coexist with grief and uncertainty. Paul’s image of baptism connects Jesus’ death and resurrection with a new way of life. Traditions differ in how they explain the sacrament, but all may hear the invitation to leave behind what destroys life and walk toward Christ.</p><p><strong>Reflect:</strong> What fear or burden can I entrust to God today without pretending it has disappeared?</p><p><strong>Practice:</strong> Pray Luke 23:46, then write one hopeful step you can take while uncertainty remains.</p><p><strong>Prayer:</strong> Loving Father, hold us in life and death, and lead us in paths of new life. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000362",
+    "day_number": 30,
+    "value": "<p><strong>Read:</strong> Romans 6:4-11; 1 Corinthians 15:3-8</p><p><strong>Source and historical context:</strong> The closing paragraph links Jesus’ death, burial, and resurrection with transformation in believers’ lives. Beibitz ends by encouraging worshippers to approach Easter Communion with hope that divine grace can renew their moral and spiritual life.</p><p><strong>Devotional focus:</strong> The Christian proclamation does not stop at the grave. Paul proclaims the risen Christ and calls believers to walk in newness of life. Personal growth can be uneven, and faith should not be turned into a promise of instant perfection or physical healing. Easter hope means the future is not exhausted by yesterday’s failures. We can begin again, relying on God’s faithful love.</p><p><strong>Reflect:</strong> Where do I need hope for a new beginning rather than another attempt to punish myself?</p><p><strong>Practice:</strong> Celebrate Easter hope with gratitude. Choose one achievable act that expresses the new life you seek.</p><p><strong>Prayer:</strong> Risen Lord, renew our courage, heal what is broken, and teach us to walk in hope. Amen.</p>"
+  }
+]
+$adapt_text$::jsonb) as edit(id uuid, day_number integer, value text)
+where target.plan_id = edit.id and target.day_number = edit.day_number;
+
+-- Update only plan-owned Scripture references; do not touch user-owned records.
+do $$
+declare
+  item jsonb;
+  target_day_id uuid;
+begin
+  for item in select value from jsonb_array_elements($adapt_refs$
+[
+  {
+    "id": "90000000-0000-0000-0000-000000000362",
+    "day_number": 1,
+    "references": [
+      "Galatians 6:14",
+      "2 Corinthians 5:18-19"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000362",
+    "day_number": 2,
+    "references": [
+      "Romans 3:21-26",
+      "1 John 4:9-10"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000362",
+    "day_number": 3,
+    "references": [
+      "1 Corinthians 1:18-25",
+      "Ephesians 3:16-19"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000362",
+    "day_number": 4,
+    "references": [
+      "Romans 2:14-16",
+      "Acts 17:24-28"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000362",
+    "day_number": 5,
+    "references": [
+      "Acts 2:22-24",
+      "Luke 23:13-25"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000362",
+    "day_number": 6,
+    "references": [
+      "Mark 7:6-13",
+      "Matthew 23:23-28"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000362",
+    "day_number": 7,
+    "references": [
+      "1 Corinthians 15:3-4",
+      "James 1:13-17"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000362",
+    "day_number": 8,
+    "references": [
+      "Psalm 139:23-24",
+      "Romans 7:18-25"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000362",
+    "day_number": 9,
+    "references": [
+      "Genesis 3:1-13",
+      "2 Timothy 3:14-17"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000362",
+    "day_number": 10,
+    "references": [
+      "1 John 3:16-18",
+      "Galatians 5:13-16"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000362",
+    "day_number": 11,
+    "references": [
+      "Genesis 1:26-27",
+      "Romans 8:5-11"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000362",
+    "day_number": 12,
+    "references": [
+      "Philippians 2:1-8",
+      "1 John 4:7-12"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000362",
+    "day_number": 13,
+    "references": [
+      "Isaiah 59:1-2",
+      "2 Corinthians 5:17-21"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000362",
+    "day_number": 14,
+    "references": [
+      "Mark 1:14-15",
+      "Romans 12:1-2"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000362",
+    "day_number": 15,
+    "references": [
+      "Galatians 2:19-21",
+      "Philippians 1:6"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000362",
+    "day_number": 16,
+    "references": [
+      "Hebrews 5:7-9",
+      "John 15:9-12"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000362",
+    "day_number": 17,
+    "references": [
+      "John 15:1-8",
+      "Ephesians 2:8-10"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000362",
+    "day_number": 18,
+    "references": [
+      "1 Corinthians 10:16-17",
+      "Colossians 1:15-20"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000362",
+    "day_number": 19,
+    "references": [
+      "Hebrews 9:11-14",
+      "Romans 12:1-2"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000362",
+    "day_number": 20,
+    "references": [
+      "Mark 10:42-45",
+      "Hebrews 13:15-16"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000362",
+    "day_number": 21,
+    "references": [
+      "Ephesians 4:20-24",
+      "Luke 23:32-34"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000362",
+    "day_number": 22,
+    "references": [
+      "Matthew 5:43-48",
+      "Romans 12:17-21"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000362",
+    "day_number": 23,
+    "references": [
+      "Luke 23:39-43",
+      "1 John 1:8-9"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000362",
+    "day_number": 24,
+    "references": [
+      "John 19:25-27",
+      "1 Timothy 5:4-8"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000362",
+    "day_number": 25,
+    "references": [
+      "Psalm 22:1-24",
+      "Mark 15:33-39"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000362",
+    "day_number": 26,
+    "references": [
+      "John 19:28-30",
+      "Hebrews 4:14-16"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000362",
+    "day_number": 27,
+    "references": [
+      "Matthew 25:34-40",
+      "John 19:29-30"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000362",
+    "day_number": 28,
+    "references": [
+      "John 19:30",
+      "Philippians 2:5-11"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000362",
+    "day_number": 29,
+    "references": [
+      "Luke 23:44-49",
+      "Romans 6:3-5"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000362",
+    "day_number": 30,
+    "references": [
+      "Romans 6:4-11",
+      "1 Corinthians 15:3-8"
+    ]
+  }
+]
+$adapt_refs$::jsonb) loop
+    select id into strict target_day_id
+    from public.devotional_days
+    where plan_id = (item ->> 'id')::uuid
+      and day_number = (item ->> 'day_number')::integer;
+
+    update public.scripture_references
+    set reference = array(select jsonb_array_elements_text(item -> 'references')),
+        updated_at = now()
+    where day_id = target_day_id and user_id is null;
+
+    if not found then
+      insert into public.scripture_references
+        (user_id, day_id, reference, created_at, updated_at)
+      values (null, target_day_id,
+        array(select jsonb_array_elements_text(item -> 'references')), now(), now());
+    end if;
+  end loop;
+end
+$$;
+
+update public.devotional_plans
+set status = 'published', updated_at = now()
+where id = '90000000-0000-0000-0000-000000000362'::uuid;
+
+commit;
+-- END CONSOLIDATED SOURCE: 20261026230000_repair_draft_devotional_plans_wave_31.sql
+
+-- BEGIN CONSOLIDATED SOURCE: 20261027000000_repair_draft_devotional_plans_wave_32.sql sha256=756019335fe9e2bd1304e9431348409e6c1f77a7df881e0e90a7618584bcc204
+-- Wave 32: Plan 367 — M. W. Mayow, Remarks upon the First Report of the Royal Commission on Ritual.
+-- Lecture delivered in Brighton 1867; published 1868. Nineteen original Scripture-led adaptations.
+-- Historical Anglican legal and ceremonial claims are labeled as period-specific arguments.
+-- Preserve existing plan/day IDs, reading progress, metadata and user-owned Scripture notes.
+-- Apply after October 21 language-modernization migrations, including part 12.
+-- Editorial DRAFT ONLY. Review in staging before publication.
+
+begin;
+
+do $$
+declare
+  current_source text;
+  current_total integer;
+  day_count integer;
+  first_day integer;
+  last_day integer;
+  unique_days integer;
+  duplicates integer;
+begin
+  select source_url, total_days into current_source, current_total
+  from public.devotional_plans where id = '90000000-0000-0000-0000-000000000367'::uuid;
+  if not found then raise exception 'Plan 367 missing'; end if;
+  if current_source is distinct from 'https://www.gutenberg.org/ebooks/49145' or current_total is distinct from 19 then
+    raise exception 'Plan 367 source URL or total days differs from Wave 32 review';
+  end if;
+  select count(*), min(day_number), max(day_number), count(distinct day_number)
+  into day_count, first_day, last_day, unique_days
+  from public.devotional_days where plan_id = '90000000-0000-0000-0000-000000000367'::uuid;
+  if day_count <> 19 or first_day <> 1 or last_day <> 19 or unique_days <> 19 then
+    raise exception 'Plan 367 must contain 19 distinct numbered days; found %', day_count;
+  end if;
+  select count(*) into duplicates from (
+     select sr.day_id
+     from public.scripture_references sr
+     join public.devotional_days d on d.id = sr.day_id
+     where d.plan_id = '90000000-0000-0000-0000-000000000367'::uuid and sr.user_id is null
+     group by sr.day_id having count(*) > 1
+  ) duplicates_per_day;
+  if duplicates > 0 then
+    raise exception 'Plan 367 has % days with duplicate plan-level Scripture-reference rows', duplicates;
+  end if;
+end
+$$;
+
+update public.devotional_plans as target
+set title = edit.value, updated_at = now()
+from jsonb_to_recordset($adapt_text$
+[
+  {
+    "id": "90000000-0000-0000-0000-000000000367",
+    "value": "Worship, Conscience, and Christian Unity: 19 Readings from a Victorian Debate"
+  }
+]
+$adapt_text$::jsonb) as edit(id uuid, value text)
+where target.id = edit.id;
+
+update public.devotional_plans as target
+set description = edit.value, updated_at = now()
+from jsonb_to_recordset($adapt_text$
+[
+  {
+    "id": "90000000-0000-0000-0000-000000000367",
+    "value": "Nineteen Scripture-led devotional readings inspired by M. W. Mayow’s 1867 lecture, published in 1868, on the first report of the Royal Commission on Ritual and the Book of Common Prayer. Explore faithful worship, conscience, Christian freedom, fair church decisions, leadership, respectful disagreement, inherited tradition, and hope for unity. The readings place his Anglican ceremonial and legal arguments in their historical context rather than treating them as binding rules for all Christians. Each day offers Scripture, source context, reflection, a practical response, and prayer."
+  }
+]
+$adapt_text$::jsonb) as edit(id uuid, value text)
+where target.id = edit.id;
+
+update public.devotional_days as target
+set title = edit.value, updated_at = now()
+from jsonb_to_recordset($adapt_text$
+[
+  {
+    "id": "90000000-0000-0000-0000-000000000367",
+    "day_number": 1,
+    "value": "Faithfulness When Traditions Are Questioned"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000367",
+    "day_number": 2,
+    "value": "What Is Essential, and to Whom?"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000367",
+    "day_number": 3,
+    "value": "The Cross as a Sign, Not a Substitute"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000367",
+    "day_number": 4,
+    "value": "When an Outward Gesture Has Meaning"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000367",
+    "day_number": 5,
+    "value": "Liberty Requires Thoughtful Responsibility"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000367",
+    "day_number": 6,
+    "value": "The Difference Between a Mandate and a Remedy"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000367",
+    "day_number": 7,
+    "value": "A Crisis Calls for More Than Alarm"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000367",
+    "day_number": 8,
+    "value": "Authority Needs Clear Limits"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000367",
+    "day_number": 9,
+    "value": "Disagreement Deserves Due Process"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000367",
+    "day_number": 10,
+    "value": "Beauty Can Point Beyond Itself"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000367",
+    "day_number": 11,
+    "value": "Do Not Confuse Fear with Faithfulness"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000367",
+    "day_number": 12,
+    "value": "When Strong Labels Cloud the Question"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000367",
+    "day_number": 13,
+    "value": "A Change in Practice Should Be Named Honestly"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000367",
+    "day_number": 14,
+    "value": "Making a Respectful Public Appeal"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000367",
+    "day_number": 15,
+    "value": "Fairness Across a Change of Rules"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000367",
+    "day_number": 16,
+    "value": "Preserve Convictions Without Wounding Others"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000367",
+    "day_number": 17,
+    "value": "Guard the Treasure Without Closing the Door"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000367",
+    "day_number": 18,
+    "value": "A Wider Family Than Our Own Church"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000367",
+    "day_number": 19,
+    "value": "Hope for Unity, Work for Peace Today"
+  }
+]
+$adapt_text$::jsonb) as edit(id uuid, day_number integer, value text)
+where target.plan_id = edit.id and target.day_number = edit.day_number;
+
+update public.devotional_days as target
+set content = edit.value, updated_at = now()
+from jsonb_to_recordset($adapt_text$
+[
+  {
+    "id": "90000000-0000-0000-0000-000000000367",
+    "day_number": 1,
+    "value": "<p><strong>Read:</strong> Colossians 3:12-17; John 17:20-23</p><p><strong>Source and historical context:</strong> In a lecture delivered to the Brighton English Church Union on November 27, 1867, and printed in 1868, M. W. Mayow warned that proposals following a Royal Commission might endanger the Book of Common Prayer. He called the debate a crisis for the Church of England and linked it to hopes for Christian unity.</p><p><strong>Devotional focus:</strong> Communities sometimes face changes that unsettle familiar forms of worship. Paul urges believers to clothe themselves with love, gratitude, and peace. That does not make every inherited practice beyond examination; it asks us to conduct difficult conversations with patience and fidelity. Our deepest unity is not maintained by anxiety alone but by listening to Christ and one another.</p><p><strong>Reflect:</strong> When a practice I value is questioned, do I respond first with suspicion or with an effort to understand?</p><p><strong>Practice:</strong> Pray for people on different sides of a church disagreement. Name one question you could ask respectfully before taking a position.</p><p><strong>Prayer:</strong> Lord Jesus, keep us faithful in what matters and gentle toward those who see questions differently. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000367",
+    "day_number": 2,
+    "value": "<p><strong>Read:</strong> Romans 14:1-6; 1 Corinthians 10:31-33</p><p><strong>Source and historical context:</strong> Mayow discusses the Royal Commission’s first report of August 1867 concerning clerical vestments. The commissioners judged such clothing not essential yet offensive to many, and proposed restrictions. Mayow argued that this conclusion failed to consider why vestments mattered to worshippers who valued them.</p><p><strong>Devotional focus:</strong> A dispute can become sharper when everyone uses the same word differently. The question of what is essential to salvation differs from what is meaningful for communal worship. Paul calls Christians to honor God while considering one another’s consciences. The first response need not be to declare one party foolish; it may be to discover what a cherished symbol communicates and whom a choice affects.</p><p><strong>Reflect:</strong> Am I calling something insignificant simply because it does not matter to me?</p><p><strong>Practice:</strong> Before criticizing an unfamiliar worship custom, ask a participant what it means. Listen without pretending agreement.</p><p><strong>Prayer:</strong> God of wisdom, help me distinguish the heart of faith from the forms by which people seek to express it. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000367",
+    "day_number": 3,
+    "value": "<p><strong>Read:</strong> Galatians 6:14; Romans 6:3-4</p><p><strong>Source and historical context:</strong> Mayow turns to Canon 30 of the Church of England’s 1603 canons. It defended the sign of the cross after baptism, even while acknowledging that the sign itself was not necessary for the sacrament’s validity. He used this example to challenge the proposed restriction of vestments.</p><p><strong>Devotional focus:</strong> A visible sign may help us remember a profound promise without becoming the source of that promise. Christians differ in how they practice baptism and interpret sacramental signs. Paul points beyond a gesture to belonging to the crucified and risen Christ. When a tradition helps us attend to Jesus and love others, we may receive it with gratitude; when it distracts or wounds, we should examine how it is used.</p><p><strong>Reflect:</strong> What visible practice helps me remember Christ, and do I ever mistake the reminder for the reality?</p><p><strong>Practice:</strong> Reflect on the meaning of a familiar cross or baptismal remembrance. Let it lead to one humble action today.</p><p><strong>Prayer:</strong> Crucified and risen Lord, make our signs honest reminders of your grace and our shared calling. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000367",
+    "day_number": 4,
+    "value": "<p><strong>Read:</strong> Matthew 28:18-20; 1 Corinthians 12:12-13</p><p><strong>Source and historical context:</strong> Continuing the baptism example, Mayow quotes Canon 30’s distinction between baptism itself and the later making of the sign of the cross. He argues that an outward ceremony can convey reverence without adding to the sacrament. He also cites the Savoy Conference to explain the authority of established rubrics.</p><p><strong>Devotional focus:</strong> Meaningful practices should serve what they signify. Baptism directs attention to Christ and the community that receives the baptized person. The exact role of ceremonies differs among Christian churches, so this Anglican historical argument should not be treated as a command for every believer. Whatever the form, the call to become a people of welcome, discipleship, and mutual care remains urgent.</p><p><strong>Reflect:</strong> Do our congregational symbols make newcomers feel invited into Christ’s life or tested on unfamiliar customs?</p><p><strong>Practice:</strong> If you help lead worship, explain one tradition in plain words and make room for sincere questions.</p><p><strong>Prayer:</strong> Father, let our worship show your welcome and help us honor those who are learning. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000367",
+    "day_number": 5,
+    "value": "<p><strong>Read:</strong> 1 Corinthians 8:9-13; Galatians 5:13-14</p><p><strong>Source and historical context:</strong> Mayow quotes the Savoy bishops in reply to Nonconformist objections to ceremonies they considered unnecessary. He then offers the freedom of clergy to marry as another case where something not required for priestly ministry may still be important to protect. The examples serve his defense of liturgical liberty.</p><p><strong>Devotional focus:</strong> Christian freedom is neither contempt for others nor a license to control them. Paul asks believers to consider how their freedom affects another person, and to use it for love. Communities need room to differ about practices while also protecting people from coercion. A right becomes better understood when we see both its meaning for the person who holds it and its consequences for the people around them.</p><p><strong>Reflect:</strong> When I ask for freedom in worship, do I extend patient consideration to someone seeking a different freedom?</p><p><strong>Practice:</strong> Choose one conversation where both principle and compassion deserve to be heard. State the other person’s concern fairly.</p><p><strong>Prayer:</strong> Gracious God, guide our liberties away from pride and toward service. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000367",
+    "day_number": 6,
+    "value": "<p><strong>Read:</strong> Proverbs 18:13-17; Micah 6:8</p><p><strong>Source and historical context:</strong> Mayow notes that the commission was tasked with considering uniformity in essential matters yet recommended limits on vestments its witnesses deemed nonessential. He then argues that giving aggrieved parishioners legal power to forbid existing lawful dress would, in effect, alter the Prayer Book’s authority.</p><p><strong>Devotional focus:</strong> Fair decisions require clarity about the question being asked and the power being used. Proverbs warns against answering before hearing, and Micah calls for justice with humility. Whether one agrees with Mayow’s legal reasoning or not, his argument challenges us to examine whether a proposed remedy addresses the harm it names and whether its consequences are explained openly.</p><p><strong>Reflect:</strong> Have I ever supported a rule because of its promised benefit without examining what else it changes?</p><p><strong>Practice:</strong> Before endorsing a policy at church or work, write down its stated aim, its likely effects, and whose voice has been missed.</p><p><strong>Prayer:</strong> Just God, teach us to seek remedies that are truthful, fair, and humane. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000367",
+    "day_number": 7,
+    "value": "<p><strong>Read:</strong> James 1:19-20; Philippians 4:5-7</p><p><strong>Source and historical context:</strong> Mayow urges an organized defense of the Prayer Book and considers remedies discussed by the Bishop of Gloucester and Bristol. He reviews plans for wholesale revision or wider episcopal discretion, objecting that changes in authority may also produce greater inconsistency among parishes.</p><p><strong>Devotional focus:</strong> When people fear that their community may lose something precious, urgency can narrow listening. James counsels slowness to anger, and Paul commends gentleness even under pressure. This is not a call to silence principled disagreement. It is an invitation to act responsibly: gather evidence, consider alternatives, and refuse the temptation to make opponents into enemies.</p><p><strong>Reflect:</strong> What would calm, well-informed courage look like in a disagreement that feels urgent?</p><p><strong>Practice:</strong> Find one reliable account of the opposing position. Summarize it without insults before forming your response.</p><p><strong>Prayer:</strong> God of peace, steady our hearts so that conviction and gentleness may belong together. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000367",
+    "day_number": 8,
+    "value": "<p><strong>Read:</strong> 1 Peter 5:2-3; Acts 15:6-12</p><p><strong>Source and historical context:</strong> Mayow considers proposals that would grant bishops more discretion over local ritual or create a new intermediate process. He worries about unequal rules between dioceses, uncertainty for clergy and parishioners, and changes to the established authority of Prayer Book rubrics.</p><p><strong>Devotional focus:</strong> Leadership exists to shepherd rather than dominate. Peter warns elders against lording power over others, while the Jerusalem council models shared deliberation. These passages do not decide nineteenth-century Anglican constitutional law. They do, however, invite churches today to make authority transparent, accountable, and attentive to people who bear the consequences of decisions.</p><p><strong>Reflect:</strong> Can those affected by a decision understand who makes it, what guides it, and how concerns can be heard?</p><p><strong>Practice:</strong> Identify one unclear rule in a group you belong to. Ask for a gracious, public explanation rather than relying on rumor.</p><p><strong>Prayer:</strong> Faithful Shepherd, grant leaders humility and communities the patience to deliberate well. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000367",
+    "day_number": 9,
+    "value": "<p><strong>Read:</strong> Matthew 18:15-17; Proverbs 15:22</p><p><strong>Source and historical context:</strong> Mayow examines a proposal to let existing courts resolve contested points of ritual practice. He challenges the claim that clergy whose actions are judged unlawful would necessarily abandon the Church of England and argues that disputed practices ought to be examined before condemnation.</p><p><strong>Devotional focus:</strong> Sound judgment listens, tests claims, and keeps a door open for correction. Jesus describes a careful process for confronting wrongdoing; wisdom grows through counsel. Neither passage turns legal process into a substitute for pastoral care. Where conscience and communal standards conflict, fairness means giving people an honest hearing while protecting those who may be harmed.</p><p><strong>Reflect:</strong> Do I rush to label a person disloyal before I have heard their explanation?</p><p><strong>Practice:</strong> If you must raise a complaint, describe the action and its effects accurately; avoid speculating about someone’s motives.</p><p><strong>Prayer:</strong> Lord, make us slow to accuse, willing to listen, and courageous enough to address real harm. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000367",
+    "day_number": 10,
+    "value": "<p><strong>Read:</strong> Psalm 96:1-9; John 4:21-24</p><p><strong>Source and historical context:</strong> Mayow approvingly quotes the Bishop of Vermont in defense of ordered and expressive worship. The cited argument compares church ritual with worship traditions in Eastern churches and asks whether beautiful forms may help turn human attention toward God.</p><p><strong>Devotional focus:</strong> Scripture gives room for music, dignity, and reverent beauty, but it does not measure devotion by expense or spectacle. Jesus speaks of worship in spirit and truth. Beautiful spaces can lift hearts; simple rooms can also hold sincere prayer. The most important question is not whether a service looks impressive but whether it directs people toward God and love of neighbor.</p><p><strong>Reflect:</strong> What helps me attend to God in worship, and do I honor others whose worship looks different?</p><p><strong>Practice:</strong> Notice one element of beauty in an ordinary setting. Thank God without making it a standard everyone must meet.</p><p><strong>Prayer:</strong> Creator of beauty, train our senses to seek truth, compassion, and reverence rather than display. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000367",
+    "day_number": 11,
+    "value": "<p><strong>Read:</strong> 2 Timothy 1:6-7; Ephesians 4:1-6</p><p><strong>Source and historical context:</strong> Mayow disputes Bishop Ellicott’s expectation that a judicial settlement favorable to ceremonialists might provoke widespread departure from the established Church. He fears instead that legislative limits on its Catholic character would alienate those who cherish the Prayer Book. He then recounts a proposal to restrict innovations in worship dress.</p><p><strong>Devotional focus:</strong> Predictions about a community’s collapse can become instruments of fear. Paul calls believers to courage, patience, and unity of the Spirit. These virtues do not settle the historical debate or require all Christians to remain in every institution. They can help us speak about change without threatening others, and protect space for informed conscience.</p><p><strong>Reflect:</strong> Am I imagining the worst outcome as certain because it would strengthen my argument?</p><p><strong>Practice:</strong> Replace one sweeping prediction with a careful statement of what is known, feared, and still uncertain.</p><p><strong>Prayer:</strong> Spirit of truth, free us from panic and help us seek unity without silencing conscience. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000367",
+    "day_number": 12,
+    "value": "<p><strong>Read:</strong> Ephesians 4:25-32; James 3:13-18</p><p><strong>Source and historical context:</strong> Mayow responds to the charge that ritualist clergy acted with recklessness and self-will. He says many believed they were following existing law. He challenges a proposed legislative restraint that its advocate maintained would not amount to repeal of the ornaments rubric.</p><p><strong>Devotional focus:</strong> When a disagreement becomes personal, the central question can disappear behind harsh descriptions. Paul asks us to put away corrosive speech; James praises wisdom that is peaceable and open to reason. We can still disagree strongly about policy while distinguishing alleged actions, evidence, legal interpretations, and the dignity of the people involved.</p><p><strong>Reflect:</strong> Have I used a harsh label when a precise description would have been more truthful?</p><p><strong>Practice:</strong> Revise one sentence you plan to say in a disagreement so that it states the issue without insulting a person.</p><p><strong>Prayer:</strong> God of wisdom, guard my tongue and make my words both courageous and kind. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000367",
+    "day_number": 13,
+    "value": "<p><strong>Read:</strong> Matthew 5:33-37; Proverbs 11:1-3</p><p><strong>Source and historical context:</strong> Mayow argues that leaving an old rubric printed in the Prayer Book while passing a new law limiting its operation would still amount to changing its force. He illustrates the point by imagining a rule that appears in a text but is no longer permitted to be practiced, and turns toward public efforts to influence the commission.</p><p><strong>Devotional focus:</strong> Trust grows when leaders describe what a decision will actually do, not only what they choose to call it. Jesus teaches plain speech; Proverbs commends honest dealing. A policy may be prudent or unwise, but its effect should be explained accurately. Candor allows a community to disagree without being misled about the stakes.</p><p><strong>Reflect:</strong> Where might I be using a reassuring label to avoid acknowledging a real change?</p><p><strong>Practice:</strong> When explaining a proposed change, compare the former practice with the new one in one clear sentence each.</p><p><strong>Prayer:</strong> Lord of truth, let our descriptions be as honest as our intentions. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000367",
+    "day_number": 14,
+    "value": "<p><strong>Read:</strong> Esther 4:13-16; 1 Timothy 2:1-2</p><p><strong>Source and historical context:</strong> Mayow discusses the public meeting at St. James’s Hall and the decision to send a memorial to the royal commissioners. He argues that petitioning an official body need not be improper pressure, especially when people believe their inherited worship is at risk.</p><p><strong>Devotional focus:</strong> Faith can move people to speak publicly, yet public witness still requires integrity. Esther accepted responsibility within a perilous political situation, while Paul urges prayer for those in authority. Neither example authorizes intimidation or contempt. A respectful appeal states its reasons, represents facts fairly, and remembers that the people receiving it are neighbors too.</p><p><strong>Reflect:</strong> If I were writing to a leader, would I state my concern without caricaturing those who disagree?</p><p><strong>Practice:</strong> Write a short, calm request about a matter that affects your community: the issue, a reason, and a fair request for review.</p><p><strong>Prayer:</strong> God, give us courage to participate in public life with truthful and peaceable words. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000367",
+    "day_number": 15,
+    "value": "<p><strong>Read:</strong> Leviticus 19:15-18; Luke 6:31</p><p><strong>Source and historical context:</strong> Mayow calls attention to ex post facto legislation: the possibility that clergy who had relied upon one interpretation of the law might later be censured under a changed rule. He sees danger in turning formerly defended liturgical choices into evidence of disloyalty.</p><p><strong>Devotional focus:</strong> People deserve to know which rules govern their conduct and whether those rules have changed. Biblical justice calls for honest judgment, not favoritism, and Jesus asks us to treat others as we wish to be treated. The source’s legal classification is a historical argument, not a verified judgment under modern law. The enduring devotional question is whether our process is predictable, humane, and impartial.</p><p><strong>Reflect:</strong> Have I judged someone by expectations I explained only after they acted?</p><p><strong>Practice:</strong> When setting expectations for others, state them in advance and offer a fair way to ask questions or seek review.</p><p><strong>Prayer:</strong> Righteous God, help us join accountability with fairness and clarity. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000367",
+    "day_number": 16,
+    "value": "<p><strong>Read:</strong> Romans 15:1-7; 1 Corinthians 13:4-7</p><p><strong>Source and historical context:</strong> Mayow clarifies that he is defending the integrity of the Prayer Book rather than requiring every parish to adopt elaborate ritual. He acknowledges that customs long discontinued may be reintroduced unwisely if they shock people, even while arguing for legal room to retain them.</p><p><strong>Devotional focus:</strong> A tradition can be lawful and meaningful while its introduction still calls for care. Paul asks the strong to bear with the weak, and love refuses to insist on its own way. This does not mean that prejudice must control a church. It means that trust, teaching, consultation, and pastoral sensitivity often serve faith better than sudden changes that leave neighbors feeling disregarded.</p><p><strong>Reflect:</strong> Am I equating my freedom to do something with a duty to do it immediately?</p><p><strong>Practice:</strong> Before changing a group practice, ask those affected what they need to understand and participate well.</p><p><strong>Prayer:</strong> Lord of patience, keep our convictions firm and our dealings with others gentle. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000367",
+    "day_number": 17,
+    "value": "<p><strong>Read:</strong> 2 Timothy 1:13-14; 1 Corinthians 3:10-11</p><p><strong>Source and historical context:</strong> Mayow cites John Keble’s earlier warning, written in 1865, that revising a single ornaments rubric could have consequences for the wider Prayer Book and the doctrine its worship expressed. He uses Keble’s words as an authority for resisting rapid legislation.</p><p><strong>Devotional focus:</strong> We inherit practices and teaching from people who sought to serve Christ before us. Paul calls for guarding a good deposit, but the foundation of the church remains Jesus Christ. Honoring an inheritance means understanding its purpose, not assuming every interpretation is beyond question. Faithful stewardship welcomes serious study, truthful criticism, and patient care for the next generation.</p><p><strong>Reflect:</strong> Which teaching do I want to pass on, and can I explain its purpose rather than merely demand compliance?</p><p><strong>Practice:</strong> Ask an older member why a practice matters; then explain what you have learned to someone younger.</p><p><strong>Prayer:</strong> Jesus, our foundation, make us trustworthy stewards rather than anxious gatekeepers. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000367",
+    "day_number": 18,
+    "value": "<p><strong>Read:</strong> John 17:20-23; Ephesians 2:14-22</p><p><strong>Source and historical context:</strong> Following Keble’s warning, Mayow connects the contested ornaments rubric with the possibility of reunion among churches of East and West. He speaks of the Church of England’s place in the wider Christian world and his prayer for an ecumenical council to address divisions.</p><p><strong>Devotional focus:</strong> Christian unity is bigger than any single nation, tradition, or disputed garment. Jesus prays for believers to be one so that the world may recognize God’s love. Unity does not require pretending that significant differences vanish. It invites shared prayer, honest conversation, hospitality, and the refusal to make denominational identity more important than love.</p><p><strong>Reflect:</strong> Where do I treat my own Christian tradition as the whole of the church?</p><p><strong>Practice:</strong> Learn about one Christian community different from your own. Pray for its people and for wise, respectful dialogue.</p><p><strong>Prayer:</strong> Lord Jesus, teach your people to seek communion in truth and love, without erasing one another. Amen.</p>"
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000367",
+    "day_number": 19,
+    "value": "<p><strong>Read:</strong> Romans 12:9-18; Revelation 21:1-5</p><p><strong>Source and historical context:</strong> Mayow ends by defending hope for a future general council of Christendom, even if reunion appears unrealistic. He insists that his immediate duty is to resist changes he believes would weaken the Catholic standing of the Church of England and its Prayer Book.</p><p><strong>Devotional focus:</strong> Large hopes can seem distant when disagreements are strong. Paul offers a present task: pursue peace as far as it depends on us; practice hospitality and overcome evil with good. Christians may disagree about councils, denominational authority, and necessary reforms. We need not agree with Mayow’s prescription to learn from his longing for a church whose divisions will not have the last word.</p><p><strong>Reflect:</strong> What act of peace is within my reach while larger questions remain unresolved?</p><p><strong>Practice:</strong> Take one practical step toward reconciliation or cooperation today, respecting boundaries and genuine differences.</p><p><strong>Prayer:</strong> God of hope, let our longing for unity become patient acts of love today. Amen.</p>"
+  }
+]
+$adapt_text$::jsonb) as edit(id uuid, day_number integer, value text)
+where target.plan_id = edit.id and target.day_number = edit.day_number;
+
+-- Update only plan-owned Scripture references; do not touch user-owned records.
+do $$
+declare
+  item jsonb;
+  target_day_id uuid;
+begin
+  for item in select value from jsonb_array_elements($adapt_refs$
+[
+  {
+    "id": "90000000-0000-0000-0000-000000000367",
+    "day_number": 1,
+    "references": [
+      "Colossians 3:12-17",
+      "John 17:20-23"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000367",
+    "day_number": 2,
+    "references": [
+      "Romans 14:1-6",
+      "1 Corinthians 10:31-33"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000367",
+    "day_number": 3,
+    "references": [
+      "Galatians 6:14",
+      "Romans 6:3-4"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000367",
+    "day_number": 4,
+    "references": [
+      "Matthew 28:18-20",
+      "1 Corinthians 12:12-13"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000367",
+    "day_number": 5,
+    "references": [
+      "1 Corinthians 8:9-13",
+      "Galatians 5:13-14"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000367",
+    "day_number": 6,
+    "references": [
+      "Proverbs 18:13-17",
+      "Micah 6:8"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000367",
+    "day_number": 7,
+    "references": [
+      "James 1:19-20",
+      "Philippians 4:5-7"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000367",
+    "day_number": 8,
+    "references": [
+      "1 Peter 5:2-3",
+      "Acts 15:6-12"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000367",
+    "day_number": 9,
+    "references": [
+      "Matthew 18:15-17",
+      "Proverbs 15:22"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000367",
+    "day_number": 10,
+    "references": [
+      "Psalm 96:1-9",
+      "John 4:21-24"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000367",
+    "day_number": 11,
+    "references": [
+      "2 Timothy 1:6-7",
+      "Ephesians 4:1-6"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000367",
+    "day_number": 12,
+    "references": [
+      "Ephesians 4:25-32",
+      "James 3:13-18"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000367",
+    "day_number": 13,
+    "references": [
+      "Matthew 5:33-37",
+      "Proverbs 11:1-3"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000367",
+    "day_number": 14,
+    "references": [
+      "Esther 4:13-16",
+      "1 Timothy 2:1-2"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000367",
+    "day_number": 15,
+    "references": [
+      "Leviticus 19:15-18",
+      "Luke 6:31"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000367",
+    "day_number": 16,
+    "references": [
+      "Romans 15:1-7",
+      "1 Corinthians 13:4-7"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000367",
+    "day_number": 17,
+    "references": [
+      "2 Timothy 1:13-14",
+      "1 Corinthians 3:10-11"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000367",
+    "day_number": 18,
+    "references": [
+      "John 17:20-23",
+      "Ephesians 2:14-22"
+    ]
+  },
+  {
+    "id": "90000000-0000-0000-0000-000000000367",
+    "day_number": 19,
+    "references": [
+      "Romans 12:9-18",
+      "Revelation 21:1-5"
+    ]
+  }
+]
+$adapt_refs$::jsonb) loop
+    select id into strict target_day_id
+    from public.devotional_days
+    where plan_id = (item ->> 'id')::uuid
+      and day_number = (item ->> 'day_number')::integer;
+
+    update public.scripture_references
+    set reference = array(select jsonb_array_elements_text(item -> 'references')),
+        updated_at = now()
+    where day_id = target_day_id and user_id is null;
+
+    if not found then
+      insert into public.scripture_references
+        (user_id, day_id, reference, created_at, updated_at)
+      values (null, target_day_id,
+        array(select jsonb_array_elements_text(item -> 'references')), now(), now());
+    end if;
+  end loop;
+end
+$$;
+
+update public.devotional_plans
+set status = 'published', updated_at = now()
+where id = '90000000-0000-0000-0000-000000000367'::uuid;
+
+commit;
+-- END CONSOLIDATED SOURCE: 20261027000000_repair_draft_devotional_plans_wave_32.sql
+
+-- BEGIN CONSOLIDATED SOURCE: 20261027000000_repair_draft_devotional_plans_wave_33.sql sha256=a1c6c9806f5586a0b0eb26c88a5492b9033708cf2c6ec4dd555a816773a5c6f4
+-- Wave 47: Plan 367 / Mayow Wynell Mayow / self-contained sentence-level editorial repair.
+-- All 19 final day titles, HTML readings and Scripture-reference arrays included.
+-- Apply AFTER source seed / legacy modernization; Wave 32 is NOT required.
+-- Do not run an older overlapping migration AFTER this file.
+-- Draft only; never publishes. Retains day IDs, user progress, tags, cover and user-owned references.
+BEGIN;
+
+DO $preflight$
+DECLARE n integer;
+BEGIN
+  PERFORM 1 FROM public.devotional_plans
+   WHERE id = '90000000-0000-0000-0000-000000000367'::uuid
+     AND source_url = 'https://www.gutenberg.org/ebooks/49145' AND total_days = 19
+   FOR UPDATE;
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'Wave 47: Plan 367 missing or source_url / total_days mismatch';
+  END IF;
+  SELECT count(*) INTO n FROM public.devotional_days
+    WHERE plan_id='90000000-0000-0000-0000-000000000367'::uuid;
+  IF n <> 19 OR (SELECT count(DISTINCT day_number)
+      FROM public.devotional_days WHERE plan_id='90000000-0000-0000-0000-000000000367'::uuid) <> 19
+    OR EXISTS (SELECT 1 FROM public.devotional_days
+      WHERE plan_id='90000000-0000-0000-0000-000000000367'::uuid AND day_number NOT BETWEEN 1 AND 19) THEN
+    RAISE EXCEPTION 'Wave 47: expected exactly 19 unique numbered days';
+  END IF;
+  IF EXISTS (
+    SELECT 1 FROM public.scripture_references r
+    JOIN public.devotional_days d ON d.id = r.day_id
+    WHERE d.plan_id='90000000-0000-0000-0000-000000000367'::uuid AND r.user_id IS NULL
+    GROUP BY r.day_id HAVING count(*) > 1
+  ) THEN
+    RAISE EXCEPTION 'Wave 47: duplicate global Scripture reference rows; inspect before applying';
+  END IF;
+END
+$preflight$;
+
+-- This embedded payload makes the file independent of all previous adaptation waves.
+DO $apply$
+DECLARE
+  e record;
+  v_day_id uuid;
+  affected integer;
+  ref_count integer;
+BEGIN
+  IF (SELECT count(*) FROM jsonb_to_recordset($wave47_payload$[
+  {
+    "day_number": 1,
+    "title": "Faithfulness When Traditions Are Questioned",
+    "content": "<p><strong>Read:</strong> Colossians 3:12-17; John 17:20-23</p><p><strong>Source and historical context:</strong> In a lecture delivered to the Brighton English Church Union on November 27, 1867, and printed in 1868, Mayow Wynell Mayow (M. W. Mayow) warned that proposals following a Royal Commission might endanger the Book of Common Prayer. He presented the proposals as a crisis for the Church of England and connected the preservation of Anglican doctrine and ceremony with hopes for wider Christian reunion.</p><p><strong>Devotional focus:</strong> Communities sometimes face changes that unsettle familiar forms of worship. Paul urges believers to clothe themselves with love, gratitude, and peace. That does not make every inherited practice beyond examination; it asks us to conduct difficult conversations with patience and fidelity. Our deepest unity is not maintained by anxiety alone but by listening to Christ and one another.</p><p><strong>Reflect:</strong> When a practice I value is questioned, do I respond first with suspicion or with an effort to understand?</p><p><strong>Practice:</strong> Pray for people on different sides of a church disagreement. Name one question you could ask respectfully before taking a position.</p><p><strong>Prayer:</strong> Lord Jesus, keep us faithful in what matters and gentle toward those who see questions differently. Amen.</p>",
+    "references": [
+      "Colossians 3:12-17",
+      "John 17:20-23"
+    ]
+  },
+  {
+    "day_number": 2,
+    "title": "What Is Essential, and to Whom?",
+    "content": "<p><strong>Read:</strong> Romans 14:1-6; 1 Corinthians 10:31-33</p><p><strong>Source and historical context:</strong> Mayow discusses the Royal Commission’s first report of August 1867 concerning clerical vestments. Mayow reports that the commissioners considered the vestments nonessential while noting that they gave grave offence to many, and recommended restraining variations from customary dress. Mayow argued that this conclusion failed to consider why vestments mattered to worshippers who valued them.</p><p><strong>Devotional focus:</strong> A dispute can become sharper when everyone uses the same word differently. Mayow distinguishes what is essential to the validity of worship or priestly acts from what he considers valuable for communal worship and ceremonial freedom. Romans 14 originally addresses differences over food and days; its guidance about conscience may inform the dispute by analogy, without settling Anglican rules about vestments. The first response need not be to declare one party foolish; it may be to discover what a cherished symbol communicates and whom a choice affects.</p><p><strong>Reflect:</strong> Am I calling something insignificant simply because it does not matter to me?</p><p><strong>Practice:</strong> Before criticizing an unfamiliar worship custom, ask a participant what it means. Listen without pretending agreement.</p><p><strong>Prayer:</strong> God of wisdom, help me distinguish the heart of faith from the forms by which people seek to express it. Amen.</p>",
+    "references": [
+      "Romans 14:1-6",
+      "1 Corinthians 10:31-33"
+    ]
+  },
+  {
+    "day_number": 3,
+    "title": "The Cross as a Sign, Not a Substitute",
+    "content": "<p><strong>Read:</strong> Galatians 6:14; Romans 6:3-4</p><p><strong>Source and historical context:</strong> Mayow turns to Canon 30 of the Church of England’s early-seventeenth-century canons. It defended the sign of the cross after baptism, even while acknowledging that the sign itself was not necessary for the sacrament’s validity. He used this example to challenge the proposed restriction of vestments. The canon’s language reflects historical Christian disputes and should not be used to demean Jewish people or Roman Catholics.</p><p><strong>Devotional focus:</strong> A visible sign may help us remember a profound promise without becoming the source of that promise. Christians differ in how they practice baptism and interpret sacramental signs. Paul points beyond a gesture to belonging to the crucified and risen Christ. When a tradition helps us attend to Jesus and love others, we may receive it with gratitude; when it distracts or wounds, we should examine how it is used.</p><p><strong>Reflect:</strong> What visible practice helps me remember Christ, and do I ever mistake the reminder for the reality?</p><p><strong>Practice:</strong> Reflect on the meaning of a familiar cross or baptismal remembrance. Let it lead to one humble action today.</p><p><strong>Prayer:</strong> Crucified and risen Lord, make our signs honest reminders of your grace and our shared calling. Amen.</p>",
+    "references": [
+      "Galatians 6:14",
+      "Romans 6:3-4"
+    ]
+  },
+  {
+    "day_number": 4,
+    "title": "When an Outward Gesture Has Meaning",
+    "content": "<p><strong>Read:</strong> Matthew 28:18-20; 1 Corinthians 12:12-13</p><p><strong>Source and historical context:</strong> Continuing the baptism example, Mayow quotes Canon 30’s distinction between baptism itself and the later making of the sign of the cross. He argues that an outward ceremony can convey reverence without adding to the sacrament. He also appeals to the Savoy Conference to support his interpretation of Prayer Book rubrics; this is his argument within Anglican history, not a binding interpretation for every church.</p><p><strong>Devotional focus:</strong> Meaningful practices should serve what they signify. Baptism directs attention to Christ and the community that receives the baptized person. The exact role of ceremonies differs among Christian churches, so this Anglican historical argument should not be treated as a command for every believer. Whatever the form, the call to become a people of welcome, discipleship, and mutual care remains urgent.</p><p><strong>Reflect:</strong> Do our congregational symbols make newcomers feel invited into Christ’s life or tested on unfamiliar customs?</p><p><strong>Practice:</strong> If you help lead worship, explain one tradition in plain words and make room for sincere questions.</p><p><strong>Prayer:</strong> Father, let our worship show your welcome and help us honor those who are learning. Amen.</p>",
+    "references": [
+      "Matthew 28:18-20",
+      "1 Corinthians 12:12-13"
+    ]
+  },
+  {
+    "day_number": 5,
+    "title": "Liberty Requires Thoughtful Responsibility",
+    "content": "<p><strong>Read:</strong> 1 Corinthians 8:9-13; Galatians 5:13-14</p><p><strong>Source and historical context:</strong> Mayow quotes the Savoy bishops in reply to Nonconformist objections to ceremonies they considered unnecessary. He compares vestments with the freedom of clergy to marry: something may be nonessential to the priestly office while liberty concerning it may still matter. This is Mayow’s analogy, not a biblical equivalence between marriage and vestments. The examples serve his defense of liturgical liberty.</p><p><strong>Devotional focus:</strong> Christian freedom is neither contempt for others nor a license to control them. In 1 Corinthians 8, Paul addresses food associated with idol worship; applying his concern for others to ritual clothing is a devotional analogy, not a command about vestments. Galatians similarly calls believers to use freedom in loving service. Communities need room to differ about practices while also protecting people from coercion. A right becomes better understood when we see both its meaning for the person who holds it and its consequences for the people around them.</p><p><strong>Reflect:</strong> When I ask for freedom in worship, do I extend patient consideration to someone seeking a different freedom?</p><p><strong>Practice:</strong> Choose one conversation where both principle and compassion deserve to be heard. State the other person’s concern fairly.</p><p><strong>Prayer:</strong> Gracious God, guide our liberties away from pride and toward service. Amen.</p>",
+    "references": [
+      "1 Corinthians 8:9-13",
+      "Galatians 5:13-14"
+    ]
+  },
+  {
+    "day_number": 6,
+    "title": "The Difference Between a Mandate and a Remedy",
+    "content": "<p><strong>Read:</strong> Proverbs 18:13-17; Micah 6:8</p><p><strong>Source and historical context:</strong> Mayow notes that the commission was tasked with considering uniformity in essential matters yet recommended limits on vestments its witnesses deemed nonessential. He argues that a proposed complaint-and-redress process could restrict vestments he believed lawful and change how the Prayer Book operated. Their legal status was disputed; the lecture does not resolve the question.</p><p><strong>Devotional focus:</strong> Fair decisions require clarity about the question being asked and the power being used. Proverbs warns against answering before hearing, and Micah calls for justice with humility. Whether one agrees with Mayow’s legal reasoning or not, his argument challenges us to examine whether a proposed remedy addresses the harm it names and whether its consequences are explained openly.</p><p><strong>Reflect:</strong> Have I ever supported a rule because of its promised benefit without examining what else it changes?</p><p><strong>Practice:</strong> Before endorsing a policy at church or work, write down its stated aim, its likely effects, and whose voice has been missed.</p><p><strong>Prayer:</strong> Just God, teach us to seek remedies that are truthful, fair, and humane. Amen.</p>",
+    "references": [
+      "Proverbs 18:13-17",
+      "Micah 6:8"
+    ]
+  },
+  {
+    "day_number": 7,
+    "title": "A Crisis Calls for More Than Alarm",
+    "content": "<p><strong>Read:</strong> James 1:19-20; Philippians 4:5-7</p><p><strong>Source and historical context:</strong> Mayow urges an organized defense of the Prayer Book and considers remedies discussed by the Bishop of Gloucester and Bristol. He reviews plans for wholesale revision or wider episcopal discretion, objecting that changes in authority may also produce greater inconsistency among parishes.</p><p><strong>Devotional focus:</strong> When people fear that their community may lose something precious, urgency can narrow listening. James counsels slowness to anger, and Paul commends gentleness even under pressure. This is not a call to silence principled disagreement. It is an invitation to act responsibly: gather evidence, consider alternatives, and refuse the temptation to make opponents into enemies.</p><p><strong>Reflect:</strong> What would calm, well-informed courage look like in a disagreement that feels urgent?</p><p><strong>Practice:</strong> Find one reliable account of the opposing position. Summarize it without insults before forming your response.</p><p><strong>Prayer:</strong> God of peace, steady our hearts so that conviction and gentleness may belong together. Amen.</p>",
+    "references": [
+      "James 1:19-20",
+      "Philippians 4:5-7"
+    ]
+  },
+  {
+    "day_number": 8,
+    "title": "Authority Needs Clear Limits",
+    "content": "<p><strong>Read:</strong> 1 Peter 5:2-3; Acts 15:6-12</p><p><strong>Source and historical context:</strong> Mayow considers proposals that would grant bishops more discretion over local ritual or create a new intermediate process. He worries about unequal rules between dioceses, uncertainty for clergy and parishioners, and changes to the established authority of Prayer Book rubrics.</p><p><strong>Devotional focus:</strong> Leadership exists to shepherd rather than dominate. Peter warns elders against dominating others. Acts 15 describes apostles and elders hearing testimony and reaching a decision in a specific early-church controversy; it is a model of listening, not a ready-made constitution for later churches. These passages do not decide nineteenth-century Anglican constitutional law. They do, however, invite churches today to make authority transparent, accountable, and attentive to people who bear the consequences of decisions.</p><p><strong>Reflect:</strong> Can those affected by a decision understand who makes it, what guides it, and how concerns can be heard?</p><p><strong>Practice:</strong> Identify one unclear rule in a group you belong to. Ask for a gracious, public explanation rather than relying on rumor.</p><p><strong>Prayer:</strong> Faithful Shepherd, grant leaders humility and communities the patience to deliberate well. Amen.</p>",
+    "references": [
+      "1 Peter 5:2-3",
+      "Acts 15:6-12"
+    ]
+  },
+  {
+    "day_number": 9,
+    "title": "Disagreement Deserves Due Process",
+    "content": "<p><strong>Read:</strong> Matthew 18:15-17; Proverbs 15:22</p><p><strong>Source and historical context:</strong> Mayow examines a proposal to let existing courts resolve contested points of ritual practice. He challenges the claim that clergy whose actions are judged unlawful would necessarily abandon the Church of England and argues that disputed practices ought to be examined before condemnation.</p><p><strong>Devotional focus:</strong> Sound judgment listens, tests claims, and keeps a door open for correction. Matthew 18 describes addressing wrongdoing within a community, not deciding which nineteenth-century ceremonial practices were legal. The passage must not be used to force private mediation when safeguarding or serious harm calls for other protection. Proverbs encourages seeking wise counsel. Neither passage turns legal process into a substitute for pastoral care. Where conscience and communal standards conflict, fairness means giving people an honest hearing while protecting those who may be harmed.</p><p><strong>Reflect:</strong> Do I rush to label a person disloyal before I have heard their explanation?</p><p><strong>Practice:</strong> If you must raise a complaint, describe the action and its effects accurately; avoid speculating about someone’s motives.</p><p><strong>Prayer:</strong> Lord, make us slow to accuse, willing to listen, and courageous enough to address real harm. Amen.</p>",
+    "references": [
+      "Matthew 18:15-17",
+      "Proverbs 15:22"
+    ]
+  },
+  {
+    "day_number": 10,
+    "title": "Beauty Can Point Beyond Itself",
+    "content": "<p><strong>Read:</strong> Psalm 96:1-9; John 4:19-24</p><p><strong>Source and historical context:</strong> Mayow approvingly quotes the Bishop of Vermont in defense of ordered and expressive worship. The American Episcopal bishop praises beautiful liturgy and compares ceremonies in different churches. His quoted remarks also contain strongly anti–Roman Catholic judgments, which should not be treated as neutral descriptions of Catholic doctrine or practice.</p><p><strong>Devotional focus:</strong> Scripture gives room for music, dignity, and reverent beauty, but it does not measure devotion by expense or spectacle. In John 4, Jesus speaks with a Samaritan woman about disputed places of worship and speaks of worship in spirit and truth; the text does not prescribe a particular degree of ceremonial ornament. Beautiful spaces can lift hearts; simple rooms can also hold sincere prayer. The most important question is not whether a service looks impressive but whether it directs people toward God and love of neighbor.</p><p><strong>Reflect:</strong> What helps me attend to God in worship, and do I honor others whose worship looks different?</p><p><strong>Practice:</strong> Notice one element of beauty in an ordinary setting. Thank God without making it a standard everyone must meet.</p><p><strong>Prayer:</strong> Creator of beauty, train our senses to seek truth, compassion, and reverence rather than display. Amen.</p>",
+    "references": [
+      "Psalm 96:1-9",
+      "John 4:19-24"
+    ]
+  },
+  {
+    "day_number": 11,
+    "title": "Do Not Confuse Fear with Faithfulness",
+    "content": "<p><strong>Read:</strong> 2 Timothy 1:6-7; Ephesians 4:1-6</p><p><strong>Source and historical context:</strong> Mayow disputes Bishop Ellicott’s expectation that a judicial settlement favorable to ceremonialists might provoke widespread departure from the established Church. He fears instead that restrictions on ceremonies associated with Anglican Catholic teaching would alienate some worshippers. In his usage, “Catholic” expresses the church’s claimed continuity with historic Christianity; it should not be read simply as membership in the Roman Catholic Church. He then recounts a proposal to restrict innovations in worship dress.</p><p><strong>Devotional focus:</strong> Predictions about a community’s collapse can become instruments of fear. Second Timothy calls believers to courage, while Ephesians emphasizes patience and unity of the Spirit. Neither passage determines the civil or ecclesiastical force of a Prayer Book rubric. These virtues do not settle the historical debate or require all Christians to remain in every institution. They can help us speak about change without threatening others, and protect space for informed conscience.</p><p><strong>Reflect:</strong> Am I imagining the worst outcome as certain because it would strengthen my argument?</p><p><strong>Practice:</strong> Replace one sweeping prediction with a careful statement of what is known, feared, and still uncertain.</p><p><strong>Prayer:</strong> Spirit of truth, free us from panic and help us seek unity without silencing conscience. Amen.</p>",
+    "references": [
+      "2 Timothy 1:6-7",
+      "Ephesians 4:1-6"
+    ]
+  },
+  {
+    "day_number": 12,
+    "title": "When Strong Labels Cloud the Question",
+    "content": "<p><strong>Read:</strong> Ephesians 4:25-32; James 3:13-18</p><p><strong>Source and historical context:</strong> Mayow responds to the charge that ritualist clergy acted with recklessness and self-will. He maintains that many ritualist clergy believed they were following existing law. Their belief is part of the historical dispute, not a judicial determination. He challenges a proposed legislative restraint that its advocate maintained would not amount to repeal of the ornaments rubric.</p><p><strong>Devotional focus:</strong> When a disagreement becomes personal, the central question can disappear behind harsh descriptions. Paul asks us to put away corrosive speech; James praises wisdom that is peaceable and open to reason. We can still disagree strongly about policy while distinguishing alleged actions, evidence, legal interpretations, and the dignity of the people involved.</p><p><strong>Reflect:</strong> Have I used a harsh label when a precise description would have been more truthful?</p><p><strong>Practice:</strong> Revise one sentence you plan to say in a disagreement so that it states the issue without insulting a person.</p><p><strong>Prayer:</strong> God of wisdom, guard my tongue and make my words both courageous and kind. Amen.</p>",
+    "references": [
+      "Ephesians 4:25-32",
+      "James 3:13-18"
+    ]
+  },
+  {
+    "day_number": 13,
+    "title": "A Change in Practice Should Be Named Honestly",
+    "content": "<p><strong>Read:</strong> Matthew 5:33-37; Proverbs 11:1-3</p><p><strong>Source and historical context:</strong> Mayow argues that leaving an old rubric printed in the Prayer Book while passing a new law limiting its operation would still amount to changing its force. He illustrates the point by imagining a rule that appears in a text but is no longer permitted to be practiced, and turns toward public efforts to influence the commission.</p><p><strong>Devotional focus:</strong> Trust grows when leaders describe what a decision will actually do, not only what they choose to call it. In Matthew 5, Jesus challenges the misuse of oaths and asks for reliable speech; applying that principle to church policy statements is a considered analogy. Proverbs commends integrity in dealing with others. A policy may be prudent or unwise, but its effect should be explained accurately. Candor allows a community to disagree without being misled about the stakes.</p><p><strong>Reflect:</strong> Where might I be using a reassuring label to avoid acknowledging a real change?</p><p><strong>Practice:</strong> When explaining a proposed change, compare the former practice with the new one in one clear sentence each.</p><p><strong>Prayer:</strong> Lord of truth, let our descriptions be as honest as our intentions. Amen.</p>",
+    "references": [
+      "Matthew 5:33-37",
+      "Proverbs 11:1-3"
+    ]
+  },
+  {
+    "day_number": 14,
+    "title": "Making a Respectful Public Appeal",
+    "content": "<p><strong>Read:</strong> Esther 4:13-16; 1 Timothy 2:1-2</p><p><strong>Source and historical context:</strong> Mayow discusses the public meeting at St. James’s Hall and the decision to send a memorial to the royal commissioners. He argues that petitioning an official body need not be improper pressure, especially when people believe their inherited worship is at risk.</p><p><strong>Devotional focus:</strong> Faith can move people to speak publicly, yet public witness still requires integrity. Esther’s life-threatening appeal and First Timothy’s instruction to pray for rulers are different settings from petitioning a commission. They invite courage and respectful concern for others, but neither supplies a divine mandate for one particular political tactic. A respectful appeal states its reasons, represents facts fairly, and remembers that the people receiving it are neighbors too.</p><p><strong>Reflect:</strong> If I were writing to a leader, would I state my concern without caricaturing those who disagree?</p><p><strong>Practice:</strong> Write a short, calm request about a matter that affects your community: the issue, a reason, and a fair request for review.</p><p><strong>Prayer:</strong> God, give us courage to participate in public life with truthful and peaceable words. Amen.</p>",
+    "references": [
+      "Esther 4:13-16",
+      "1 Timothy 2:1-2"
+    ]
+  },
+  {
+    "day_number": 15,
+    "title": "Fairness Across a Change of Rules",
+    "content": "<p><strong>Read:</strong> Leviticus 19:15-18; Luke 6:31</p><p><strong>Source and historical context:</strong> Mayow invokes ex post facto legislation, while acknowledging that the proposed prospective restrictions might not satisfy the term’s strict definition. He argues by analogy that people who relied on a long-standing interpretation might nevertheless experience the change as unfair. This is his legal and moral argument, not a court ruling.</p><p><strong>Devotional focus:</strong> People deserve to know which rules govern their conduct and whether those rules have changed. Biblical justice calls for honest judgment, not favoritism, and Jesus asks us to treat others as we wish to be treated. The source offers a legal analogy rather than a technical determination under either nineteenth-century or modern law. The enduring devotional question is whether our process is predictable, humane, and impartial.</p><p><strong>Reflect:</strong> Have I judged someone by expectations I explained only after they acted?</p><p><strong>Practice:</strong> When setting expectations for others, state them in advance and offer a fair way to ask questions or seek review.</p><p><strong>Prayer:</strong> Righteous God, help us join accountability with fairness and clarity. Amen.</p>",
+    "references": [
+      "Leviticus 19:15-18",
+      "Luke 6:31"
+    ]
+  },
+  {
+    "day_number": 16,
+    "title": "Preserve Convictions Without Wounding Others",
+    "content": "<p><strong>Read:</strong> Romans 15:1-7; 1 Corinthians 13:4-7</p><p><strong>Source and historical context:</strong> Mayow clarifies that he is defending the integrity of the Prayer Book rather than requiring every parish to adopt elaborate ritual. He acknowledges that customs long discontinued may be reintroduced unwisely if they shock people, even while arguing for legal room to retain them.</p><p><strong>Devotional focus:</strong> A tradition can be lawful and meaningful while its introduction still calls for care. Romans 15 calls those who regard themselves as strong to bear with others rather than please themselves; this should not brand people who worship differently as spiritually weak. First Corinthians describes love as not insisting on its own way. This does not mean that prejudice must control a church. It means that trust, teaching, consultation, and pastoral sensitivity often serve faith better than sudden changes that leave neighbors feeling disregarded.</p><p><strong>Reflect:</strong> Am I equating my freedom to do something with a duty to do it immediately?</p><p><strong>Practice:</strong> Before changing a group practice, ask those affected what they need to understand and participate well.</p><p><strong>Prayer:</strong> Lord of patience, keep our convictions firm and our dealings with others gentle. Amen.</p>",
+    "references": [
+      "Romans 15:1-7",
+      "1 Corinthians 13:4-7"
+    ]
+  },
+  {
+    "day_number": 17,
+    "title": "Guard the Treasure Without Closing the Door",
+    "content": "<p><strong>Read:</strong> 2 Timothy 1:13-14; 1 Corinthians 3:10-11</p><p><strong>Source and historical context:</strong> Mayow cites John Keble’s earlier warning, written in 1865, that revising a single ornaments rubric could have consequences for the wider Prayer Book and the doctrine its worship expressed. He uses Keble’s words as an authority for resisting rapid legislation.</p><p><strong>Devotional focus:</strong> We inherit practices and teaching from people who sought to serve Christ before us. Second Timothy speaks of guarding sound teaching, not protecting every later ceremony from revision; First Corinthians identifies Jesus Christ as the foundation of the church. Honoring an inheritance means understanding its purpose, not assuming every interpretation is beyond question. Faithful stewardship welcomes serious study, truthful criticism, and patient care for the next generation.</p><p><strong>Reflect:</strong> Which teaching do I want to pass on, and can I explain its purpose rather than merely demand compliance?</p><p><strong>Practice:</strong> Ask an older member why a practice matters; then explain what you have learned to someone younger.</p><p><strong>Prayer:</strong> Jesus, our foundation, make us trustworthy stewards rather than anxious gatekeepers. Amen.</p>",
+    "references": [
+      "2 Timothy 1:13-14",
+      "1 Corinthians 3:10-11"
+    ]
+  },
+  {
+    "day_number": 18,
+    "title": "A Wider Family Than Our Own Church",
+    "content": "<p><strong>Read:</strong> John 17:20-23; Ephesians 2:14-22</p><p><strong>Source and historical context:</strong> Following Keble’s warning, Mayow connects the contested ornaments rubric with the possibility of reunion among churches of East and West. He speaks of the Church of England’s place in the wider Christian world and his prayer for an ecumenical council to address divisions.</p><p><strong>Devotional focus:</strong> Christian unity is bigger than any single nation, tradition, or disputed garment. Jesus prays for his followers’ unity. Ephesians 2 first addresses reconciliation of Jews and Gentiles in Christ, not the settlement of nineteenth-century Anglican–Eastern–Western ceremonial disagreements; it must not be read as erasing Jewish identity. By analogy, Christian churches may seek unity without pretending that significant doctrinal and liturgical differences vanish. It invites shared prayer, honest conversation, hospitality, and the refusal to make denominational identity more important than love.</p><p><strong>Reflect:</strong> Where do I treat my own Christian tradition as the whole of the church?</p><p><strong>Practice:</strong> Learn about one Christian community different from your own. Pray for its people and for wise, respectful dialogue.</p><p><strong>Prayer:</strong> Lord Jesus, teach your people to seek communion in truth and love, without erasing one another. Amen.</p>",
+    "references": [
+      "John 17:20-23",
+      "Ephesians 2:14-22"
+    ]
+  },
+  {
+    "day_number": 19,
+    "title": "Hope for Unity, Work for Peace Today",
+    "content": "<p><strong>Read:</strong> Romans 12:9-18; Revelation 21:1-5</p><p><strong>Source and historical context:</strong> Mayow ends by defending hope for a future general council of Christendom, even if reunion appears unrealistic. He insists that his immediate duty is to resist changes he believes would weaken the Church of England’s historic Catholic identity and the Prayer Book. This states Mayow’s contested ecclesial perspective, not a judgment on other Christian traditions.</p><p><strong>Devotional focus:</strong> Large hopes can seem distant when disagreements are strong. Paul offers a present task: pursue peace as far as it depends on us; practice hospitality and overcome evil with good. Christians may disagree about councils, denominational authority, and necessary reforms. Revelation 21 promises God’s renewed creation rather than predicting a particular ecumenical council. We need not agree with Mayow’s prescription to value his longing for reconciliation while practicing peace now.</p><p><strong>Reflect:</strong> What act of peace is within my reach while larger questions remain unresolved?</p><p><strong>Practice:</strong> Take one practical step toward reconciliation or cooperation today, respecting boundaries and genuine differences.</p><p><strong>Prayer:</strong> God of hope, let our longing for unity become patient acts of love today. Amen.</p>",
+    "references": [
+      "Romans 12:9-18",
+      "Revelation 21:1-5"
+    ]
+  }
+]$wave47_payload$::jsonb)
+      AS x(day_number integer,title text,content text,references jsonb)) <> 19 THEN
+     RAISE EXCEPTION 'Wave 47 payload row count invalid';
+  END IF;
+  FOR e IN
+    SELECT x.* FROM jsonb_to_recordset($wave47_payload$[
+  {
+    "day_number": 1,
+    "title": "Faithfulness When Traditions Are Questioned",
+    "content": "<p><strong>Read:</strong> Colossians 3:12-17; John 17:20-23</p><p><strong>Source and historical context:</strong> In a lecture delivered to the Brighton English Church Union on November 27, 1867, and printed in 1868, Mayow Wynell Mayow (M. W. Mayow) warned that proposals following a Royal Commission might endanger the Book of Common Prayer. He presented the proposals as a crisis for the Church of England and connected the preservation of Anglican doctrine and ceremony with hopes for wider Christian reunion.</p><p><strong>Devotional focus:</strong> Communities sometimes face changes that unsettle familiar forms of worship. Paul urges believers to clothe themselves with love, gratitude, and peace. That does not make every inherited practice beyond examination; it asks us to conduct difficult conversations with patience and fidelity. Our deepest unity is not maintained by anxiety alone but by listening to Christ and one another.</p><p><strong>Reflect:</strong> When a practice I value is questioned, do I respond first with suspicion or with an effort to understand?</p><p><strong>Practice:</strong> Pray for people on different sides of a church disagreement. Name one question you could ask respectfully before taking a position.</p><p><strong>Prayer:</strong> Lord Jesus, keep us faithful in what matters and gentle toward those who see questions differently. Amen.</p>",
+    "references": [
+      "Colossians 3:12-17",
+      "John 17:20-23"
+    ]
+  },
+  {
+    "day_number": 2,
+    "title": "What Is Essential, and to Whom?",
+    "content": "<p><strong>Read:</strong> Romans 14:1-6; 1 Corinthians 10:31-33</p><p><strong>Source and historical context:</strong> Mayow discusses the Royal Commission’s first report of August 1867 concerning clerical vestments. Mayow reports that the commissioners considered the vestments nonessential while noting that they gave grave offence to many, and recommended restraining variations from customary dress. Mayow argued that this conclusion failed to consider why vestments mattered to worshippers who valued them.</p><p><strong>Devotional focus:</strong> A dispute can become sharper when everyone uses the same word differently. Mayow distinguishes what is essential to the validity of worship or priestly acts from what he considers valuable for communal worship and ceremonial freedom. Romans 14 originally addresses differences over food and days; its guidance about conscience may inform the dispute by analogy, without settling Anglican rules about vestments. The first response need not be to declare one party foolish; it may be to discover what a cherished symbol communicates and whom a choice affects.</p><p><strong>Reflect:</strong> Am I calling something insignificant simply because it does not matter to me?</p><p><strong>Practice:</strong> Before criticizing an unfamiliar worship custom, ask a participant what it means. Listen without pretending agreement.</p><p><strong>Prayer:</strong> God of wisdom, help me distinguish the heart of faith from the forms by which people seek to express it. Amen.</p>",
+    "references": [
+      "Romans 14:1-6",
+      "1 Corinthians 10:31-33"
+    ]
+  },
+  {
+    "day_number": 3,
+    "title": "The Cross as a Sign, Not a Substitute",
+    "content": "<p><strong>Read:</strong> Galatians 6:14; Romans 6:3-4</p><p><strong>Source and historical context:</strong> Mayow turns to Canon 30 of the Church of England’s early-seventeenth-century canons. It defended the sign of the cross after baptism, even while acknowledging that the sign itself was not necessary for the sacrament’s validity. He used this example to challenge the proposed restriction of vestments. The canon’s language reflects historical Christian disputes and should not be used to demean Jewish people or Roman Catholics.</p><p><strong>Devotional focus:</strong> A visible sign may help us remember a profound promise without becoming the source of that promise. Christians differ in how they practice baptism and interpret sacramental signs. Paul points beyond a gesture to belonging to the crucified and risen Christ. When a tradition helps us attend to Jesus and love others, we may receive it with gratitude; when it distracts or wounds, we should examine how it is used.</p><p><strong>Reflect:</strong> What visible practice helps me remember Christ, and do I ever mistake the reminder for the reality?</p><p><strong>Practice:</strong> Reflect on the meaning of a familiar cross or baptismal remembrance. Let it lead to one humble action today.</p><p><strong>Prayer:</strong> Crucified and risen Lord, make our signs honest reminders of your grace and our shared calling. Amen.</p>",
+    "references": [
+      "Galatians 6:14",
+      "Romans 6:3-4"
+    ]
+  },
+  {
+    "day_number": 4,
+    "title": "When an Outward Gesture Has Meaning",
+    "content": "<p><strong>Read:</strong> Matthew 28:18-20; 1 Corinthians 12:12-13</p><p><strong>Source and historical context:</strong> Continuing the baptism example, Mayow quotes Canon 30’s distinction between baptism itself and the later making of the sign of the cross. He argues that an outward ceremony can convey reverence without adding to the sacrament. He also appeals to the Savoy Conference to support his interpretation of Prayer Book rubrics; this is his argument within Anglican history, not a binding interpretation for every church.</p><p><strong>Devotional focus:</strong> Meaningful practices should serve what they signify. Baptism directs attention to Christ and the community that receives the baptized person. The exact role of ceremonies differs among Christian churches, so this Anglican historical argument should not be treated as a command for every believer. Whatever the form, the call to become a people of welcome, discipleship, and mutual care remains urgent.</p><p><strong>Reflect:</strong> Do our congregational symbols make newcomers feel invited into Christ’s life or tested on unfamiliar customs?</p><p><strong>Practice:</strong> If you help lead worship, explain one tradition in plain words and make room for sincere questions.</p><p><strong>Prayer:</strong> Father, let our worship show your welcome and help us honor those who are learning. Amen.</p>",
+    "references": [
+      "Matthew 28:18-20",
+      "1 Corinthians 12:12-13"
+    ]
+  },
+  {
+    "day_number": 5,
+    "title": "Liberty Requires Thoughtful Responsibility",
+    "content": "<p><strong>Read:</strong> 1 Corinthians 8:9-13; Galatians 5:13-14</p><p><strong>Source and historical context:</strong> Mayow quotes the Savoy bishops in reply to Nonconformist objections to ceremonies they considered unnecessary. He compares vestments with the freedom of clergy to marry: something may be nonessential to the priestly office while liberty concerning it may still matter. This is Mayow’s analogy, not a biblical equivalence between marriage and vestments. The examples serve his defense of liturgical liberty.</p><p><strong>Devotional focus:</strong> Christian freedom is neither contempt for others nor a license to control them. In 1 Corinthians 8, Paul addresses food associated with idol worship; applying his concern for others to ritual clothing is a devotional analogy, not a command about vestments. Galatians similarly calls believers to use freedom in loving service. Communities need room to differ about practices while also protecting people from coercion. A right becomes better understood when we see both its meaning for the person who holds it and its consequences for the people around them.</p><p><strong>Reflect:</strong> When I ask for freedom in worship, do I extend patient consideration to someone seeking a different freedom?</p><p><strong>Practice:</strong> Choose one conversation where both principle and compassion deserve to be heard. State the other person’s concern fairly.</p><p><strong>Prayer:</strong> Gracious God, guide our liberties away from pride and toward service. Amen.</p>",
+    "references": [
+      "1 Corinthians 8:9-13",
+      "Galatians 5:13-14"
+    ]
+  },
+  {
+    "day_number": 6,
+    "title": "The Difference Between a Mandate and a Remedy",
+    "content": "<p><strong>Read:</strong> Proverbs 18:13-17; Micah 6:8</p><p><strong>Source and historical context:</strong> Mayow notes that the commission was tasked with considering uniformity in essential matters yet recommended limits on vestments its witnesses deemed nonessential. He argues that a proposed complaint-and-redress process could restrict vestments he believed lawful and change how the Prayer Book operated. Their legal status was disputed; the lecture does not resolve the question.</p><p><strong>Devotional focus:</strong> Fair decisions require clarity about the question being asked and the power being used. Proverbs warns against answering before hearing, and Micah calls for justice with humility. Whether one agrees with Mayow’s legal reasoning or not, his argument challenges us to examine whether a proposed remedy addresses the harm it names and whether its consequences are explained openly.</p><p><strong>Reflect:</strong> Have I ever supported a rule because of its promised benefit without examining what else it changes?</p><p><strong>Practice:</strong> Before endorsing a policy at church or work, write down its stated aim, its likely effects, and whose voice has been missed.</p><p><strong>Prayer:</strong> Just God, teach us to seek remedies that are truthful, fair, and humane. Amen.</p>",
+    "references": [
+      "Proverbs 18:13-17",
+      "Micah 6:8"
+    ]
+  },
+  {
+    "day_number": 7,
+    "title": "A Crisis Calls for More Than Alarm",
+    "content": "<p><strong>Read:</strong> James 1:19-20; Philippians 4:5-7</p><p><strong>Source and historical context:</strong> Mayow urges an organized defense of the Prayer Book and considers remedies discussed by the Bishop of Gloucester and Bristol. He reviews plans for wholesale revision or wider episcopal discretion, objecting that changes in authority may also produce greater inconsistency among parishes.</p><p><strong>Devotional focus:</strong> When people fear that their community may lose something precious, urgency can narrow listening. James counsels slowness to anger, and Paul commends gentleness even under pressure. This is not a call to silence principled disagreement. It is an invitation to act responsibly: gather evidence, consider alternatives, and refuse the temptation to make opponents into enemies.</p><p><strong>Reflect:</strong> What would calm, well-informed courage look like in a disagreement that feels urgent?</p><p><strong>Practice:</strong> Find one reliable account of the opposing position. Summarize it without insults before forming your response.</p><p><strong>Prayer:</strong> God of peace, steady our hearts so that conviction and gentleness may belong together. Amen.</p>",
+    "references": [
+      "James 1:19-20",
+      "Philippians 4:5-7"
+    ]
+  },
+  {
+    "day_number": 8,
+    "title": "Authority Needs Clear Limits",
+    "content": "<p><strong>Read:</strong> 1 Peter 5:2-3; Acts 15:6-12</p><p><strong>Source and historical context:</strong> Mayow considers proposals that would grant bishops more discretion over local ritual or create a new intermediate process. He worries about unequal rules between dioceses, uncertainty for clergy and parishioners, and changes to the established authority of Prayer Book rubrics.</p><p><strong>Devotional focus:</strong> Leadership exists to shepherd rather than dominate. Peter warns elders against dominating others. Acts 15 describes apostles and elders hearing testimony and reaching a decision in a specific early-church controversy; it is a model of listening, not a ready-made constitution for later churches. These passages do not decide nineteenth-century Anglican constitutional law. They do, however, invite churches today to make authority transparent, accountable, and attentive to people who bear the consequences of decisions.</p><p><strong>Reflect:</strong> Can those affected by a decision understand who makes it, what guides it, and how concerns can be heard?</p><p><strong>Practice:</strong> Identify one unclear rule in a group you belong to. Ask for a gracious, public explanation rather than relying on rumor.</p><p><strong>Prayer:</strong> Faithful Shepherd, grant leaders humility and communities the patience to deliberate well. Amen.</p>",
+    "references": [
+      "1 Peter 5:2-3",
+      "Acts 15:6-12"
+    ]
+  },
+  {
+    "day_number": 9,
+    "title": "Disagreement Deserves Due Process",
+    "content": "<p><strong>Read:</strong> Matthew 18:15-17; Proverbs 15:22</p><p><strong>Source and historical context:</strong> Mayow examines a proposal to let existing courts resolve contested points of ritual practice. He challenges the claim that clergy whose actions are judged unlawful would necessarily abandon the Church of England and argues that disputed practices ought to be examined before condemnation.</p><p><strong>Devotional focus:</strong> Sound judgment listens, tests claims, and keeps a door open for correction. Matthew 18 describes addressing wrongdoing within a community, not deciding which nineteenth-century ceremonial practices were legal. The passage must not be used to force private mediation when safeguarding or serious harm calls for other protection. Proverbs encourages seeking wise counsel. Neither passage turns legal process into a substitute for pastoral care. Where conscience and communal standards conflict, fairness means giving people an honest hearing while protecting those who may be harmed.</p><p><strong>Reflect:</strong> Do I rush to label a person disloyal before I have heard their explanation?</p><p><strong>Practice:</strong> If you must raise a complaint, describe the action and its effects accurately; avoid speculating about someone’s motives.</p><p><strong>Prayer:</strong> Lord, make us slow to accuse, willing to listen, and courageous enough to address real harm. Amen.</p>",
+    "references": [
+      "Matthew 18:15-17",
+      "Proverbs 15:22"
+    ]
+  },
+  {
+    "day_number": 10,
+    "title": "Beauty Can Point Beyond Itself",
+    "content": "<p><strong>Read:</strong> Psalm 96:1-9; John 4:19-24</p><p><strong>Source and historical context:</strong> Mayow approvingly quotes the Bishop of Vermont in defense of ordered and expressive worship. The American Episcopal bishop praises beautiful liturgy and compares ceremonies in different churches. His quoted remarks also contain strongly anti–Roman Catholic judgments, which should not be treated as neutral descriptions of Catholic doctrine or practice.</p><p><strong>Devotional focus:</strong> Scripture gives room for music, dignity, and reverent beauty, but it does not measure devotion by expense or spectacle. In John 4, Jesus speaks with a Samaritan woman about disputed places of worship and speaks of worship in spirit and truth; the text does not prescribe a particular degree of ceremonial ornament. Beautiful spaces can lift hearts; simple rooms can also hold sincere prayer. The most important question is not whether a service looks impressive but whether it directs people toward God and love of neighbor.</p><p><strong>Reflect:</strong> What helps me attend to God in worship, and do I honor others whose worship looks different?</p><p><strong>Practice:</strong> Notice one element of beauty in an ordinary setting. Thank God without making it a standard everyone must meet.</p><p><strong>Prayer:</strong> Creator of beauty, train our senses to seek truth, compassion, and reverence rather than display. Amen.</p>",
+    "references": [
+      "Psalm 96:1-9",
+      "John 4:19-24"
+    ]
+  },
+  {
+    "day_number": 11,
+    "title": "Do Not Confuse Fear with Faithfulness",
+    "content": "<p><strong>Read:</strong> 2 Timothy 1:6-7; Ephesians 4:1-6</p><p><strong>Source and historical context:</strong> Mayow disputes Bishop Ellicott’s expectation that a judicial settlement favorable to ceremonialists might provoke widespread departure from the established Church. He fears instead that restrictions on ceremonies associated with Anglican Catholic teaching would alienate some worshippers. In his usage, “Catholic” expresses the church’s claimed continuity with historic Christianity; it should not be read simply as membership in the Roman Catholic Church. He then recounts a proposal to restrict innovations in worship dress.</p><p><strong>Devotional focus:</strong> Predictions about a community’s collapse can become instruments of fear. Second Timothy calls believers to courage, while Ephesians emphasizes patience and unity of the Spirit. Neither passage determines the civil or ecclesiastical force of a Prayer Book rubric. These virtues do not settle the historical debate or require all Christians to remain in every institution. They can help us speak about change without threatening others, and protect space for informed conscience.</p><p><strong>Reflect:</strong> Am I imagining the worst outcome as certain because it would strengthen my argument?</p><p><strong>Practice:</strong> Replace one sweeping prediction with a careful statement of what is known, feared, and still uncertain.</p><p><strong>Prayer:</strong> Spirit of truth, free us from panic and help us seek unity without silencing conscience. Amen.</p>",
+    "references": [
+      "2 Timothy 1:6-7",
+      "Ephesians 4:1-6"
+    ]
+  },
+  {
+    "day_number": 12,
+    "title": "When Strong Labels Cloud the Question",
+    "content": "<p><strong>Read:</strong> Ephesians 4:25-32; James 3:13-18</p><p><strong>Source and historical context:</strong> Mayow responds to the charge that ritualist clergy acted with recklessness and self-will. He maintains that many ritualist clergy believed they were following existing law. Their belief is part of the historical dispute, not a judicial determination. He challenges a proposed legislative restraint that its advocate maintained would not amount to repeal of the ornaments rubric.</p><p><strong>Devotional focus:</strong> When a disagreement becomes personal, the central question can disappear behind harsh descriptions. Paul asks us to put away corrosive speech; James praises wisdom that is peaceable and open to reason. We can still disagree strongly about policy while distinguishing alleged actions, evidence, legal interpretations, and the dignity of the people involved.</p><p><strong>Reflect:</strong> Have I used a harsh label when a precise description would have been more truthful?</p><p><strong>Practice:</strong> Revise one sentence you plan to say in a disagreement so that it states the issue without insulting a person.</p><p><strong>Prayer:</strong> God of wisdom, guard my tongue and make my words both courageous and kind. Amen.</p>",
+    "references": [
+      "Ephesians 4:25-32",
+      "James 3:13-18"
+    ]
+  },
+  {
+    "day_number": 13,
+    "title": "A Change in Practice Should Be Named Honestly",
+    "content": "<p><strong>Read:</strong> Matthew 5:33-37; Proverbs 11:1-3</p><p><strong>Source and historical context:</strong> Mayow argues that leaving an old rubric printed in the Prayer Book while passing a new law limiting its operation would still amount to changing its force. He illustrates the point by imagining a rule that appears in a text but is no longer permitted to be practiced, and turns toward public efforts to influence the commission.</p><p><strong>Devotional focus:</strong> Trust grows when leaders describe what a decision will actually do, not only what they choose to call it. In Matthew 5, Jesus challenges the misuse of oaths and asks for reliable speech; applying that principle to church policy statements is a considered analogy. Proverbs commends integrity in dealing with others. A policy may be prudent or unwise, but its effect should be explained accurately. Candor allows a community to disagree without being misled about the stakes.</p><p><strong>Reflect:</strong> Where might I be using a reassuring label to avoid acknowledging a real change?</p><p><strong>Practice:</strong> When explaining a proposed change, compare the former practice with the new one in one clear sentence each.</p><p><strong>Prayer:</strong> Lord of truth, let our descriptions be as honest as our intentions. Amen.</p>",
+    "references": [
+      "Matthew 5:33-37",
+      "Proverbs 11:1-3"
+    ]
+  },
+  {
+    "day_number": 14,
+    "title": "Making a Respectful Public Appeal",
+    "content": "<p><strong>Read:</strong> Esther 4:13-16; 1 Timothy 2:1-2</p><p><strong>Source and historical context:</strong> Mayow discusses the public meeting at St. James’s Hall and the decision to send a memorial to the royal commissioners. He argues that petitioning an official body need not be improper pressure, especially when people believe their inherited worship is at risk.</p><p><strong>Devotional focus:</strong> Faith can move people to speak publicly, yet public witness still requires integrity. Esther’s life-threatening appeal and First Timothy’s instruction to pray for rulers are different settings from petitioning a commission. They invite courage and respectful concern for others, but neither supplies a divine mandate for one particular political tactic. A respectful appeal states its reasons, represents facts fairly, and remembers that the people receiving it are neighbors too.</p><p><strong>Reflect:</strong> If I were writing to a leader, would I state my concern without caricaturing those who disagree?</p><p><strong>Practice:</strong> Write a short, calm request about a matter that affects your community: the issue, a reason, and a fair request for review.</p><p><strong>Prayer:</strong> God, give us courage to participate in public life with truthful and peaceable words. Amen.</p>",
+    "references": [
+      "Esther 4:13-16",
+      "1 Timothy 2:1-2"
+    ]
+  },
+  {
+    "day_number": 15,
+    "title": "Fairness Across a Change of Rules",
+    "content": "<p><strong>Read:</strong> Leviticus 19:15-18; Luke 6:31</p><p><strong>Source and historical context:</strong> Mayow invokes ex post facto legislation, while acknowledging that the proposed prospective restrictions might not satisfy the term’s strict definition. He argues by analogy that people who relied on a long-standing interpretation might nevertheless experience the change as unfair. This is his legal and moral argument, not a court ruling.</p><p><strong>Devotional focus:</strong> People deserve to know which rules govern their conduct and whether those rules have changed. Biblical justice calls for honest judgment, not favoritism, and Jesus asks us to treat others as we wish to be treated. The source offers a legal analogy rather than a technical determination under either nineteenth-century or modern law. The enduring devotional question is whether our process is predictable, humane, and impartial.</p><p><strong>Reflect:</strong> Have I judged someone by expectations I explained only after they acted?</p><p><strong>Practice:</strong> When setting expectations for others, state them in advance and offer a fair way to ask questions or seek review.</p><p><strong>Prayer:</strong> Righteous God, help us join accountability with fairness and clarity. Amen.</p>",
+    "references": [
+      "Leviticus 19:15-18",
+      "Luke 6:31"
+    ]
+  },
+  {
+    "day_number": 16,
+    "title": "Preserve Convictions Without Wounding Others",
+    "content": "<p><strong>Read:</strong> Romans 15:1-7; 1 Corinthians 13:4-7</p><p><strong>Source and historical context:</strong> Mayow clarifies that he is defending the integrity of the Prayer Book rather than requiring every parish to adopt elaborate ritual. He acknowledges that customs long discontinued may be reintroduced unwisely if they shock people, even while arguing for legal room to retain them.</p><p><strong>Devotional focus:</strong> A tradition can be lawful and meaningful while its introduction still calls for care. Romans 15 calls those who regard themselves as strong to bear with others rather than please themselves; this should not brand people who worship differently as spiritually weak. First Corinthians describes love as not insisting on its own way. This does not mean that prejudice must control a church. It means that trust, teaching, consultation, and pastoral sensitivity often serve faith better than sudden changes that leave neighbors feeling disregarded.</p><p><strong>Reflect:</strong> Am I equating my freedom to do something with a duty to do it immediately?</p><p><strong>Practice:</strong> Before changing a group practice, ask those affected what they need to understand and participate well.</p><p><strong>Prayer:</strong> Lord of patience, keep our convictions firm and our dealings with others gentle. Amen.</p>",
+    "references": [
+      "Romans 15:1-7",
+      "1 Corinthians 13:4-7"
+    ]
+  },
+  {
+    "day_number": 17,
+    "title": "Guard the Treasure Without Closing the Door",
+    "content": "<p><strong>Read:</strong> 2 Timothy 1:13-14; 1 Corinthians 3:10-11</p><p><strong>Source and historical context:</strong> Mayow cites John Keble’s earlier warning, written in 1865, that revising a single ornaments rubric could have consequences for the wider Prayer Book and the doctrine its worship expressed. He uses Keble’s words as an authority for resisting rapid legislation.</p><p><strong>Devotional focus:</strong> We inherit practices and teaching from people who sought to serve Christ before us. Second Timothy speaks of guarding sound teaching, not protecting every later ceremony from revision; First Corinthians identifies Jesus Christ as the foundation of the church. Honoring an inheritance means understanding its purpose, not assuming every interpretation is beyond question. Faithful stewardship welcomes serious study, truthful criticism, and patient care for the next generation.</p><p><strong>Reflect:</strong> Which teaching do I want to pass on, and can I explain its purpose rather than merely demand compliance?</p><p><strong>Practice:</strong> Ask an older member why a practice matters; then explain what you have learned to someone younger.</p><p><strong>Prayer:</strong> Jesus, our foundation, make us trustworthy stewards rather than anxious gatekeepers. Amen.</p>",
+    "references": [
+      "2 Timothy 1:13-14",
+      "1 Corinthians 3:10-11"
+    ]
+  },
+  {
+    "day_number": 18,
+    "title": "A Wider Family Than Our Own Church",
+    "content": "<p><strong>Read:</strong> John 17:20-23; Ephesians 2:14-22</p><p><strong>Source and historical context:</strong> Following Keble’s warning, Mayow connects the contested ornaments rubric with the possibility of reunion among churches of East and West. He speaks of the Church of England’s place in the wider Christian world and his prayer for an ecumenical council to address divisions.</p><p><strong>Devotional focus:</strong> Christian unity is bigger than any single nation, tradition, or disputed garment. Jesus prays for his followers’ unity. Ephesians 2 first addresses reconciliation of Jews and Gentiles in Christ, not the settlement of nineteenth-century Anglican–Eastern–Western ceremonial disagreements; it must not be read as erasing Jewish identity. By analogy, Christian churches may seek unity without pretending that significant doctrinal and liturgical differences vanish. It invites shared prayer, honest conversation, hospitality, and the refusal to make denominational identity more important than love.</p><p><strong>Reflect:</strong> Where do I treat my own Christian tradition as the whole of the church?</p><p><strong>Practice:</strong> Learn about one Christian community different from your own. Pray for its people and for wise, respectful dialogue.</p><p><strong>Prayer:</strong> Lord Jesus, teach your people to seek communion in truth and love, without erasing one another. Amen.</p>",
+    "references": [
+      "John 17:20-23",
+      "Ephesians 2:14-22"
+    ]
+  },
+  {
+    "day_number": 19,
+    "title": "Hope for Unity, Work for Peace Today",
+    "content": "<p><strong>Read:</strong> Romans 12:9-18; Revelation 21:1-5</p><p><strong>Source and historical context:</strong> Mayow ends by defending hope for a future general council of Christendom, even if reunion appears unrealistic. He insists that his immediate duty is to resist changes he believes would weaken the Church of England’s historic Catholic identity and the Prayer Book. This states Mayow’s contested ecclesial perspective, not a judgment on other Christian traditions.</p><p><strong>Devotional focus:</strong> Large hopes can seem distant when disagreements are strong. Paul offers a present task: pursue peace as far as it depends on us; practice hospitality and overcome evil with good. Christians may disagree about councils, denominational authority, and necessary reforms. Revelation 21 promises God’s renewed creation rather than predicting a particular ecumenical council. We need not agree with Mayow’s prescription to value his longing for reconciliation while practicing peace now.</p><p><strong>Reflect:</strong> What act of peace is within my reach while larger questions remain unresolved?</p><p><strong>Practice:</strong> Take one practical step toward reconciliation or cooperation today, respecting boundaries and genuine differences.</p><p><strong>Prayer:</strong> God of hope, let our longing for unity become patient acts of love today. Amen.</p>",
+    "references": [
+      "Romans 12:9-18",
+      "Revelation 21:1-5"
+    ]
+  }
+]$wave47_payload$::jsonb)
+      AS x(day_number integer,title text,content text,references jsonb)
+    ORDER BY day_number
+  LOOP
+    IF e.day_number NOT BETWEEN 1 AND 19 OR e.title IS NULL OR e.content IS NULL
+       OR jsonb_typeof(e.references) <> 'array' OR jsonb_array_length(e.references) <> 2
+       OR e.content NOT LIKE '%<strong>Read:</strong>%'
+       OR e.content NOT LIKE '%<strong>Prayer:</strong>%' THEN
+      RAISE EXCEPTION 'Wave 47 malformed daily payload: %', e.day_number;
+    END IF;
+    UPDATE public.devotional_days d
+     SET title=e.title, content=e.content, updated_at=now()
+     WHERE d.plan_id='90000000-0000-0000-0000-000000000367'::uuid AND d.day_number=e.day_number
+     RETURNING d.id INTO v_day_id;
+    IF NOT FOUND THEN RAISE EXCEPTION 'Wave 47: day % missing', e.day_number; END IF;
+    SELECT count(*) INTO ref_count FROM public.scripture_references
+     WHERE day_id = v_day_id AND user_id IS NULL;
+    -- Avoid shadowed variable names and refuse unexpected multi-row updates.
+    IF ref_count > 1 THEN RAISE EXCEPTION 'Wave 47 duplicate global reference, day %', e.day_number; END IF;
+    IF ref_count = 1 THEN
+      UPDATE public.scripture_references r
+      SET reference=ARRAY(SELECT jsonb_array_elements_text(e.references)), updated_at=now()
+      WHERE r.day_id=v_day_id AND r.user_id IS NULL;
+    ELSE
+      INSERT INTO public.scripture_references(user_id,day_id,reference,created_at,updated_at)
+       VALUES(NULL,v_day_id,ARRAY(SELECT jsonb_array_elements_text(e.references)),now(),now());
+    END IF;
+  END LOOP;
+END
+$apply$;
+
+UPDATE public.devotional_plans
+SET title=$wave47_title$Worship, Conscience, and Christian Unity: 19 Readings from a Victorian Debate$wave47_title$,
+    description=$wave47_desc$Nineteen original Scripture-led devotional readings based on Mayow Wynell Mayow’s 27 November 1867 lecture (printed 1868) on the Royal Commission on Ritual and the Book of Common Prayer. The readings address worship, conscience, fair decisions, authority, liturgical symbolism, respectful disagreement, historical continuity and Christian unity. Mayow’s Anglican legal and Catholic-identity claims are attributed as arguments, not universal Christian doctrine or settled legal conclusions. Scripture passages are interpreted in their own contexts before analogical application; historical anti-Catholic rhetoric is not endorsed. Every day includes Scripture, historical context, a reflection, practical response and prayer. This adaptation remains a draft pending independent editorial and theological approval.$wave47_desc$,
+    status='draft', updated_at=now()
+WHERE id='90000000-0000-0000-0000-000000000367'::uuid;
+
+DO $postflight$
+DECLARE n integer;
+BEGIN
+  SELECT count(*) INTO n FROM public.devotional_days
+   WHERE plan_id='90000000-0000-0000-0000-000000000367'::uuid AND content LIKE '%<strong>Read:</strong>%'
+     AND content LIKE '%<strong>Prayer:</strong>%';
+  IF n<>19 THEN RAISE EXCEPTION 'Wave 47 postflight: expected 19 formatted days, found %',n; END IF;
+  IF EXISTS (
+    SELECT 1 FROM public.devotional_days d
+    WHERE d.plan_id='90000000-0000-0000-0000-000000000367'::uuid AND NOT EXISTS
+      (SELECT 1 FROM public.scripture_references r WHERE r.day_id=d.id AND r.user_id IS NULL)
+  ) THEN
+    RAISE EXCEPTION 'Wave 47 postflight: missing plan-owned Scripture references';
+  END IF;
+  IF (SELECT status FROM public.devotional_plans WHERE id='90000000-0000-0000-0000-000000000367'::uuid)<>'draft' THEN
+    RAISE EXCEPTION 'Wave 47 postflight: plan not draft';
+  END IF;
+END
+$postflight$;
+COMMIT;
+-- END CONSOLIDATED SOURCE: 20261027000000_repair_draft_devotional_plans_wave_33.sql
+
+-- BEGIN CONSOLIDATED SOURCE: 20261027000000_repair_draft_devotional_plans_wave_34.sql sha256=4a8bdd2208e99bb9f8f48fd3833a5d5ef4b6490ef9ced942556cd6aaac6f67bd
+-- Wave 48: Plan 362, Joseph Hugh Beibitz, Gloria Crucis / The Glory of the Cross.
+-- SELF-CONTAINED final reviewed adaptation: complete plan title, description, 30 day titles,
+-- all 30 complete HTML readings, and 30 plan-owned Scripture reference arrays.
+-- Apply after the original seed and any older October 21 modernization migrations.
+-- Wave 31 is NOT required. Never apply Wave 31 or another overlapping older update AFTER this.
+-- Preserves existing plan/day UUIDs, day numbers, user progress, tags, cover, source URL,
+-- and all user-owned Scripture references. Draft only: does NOT publish.
+-- Editorial screening does not constitute independent ecclesial/theological approval.
+BEGIN;
+DO $preflight$
+DECLARE n int;
+BEGIN
+  PERFORM 1 FROM public.devotional_plans WHERE
+   id='90000000-0000-0000-0000-000000000362'::uuid
+   AND source_url='https://www.gutenberg.org/ebooks/24153'
+   AND total_days=30 FOR UPDATE;
+  IF NOT FOUND THEN RAISE EXCEPTION 'Wave 48: plan 362 absent or identity/source/day total mismatch'; END IF;
+  SELECT count(*) INTO n FROM public.devotional_days WHERE plan_id='90000000-0000-0000-0000-000000000362'::uuid;
+  IF n<>30 OR (SELECT count(DISTINCT day_number) FROM public.devotional_days
+    WHERE plan_id='90000000-0000-0000-0000-000000000362'::uuid)<>30
+    OR EXISTS(SELECT 1 FROM public.devotional_days WHERE plan_id='90000000-0000-0000-0000-000000000362'::uuid
+      AND (day_number<1 OR day_number>30)) THEN
+    RAISE EXCEPTION 'Wave 48: expected precisely 30 numbered day records';
+  END IF;
+  IF EXISTS (
+     SELECT 1 FROM public.scripture_references r JOIN public.devotional_days d ON d.id=r.day_id
+     WHERE d.plan_id='90000000-0000-0000-0000-000000000362'::uuid AND r.user_id IS NULL
+     GROUP BY r.day_id HAVING count(*)>1
+  ) THEN RAISE EXCEPTION 'Wave 48: duplicate plan-owned Scripture rows; manual cleanup needed'; END IF;
+END;
+$preflight$;
+
+DO $apply$
+DECLARE e record; v_day_id uuid; n int; v_refs text[];
+BEGIN
+  SELECT count(*) INTO n FROM jsonb_to_recordset($wave48_data$[
+  {
+    "day_number": 1,
+    "title": "The Cross and the Healing of Our Hearts",
+    "content": "<p><strong>Read:</strong> Galatians 6:14; 2 Corinthians 5:18-19</p><p><strong>Source and historical context:</strong> The opening of Joseph Hugh Beibitz’s Holy Week addresses, delivered at Lichfield Cathedral in 1907 and published in 1908, questions accounts of the atonement framed as a bargain between Father and Son. He argues that the atonement aims fundamentally to heal sin rather than merely remove its penalty and that Christ restores fellowship with God. This is Beibitz’s particular theological argument, not a comprehensive statement of every Christian account of atonement.</p><p><strong>Devotional focus:</strong> The cross is not a puzzle to master before we can receive love. Paul points to God reconciling the world in Christ. Different Christian traditions describe the mystery of atonement differently; these addresses especially invite us to notice the restoration Christ begins within us. Grace is not an excuse to disregard harm. It opens a way to confession, trust, and change.</p><p><strong>Reflect:</strong> When I think of the cross, do I first imagine punishment, distant theology, or God drawing near?</p><p><strong>Practice:</strong> Read Galatians 6:14 slowly. Name one relationship or habit in which you long for reconciliation.</p><p><strong>Prayer:</strong> God of reconciling love, help me see Jesus clearly and welcome the renewal his cross makes possible. Amen.</p>",
+    "references": [
+      "Galatians 6:14",
+      "2 Corinthians 5:18-19"
+    ]
+  },
+  {
+    "day_number": 2,
+    "title": "Justice, Mercy, and Honest Questions",
+    "content": "<p><strong>Read:</strong> Romans 3:21-26; 1 John 4:9-10</p><p><strong>Source and historical context:</strong> Beibitz challenges depictions of the atonement in which the Father and Son appear opposed, or Christ is portrayed as simply absorbing vengeance. His polemic should not be taken as a fair account of all forms of substitutionary or penal-substitutionary theology. He names problems of justice, ethical transformation, and the unity of God. These are his objections to particular atonement explanations, not a neutral summary of every Christian tradition.</p><p><strong>Devotional focus:</strong> Serious questions about the cross need not be treated as disloyalty. Romans 3 speaks of God’s righteousness and the redemption accomplished in Christ; 1 John 4 speaks of love manifested in the sending of the Son. Christians explain the relationship between justice, sacrifice, and love in more than one way. It is possible to listen carefully when Christians disagree over how those truths fit together. What should remain visible in our discussion is the character of Christ: one who refuses to abandon sinners and calls them into a different life.</p><p><strong>Reflect:</strong> Can I discuss a difficult doctrine without belittling the faith or intelligence of another believer?</p><p><strong>Practice:</strong> Write one genuine question about the cross. Explore a Scripture passage before rushing to win an argument.</p><p><strong>Prayer:</strong> Holy God, make my searching humble, my speech fair, and my trust anchored in your love. Amen.</p>",
+    "references": [
+      "Romans 3:21-26",
+      "1 John 4:9-10"
+    ]
+  },
+  {
+    "day_number": 3,
+    "title": "A Mystery Greater Than Any Theory",
+    "content": "<p><strong>Read:</strong> 1 Corinthians 1:18-25; Ephesians 3:16-19</p><p><strong>Source and historical context:</strong> After criticizing one theory of atonement, Beibitz argues that his preferred interpretation is not exhaustive and that the meaning of the cross calls for continuing theological reflection. He connects Christ’s death with questions about human existence and the moral direction of the world.</p><p><strong>Devotional focus:</strong> The gospel is deeper than a slogan. We can learn from faithful thinkers of earlier centuries without imagining our own vocabulary settles everything. Paul calls the cross God’s wisdom even when human expectations are overturned. That does not forbid patient reasoning; it invites reasoning joined to reverence, knowing that Christ’s love exceeds the limits of our explanations.</p><p><strong>Reflect:</strong> Which familiar explanation have I treated as though it were larger than Christ himself?</p><p><strong>Practice:</strong> Read the passages and write one thing you know, one thing you wonder, and one thing you can live out today.</p><p><strong>Prayer:</strong> Lord Jesus, enlarge my understanding without allowing certainty to harden into pride. Amen.</p>",
+    "references": [
+      "1 Corinthians 1:18-25",
+      "Ephesians 3:16-19"
+    ]
+  },
+  {
+    "day_number": 4,
+    "title": "Conscience and the Nearness of God",
+    "content": "<p><strong>Read:</strong> Romans 2:14-16; Acts 17:24-28</p><p><strong>Source and historical context:</strong> In this section Beibitz reflects on the human sense that righteousness matters, then describes God as present to creation rather than an isolated being far away. He understands sin as alienation from the divine life that gives human relationships their unity.</p><p><strong>Devotional focus:</strong> In Romans 2, Paul discusses conscience as he considers Gentiles and God’s impartial judgment; that passage is not a promise that every inner conviction is reliable. In Athens, Paul draws on familiar religious language to proclaim the Creator’s nearness (Acts 17). Conscience can alert us to moral responsibility, but it needs correction and discernment. Instead of using divine nearness to deny wrongdoing, we can let it call us to honesty: our choices touch both our inner lives and the people around us. The cross opens a path toward restored fellowship.</p><p><strong>Reflect:</strong> Where has my conscience been warning me about a choice that harms another person?</p><p><strong>Practice:</strong> Make one quiet examination of conscience. Seek advice if a situation is complex, then take a truthful next step.</p><p><strong>Prayer:</strong> God who is near, shape my conscience through your word and lead me toward integrity. Amen.</p>",
+    "references": [
+      "Romans 2:14-16",
+      "Acts 17:24-28"
+    ]
+  },
+  {
+    "day_number": 5,
+    "title": "The Cross Within Real History",
+    "content": "<p><strong>Read:</strong> Acts 2:22-24; Luke 23:13-25</p><p><strong>Source and historical context:</strong> Beibitz begins a new address by tracing the historical circumstances of Jesus’ execution. He describes opposition to Jesus among particular leaders and the Roman political setting, but his broad claims about Jewish expectations reflect an early-twentieth-century Christian interpretation that must not be generalized to all Jewish people.</p><p><strong>Devotional focus:</strong> The Gospel narratives locate Jesus’ death within Roman rule and conflicts involving particular people and institutions; they do not provide a basis for assigning collective guilt to Jewish communities. Fear, misuse of authority, and the refusal to reconsider assumptions can destroy lives. The responsibility of the particular actors described in the Gospels must never be turned into collective blame against Jewish people. Reading the Passion should first examine our own readiness to follow truth when it challenges us.</p><p><strong>Reflect:</strong> How do fear or loyalty to a group make it harder for me to hear an uncomfortable truth?</p><p><strong>Practice:</strong> Read Luke’s account of the trial without assigning guilt to an entire people. Identify one place to choose honesty over convenience.</p><p><strong>Prayer:</strong> Jesus, truthful and merciful, free me from prejudice and from the desire to protect myself at another’s cost. Amen.</p>",
+    "references": [
+      "Acts 2:22-24",
+      "Luke 23:13-25"
+    ]
+  },
+  {
+    "day_number": 6,
+    "title": "A Living Faith Must Love People",
+    "content": "<p><strong>Read:</strong> Mark 7:6-13; Matthew 23:23-28</p><p><strong>Source and historical context:</strong> The author critiques inherited rules that crowd out love and describes the political incentives of some Jerusalem leaders. His sweeping characterizations of Pharisees and Sadducees reflect the language and historical assumptions of his era.</p><p><strong>Devotional focus:</strong> In Mark 7 and Matthew 23, Jesus disputes the conduct of particular interlocutors as a Jewish teacher speaking within Jewish religious life. His rebukes should also prompt Christian self-examination today. The answer is not to speak contemptuously of Judaism or portray Jewish religious life as lifeless. Rather, we should ask whether our own traditions make room for mercy, justice, and attention to real people. Good habits can nurture faith; they become distorted when we use them to excuse indifference.</p><p><strong>Reflect:</strong> Have I ever defended a religious habit while overlooking someone who needed kindness?</p><p><strong>Practice:</strong> Choose one act of practical mercy that expresses what you say you believe.</p><p><strong>Prayer:</strong> Living God, preserve the best of our traditions and correct the habits that obscure your love. Amen.</p>",
+    "references": [
+      "Mark 7:6-13",
+      "Matthew 23:23-28"
+    ]
+  },
+  {
+    "day_number": 7,
+    "title": "Sin Matters, but Pain Is Not a Verdict",
+    "content": "<p><strong>Read:</strong> 1 Corinthians 15:3-4; John 9:1-3</p><p><strong>Source and historical context:</strong> Beibitz distinguishes the historical causes of Jesus’ death from the deeper spiritual question of sin. He also begins asking why moral wrongdoing differs from experiences of physical suffering or misfortune.</p><p><strong>Devotional focus:</strong> The cross takes moral evil seriously because harmful choices matter. Yet a person’s illness, disability, grief, or poverty does not establish that they have committed some special sin. In John 9:1–3, Jesus rejects the assumption that a man’s blindness resulted from his own sin or his parents’ sin. The episode does not provide a universal explanation for disability, but it decisively warns against blame. Christian repentance concerns our own actions and their effects; compassion concerns how we accompany people who are suffering.</p><p><strong>Reflect:</strong> Do I sometimes confuse someone’s suffering with a judgment about their character?</p><p><strong>Practice:</strong> Offer support to a person in difficulty without asking what they did to deserve it.</p><p><strong>Prayer:</strong> Merciful Christ, teach me to repent of harm and to meet suffering with compassion. Amen.</p>",
+    "references": [
+      "1 Corinthians 15:3-4",
+      "John 9:1-3"
+    ]
+  },
+  {
+    "day_number": 8,
+    "title": "Learning from Experience and Conscience",
+    "content": "<p><strong>Read:</strong> Psalm 139:23-24; Romans 7:18-25</p><p><strong>Source and historical context:</strong> Here the author appeals to lived experience, remorse, and conscience in order to explain why moral failure is not merely an unpleasant event. He then turns toward the relationship between scientific accounts of human development and the Genesis narrative.</p><p><strong>Devotional focus:</strong> Remorse can help us recognize where we have acted against love, but constant self-accusation is not the same as repentance. Romans 7 gives voice to a deep struggle with sin, though Christians disagree over whether Paul speaks primarily as a believer, about life under the law, or in a representative voice. The passage turns toward deliverance through Christ. Wisdom asks for both truthful self-examination and hope: we can acknowledge what we have done without making our failures our entire identity.</p><p><strong>Reflect:</strong> Is there an action I need to face honestly without sliding into hopeless shame?</p><p><strong>Practice:</strong> Ask God to search your heart. Name one repair you can make, and one burden of shame to bring to grace.</p><p><strong>Prayer:</strong> Search me, O God, and make room in my life for truth, mercy, and change. Amen.</p>",
+    "references": [
+      "Psalm 139:23-24",
+      "Romans 7:18-25"
+    ]
+  },
+  {
+    "day_number": 9,
+    "title": "Reading Genesis with Care",
+    "content": "<p><strong>Read:</strong> Genesis 3:1-13; 2 Timothy 3:14-17</p><p><strong>Source and historical context:</strong> Beibitz sets a contemporary account of human moral development beside Genesis 3. He reads the early Genesis narrative as spiritual teaching expressed in story form and argues that science and Genesis can illuminate different dimensions of human life. His comparisons with ancient Near Eastern literature reflect scholarship available in 1908, not an independently verified resolution of Genesis’s genre or relationship to science.</p><p><strong>Devotional focus:</strong> Christians hold different convictions about the genre and historical interpretation of Genesis. What is shared in this passage is a searching account of desire, mistrust, concealment, and broken fellowship. Scripture invites us to ask what temptation promises, what it conceals, and how our choices affect others. Humility matters both when reading an ancient text and when discussing science.</p><p><strong>Reflect:</strong> Which part of the temptation story feels uncomfortably familiar in my own decisions?</p><p><strong>Practice:</strong> Read Genesis 3 and trace the movement from desire to hiding. Write one truthful alternative at each step.</p><p><strong>Prayer:</strong> Creator God, teach me to receive Scripture wisely and answer temptation with truth. Amen.</p>",
+    "references": [
+      "Genesis 3:1-13",
+      "2 Timothy 3:14-17"
+    ]
+  },
+  {
+    "day_number": 10,
+    "title": "Good Desires Need Wise Direction",
+    "content": "<p><strong>Read:</strong> 1 John 3:16-18; Galatians 5:13-16</p><p><strong>Source and historical context:</strong> The author draws lessons from Eve’s encounter with the tree, arguing that bodily needs, desire for beauty, and the search for knowledge can be good but become destructive when detached from love and wisdom. He then opens a discussion of the divine image and the meaning of self-giving love.</p><p><strong>Devotional focus:</strong> Spiritual growth is not hostility toward our bodies or curiosity. Food, beauty, learning, and rest are gifts to steward. Genesis 3 narrates desire shaped by mistrust and disobedience; 1 John and Galatians call believers to love in action. The ethical point is not that desire itself is evil, but that our choices can become destructive when we disregard truth and neighbors. John points us toward the love revealed by Jesus, a love that moves from words to action. The question is not whether desire exists, but how it is ordered.</p><p><strong>Reflect:</strong> Which good desire has recently become so urgent that I am tempted to ignore someone else?</p><p><strong>Practice:</strong> Enjoy a gift gratefully today while setting one healthy boundary that protects love and truth.</p><p><strong>Prayer:</strong> God of wisdom, teach my desires to serve life rather than rule it. Amen.</p>",
+    "references": [
+      "1 John 3:16-18",
+      "Galatians 5:13-16"
+    ]
+  },
+  {
+    "day_number": 11,
+    "title": "Human Dignity and Moral Responsibility",
+    "content": "<p><strong>Read:</strong> Genesis 1:26-27; Romans 8:5-11</p><p><strong>Source and historical context:</strong> Beibitz uses evolutionary language to distinguish ordinary survival impulses from responsible moral choices. He locates moral wrongdoing in the will rather than treating the body or animal life as evil.</p><p><strong>Devotional focus:</strong> Scripture describes people as bearing God’s image, which means their dignity cannot be reduced to performance, strength, or self-control. Our bodily needs are real and deserve care. Romans 8 contrasts life directed by the Spirit with life ruled by the ‘flesh’; in Paul’s argument, ‘flesh’ must not simply be equated with having a physical body or bodily needs. The Spirit’s work directs people toward life and peace. We should not turn the author’s dated hierarchy of development into a judgment about other people, cultures, or those with disabilities.</p><p><strong>Reflect:</strong> Where do I need to accept a human need while taking responsibility for how I act on it?</p><p><strong>Practice:</strong> Attend to a basic need—rest, food, or safety—and consider one choice that expresses love at the same time.</p><p><strong>Prayer:</strong> Image-making God, help me honor the dignity and needs of every person. Amen.</p>",
+    "references": [
+      "Genesis 1:26-27",
+      "Romans 8:5-11"
+    ]
+  },
+  {
+    "day_number": 12,
+    "title": "Love Looks Toward Another’s Good",
+    "content": "<p><strong>Read:</strong> Philippians 2:1-8; 1 John 4:7-12</p><p><strong>Source and historical context:</strong> The author contrasts self-protective impulses with the self-giving love he sees displayed at the cross. He describes that love as the revelation of what human life is intended to become, then turns to the lasting effects of wrongdoing.</p><p><strong>Devotional focus:</strong> Jesus’ humility is not an invitation to accept exploitation or erase all personal boundaries. Love seeks the real good of another, and sometimes that means speaking honestly, asking for help, or saying no. Philippians 2 calls believers to Christ-shaped humility and concern for others; it does not make exploitation righteous or abolish the need to protect oneself and those at risk. Christ-like life is generous, truthful, and free from contempt.</p><p><strong>Reflect:</strong> Does my picture of sacrificial love leave room for wisdom and protection from harm?</p><p><strong>Practice:</strong> Do one specific kindness freely, without treating your own needs or another person’s boundaries as unimportant.</p><p><strong>Prayer:</strong> Jesus, form in me a love that serves without controlling and gives without despising. Amen.</p>",
+    "references": [
+      "Philippians 2:1-8",
+      "1 John 4:7-12"
+    ]
+  },
+  {
+    "day_number": 13,
+    "title": "When Wrongdoing Damages Fellowship",
+    "content": "<p><strong>Read:</strong> Isaiah 59:1-2; 2 Corinthians 5:17-21</p><p><strong>Source and historical context:</strong> Beibitz argues that sin does lasting harm to a person and creates alienation from God and others. He identifies divine wrath with God’s opposition to sin as an expression of love, a distinctive and debated account of judgment. His language should not be taken as a neutral consensus across churches.</p><p><strong>Devotional focus:</strong> Isaiah 59 addresses communal wrongdoing and injustice, not an automatic diagnosis of why a particular person is ill, bereaved, or suffering. Our own wrongdoing may damage trust and require accountability, but we must not infer someone else’s guilt from their hardship. Yet alienation is not the last word of the gospel. Paul speaks of God making reconciliation possible through Christ. Restoration is more than declaring everything fine; it involves truthful acknowledgment, grace, and sometimes long, patient repair.</p><p><strong>Reflect:</strong> What relationship or responsibility has been affected by a choice I need to acknowledge?</p><p><strong>Practice:</strong> Where it is safe and appropriate, take one concrete step toward restitution or accountability.</p><p><strong>Prayer:</strong> Reconciling God, help me face the truth and participate in your patient work of restoration. Amen.</p>",
+    "references": [
+      "Isaiah 59:1-2",
+      "2 Corinthians 5:17-21"
+    ]
+  },
+  {
+    "day_number": 14,
+    "title": "Repentance Means a Changed Direction",
+    "content": "<p><strong>Read:</strong> Mark 1:14-15; Romans 12:1-2</p><p><strong>Source and historical context:</strong> This reading comes from Beibitz’s explanation of the Greek word metanoia in terms of a change of mind or direction; biblical repentance also reaches the will and conduct, not just a revised opinion. He connects repentance with sharing Christ’s opposition to sin and with faith understood as a surrender of self-centered control.</p><p><strong>Devotional focus:</strong> Repentance is not a performance of despair. It is turning toward the good, receiving grace, and becoming willing to change what we can. Jesus’ call to repent is paired with the invitation to believe good news. A transformed mind learns to name wrongdoing accurately, reject its false promises, and practice something different.</p><p><strong>Reflect:</strong> What would change in my routine if repentance were more than regret?</p><p><strong>Practice:</strong> Choose one repeated harmful pattern. Identify its trigger and plan one small, truthful alternative.</p><p><strong>Prayer:</strong> Lord Jesus, renew my mind and strengthen my next obedient step. Amen.</p>",
+    "references": [
+      "Mark 1:14-15",
+      "Romans 12:1-2"
+    ]
+  },
+  {
+    "day_number": 15,
+    "title": "Grace Gives Us Strength to Grow",
+    "content": "<p><strong>Read:</strong> Galatians 2:19-21; Philippians 1:6</p><p><strong>Source and historical context:</strong> Beibitz describes the believer’s union with Christ in language drawn from Paul: dying to sin and living toward God. He insists that Christ’s work is not only outside us but also at work through the Spirit in our continuing efforts to grow.</p><p><strong>Devotional focus:</strong> Faith is not self-improvement powered only by willpower. Neither is it a claim that every struggle ends immediately. In Galatians, Paul describes life shaped by union with Christ; Philippians expresses confidence that God will continue the good work begun in the community. Neither passage promises an immediate end to every struggle. Grace meets us in unfinished lives, leading us toward habits of love, courage, and truthful repair without reducing spiritual maturity to perfectionism.</p><p><strong>Reflect:</strong> Where have I mistaken slow growth for the complete absence of God’s work?</p><p><strong>Practice:</strong> Thank God for one real step of growth. Ask for help with one next step rather than demanding instant success.</p><p><strong>Prayer:</strong> Faithful God, continue what you have begun and make me patient with the work of grace. Amen.</p>",
+    "references": [
+      "Galatians 2:19-21",
+      "Philippians 1:6"
+    ]
+  },
+  {
+    "day_number": 16,
+    "title": "Obedience Is the Shape of Love",
+    "content": "<p><strong>Read:</strong> Hebrews 5:7-9; John 15:9-12</p><p><strong>Source and historical context:</strong> The author discusses humanity’s longing for fullness and Christ’s lifelong obedience culminating in the cross. He describes baptism and Communion as ways believers share in Christ’s life, reflecting his Anglican sacramental theology.</p><p><strong>Devotional focus:</strong> Hebrews describes Jesus’ reverent prayers and learned obedience through suffering in the context of his high-priestly vocation. This does not instruct people to endure preventable cruelty or remain in abusive situations. Christ’s faithfulness must not be used to excuse those who inflict harm. Jesus commands his followers to remain in his love and to love one another. Different churches explain the sacraments in different ways, but the call to imitate Christ’s faithful service reaches ordinary decisions: speak truth, protect the vulnerable, and refuse harm.</p><p><strong>Reflect:</strong> Where might faithfulness require courage rather than simply following the strongest voice?</p><p><strong>Practice:</strong> Carry out one neglected responsibility with care, especially if it benefits someone with less power.</p><p><strong>Prayer:</strong> Obedient Savior, let love guide my choices and give me courage when doing good is costly. Amen.</p>",
+    "references": [
+      "Hebrews 5:7-9",
+      "John 15:9-12"
+    ]
+  },
+  {
+    "day_number": 17,
+    "title": "Grace Is Offered, Faith Responds",
+    "content": "<p><strong>Read:</strong> John 15:1-8; Ephesians 2:8-10</p><p><strong>Source and historical context:</strong> Beibitz reflects on Christ’s shared humanity and the image of the vine, then describes faith as receiving what grace gives. He begins to explain how outward signs and physical things can communicate inward realities.</p><p><strong>Devotional focus:</strong> In John 15, Jesus speaks to his disciples of abiding in him and bearing fruit. The image emphasizes ongoing dependence on Christ, not a technique for guaranteeing visible success or an immediate change in circumstances. Jesus invites his disciples to remain in him, not merely to admire him from a distance. Paul holds grace and purposeful good work together: we are not saved by impressive performance, yet grace opens a fruitful way of living. Receiving does not mean passivity; it means drawing strength from a relationship we did not create.</p><p><strong>Reflect:</strong> Am I treating faith as a list of achievements or as a living relationship that bears fruit?</p><p><strong>Practice:</strong> Spend ten quiet minutes with John 15 and choose one act of love that could grow from it.</p><p><strong>Prayer:</strong> Christ our vine, help me receive your life and bear fruit that nourishes others. Amen.</p>",
+    "references": [
+      "John 15:1-8",
+      "Ephesians 2:8-10"
+    ]
+  },
+  {
+    "day_number": 18,
+    "title": "God Meets Us in Embodied Life",
+    "content": "<p><strong>Read:</strong> 1 Corinthians 10:16-17; Colossians 1:15-20</p><p><strong>Source and historical context:</strong> The author uses sunsets, bodies, and material objects to explain what he calls a sacramental principle. He connects this theme with the Eucharist, which he understands as participation in Christ’s life, and insists that its gifts are not mechanical apart from faith and moral response. That account reflects his Anglican sacramental commitments, not a settled interpretation shared by all Christian traditions.</p><p><strong>Devotional focus:</strong> Faith is not practiced in an imaginary, disembodied place. In 1 Corinthians 10, sharing the cup and bread signifies participation in Christ and fellowship among believers, within Paul’s warning against idolatry; Colossians 1 proclaims Christ’s cosmic preeminence. Everyday meals and care can prompt gratitude, but they are not interchangeable with the Eucharist in Beibitz’s theology. Churches differ in their understanding of sacramental presence; this reflection does not settle those differences. It asks us to approach worship with gratitude and respond to it through love.</p><p><strong>Reflect:</strong> What ordinary material thing can remind me today that worship should affect how I live?</p><p><strong>Practice:</strong> Share a meal or practical help with someone. Receive the moment with gratitude rather than haste.</p><p><strong>Prayer:</strong> Lord, meet us in the ordinary and shape our worship into living care. Amen.</p>",
+    "references": [
+      "1 Corinthians 10:16-17",
+      "Colossians 1:15-20"
+    ]
+  },
+  {
+    "day_number": 19,
+    "title": "Sacrifice and the Gift of Communion",
+    "content": "<p><strong>Read:</strong> Hebrews 9:11-14; Romans 12:1-2</p><p><strong>Source and historical context:</strong> Beibitz surveys ancient sacrificial practices and argues that their deepest meaning involves self-offering and shared life. His reconstruction of the origin and meaning of sacrifice reflects the anthropology and comparative-religion theories available in 1908. Such hypotheses should be treated as historical arguments requiring independent verification, not as facts taught by Hebrews.</p><p><strong>Devotional focus:</strong> Hebrews 9 presents Christ as the high priest whose self-offering cleanses the conscience for service to the living God; Romans 12 calls believers to offer their lives to God. The two passages should not be collapsed into a claim that Jesus’ sacrifice means only human ethical service. We do not need to recreate the ancient rites to hear the ethical call: worship should move us away from cruelty and toward mercy. Historical theories can be discussed carefully without confusing them with the biblical text itself.</p><p><strong>Reflect:</strong> When I use the word sacrifice, am I thinking of costly love or of pain as an end in itself?</p><p><strong>Practice:</strong> Read Hebrews 9 and Romans 12. Choose one way to give time or attention for another person’s good.</p><p><strong>Prayer:</strong> Holy God, purify my motives and let my worship become generous service. Amen.</p>",
+    "references": [
+      "Hebrews 9:11-14",
+      "Romans 12:1-2"
+    ]
+  },
+  {
+    "day_number": 20,
+    "title": "The Cross Calls Us Into Service",
+    "content": "<p><strong>Read:</strong> Mark 10:42-45; Hebrews 13:15-16</p><p><strong>Source and historical context:</strong> This section identifies the cross as the completion of Jesus’ life of self-giving obedience. Beibitz argues that Christ’s sacrifice enables believers to offer themselves in loving service, rather than merely escaping responsibility.</p><p><strong>Devotional focus:</strong> Mark 10:45 says that the Son of Man came to serve and to give his life as a ransom for many. Christian traditions interpret that saving language differently, but the verse says more than that Jesus offers a good example of service. That service is not a demand that vulnerable people endure mistreatment silently; it challenges those with power to use it for others. Praise and doing good belong together in Hebrews. The cross turns us outward: forgiven people can seek justice, share resources, and take responsibility for their neighbors.</p><p><strong>Reflect:</strong> How does my view of Jesus’ sacrifice affect the way I treat someone who depends on me?</p><p><strong>Practice:</strong> Give practical help in a way that respects the other person’s wishes and dignity.</p><p><strong>Prayer:</strong> Servant Lord, turn my gratitude into wise and courageous care. Amen.</p>",
+    "references": [
+      "Mark 10:42-45",
+      "Hebrews 13:15-16"
+    ]
+  },
+  {
+    "day_number": 21,
+    "title": "Learning Christ in the Seven Last Words",
+    "content": "<p><strong>Read:</strong> Ephesians 4:20-24; Luke 23:32-34</p><p><strong>Source and historical context:</strong> After completing his addresses on sacrifice, Beibitz introduces a Good Friday devotion on the traditionally collected Seven Last Words, sayings gathered from all four Gospels rather than a single continuous scriptural narrative. He describes meditation as a way to learn the mind and character of Jesus, beginning with Jesus’ prayer for forgiveness as transmitted in Luke 23:34. This saying is included in many Bible editions, but absent from some early Greek manuscripts; readers should be alerted to the textual variant rather than told every manuscript contains it.</p><p><strong>Devotional focus:</strong> Learning Christ is more than collecting facts. It means allowing his mercy, truthfulness, and courage to shape us. In Luke’s received text, Jesus prays for forgiveness amid his crucifixion. This expression of mercy must never become collective blame for Jewish people or a demand that victims abandon protection or accountability. We should receive these words carefully, remembering that Christian faith never requires a victim to remain unsafe or disregard justice. His mercy can inform our response even as wrongdoing is named.</p><p><strong>Reflect:</strong> What do Jesus’ words reveal about the kind of person he calls me to become?</p><p><strong>Practice:</strong> Read Luke 23:32-34. Pray for the courage to tell the truth without nourishing revenge.</p><p><strong>Prayer:</strong> Jesus, help me learn your ways and resist the cycle of harm. Amen.</p>",
+    "references": [
+      "Ephesians 4:20-24",
+      "Luke 23:32-34"
+    ]
+  },
+  {
+    "day_number": 22,
+    "title": "Forgiveness Without Denying Harm",
+    "content": "<p><strong>Read:</strong> Matthew 5:43-48; Romans 12:17-21</p><p><strong>Source and historical context:</strong> The next segment expands on Jesus’ first word from the cross, arguing that forgiveness is strong rather than cowardly. The author urges believers to abandon personal resentment and discusses how ignorance can affect moral responsibility. Ignorance may be relevant in a particular case, but it neither proves that all harmful conduct was innocent nor removes an injured person’s need for protection.</p><p><strong>Devotional focus:</strong> Forgiveness can loosen the hold of retaliation while still affirming that evil was evil. It is not the same as instant trust, compulsory reconciliation, or the removal of consequences. Paul tells believers not to repay evil with evil and to overcome evil with good. In circumstances involving abuse or danger, wisdom includes boundaries, support, and appropriate protection.</p><p><strong>Reflect:</strong> What is the difference between letting go of revenge and pretending that nothing happened?</p><p><strong>Practice:</strong> Bring one resentment honestly into prayer. If safety is involved, seek trustworthy support instead of forcing contact.</p><p><strong>Prayer:</strong> Merciful Christ, guard my heart against vengeance and help me pursue truth and safety. Amen.</p>",
+    "references": [
+      "Matthew 5:43-48",
+      "Romans 12:17-21"
+    ]
+  },
+  {
+    "day_number": 23,
+    "title": "Grace for the One Who Turns to Christ",
+    "content": "<p><strong>Read:</strong> Luke 23:39-43; 1 John 1:8-9</p><p><strong>Source and historical context:</strong> Beibitz considers Jesus’ promise to the repentant criminal. He identifies contrition, confession, and amendment as features of repentance. In Luke’s account, the man acknowledges that his sentence is deserved and asks Jesus to remember him; a later record of changed conduct is impossible, so the narrative should not be treated as a model requiring observable restitution before mercy.</p><p><strong>Devotional focus:</strong> The man beside Jesus has no opportunity to assemble an impressive record of good works. He turns to Christ in honesty and hope. This is encouragement for those who fear they are too late or too stained to ask for mercy. It is not a reason to avoid making amends when we can. Grace welcomes the penitent and gives courage to begin a changed direction.</p><p><strong>Reflect:</strong> Is shame keeping me from turning toward the mercy Christ offers?</p><p><strong>Practice:</strong> Pray with the words “Jesus, remember me.” Where possible, make one honest repair.</p><p><strong>Prayer:</strong> Lord Jesus, remember me in mercy and guide me into truthful repentance. Amen.</p>",
+    "references": [
+      "Luke 23:39-43",
+      "1 John 1:8-9"
+    ]
+  },
+  {
+    "day_number": 24,
+    "title": "Love Begins with Those Near Us",
+    "content": "<p><strong>Read:</strong> John 19:25-27; 1 Timothy 5:4-8</p><p><strong>Source and historical context:</strong> The author turns to Jesus’ words to his mother and the beloved disciple. He treats Christ’s concern for Mary as a model of practical consideration and speaks of renewed friendship that becomes visible through service. The next section introduces Jesus’ cry of abandonment.</p><p><strong>Devotional focus:</strong> Even in profound suffering, Jesus notices a person who will need care. Christian love should not be measured only by dramatic sacrifices far away; it is tested in patient attention to people close to us. First Timothy speaks of households making provision for dependents, while John describes Jesus entrusting his mother to the beloved disciple. Caring wisely may involve relatives, friends, communities, and professional support; neither text obliges anyone to remain with an unsafe caregiver or manage another person’s needs alone. It is not a demand that a single person shoulder every burden alone.</p><p><strong>Reflect:</strong> Whose need is easy for me to overlook because it is familiar or inconvenient?</p><p><strong>Practice:</strong> Ask someone close to you what concrete support would help, and respond within your capacity.</p><p><strong>Prayer:</strong> Caring Christ, teach me to see nearby needs and build dependable circles of support. Amen.</p>",
+    "references": [
+      "John 19:25-27",
+      "1 Timothy 5:4-8"
+    ]
+  },
+  {
+    "day_number": 25,
+    "title": "When Jesus Cried Out in Anguish",
+    "content": "<p><strong>Read:</strong> Psalm 22:1-24; Mark 15:33-39</p><p><strong>Source and historical context:</strong> Beibitz analyzes the Fourth Word, “My God, my God, why have you forsaken me?” He considers the agony of isolation, death, and sin, and interprets the cry as a real expression of Jesus’ human suffering.</p><p><strong>Devotional focus:</strong> Jesus’ cry gives believers language for pain that cannot be made tidy. The opening of Psalm 22 voices forsakenness, while its later movement turns toward testimony and praise. Christians have interpreted Jesus’ quotation in different ways; the cry must not be made proof either that the Father ceased loving the Son or that present-day sufferers are spiritually deficient. We must not tell grieving or ill people that their distress proves divine rejection. The cross allows honest lament to stand within the story of God’s love; community is called to stay present rather than explain another person’s pain away.</p><p><strong>Reflect:</strong> What sorrow have I been afraid to speak honestly in prayer?</p><p><strong>Practice:</strong> Read Psalm 22 aloud or in silence. Offer presence, not a quick explanation, to someone who grieves.</p><p><strong>Prayer:</strong> God who hears the forsaken, receive our cries and keep us close in suffering. Amen.</p>",
+    "references": [
+      "Psalm 22:1-24",
+      "Mark 15:33-39"
+    ]
+  },
+  {
+    "day_number": 26,
+    "title": "The Humanity of Christ in “I Thirst”",
+    "content": "<p><strong>Read:</strong> John 19:28-30; Hebrews 4:14-16</p><p><strong>Source and historical context:</strong> John 19:28 reports Jesus saying ‘I thirst’ and explicitly links the saying to the fulfilment of Scripture. Beibitz treats the word as testimony to Jesus’ real bodily suffering. Beibitz reflects on the reality of physical pain and treats Christ’s deliberate speech as evidence of courage. He also develops a broad argument that hardship can train spiritual life.</p><p><strong>Devotional focus:</strong> Jesus is not a distant spectator of bodily need. Jesus’ thirst underscores the physical reality of his suffering. Hebrews 4 presents the high priest who can sympathize with human weakness; neither passage teaches that every person must suffer bodily pain to become holy. Physical suffering is not inherently holy, nor should it be romanticized as necessary for growth. Christians may pursue treatment, rest, and relief while asking God for endurance and companionship through what cannot immediately be changed.</p><p><strong>Reflect:</strong> Do I treat my own bodily limits, or someone else’s, as something embarrassing to ignore?</p><p><strong>Practice:</strong> Attend to a real physical need today. Offer water, rest, or practical assistance to someone who needs it.</p><p><strong>Prayer:</strong> Compassionate Savior, teach me to honor bodies and respond to suffering with care. Amen.</p>",
+    "references": [
+      "John 19:28-30",
+      "Hebrews 4:14-16"
+    ]
+  },
+  {
+    "day_number": 27,
+    "title": "Compassion in the Shadow of the Cross",
+    "content": "<p><strong>Read:</strong> Matthew 25:34-40; John 19:29-30</p><p><strong>Source and historical context:</strong> The author finishes discussing Christ’s thirst by reflecting on the sour wine offered to Jesus, which John 19:29 narrates without identifying the giver as a disciple or attributing benevolent motives. The author draws a devotional lesson of compassion from the scene. He then introduces the Sixth Word, “It is finished,” and reads the cross as the culmination of Jesus’ faithful mission rather than an isolated episode.</p><p><strong>Devotional focus:</strong> The simple act of offering relief matters. In Matthew 25, Jesus identifies with people experiencing hunger, thirst, and vulnerability; John 19 describes an event at his crucifixion. Linking the passages is a devotional analogy, not evidence that John’s narrative recorded an act motivated by Matthew 25. His completed work does not excuse indifference; it frees us to participate in love. We need not understand every theory of the cross before beginning to practice mercy. A cup of water can become a genuine response to God’s costly love.</p><p><strong>Reflect:</strong> What small act of relief is within my reach right now?</p><p><strong>Practice:</strong> Help one person with a concrete need today, without making them feel indebted or inferior.</p><p><strong>Prayer:</strong> Lord Jesus, let the fullness of your love make my hands ready to serve. Amen.</p>",
+    "references": [
+      "Matthew 25:34-40",
+      "John 19:29-30"
+    ]
+  },
+  {
+    "day_number": 28,
+    "title": "“It Is Finished”: Faithful Love Endures",
+    "content": "<p><strong>Read:</strong> John 19:30; Philippians 2:5-11</p><p><strong>Source and historical context:</strong> Beibitz reflects on the Sixth Word as the victory of a life of obedience. In the same segment he introduces the Seventh Word, Jesus entrusting his spirit to the Father, and contrasts joyful trust with passive resignation.</p><p><strong>Devotional focus:</strong> When Jesus says that his work is finished, he does not announce that human suffering is good or that his followers need never act again. John records ‘It is finished’ at the close of Jesus’ Passion; Christians have connected the saying with the completion of his mission and saving work. The text should not be reduced to an exhortation for followers to complete tasks through exhaustion. We are invited to persevere in faithful service, not to measure ourselves against a burden we cannot carry. Trust grows as we learn to recognize the goodness of God’s will.</p><p><strong>Reflect:</strong> Where do I need to distinguish faithful perseverance from exhaustion or harmful pressure?</p><p><strong>Practice:</strong> Complete one manageable act of service, and then receive rest without guilt.</p><p><strong>Prayer:</strong> Faithful Jesus, teach me the courage to serve and the humility to rest. Amen.</p>",
+    "references": [
+      "John 19:30",
+      "Philippians 2:5-11"
+    ]
+  },
+  {
+    "day_number": 29,
+    "title": "Entrusting Life and Death to God",
+    "content": "<p><strong>Read:</strong> Luke 23:44-49; Romans 6:3-5</p><p><strong>Source and historical context:</strong> At the close of the traditional Seven Last Words, Beibitz reflects on Jesus’ entrusting his spirit to the Father. Luke 23:46 echoes the prayer of Psalm 31:5, and should not be used as a demand that the dying remain calm or deny their grief. He then moves to the burial of Jesus and baptismal imagery for dying to an old way of living and being raised into new life.</p><p><strong>Devotional focus:</strong> The words “into your hands” are an act of trust, not a demand to feel untroubled in the face of loss. Christian hope can coexist with grief and uncertainty. Paul’s image of baptism connects Jesus’ death and resurrection with a new way of life. Traditions differ in how they explain the sacrament, but all may hear the invitation to leave behind what destroys life and walk toward Christ.</p><p><strong>Reflect:</strong> What fear or burden can I entrust to God today without pretending it has disappeared?</p><p><strong>Practice:</strong> Pray Luke 23:46, then write one hopeful step you can take while uncertainty remains.</p><p><strong>Prayer:</strong> Loving Father, hold us in life and death, and lead us in paths of new life. Amen.</p>",
+    "references": [
+      "Luke 23:44-49",
+      "Romans 6:3-5"
+    ]
+  },
+  {
+    "day_number": 30,
+    "title": "Easter Hope for a Changed Life",
+    "content": "<p><strong>Read:</strong> Romans 6:4-11; 1 Corinthians 15:3-8</p><p><strong>Source and historical context:</strong> The closing paragraph links Jesus’ death, burial, and resurrection with transformation in believers’ lives. Beibitz ends by encouraging worshippers to approach Easter Communion in hope, within his Anglican understanding of the Eucharist as participation in Christ. Not every Christian tradition shares his sacramental explanation.</p><p><strong>Devotional focus:</strong> The Christian proclamation does not stop at the grave. Paul proclaims the risen Christ and calls believers to walk in newness of life. Personal growth can be uneven, and faith should not be turned into a promise of instant perfection or physical healing. Easter hope means the future is not exhausted by yesterday’s failures. We can begin again, relying on God’s faithful love.</p><p><strong>Reflect:</strong> Where do I need hope for a new beginning rather than another attempt to punish myself?</p><p><strong>Practice:</strong> Celebrate Easter hope with gratitude. Choose one achievable act that expresses the new life you seek.</p><p><strong>Prayer:</strong> Risen Lord, renew our courage, heal what is broken, and teach us to walk in hope. Amen.</p>",
+    "references": [
+      "Romans 6:4-11",
+      "1 Corinthians 15:3-8"
+    ]
+  }
+]$wave48_data$::jsonb)
+    AS x(day_number int,title text,content text,"references" jsonb);
+  IF n<>30 THEN RAISE EXCEPTION 'Wave 48: malformed embedded JSON, expected 30 days'; END IF;
+  FOR e IN
+   SELECT * FROM jsonb_to_recordset($wave48_data$[
+  {
+    "day_number": 1,
+    "title": "The Cross and the Healing of Our Hearts",
+    "content": "<p><strong>Read:</strong> Galatians 6:14; 2 Corinthians 5:18-19</p><p><strong>Source and historical context:</strong> The opening of Joseph Hugh Beibitz’s Holy Week addresses, delivered at Lichfield Cathedral in 1907 and published in 1908, questions accounts of the atonement framed as a bargain between Father and Son. He argues that the atonement aims fundamentally to heal sin rather than merely remove its penalty and that Christ restores fellowship with God. This is Beibitz’s particular theological argument, not a comprehensive statement of every Christian account of atonement.</p><p><strong>Devotional focus:</strong> The cross is not a puzzle to master before we can receive love. Paul points to God reconciling the world in Christ. Different Christian traditions describe the mystery of atonement differently; these addresses especially invite us to notice the restoration Christ begins within us. Grace is not an excuse to disregard harm. It opens a way to confession, trust, and change.</p><p><strong>Reflect:</strong> When I think of the cross, do I first imagine punishment, distant theology, or God drawing near?</p><p><strong>Practice:</strong> Read Galatians 6:14 slowly. Name one relationship or habit in which you long for reconciliation.</p><p><strong>Prayer:</strong> God of reconciling love, help me see Jesus clearly and welcome the renewal his cross makes possible. Amen.</p>",
+    "references": [
+      "Galatians 6:14",
+      "2 Corinthians 5:18-19"
+    ]
+  },
+  {
+    "day_number": 2,
+    "title": "Justice, Mercy, and Honest Questions",
+    "content": "<p><strong>Read:</strong> Romans 3:21-26; 1 John 4:9-10</p><p><strong>Source and historical context:</strong> Beibitz challenges depictions of the atonement in which the Father and Son appear opposed, or Christ is portrayed as simply absorbing vengeance. His polemic should not be taken as a fair account of all forms of substitutionary or penal-substitutionary theology. He names problems of justice, ethical transformation, and the unity of God. These are his objections to particular atonement explanations, not a neutral summary of every Christian tradition.</p><p><strong>Devotional focus:</strong> Serious questions about the cross need not be treated as disloyalty. Romans 3 speaks of God’s righteousness and the redemption accomplished in Christ; 1 John 4 speaks of love manifested in the sending of the Son. Christians explain the relationship between justice, sacrifice, and love in more than one way. It is possible to listen carefully when Christians disagree over how those truths fit together. What should remain visible in our discussion is the character of Christ: one who refuses to abandon sinners and calls them into a different life.</p><p><strong>Reflect:</strong> Can I discuss a difficult doctrine without belittling the faith or intelligence of another believer?</p><p><strong>Practice:</strong> Write one genuine question about the cross. Explore a Scripture passage before rushing to win an argument.</p><p><strong>Prayer:</strong> Holy God, make my searching humble, my speech fair, and my trust anchored in your love. Amen.</p>",
+    "references": [
+      "Romans 3:21-26",
+      "1 John 4:9-10"
+    ]
+  },
+  {
+    "day_number": 3,
+    "title": "A Mystery Greater Than Any Theory",
+    "content": "<p><strong>Read:</strong> 1 Corinthians 1:18-25; Ephesians 3:16-19</p><p><strong>Source and historical context:</strong> After criticizing one theory of atonement, Beibitz argues that his preferred interpretation is not exhaustive and that the meaning of the cross calls for continuing theological reflection. He connects Christ’s death with questions about human existence and the moral direction of the world.</p><p><strong>Devotional focus:</strong> The gospel is deeper than a slogan. We can learn from faithful thinkers of earlier centuries without imagining our own vocabulary settles everything. Paul calls the cross God’s wisdom even when human expectations are overturned. That does not forbid patient reasoning; it invites reasoning joined to reverence, knowing that Christ’s love exceeds the limits of our explanations.</p><p><strong>Reflect:</strong> Which familiar explanation have I treated as though it were larger than Christ himself?</p><p><strong>Practice:</strong> Read the passages and write one thing you know, one thing you wonder, and one thing you can live out today.</p><p><strong>Prayer:</strong> Lord Jesus, enlarge my understanding without allowing certainty to harden into pride. Amen.</p>",
+    "references": [
+      "1 Corinthians 1:18-25",
+      "Ephesians 3:16-19"
+    ]
+  },
+  {
+    "day_number": 4,
+    "title": "Conscience and the Nearness of God",
+    "content": "<p><strong>Read:</strong> Romans 2:14-16; Acts 17:24-28</p><p><strong>Source and historical context:</strong> In this section Beibitz reflects on the human sense that righteousness matters, then describes God as present to creation rather than an isolated being far away. He understands sin as alienation from the divine life that gives human relationships their unity.</p><p><strong>Devotional focus:</strong> In Romans 2, Paul discusses conscience as he considers Gentiles and God’s impartial judgment; that passage is not a promise that every inner conviction is reliable. In Athens, Paul draws on familiar religious language to proclaim the Creator’s nearness (Acts 17). Conscience can alert us to moral responsibility, but it needs correction and discernment. Instead of using divine nearness to deny wrongdoing, we can let it call us to honesty: our choices touch both our inner lives and the people around us. The cross opens a path toward restored fellowship.</p><p><strong>Reflect:</strong> Where has my conscience been warning me about a choice that harms another person?</p><p><strong>Practice:</strong> Make one quiet examination of conscience. Seek advice if a situation is complex, then take a truthful next step.</p><p><strong>Prayer:</strong> God who is near, shape my conscience through your word and lead me toward integrity. Amen.</p>",
+    "references": [
+      "Romans 2:14-16",
+      "Acts 17:24-28"
+    ]
+  },
+  {
+    "day_number": 5,
+    "title": "The Cross Within Real History",
+    "content": "<p><strong>Read:</strong> Acts 2:22-24; Luke 23:13-25</p><p><strong>Source and historical context:</strong> Beibitz begins a new address by tracing the historical circumstances of Jesus’ execution. He describes opposition to Jesus among particular leaders and the Roman political setting, but his broad claims about Jewish expectations reflect an early-twentieth-century Christian interpretation that must not be generalized to all Jewish people.</p><p><strong>Devotional focus:</strong> The Gospel narratives locate Jesus’ death within Roman rule and conflicts involving particular people and institutions; they do not provide a basis for assigning collective guilt to Jewish communities. Fear, misuse of authority, and the refusal to reconsider assumptions can destroy lives. The responsibility of the particular actors described in the Gospels must never be turned into collective blame against Jewish people. Reading the Passion should first examine our own readiness to follow truth when it challenges us.</p><p><strong>Reflect:</strong> How do fear or loyalty to a group make it harder for me to hear an uncomfortable truth?</p><p><strong>Practice:</strong> Read Luke’s account of the trial without assigning guilt to an entire people. Identify one place to choose honesty over convenience.</p><p><strong>Prayer:</strong> Jesus, truthful and merciful, free me from prejudice and from the desire to protect myself at another’s cost. Amen.</p>",
+    "references": [
+      "Acts 2:22-24",
+      "Luke 23:13-25"
+    ]
+  },
+  {
+    "day_number": 6,
+    "title": "A Living Faith Must Love People",
+    "content": "<p><strong>Read:</strong> Mark 7:6-13; Matthew 23:23-28</p><p><strong>Source and historical context:</strong> The author critiques inherited rules that crowd out love and describes the political incentives of some Jerusalem leaders. His sweeping characterizations of Pharisees and Sadducees reflect the language and historical assumptions of his era.</p><p><strong>Devotional focus:</strong> In Mark 7 and Matthew 23, Jesus disputes the conduct of particular interlocutors as a Jewish teacher speaking within Jewish religious life. His rebukes should also prompt Christian self-examination today. The answer is not to speak contemptuously of Judaism or portray Jewish religious life as lifeless. Rather, we should ask whether our own traditions make room for mercy, justice, and attention to real people. Good habits can nurture faith; they become distorted when we use them to excuse indifference.</p><p><strong>Reflect:</strong> Have I ever defended a religious habit while overlooking someone who needed kindness?</p><p><strong>Practice:</strong> Choose one act of practical mercy that expresses what you say you believe.</p><p><strong>Prayer:</strong> Living God, preserve the best of our traditions and correct the habits that obscure your love. Amen.</p>",
+    "references": [
+      "Mark 7:6-13",
+      "Matthew 23:23-28"
+    ]
+  },
+  {
+    "day_number": 7,
+    "title": "Sin Matters, but Pain Is Not a Verdict",
+    "content": "<p><strong>Read:</strong> 1 Corinthians 15:3-4; John 9:1-3</p><p><strong>Source and historical context:</strong> Beibitz distinguishes the historical causes of Jesus’ death from the deeper spiritual question of sin. He also begins asking why moral wrongdoing differs from experiences of physical suffering or misfortune.</p><p><strong>Devotional focus:</strong> The cross takes moral evil seriously because harmful choices matter. Yet a person’s illness, disability, grief, or poverty does not establish that they have committed some special sin. In John 9:1–3, Jesus rejects the assumption that a man’s blindness resulted from his own sin or his parents’ sin. The episode does not provide a universal explanation for disability, but it decisively warns against blame. Christian repentance concerns our own actions and their effects; compassion concerns how we accompany people who are suffering.</p><p><strong>Reflect:</strong> Do I sometimes confuse someone’s suffering with a judgment about their character?</p><p><strong>Practice:</strong> Offer support to a person in difficulty without asking what they did to deserve it.</p><p><strong>Prayer:</strong> Merciful Christ, teach me to repent of harm and to meet suffering with compassion. Amen.</p>",
+    "references": [
+      "1 Corinthians 15:3-4",
+      "John 9:1-3"
+    ]
+  },
+  {
+    "day_number": 8,
+    "title": "Learning from Experience and Conscience",
+    "content": "<p><strong>Read:</strong> Psalm 139:23-24; Romans 7:18-25</p><p><strong>Source and historical context:</strong> Here the author appeals to lived experience, remorse, and conscience in order to explain why moral failure is not merely an unpleasant event. He then turns toward the relationship between scientific accounts of human development and the Genesis narrative.</p><p><strong>Devotional focus:</strong> Remorse can help us recognize where we have acted against love, but constant self-accusation is not the same as repentance. Romans 7 gives voice to a deep struggle with sin, though Christians disagree over whether Paul speaks primarily as a believer, about life under the law, or in a representative voice. The passage turns toward deliverance through Christ. Wisdom asks for both truthful self-examination and hope: we can acknowledge what we have done without making our failures our entire identity.</p><p><strong>Reflect:</strong> Is there an action I need to face honestly without sliding into hopeless shame?</p><p><strong>Practice:</strong> Ask God to search your heart. Name one repair you can make, and one burden of shame to bring to grace.</p><p><strong>Prayer:</strong> Search me, O God, and make room in my life for truth, mercy, and change. Amen.</p>",
+    "references": [
+      "Psalm 139:23-24",
+      "Romans 7:18-25"
+    ]
+  },
+  {
+    "day_number": 9,
+    "title": "Reading Genesis with Care",
+    "content": "<p><strong>Read:</strong> Genesis 3:1-13; 2 Timothy 3:14-17</p><p><strong>Source and historical context:</strong> Beibitz sets a contemporary account of human moral development beside Genesis 3. He reads the early Genesis narrative as spiritual teaching expressed in story form and argues that science and Genesis can illuminate different dimensions of human life. His comparisons with ancient Near Eastern literature reflect scholarship available in 1908, not an independently verified resolution of Genesis’s genre or relationship to science.</p><p><strong>Devotional focus:</strong> Christians hold different convictions about the genre and historical interpretation of Genesis. What is shared in this passage is a searching account of desire, mistrust, concealment, and broken fellowship. Scripture invites us to ask what temptation promises, what it conceals, and how our choices affect others. Humility matters both when reading an ancient text and when discussing science.</p><p><strong>Reflect:</strong> Which part of the temptation story feels uncomfortably familiar in my own decisions?</p><p><strong>Practice:</strong> Read Genesis 3 and trace the movement from desire to hiding. Write one truthful alternative at each step.</p><p><strong>Prayer:</strong> Creator God, teach me to receive Scripture wisely and answer temptation with truth. Amen.</p>",
+    "references": [
+      "Genesis 3:1-13",
+      "2 Timothy 3:14-17"
+    ]
+  },
+  {
+    "day_number": 10,
+    "title": "Good Desires Need Wise Direction",
+    "content": "<p><strong>Read:</strong> 1 John 3:16-18; Galatians 5:13-16</p><p><strong>Source and historical context:</strong> The author draws lessons from Eve’s encounter with the tree, arguing that bodily needs, desire for beauty, and the search for knowledge can be good but become destructive when detached from love and wisdom. He then opens a discussion of the divine image and the meaning of self-giving love.</p><p><strong>Devotional focus:</strong> Spiritual growth is not hostility toward our bodies or curiosity. Food, beauty, learning, and rest are gifts to steward. Genesis 3 narrates desire shaped by mistrust and disobedience; 1 John and Galatians call believers to love in action. The ethical point is not that desire itself is evil, but that our choices can become destructive when we disregard truth and neighbors. John points us toward the love revealed by Jesus, a love that moves from words to action. The question is not whether desire exists, but how it is ordered.</p><p><strong>Reflect:</strong> Which good desire has recently become so urgent that I am tempted to ignore someone else?</p><p><strong>Practice:</strong> Enjoy a gift gratefully today while setting one healthy boundary that protects love and truth.</p><p><strong>Prayer:</strong> God of wisdom, teach my desires to serve life rather than rule it. Amen.</p>",
+    "references": [
+      "1 John 3:16-18",
+      "Galatians 5:13-16"
+    ]
+  },
+  {
+    "day_number": 11,
+    "title": "Human Dignity and Moral Responsibility",
+    "content": "<p><strong>Read:</strong> Genesis 1:26-27; Romans 8:5-11</p><p><strong>Source and historical context:</strong> Beibitz uses evolutionary language to distinguish ordinary survival impulses from responsible moral choices. He locates moral wrongdoing in the will rather than treating the body or animal life as evil.</p><p><strong>Devotional focus:</strong> Scripture describes people as bearing God’s image, which means their dignity cannot be reduced to performance, strength, or self-control. Our bodily needs are real and deserve care. Romans 8 contrasts life directed by the Spirit with life ruled by the ‘flesh’; in Paul’s argument, ‘flesh’ must not simply be equated with having a physical body or bodily needs. The Spirit’s work directs people toward life and peace. We should not turn the author’s dated hierarchy of development into a judgment about other people, cultures, or those with disabilities.</p><p><strong>Reflect:</strong> Where do I need to accept a human need while taking responsibility for how I act on it?</p><p><strong>Practice:</strong> Attend to a basic need—rest, food, or safety—and consider one choice that expresses love at the same time.</p><p><strong>Prayer:</strong> Image-making God, help me honor the dignity and needs of every person. Amen.</p>",
+    "references": [
+      "Genesis 1:26-27",
+      "Romans 8:5-11"
+    ]
+  },
+  {
+    "day_number": 12,
+    "title": "Love Looks Toward Another’s Good",
+    "content": "<p><strong>Read:</strong> Philippians 2:1-8; 1 John 4:7-12</p><p><strong>Source and historical context:</strong> The author contrasts self-protective impulses with the self-giving love he sees displayed at the cross. He describes that love as the revelation of what human life is intended to become, then turns to the lasting effects of wrongdoing.</p><p><strong>Devotional focus:</strong> Jesus’ humility is not an invitation to accept exploitation or erase all personal boundaries. Love seeks the real good of another, and sometimes that means speaking honestly, asking for help, or saying no. Philippians 2 calls believers to Christ-shaped humility and concern for others; it does not make exploitation righteous or abolish the need to protect oneself and those at risk. Christ-like life is generous, truthful, and free from contempt.</p><p><strong>Reflect:</strong> Does my picture of sacrificial love leave room for wisdom and protection from harm?</p><p><strong>Practice:</strong> Do one specific kindness freely, without treating your own needs or another person’s boundaries as unimportant.</p><p><strong>Prayer:</strong> Jesus, form in me a love that serves without controlling and gives without despising. Amen.</p>",
+    "references": [
+      "Philippians 2:1-8",
+      "1 John 4:7-12"
+    ]
+  },
+  {
+    "day_number": 13,
+    "title": "When Wrongdoing Damages Fellowship",
+    "content": "<p><strong>Read:</strong> Isaiah 59:1-2; 2 Corinthians 5:17-21</p><p><strong>Source and historical context:</strong> Beibitz argues that sin does lasting harm to a person and creates alienation from God and others. He identifies divine wrath with God’s opposition to sin as an expression of love, a distinctive and debated account of judgment. His language should not be taken as a neutral consensus across churches.</p><p><strong>Devotional focus:</strong> Isaiah 59 addresses communal wrongdoing and injustice, not an automatic diagnosis of why a particular person is ill, bereaved, or suffering. Our own wrongdoing may damage trust and require accountability, but we must not infer someone else’s guilt from their hardship. Yet alienation is not the last word of the gospel. Paul speaks of God making reconciliation possible through Christ. Restoration is more than declaring everything fine; it involves truthful acknowledgment, grace, and sometimes long, patient repair.</p><p><strong>Reflect:</strong> What relationship or responsibility has been affected by a choice I need to acknowledge?</p><p><strong>Practice:</strong> Where it is safe and appropriate, take one concrete step toward restitution or accountability.</p><p><strong>Prayer:</strong> Reconciling God, help me face the truth and participate in your patient work of restoration. Amen.</p>",
+    "references": [
+      "Isaiah 59:1-2",
+      "2 Corinthians 5:17-21"
+    ]
+  },
+  {
+    "day_number": 14,
+    "title": "Repentance Means a Changed Direction",
+    "content": "<p><strong>Read:</strong> Mark 1:14-15; Romans 12:1-2</p><p><strong>Source and historical context:</strong> This reading comes from Beibitz’s explanation of the Greek word metanoia in terms of a change of mind or direction; biblical repentance also reaches the will and conduct, not just a revised opinion. He connects repentance with sharing Christ’s opposition to sin and with faith understood as a surrender of self-centered control.</p><p><strong>Devotional focus:</strong> Repentance is not a performance of despair. It is turning toward the good, receiving grace, and becoming willing to change what we can. Jesus’ call to repent is paired with the invitation to believe good news. A transformed mind learns to name wrongdoing accurately, reject its false promises, and practice something different.</p><p><strong>Reflect:</strong> What would change in my routine if repentance were more than regret?</p><p><strong>Practice:</strong> Choose one repeated harmful pattern. Identify its trigger and plan one small, truthful alternative.</p><p><strong>Prayer:</strong> Lord Jesus, renew my mind and strengthen my next obedient step. Amen.</p>",
+    "references": [
+      "Mark 1:14-15",
+      "Romans 12:1-2"
+    ]
+  },
+  {
+    "day_number": 15,
+    "title": "Grace Gives Us Strength to Grow",
+    "content": "<p><strong>Read:</strong> Galatians 2:19-21; Philippians 1:6</p><p><strong>Source and historical context:</strong> Beibitz describes the believer’s union with Christ in language drawn from Paul: dying to sin and living toward God. He insists that Christ’s work is not only outside us but also at work through the Spirit in our continuing efforts to grow.</p><p><strong>Devotional focus:</strong> Faith is not self-improvement powered only by willpower. Neither is it a claim that every struggle ends immediately. In Galatians, Paul describes life shaped by union with Christ; Philippians expresses confidence that God will continue the good work begun in the community. Neither passage promises an immediate end to every struggle. Grace meets us in unfinished lives, leading us toward habits of love, courage, and truthful repair without reducing spiritual maturity to perfectionism.</p><p><strong>Reflect:</strong> Where have I mistaken slow growth for the complete absence of God’s work?</p><p><strong>Practice:</strong> Thank God for one real step of growth. Ask for help with one next step rather than demanding instant success.</p><p><strong>Prayer:</strong> Faithful God, continue what you have begun and make me patient with the work of grace. Amen.</p>",
+    "references": [
+      "Galatians 2:19-21",
+      "Philippians 1:6"
+    ]
+  },
+  {
+    "day_number": 16,
+    "title": "Obedience Is the Shape of Love",
+    "content": "<p><strong>Read:</strong> Hebrews 5:7-9; John 15:9-12</p><p><strong>Source and historical context:</strong> The author discusses humanity’s longing for fullness and Christ’s lifelong obedience culminating in the cross. He describes baptism and Communion as ways believers share in Christ’s life, reflecting his Anglican sacramental theology.</p><p><strong>Devotional focus:</strong> Hebrews describes Jesus’ reverent prayers and learned obedience through suffering in the context of his high-priestly vocation. This does not instruct people to endure preventable cruelty or remain in abusive situations. Christ’s faithfulness must not be used to excuse those who inflict harm. Jesus commands his followers to remain in his love and to love one another. Different churches explain the sacraments in different ways, but the call to imitate Christ’s faithful service reaches ordinary decisions: speak truth, protect the vulnerable, and refuse harm.</p><p><strong>Reflect:</strong> Where might faithfulness require courage rather than simply following the strongest voice?</p><p><strong>Practice:</strong> Carry out one neglected responsibility with care, especially if it benefits someone with less power.</p><p><strong>Prayer:</strong> Obedient Savior, let love guide my choices and give me courage when doing good is costly. Amen.</p>",
+    "references": [
+      "Hebrews 5:7-9",
+      "John 15:9-12"
+    ]
+  },
+  {
+    "day_number": 17,
+    "title": "Grace Is Offered, Faith Responds",
+    "content": "<p><strong>Read:</strong> John 15:1-8; Ephesians 2:8-10</p><p><strong>Source and historical context:</strong> Beibitz reflects on Christ’s shared humanity and the image of the vine, then describes faith as receiving what grace gives. He begins to explain how outward signs and physical things can communicate inward realities.</p><p><strong>Devotional focus:</strong> In John 15, Jesus speaks to his disciples of abiding in him and bearing fruit. The image emphasizes ongoing dependence on Christ, not a technique for guaranteeing visible success or an immediate change in circumstances. Jesus invites his disciples to remain in him, not merely to admire him from a distance. Paul holds grace and purposeful good work together: we are not saved by impressive performance, yet grace opens a fruitful way of living. Receiving does not mean passivity; it means drawing strength from a relationship we did not create.</p><p><strong>Reflect:</strong> Am I treating faith as a list of achievements or as a living relationship that bears fruit?</p><p><strong>Practice:</strong> Spend ten quiet minutes with John 15 and choose one act of love that could grow from it.</p><p><strong>Prayer:</strong> Christ our vine, help me receive your life and bear fruit that nourishes others. Amen.</p>",
+    "references": [
+      "John 15:1-8",
+      "Ephesians 2:8-10"
+    ]
+  },
+  {
+    "day_number": 18,
+    "title": "God Meets Us in Embodied Life",
+    "content": "<p><strong>Read:</strong> 1 Corinthians 10:16-17; Colossians 1:15-20</p><p><strong>Source and historical context:</strong> The author uses sunsets, bodies, and material objects to explain what he calls a sacramental principle. He connects this theme with the Eucharist, which he understands as participation in Christ’s life, and insists that its gifts are not mechanical apart from faith and moral response. That account reflects his Anglican sacramental commitments, not a settled interpretation shared by all Christian traditions.</p><p><strong>Devotional focus:</strong> Faith is not practiced in an imaginary, disembodied place. In 1 Corinthians 10, sharing the cup and bread signifies participation in Christ and fellowship among believers, within Paul’s warning against idolatry; Colossians 1 proclaims Christ’s cosmic preeminence. Everyday meals and care can prompt gratitude, but they are not interchangeable with the Eucharist in Beibitz’s theology. Churches differ in their understanding of sacramental presence; this reflection does not settle those differences. It asks us to approach worship with gratitude and respond to it through love.</p><p><strong>Reflect:</strong> What ordinary material thing can remind me today that worship should affect how I live?</p><p><strong>Practice:</strong> Share a meal or practical help with someone. Receive the moment with gratitude rather than haste.</p><p><strong>Prayer:</strong> Lord, meet us in the ordinary and shape our worship into living care. Amen.</p>",
+    "references": [
+      "1 Corinthians 10:16-17",
+      "Colossians 1:15-20"
+    ]
+  },
+  {
+    "day_number": 19,
+    "title": "Sacrifice and the Gift of Communion",
+    "content": "<p><strong>Read:</strong> Hebrews 9:11-14; Romans 12:1-2</p><p><strong>Source and historical context:</strong> Beibitz surveys ancient sacrificial practices and argues that their deepest meaning involves self-offering and shared life. His reconstruction of the origin and meaning of sacrifice reflects the anthropology and comparative-religion theories available in 1908. Such hypotheses should be treated as historical arguments requiring independent verification, not as facts taught by Hebrews.</p><p><strong>Devotional focus:</strong> Hebrews 9 presents Christ as the high priest whose self-offering cleanses the conscience for service to the living God; Romans 12 calls believers to offer their lives to God. The two passages should not be collapsed into a claim that Jesus’ sacrifice means only human ethical service. We do not need to recreate the ancient rites to hear the ethical call: worship should move us away from cruelty and toward mercy. Historical theories can be discussed carefully without confusing them with the biblical text itself.</p><p><strong>Reflect:</strong> When I use the word sacrifice, am I thinking of costly love or of pain as an end in itself?</p><p><strong>Practice:</strong> Read Hebrews 9 and Romans 12. Choose one way to give time or attention for another person’s good.</p><p><strong>Prayer:</strong> Holy God, purify my motives and let my worship become generous service. Amen.</p>",
+    "references": [
+      "Hebrews 9:11-14",
+      "Romans 12:1-2"
+    ]
+  },
+  {
+    "day_number": 20,
+    "title": "The Cross Calls Us Into Service",
+    "content": "<p><strong>Read:</strong> Mark 10:42-45; Hebrews 13:15-16</p><p><strong>Source and historical context:</strong> This section identifies the cross as the completion of Jesus’ life of self-giving obedience. Beibitz argues that Christ’s sacrifice enables believers to offer themselves in loving service, rather than merely escaping responsibility.</p><p><strong>Devotional focus:</strong> Mark 10:45 says that the Son of Man came to serve and to give his life as a ransom for many. Christian traditions interpret that saving language differently, but the verse says more than that Jesus offers a good example of service. That service is not a demand that vulnerable people endure mistreatment silently; it challenges those with power to use it for others. Praise and doing good belong together in Hebrews. The cross turns us outward: forgiven people can seek justice, share resources, and take responsibility for their neighbors.</p><p><strong>Reflect:</strong> How does my view of Jesus’ sacrifice affect the way I treat someone who depends on me?</p><p><strong>Practice:</strong> Give practical help in a way that respects the other person’s wishes and dignity.</p><p><strong>Prayer:</strong> Servant Lord, turn my gratitude into wise and courageous care. Amen.</p>",
+    "references": [
+      "Mark 10:42-45",
+      "Hebrews 13:15-16"
+    ]
+  },
+  {
+    "day_number": 21,
+    "title": "Learning Christ in the Seven Last Words",
+    "content": "<p><strong>Read:</strong> Ephesians 4:20-24; Luke 23:32-34</p><p><strong>Source and historical context:</strong> After completing his addresses on sacrifice, Beibitz introduces a Good Friday devotion on the traditionally collected Seven Last Words, sayings gathered from all four Gospels rather than a single continuous scriptural narrative. He describes meditation as a way to learn the mind and character of Jesus, beginning with Jesus’ prayer for forgiveness as transmitted in Luke 23:34. This saying is included in many Bible editions, but absent from some early Greek manuscripts; readers should be alerted to the textual variant rather than told every manuscript contains it.</p><p><strong>Devotional focus:</strong> Learning Christ is more than collecting facts. It means allowing his mercy, truthfulness, and courage to shape us. In Luke’s received text, Jesus prays for forgiveness amid his crucifixion. This expression of mercy must never become collective blame for Jewish people or a demand that victims abandon protection or accountability. We should receive these words carefully, remembering that Christian faith never requires a victim to remain unsafe or disregard justice. His mercy can inform our response even as wrongdoing is named.</p><p><strong>Reflect:</strong> What do Jesus’ words reveal about the kind of person he calls me to become?</p><p><strong>Practice:</strong> Read Luke 23:32-34. Pray for the courage to tell the truth without nourishing revenge.</p><p><strong>Prayer:</strong> Jesus, help me learn your ways and resist the cycle of harm. Amen.</p>",
+    "references": [
+      "Ephesians 4:20-24",
+      "Luke 23:32-34"
+    ]
+  },
+  {
+    "day_number": 22,
+    "title": "Forgiveness Without Denying Harm",
+    "content": "<p><strong>Read:</strong> Matthew 5:43-48; Romans 12:17-21</p><p><strong>Source and historical context:</strong> The next segment expands on Jesus’ first word from the cross, arguing that forgiveness is strong rather than cowardly. The author urges believers to abandon personal resentment and discusses how ignorance can affect moral responsibility. Ignorance may be relevant in a particular case, but it neither proves that all harmful conduct was innocent nor removes an injured person’s need for protection.</p><p><strong>Devotional focus:</strong> Forgiveness can loosen the hold of retaliation while still affirming that evil was evil. It is not the same as instant trust, compulsory reconciliation, or the removal of consequences. Paul tells believers not to repay evil with evil and to overcome evil with good. In circumstances involving abuse or danger, wisdom includes boundaries, support, and appropriate protection.</p><p><strong>Reflect:</strong> What is the difference between letting go of revenge and pretending that nothing happened?</p><p><strong>Practice:</strong> Bring one resentment honestly into prayer. If safety is involved, seek trustworthy support instead of forcing contact.</p><p><strong>Prayer:</strong> Merciful Christ, guard my heart against vengeance and help me pursue truth and safety. Amen.</p>",
+    "references": [
+      "Matthew 5:43-48",
+      "Romans 12:17-21"
+    ]
+  },
+  {
+    "day_number": 23,
+    "title": "Grace for the One Who Turns to Christ",
+    "content": "<p><strong>Read:</strong> Luke 23:39-43; 1 John 1:8-9</p><p><strong>Source and historical context:</strong> Beibitz considers Jesus’ promise to the repentant criminal. He identifies contrition, confession, and amendment as features of repentance. In Luke’s account, the man acknowledges that his sentence is deserved and asks Jesus to remember him; a later record of changed conduct is impossible, so the narrative should not be treated as a model requiring observable restitution before mercy.</p><p><strong>Devotional focus:</strong> The man beside Jesus has no opportunity to assemble an impressive record of good works. He turns to Christ in honesty and hope. This is encouragement for those who fear they are too late or too stained to ask for mercy. It is not a reason to avoid making amends when we can. Grace welcomes the penitent and gives courage to begin a changed direction.</p><p><strong>Reflect:</strong> Is shame keeping me from turning toward the mercy Christ offers?</p><p><strong>Practice:</strong> Pray with the words “Jesus, remember me.” Where possible, make one honest repair.</p><p><strong>Prayer:</strong> Lord Jesus, remember me in mercy and guide me into truthful repentance. Amen.</p>",
+    "references": [
+      "Luke 23:39-43",
+      "1 John 1:8-9"
+    ]
+  },
+  {
+    "day_number": 24,
+    "title": "Love Begins with Those Near Us",
+    "content": "<p><strong>Read:</strong> John 19:25-27; 1 Timothy 5:4-8</p><p><strong>Source and historical context:</strong> The author turns to Jesus’ words to his mother and the beloved disciple. He treats Christ’s concern for Mary as a model of practical consideration and speaks of renewed friendship that becomes visible through service. The next section introduces Jesus’ cry of abandonment.</p><p><strong>Devotional focus:</strong> Even in profound suffering, Jesus notices a person who will need care. Christian love should not be measured only by dramatic sacrifices far away; it is tested in patient attention to people close to us. First Timothy speaks of households making provision for dependents, while John describes Jesus entrusting his mother to the beloved disciple. Caring wisely may involve relatives, friends, communities, and professional support; neither text obliges anyone to remain with an unsafe caregiver or manage another person’s needs alone. It is not a demand that a single person shoulder every burden alone.</p><p><strong>Reflect:</strong> Whose need is easy for me to overlook because it is familiar or inconvenient?</p><p><strong>Practice:</strong> Ask someone close to you what concrete support would help, and respond within your capacity.</p><p><strong>Prayer:</strong> Caring Christ, teach me to see nearby needs and build dependable circles of support. Amen.</p>",
+    "references": [
+      "John 19:25-27",
+      "1 Timothy 5:4-8"
+    ]
+  },
+  {
+    "day_number": 25,
+    "title": "When Jesus Cried Out in Anguish",
+    "content": "<p><strong>Read:</strong> Psalm 22:1-24; Mark 15:33-39</p><p><strong>Source and historical context:</strong> Beibitz analyzes the Fourth Word, “My God, my God, why have you forsaken me?” He considers the agony of isolation, death, and sin, and interprets the cry as a real expression of Jesus’ human suffering.</p><p><strong>Devotional focus:</strong> Jesus’ cry gives believers language for pain that cannot be made tidy. The opening of Psalm 22 voices forsakenness, while its later movement turns toward testimony and praise. Christians have interpreted Jesus’ quotation in different ways; the cry must not be made proof either that the Father ceased loving the Son or that present-day sufferers are spiritually deficient. We must not tell grieving or ill people that their distress proves divine rejection. The cross allows honest lament to stand within the story of God’s love; community is called to stay present rather than explain another person’s pain away.</p><p><strong>Reflect:</strong> What sorrow have I been afraid to speak honestly in prayer?</p><p><strong>Practice:</strong> Read Psalm 22 aloud or in silence. Offer presence, not a quick explanation, to someone who grieves.</p><p><strong>Prayer:</strong> God who hears the forsaken, receive our cries and keep us close in suffering. Amen.</p>",
+    "references": [
+      "Psalm 22:1-24",
+      "Mark 15:33-39"
+    ]
+  },
+  {
+    "day_number": 26,
+    "title": "The Humanity of Christ in “I Thirst”",
+    "content": "<p><strong>Read:</strong> John 19:28-30; Hebrews 4:14-16</p><p><strong>Source and historical context:</strong> John 19:28 reports Jesus saying ‘I thirst’ and explicitly links the saying to the fulfilment of Scripture. Beibitz treats the word as testimony to Jesus’ real bodily suffering. Beibitz reflects on the reality of physical pain and treats Christ’s deliberate speech as evidence of courage. He also develops a broad argument that hardship can train spiritual life.</p><p><strong>Devotional focus:</strong> Jesus is not a distant spectator of bodily need. Jesus’ thirst underscores the physical reality of his suffering. Hebrews 4 presents the high priest who can sympathize with human weakness; neither passage teaches that every person must suffer bodily pain to become holy. Physical suffering is not inherently holy, nor should it be romanticized as necessary for growth. Christians may pursue treatment, rest, and relief while asking God for endurance and companionship through what cannot immediately be changed.</p><p><strong>Reflect:</strong> Do I treat my own bodily limits, or someone else’s, as something embarrassing to ignore?</p><p><strong>Practice:</strong> Attend to a real physical need today. Offer water, rest, or practical assistance to someone who needs it.</p><p><strong>Prayer:</strong> Compassionate Savior, teach me to honor bodies and respond to suffering with care. Amen.</p>",
+    "references": [
+      "John 19:28-30",
+      "Hebrews 4:14-16"
+    ]
+  },
+  {
+    "day_number": 27,
+    "title": "Compassion in the Shadow of the Cross",
+    "content": "<p><strong>Read:</strong> Matthew 25:34-40; John 19:29-30</p><p><strong>Source and historical context:</strong> The author finishes discussing Christ’s thirst by reflecting on the sour wine offered to Jesus, which John 19:29 narrates without identifying the giver as a disciple or attributing benevolent motives. The author draws a devotional lesson of compassion from the scene. He then introduces the Sixth Word, “It is finished,” and reads the cross as the culmination of Jesus’ faithful mission rather than an isolated episode.</p><p><strong>Devotional focus:</strong> The simple act of offering relief matters. In Matthew 25, Jesus identifies with people experiencing hunger, thirst, and vulnerability; John 19 describes an event at his crucifixion. Linking the passages is a devotional analogy, not evidence that John’s narrative recorded an act motivated by Matthew 25. His completed work does not excuse indifference; it frees us to participate in love. We need not understand every theory of the cross before beginning to practice mercy. A cup of water can become a genuine response to God’s costly love.</p><p><strong>Reflect:</strong> What small act of relief is within my reach right now?</p><p><strong>Practice:</strong> Help one person with a concrete need today, without making them feel indebted or inferior.</p><p><strong>Prayer:</strong> Lord Jesus, let the fullness of your love make my hands ready to serve. Amen.</p>",
+    "references": [
+      "Matthew 25:34-40",
+      "John 19:29-30"
+    ]
+  },
+  {
+    "day_number": 28,
+    "title": "“It Is Finished”: Faithful Love Endures",
+    "content": "<p><strong>Read:</strong> John 19:30; Philippians 2:5-11</p><p><strong>Source and historical context:</strong> Beibitz reflects on the Sixth Word as the victory of a life of obedience. In the same segment he introduces the Seventh Word, Jesus entrusting his spirit to the Father, and contrasts joyful trust with passive resignation.</p><p><strong>Devotional focus:</strong> When Jesus says that his work is finished, he does not announce that human suffering is good or that his followers need never act again. John records ‘It is finished’ at the close of Jesus’ Passion; Christians have connected the saying with the completion of his mission and saving work. The text should not be reduced to an exhortation for followers to complete tasks through exhaustion. We are invited to persevere in faithful service, not to measure ourselves against a burden we cannot carry. Trust grows as we learn to recognize the goodness of God’s will.</p><p><strong>Reflect:</strong> Where do I need to distinguish faithful perseverance from exhaustion or harmful pressure?</p><p><strong>Practice:</strong> Complete one manageable act of service, and then receive rest without guilt.</p><p><strong>Prayer:</strong> Faithful Jesus, teach me the courage to serve and the humility to rest. Amen.</p>",
+    "references": [
+      "John 19:30",
+      "Philippians 2:5-11"
+    ]
+  },
+  {
+    "day_number": 29,
+    "title": "Entrusting Life and Death to God",
+    "content": "<p><strong>Read:</strong> Luke 23:44-49; Romans 6:3-5</p><p><strong>Source and historical context:</strong> At the close of the traditional Seven Last Words, Beibitz reflects on Jesus’ entrusting his spirit to the Father. Luke 23:46 echoes the prayer of Psalm 31:5, and should not be used as a demand that the dying remain calm or deny their grief. He then moves to the burial of Jesus and baptismal imagery for dying to an old way of living and being raised into new life.</p><p><strong>Devotional focus:</strong> The words “into your hands” are an act of trust, not a demand to feel untroubled in the face of loss. Christian hope can coexist with grief and uncertainty. Paul’s image of baptism connects Jesus’ death and resurrection with a new way of life. Traditions differ in how they explain the sacrament, but all may hear the invitation to leave behind what destroys life and walk toward Christ.</p><p><strong>Reflect:</strong> What fear or burden can I entrust to God today without pretending it has disappeared?</p><p><strong>Practice:</strong> Pray Luke 23:46, then write one hopeful step you can take while uncertainty remains.</p><p><strong>Prayer:</strong> Loving Father, hold us in life and death, and lead us in paths of new life. Amen.</p>",
+    "references": [
+      "Luke 23:44-49",
+      "Romans 6:3-5"
+    ]
+  },
+  {
+    "day_number": 30,
+    "title": "Easter Hope for a Changed Life",
+    "content": "<p><strong>Read:</strong> Romans 6:4-11; 1 Corinthians 15:3-8</p><p><strong>Source and historical context:</strong> The closing paragraph links Jesus’ death, burial, and resurrection with transformation in believers’ lives. Beibitz ends by encouraging worshippers to approach Easter Communion in hope, within his Anglican understanding of the Eucharist as participation in Christ. Not every Christian tradition shares his sacramental explanation.</p><p><strong>Devotional focus:</strong> The Christian proclamation does not stop at the grave. Paul proclaims the risen Christ and calls believers to walk in newness of life. Personal growth can be uneven, and faith should not be turned into a promise of instant perfection or physical healing. Easter hope means the future is not exhausted by yesterday’s failures. We can begin again, relying on God’s faithful love.</p><p><strong>Reflect:</strong> Where do I need hope for a new beginning rather than another attempt to punish myself?</p><p><strong>Practice:</strong> Celebrate Easter hope with gratitude. Choose one achievable act that expresses the new life you seek.</p><p><strong>Prayer:</strong> Risen Lord, renew our courage, heal what is broken, and teach us to walk in hope. Amen.</p>",
+    "references": [
+      "Romans 6:4-11",
+      "1 Corinthians 15:3-8"
+    ]
+  }
+]$wave48_data$::jsonb)
+      AS x(day_number int,title text,content text,"references" jsonb) ORDER BY day_number
+  LOOP
+   IF e.day_number NOT BETWEEN 1 AND 30 OR coalesce(length(e.title),0)=0
+      OR e.content NOT LIKE '%<strong>Read:</strong>%'
+      OR e.content NOT LIKE '%<strong>Prayer:</strong>%'
+      OR jsonb_typeof(e."references")<>'array' OR jsonb_array_length(e."references")<>2 THEN
+      RAISE EXCEPTION 'Wave 48: invalid day payload %',e.day_number;
+   END IF;
+   SELECT array_agg(value ORDER BY ord) INTO v_refs
+   FROM jsonb_array_elements_text(e."references") WITH ORDINALITY AS v(value,ord);
+   UPDATE public.devotional_days d SET title=e.title,content=e.content,updated_at=now()
+    WHERE d.plan_id='90000000-0000-0000-0000-000000000362'::uuid AND d.day_number=e.day_number
+    RETURNING d.id INTO v_day_id;
+   IF NOT FOUND THEN RAISE EXCEPTION 'Wave 48: missing day %', e.day_number; END IF;
+   UPDATE public.scripture_references r SET reference=v_refs,updated_at=now()
+     WHERE r.day_id=v_day_id AND r.user_id IS NULL;
+   IF NOT FOUND THEN
+     INSERT INTO public.scripture_references (user_id,day_id,reference,created_at,updated_at)
+       VALUES(NULL,v_day_id,v_refs,now(),now());
+   END IF;
+  END LOOP;
+END;
+$apply$;
+
+UPDATE public.devotional_plans SET
+ title=$wave48_title$The Glory of the Cross: 30 Readings on Love, Repentance, and Hope$wave48_title$,
+ description=$wave48_desc$Thirty Scripture-led devotional readings adapted from Joseph Hugh Beibitz’s Gloria Crucis, drawn from Holy Week and Good Friday addresses delivered in Lichfield Cathedral in 1907 and published in 1908. The readings explore the atonement, human sin, conscience, repentance, union with Christ, sacrifice, sacramental life, the traditionally collected Seven Last Words and Easter hope. Beibitz’s particular views on penal theories, sacramental theology, sin, and modern science are labeled as historically situated interpretations, not universal Christian doctrinal consensus. The adaptation distinguishes biblical text from pastoral application, prevents collective blame for Jesus’ execution, and addresses limitations of some historical arguments. Draft only pending qualified editorial, historical, and theological sign-off.$wave48_desc$,
+ status='draft',updated_at=now()
+WHERE id='90000000-0000-0000-0000-000000000362'::uuid;
+
+DO $postflight$
+DECLARE n int;
+BEGIN
+ SELECT count(*) INTO n FROM public.devotional_days
+ WHERE plan_id='90000000-0000-0000-0000-000000000362'::uuid AND content LIKE '%<strong>Read:</strong>%'
+ AND content LIKE '%<strong>Source and historical context:</strong>%'
+ AND content LIKE '%<strong>Devotional focus:</strong>%'
+ AND content LIKE '%<strong>Reflect:</strong>%'
+ AND content LIKE '%<strong>Practice:</strong>%'
+ AND content LIKE '%<strong>Prayer:</strong>%';
+ IF n<>30 THEN RAISE EXCEPTION 'Wave 48: postflight expected 30 structured devotional days, got %',n;END IF;
+ IF EXISTS(SELECT 1 FROM public.devotional_days d
+ WHERE d.plan_id='90000000-0000-0000-0000-000000000362'::uuid AND
+    (SELECT count(*) FROM public.scripture_references r
+      WHERE r.day_id=d.id AND r.user_id IS NULL)<>1)
+ THEN RAISE EXCEPTION 'Wave 48: postflight global references missing or duplicated';END IF;
+ IF NOT EXISTS(SELECT 1 FROM public.devotional_plans
+   WHERE id='90000000-0000-0000-0000-000000000362'::uuid AND status='draft')
+ THEN RAISE EXCEPTION 'Wave 48: plan must remain draft'; END IF;
+END;
+$postflight$;
+COMMIT;
+-- END CONSOLIDATED SOURCE: 20261027000000_repair_draft_devotional_plans_wave_34.sql
+
+-- BEGIN CONSOLIDATED SOURCE: 20261027000000_repair_draft_devotional_plans_wave_35.sql sha256=edddd6fbf8e6de3af5d063ead3b11052ef3c4b459dfc43be6166e398759d0c0b
+-- Wave 49 / Plan 355: full self-contained sentence-level editorial and theological review.
+-- REPLACES Wave 30 for this plan. Prerequisites: original Plan 355 seed, 27 days.
+-- Apply after historical October 21 modernization; NEVER apply Wave 30 afterward.
+-- Source: https://www.gutenberg.org/ebooks/31177
+-- Preserves day IDs, tags, cover, source URL, user progress and all user-owned references.
+-- Explicitly DRAFT ONLY. Independent qualified human sign-off required before publishing.
+-- Transactional, guarded, repeatable full final-state update; does not execute externally.
+BEGIN;
+DO $review49$
+DECLARE
+  v_plan constant uuid := '90000000-0000-0000-0000-000000000355'::uuid;
+  v_days jsonb := $wave49_payload$[{"day_number":1,"title":"Seeking Unity without Erasing Difference","content":"<p><strong>Read:</strong> Ephesians 4:1-6; 1 Corinthians 14:40</p><p><strong>Source and historical context:</strong> On January 17, 1880, a group of Anglican clergy and students of ritual began discussions at All Saints, Margaret Street, London, about differences in practice among churches seeking to maintain Catholic doctrine and usage within the Church of England. The conference continued in 1880–1881 and published its agreed interpretations as Ritual Conformity in 1881, signed by chairman B. Compton and other participants. The comments were offered as proposals rather than binding rulings of the whole Church of England.</p><p><strong>Devotional focus:</strong> Order can serve love when it helps a congregation pray together. Yet sameness is not the same as unity, and Christians may worship faithfully through different traditions. Paul urges patience, gentleness, and a common commitment to peace. One worthy goal of a worship discussion is to help the whole body honor God while recognizing that sincere Christians may disagree about which practices best serve that goal.</p><p><strong>Reflect:</strong> When have I confused my preferred way of worship with the measure of another person’s faith?</p><p><strong>Practice:</strong> Listen to someone from a different church tradition. Ask what helps them pray, without starting a debate.</p><p><strong>Prayer:</strong> God of peace, teach us to cherish truth with humility and to seek unity without contempt. Amen.</p>","references":["Ephesians 4:1-6","1 Corinthians 14:40"]},{"day_number":2,"title":"Faithful Discernment Takes Patient Study","content":"<p><strong>Read:</strong> Proverbs 15:22; Colossians 3:16-17</p><p><strong>Source and historical context:</strong> The conference explained that its interpretations came from research, experience in parish ministry, and discussions requiring broad agreement. It traced key Prayer Book texts through the editions of 1549, 1552, and 1662, and noted later calendar changes, including those of 1871. Its interpreters cautioned that the rubrics use the technical language of their own periods.</p><p><strong>Devotional focus:</strong> No one participant knows everything. When questions about worship become difficult, we need careful listening, knowledge of the past, and attention to the needs of present congregations. Scripture invites believers to teach and admonish one another with wisdom. Patience can guard against careless changes while also keeping inherited interpretations open to responsible historical and pastoral examination.</p><p><strong>Reflect:</strong> Whose experience should I seek before deciding what is best for a community?</p><p><strong>Practice:</strong> Before arguing about a church practice, read its background and invite a thoughtful question from someone affected by it.</p><p><strong>Prayer:</strong> Lord, give me wisdom that welcomes correction and counsel that serves others well. Amen.</p>","references":["Proverbs 15:22","Colossians 3:16-17"]},{"day_number":3,"title":"Let Seasons Teach Us to Remember","content":"<p><strong>Read:</strong> Ecclesiastes 3:1-8; Romans 14:5-6</p><p><strong>Source and historical context:</strong> This segment lists the precedence of church festivals when holy days overlap. It also distinguishes periods of fasting and abstinence within a historical Anglican calendar, including Lent, Ember days, Rogation days, and Fridays.</p><p><strong>Devotional focus:</strong> For communities that observe it, a church calendar can set aside times to remember Christ’s coming, suffering, and resurrection, while making room for prayer and service. Romans 14 addresses believers who differ over the observance of days and other matters of conscience; it counsels respect, although it does not directly settle a nineteenth-century Anglican calendar dispute. The value of a season lies in the gratitude, repentance, and care it nurtures, not in perfect mastery of a complicated timetable.</p><p><strong>Reflect:</strong> What season or sacred moment could help me attend more carefully to God?</p><p><strong>Practice:</strong> Choose one upcoming Christian observance and learn its meaning. Consider one simple act of prayer or generosity connected to it.</p><p><strong>Prayer:</strong> God of all our days, help the rhythms of worship direct our hearts toward you and our neighbors. Amen.</p>","references":["Ecclesiastes 3:1-8","Romans 14:5-6"]},{"day_number":4,"title":"A Place Prepared for People","content":"<p><strong>Read:</strong> 1 Peter 2:4-5; James 2:1-4</p><p><strong>Source and historical context:</strong> The guide discusses where morning and evening prayer should be offered, the architecture of chancels, and church ornaments linked to sixteenth-century Anglican law. It also acknowledges that elaborate ritual may be impractical in some parishes and that the circumstances of worshippers should shape the introduction of unfamiliar practices.</p><p><strong>Devotional focus:</strong> Buildings, furnishings, and vestments can carry memory and beauty, but they are not the living heart of the church. Peter calls believers living stones, and James warns against allowing visible status to determine whom we honor. A well-prepared worship space should serve prayer and participation; accessibility and equal regard for worshippers are present-day pastoral applications rather than requirements stated by the Victorian conference.</p><p><strong>Reflect:</strong> Do our worship spaces make visitors, people with disabilities, and those with little money feel welcome?</p><p><strong>Practice:</strong> Notice one barrier to participation in a worship space and suggest a practical, respectful improvement.</p><p><strong>Prayer:</strong> Lord Jesus, build us into a welcoming people whose reverence makes room for everyone. Amen.</p>","references":["1 Peter 2:4-5","James 2:1-4"]},{"day_number":5,"title":"Let the Word Be Heard Clearly","content":"<p><strong>Read:</strong> Nehemiah 8:1-8; 1 Corinthians 14:9</p><p><strong>Source and historical context:</strong> After discussing the colors of historic church vestments, the authors turn to Morning Prayer. They distinguish between reading, saying, and singing Scripture, and ask how the congregation will best hear and understand the opening sentences.</p><p><strong>Devotional focus:</strong> Music and ceremony can deepen attention, but clarity matters more than display. At the public reading of the Law in Nehemiah, the people were helped to understand what they heard. In 1 Corinthians 14, Paul is specifically arguing that speech in the gathered church must be understandable if it is to build others up. Whether a passage is spoken or sung, love asks that it be audible, intelligible, and accessible to the community.</p><p><strong>Reflect:</strong> Could someone unfamiliar with our worship actually understand the words being spoken?</p><p><strong>Practice:</strong> Read a short Bible passage aloud at a comfortable pace, then share its meaning in plain language.</p><p><strong>Prayer:</strong> Speaking God, let your word reach our ears and shape our actions. Amen.</p>","references":["Nehemiah 8:1-8","1 Corinthians 14:9"]},{"day_number":6,"title":"Confession Is Something We Share","content":"<p><strong>Read:</strong> 1 John 1:8-9; Psalm 51:10-12</p><p><strong>Source and historical context:</strong> The rubrical notes explain why the congregation repeats a general confession after the minister and discusses the shared response “Amen.” The authors also describe how the Lord’s Prayer, psalms, and other responses are voiced by the worshipping assembly.</p><p><strong>Devotional focus:</strong> Shared confession is not meant to single out the most vulnerable or invite public humiliation. It gives the assembly words for acknowledging sin and seeking grace, without implying that each person has committed the same wrongs or must disclose private experiences publicly. When we say “Amen” to a prayer, we take part rather than leaving worship to a leader. Forgiveness opens a path toward honesty and repair; it should not become pressure to disclose private experiences without consent or safety.</p><p><strong>Reflect:</strong> Where do I need to exchange defensiveness for truthful, humble prayer?</p><p><strong>Practice:</strong> Pray Psalm 51 slowly. If you have harmed someone, consider a safe and specific step toward making amends.</p><p><strong>Prayer:</strong> Merciful God, meet our confession with grace and help our words become changed lives. Amen.</p>","references":["1 John 1:8-9","Psalm 51:10-12"]},{"day_number":7,"title":"A Community That Listens to Scripture","content":"<p><strong>Read:</strong> 2 Timothy 3:16-17; Luke 24:27-32</p><p><strong>Source and historical context:</strong> The guide sets out when the appointed psalms and Bible lessons may be changed and explains how Scripture readings, responses, and the Lord’s Prayer fit together in Morning Prayer. It treats regular listening to the full range of Scripture as a communal discipline.</p><p><strong>Devotional focus:</strong> It is easy to return only to the verses we already enjoy. A regular pattern of reading can introduce voices, questions, and promises we might otherwise miss. Christians read both Testaments in community; a regular pattern can help them attend to passages in their own contexts rather than only to passages that confirm familiar assumptions. The practice should lead toward understanding, not merely the completion of a reading schedule.</p><p><strong>Reflect:</strong> Which part of Scripture have I avoided because it seems unfamiliar or difficult?</p><p><strong>Practice:</strong> Read a passage outside your usual favorites, then write one honest question you would like to explore.</p><p><strong>Prayer:</strong> Lord, open our minds to your word and make us willing listeners. Amen.</p>","references":["2 Timothy 3:16-17","Luke 24:27-32"]},{"day_number":8,"title":"Songs of Hope at the Close of Day","content":"<p><strong>Read:</strong> Luke 1:46-55; Luke 2:25-32</p><p><strong>Source and historical context:</strong> The notes on Evening Prayer recommend retaining the Magnificat and the Nunc Dimittis whenever possible. They also discuss litanies, set prayers, and how congregations may remember specific people in common intercession.</p><p><strong>Devotional focus:</strong> Mary’s song celebrates God’s mercy to the lowly and recalls his promise to Israel; Simeon speaks of salvation prepared before all peoples, a light for the nations and glory for Israel. These biblical prayers can teach us how to end a day: not by pretending all is well, but by remembering what God has done and holding the world in hope. Shared intercession makes space for needs beyond our own.</p><p><strong>Reflect:</strong> What part of today needs to be entrusted to God in gratitude or sorrow?</p><p><strong>Practice:</strong> Pray the Magnificat or Nunc Dimittis this evening. Include one neighbor or community concern in your prayer.</p><p><strong>Prayer:</strong> Faithful God, gather our joys and griefs into the light of Christ. Amen.</p>","references":["Luke 1:46-55","Luke 2:25-32"]},{"day_number":9,"title":"Thanksgiving That Leads to Repair","content":"<p><strong>Read:</strong> Psalm 100:1-5; Matthew 5:23-24</p><p><strong>Source and historical context:</strong> The guide distinguishes the General Thanksgiving from particular thanksgivings, including a rubric that envisages the presence of those giving thanks. It then turns to preparation for Holy Communion, including the expectation that those who have seriously harmed others should seek reconciliation and make restitution where possible.</p><p><strong>Devotional focus:</strong> Gratitude is more than a pleasant feeling. Remembering God’s goodness can lead us to notice what we owe one another in honesty and care. Jesus connects worship with the work of reconciliation. Reconciliation may take time and must not require unsafe contact or override another person’s boundaries. A person who has caused harm can still pursue accountability and restitution where appropriate.</p><p><strong>Reflect:</strong> Is there a relationship or obligation I have avoided while asking God to bless my worship?</p><p><strong>Practice:</strong> Give thanks for one mercy today, then take one safe, proportionate action to correct a wrong or honor a neglected commitment.</p><p><strong>Prayer:</strong> God of mercy, make our thanks sincere and our repentance practical. Amen.</p>","references":["Psalm 100:1-5","Matthew 5:23-24"]},{"day_number":10,"title":"Sacred Space Is for Shared Worship","content":"<p><strong>Read:</strong> Hebrews 10:24-25; Luke 22:24-27</p><p><strong>Source and historical context:</strong> The writers compare church customs for positioning the communion table, the minister, and attendants. Their discussion engages historic English practice, the north side of the Lord’s Table and disputed interpretations of where the minister should stand; the conference’s conclusions were not a settled rule for all Anglicans.</p><p><strong>Devotional focus:</strong> Different traditions understand these arrangements differently. Across these differences, communities can ask whether their space supports worship, shared participation, and care, without reducing every tradition’s Eucharistic theology to remembrance alone. The Lord placed service, not ceremonial prestige, at the center of leadership. Reverence should strengthen fellowship rather than make worshippers feel that they are merely an audience.</p><p><strong>Reflect:</strong> In our gatherings, whose needs are considered when arrangements are made?</p><p><strong>Practice:</strong> Ask a fellow worshipper what helps them feel able to participate, and carry one suggestion to a responsible leader.</p><p><strong>Prayer:</strong> Servant King, keep our worship centered on your welcome and teach us to serve rather than seek importance. Amen.</p>","references":["Hebrews 10:24-25","Luke 22:24-27"]},{"day_number":11,"title":"Worship Leaders Serve the Congregation","content":"<p><strong>Read:</strong> 1 Corinthians 14:26; Mark 10:42-45</p><p><strong>Source and historical context:</strong> The guide cautions clergy that private devotional actions should not interrupt the public Communion rite or prevent the congregation from following its appointed order. It goes on to discuss public prayers, Bible readings, the Gospel, and church announcements.</p><p><strong>Devotional focus:</strong> Christian leadership carries responsibility for other people’s time, attention, and access to worship. Jesus defined greatness through service. Thoughtful preparation can make worship more welcoming, while a leader’s humility allows others to hear Scripture and respond without unnecessary obstacles. This applies beyond churches whenever one person guides a group.</p><p><strong>Reflect:</strong> Does my role in a group make participation easier for others or revolve around my preferences?</p><p><strong>Practice:</strong> If you lead, prepare one activity with participants’ needs in mind. If you attend, thank a person who quietly makes space for others.</p><p><strong>Prayer:</strong> Jesus, shape our leadership after your generosity and patience. Amen.</p>","references":["1 Corinthians 14:26","Mark 10:42-45"]},{"day_number":12,"title":"Preaching and Giving Belong Together","content":"<p><strong>Read:</strong> James 2:14-17; 2 Corinthians 9:6-8</p><p><strong>Source and historical context:</strong> The guide describes the sermon, the collection of alms, and the preparation of bread and wine for Communion. It recalls that offerings were once brought to a single basin and notes the practical needs of larger congregations.</p><p><strong>Devotional focus:</strong> The word proclaimed in worship should shape what a congregation does with its resources. James asks what faith means when a neighbor lacks food or clothing; In 2 Corinthians 9, Paul describes a collection for believers in need and urges willing rather than reluctant or coerced giving. Worshipful generosity protects dignity by serving actual needs rather than seeking attention or controlling recipients.</p><p><strong>Reflect:</strong> How does the faith I hear on Sunday influence my choices about time and money?</p><p><strong>Practice:</strong> Offer a modest contribution or practical help to a trustworthy effort meeting real needs, without expecting praise.</p><p><strong>Prayer:</strong> Generous Lord, join our listening to loving action. Amen.</p>","references":["James 2:14-17","2 Corinthians 9:6-8"]},{"day_number":13,"title":"Prepare the Table with Gratitude","content":"<p><strong>Read:</strong> 1 Corinthians 11:23-26; Luke 22:19-20</p><p><strong>Source and historical context:</strong> The authors discuss the historical practice of mixing a little water with Eucharistic wine, preparing the elements, and allowing sufficient time for a communal confession. These are directions within a particular Anglican liturgical debate, not universal Christian requirements.</p><p><strong>Devotional focus:</strong> In Luke and 1 Corinthians, Jesus gives bread and the cup in relation to his body, blood, and covenant; Paul calls the community to remember and proclaim his death. Christian traditions differ over how Christ is present and how the sacrament conveys grace. Careful preparation can invite attention to that gift, but small ritual details should not obscure the story of Christ’s self-giving love. Those who receive Communion should prepare according to their church’s teaching, with gratitude and serious regard for Christ and fellow worshippers, not as a display of ritual expertise.</p><p><strong>Reflect:</strong> What could help me approach Communion with attentiveness instead of habit or anxiety?</p><p><strong>Practice:</strong> Before your next Communion, read 1 Corinthians 11:23–26 and thank Christ for his generosity.</p><p><strong>Prayer:</strong> Lord Jesus, turn our attention from performance to your love, remembered and shared. Amen.</p>","references":["1 Corinthians 11:23-26","Luke 22:19-20"]},{"day_number":14,"title":"Mercy at the Heart of the Table","content":"<p><strong>Read:</strong> Hebrews 4:14-16; 1 Corinthians 11:28-29</p><p><strong>Source and historical context:</strong> The notes discuss who may lead the confession, how a minister offers words of forgiveness, and where to stand during the prayer of consecration. They also compare historic customs for lifting the bread and chalice.</p><p><strong>Devotional focus:</strong> The setting may vary across churches, yet the deeper invitation remains: examine ourselves with sincerity and come before Christ with trust in his mercy. In 1 Corinthians 11, self-examination accompanies a serious warning against eating and drinking without discerning the body, within a chapter concerned with divisions at the shared meal. It should not be weaponized for public shaming or endless fear. Churches differ over the minister’s words of absolution and their sacramental significance; whatever the practice, it should not obscure repentance, responsibility, mercy, and pastoral care.</p><p><strong>Reflect:</strong> Do I approach God mainly with fear of failure, or with honest trust in his grace?</p><p><strong>Practice:</strong> Read Hebrews 4:14–16 slowly; name one place where you need both accountability and mercy.</p><p><strong>Prayer:</strong> Compassionate Savior, receive us truthfully and lead us toward your healing grace. Amen.</p>","references":["Hebrews 4:14-16","1 Corinthians 11:28-29"]},{"day_number":15,"title":"One Bread, Many People","content":"<p><strong>Read:</strong> 1 Corinthians 10:16-17; Romans 14:19</p><p><strong>Source and historical context:</strong> This section explains gestures at the words of institution and the way people receive Communion. It urges the celebrant not to enforce needless uniformity in the manner of reception when people act reverently.</p><p><strong>Devotional focus:</strong> In 1 Corinthians 10:16–17, Paul speaks of participation in Christ’s body and blood and of believers becoming one body through the one bread; this is more than a lesson about reception technique. Ceremonial customs may differ across churches, but ministers should explain their own community’s practice and make reasonable pastoral accommodations rather than humiliating anyone over a gesture. What matters pastorally is that worshippers are treated with patience, the sacraments are handled responsibly, and people are not turned into spectacles over minor differences.</p><p><strong>Reflect:</strong> When have I focused on another worshipper’s gesture more than on our shared faith?</p><p><strong>Practice:</strong> At your next gathering, choose to encourage one another’s participation rather than critique harmless differences.</p><p><strong>Prayer:</strong> Christ, unite us in gratitude and help us honor one another at your table. Amen.</p>","references":["1 Corinthians 10:16-17","Romans 14:19"]},{"day_number":16,"title":"Prayer Is the Work of the Whole Body","content":"<p><strong>Read:</strong> Acts 2:42-47; 1 Corinthians 12:12-13</p><p><strong>Source and historical context:</strong> After discussing Communion gestures, the guide moves through prayers following Communion, the Gloria, and the number of people needed for a celebration. Its detailed requirements reflect a particular historical discipline.</p><p><strong>Devotional focus:</strong> The early believers prayed, broke bread, and shared life as a community. Acts depicts believers sharing teaching, prayers, fellowship, and material goods; this offers an ethical analogy for mutual participation, not a detailed model of later Communion rubrics. It is the shared response of people with different gifts and needs. We can make room for active participation while respecting how various traditions order their services.</p><p><strong>Reflect:</strong> In what way could I help someone experience worship as belonging rather than observing?</p><p><strong>Practice:</strong> Invite another person to join a prayer, song, reading, or act of service, without pressuring them to participate.</p><p><strong>Prayer:</strong> Holy Spirit, make us attentive members of one body, generous in our welcome. Amen.</p>","references":["Acts 2:42-47","1 Corinthians 12:12-13"]},{"day_number":17,"title":"The Table Should Not Forget the Poor","content":"<p><strong>Read:</strong> 1 Corinthians 11:20-22; James 2:1-5</p><p><strong>Source and historical context:</strong> This segment considers minimum numbers of communicants, the practice of receiving Communion through the church year, and the suitability of bread and wine. The conference argues that the Prayer Book gives the curate no authority to dismiss non-communicants from the church before Communion; that is distinct from the question of who is admitted to receive the sacrament.</p><p><strong>Devotional focus:</strong> Paul rebuked the Corinthian church when its shared meal humiliated those with little. Reverence includes the way people are treated, not only the quality of vessels or ingredients. Whatever a denomination’s rules governing reception, its pastoral care should not turn non-reception, poverty, or disability into an occasion for public humiliation.</p><p><strong>Reflect:</strong> Who might feel left out or ashamed in the way our community practices worship?</p><p><strong>Practice:</strong> Speak with a church leader about one respectful way to support the participation of a person who is overlooked.</p><p><strong>Prayer:</strong> God of the shared table, keep us from dishonoring those whom you love. Amen.</p>","references":["1 Corinthians 11:20-22","James 2:1-5"]},{"day_number":18,"title":"A Welcome Marked with Water","content":"<p><strong>Read:</strong> Matthew 28:18-20; Ephesians 4:4-6</p><p><strong>Source and historical context:</strong> The authors describe the reverent consumption of consecrated elements after Communion and then turn to the public baptism of children. They discuss the font, ministers’ clothing, and the value of baptisms taking place when the congregation can gather.</p><p><strong>Devotional focus:</strong> In Matthew 28, baptism belongs to Jesus’ commission to make disciples; many traditions understand it as a sacrament of incorporation and grace, while others emphasize a believer’s profession of faith. Traditions differ about its recipients and meaning, but all can recognize a call to treat persons with dignity and to take promises of care seriously. Where baptism is celebrated publicly, a congregation can undertake real responsibility to teach, protect, and support the person baptized, in accordance with its tradition.</p><p><strong>Reflect:</strong> What does it mean for my community to welcome and support someone beyond the day of a ceremony?</p><p><strong>Practice:</strong> Offer practical support to a new member, parent, or person exploring faith; ask what would actually be helpful.</p><p><strong>Prayer:</strong> Jesus, make our promises of welcome visible in patient, everyday love. Amen.</p>","references":["Matthew 28:18-20","Ephesians 4:4-6"]},{"day_number":19,"title":"Make Room for the Vulnerable","content":"<p><strong>Read:</strong> Mark 10:13-16; Isaiah 43:1-3</p><p><strong>Source and historical context:</strong> The guide gives detailed rubrics for baptism using water and discusses both public ceremonies and the private baptism of infants who are unwell. Its instructions reflect an Anglican sacramental framework and the medical uncertainties of its time.</p><p><strong>Devotional focus:</strong> In Mark 10, Jesus rebukes those hindering children and welcomes them; Isaiah 43, by contrast, originally addresses God’s covenant people Israel, and should not be recast as a promise of an uncomplicated life to every child. Churches can honor that welcome by taking vulnerability seriously and not treating someone’s illness as a reason for neglect or exclusion. When infants or other vulnerable people are ill, pastoral prayer and any requested rites should accompany, not delay or replace, appropriate medical care. The child and family deserve respect rather than an argument about ceremonial perfection.</p><p><strong>Reflect:</strong> Who needs gentle and practical attention in my community right now?</p><p><strong>Practice:</strong> Ask a parent, caregiver, or person facing illness what support would make their next week more manageable.</p><p><strong>Prayer:</strong> Welcoming Lord, help us protect the vulnerable and make room for their full dignity. Amen.</p>","references":["Mark 10:13-16","Isaiah 43:1-3"]},{"day_number":20,"title":"A Faithful Welcome, Not a Repeated Test","content":"<p><strong>Read:</strong> Acts 8:26-39; Ephesians 2:19-22</p><p><strong>Source and historical context:</strong> These pages explain how clergy assessed whether a child had previously been baptized, followed by ceremonies for children and adults. The writers emphasize valid administration according to the rules of their historical church.</p><p><strong>Devotional focus:</strong> Rules about baptism differ among Christian traditions, and the historical authors spoke from within one of them. Beneath the procedural questions is a human one: how do we receive and accompany someone seeking to belong? In Acts 8, an Ethiopian court official hears Philip explain Scripture and then asks to be baptized. The story is about the gospel moving across boundaries, although it does not establish one universal modern baptismal procedure. A church’s care should extend to understanding, discipleship, and ongoing community.</p><p><strong>Reflect:</strong> Have I made another person feel that belonging depends on passing my private test?</p><p><strong>Practice:</strong> Welcome someone who is exploring faith. Offer to listen to their questions without pressing for a premature commitment.</p><p><strong>Prayer:</strong> Lord Jesus, guide seekers toward truth and give our communities generous hearts. Amen.</p>","references":["Acts 8:26-39","Ephesians 2:19-22"]},{"day_number":21,"title":"Teach the Faith with Patience","content":"<p><strong>Read:</strong> Deuteronomy 6:6-7; 1 Peter 3:15-16</p><p><strong>Source and historical context:</strong> The guide moves from adult baptism to confirmation, catechism, and the preparation of candidates. It then introduces the public notice given before marriage. The authors expect church leaders to take teaching and communal responsibilities seriously.</p><p><strong>Devotional focus:</strong> Faith formation takes time, questions, and relationships. Deuteronomy 6 commands Israel to teach God’s words diligently in daily life; 1 Peter calls believers to explain their hope with gentleness and respect in the setting of suffering and scrutiny. Preparation for major commitments is not simply a checklist of correct answers; it is an opportunity for informed, willing participation and care from the people surrounding us.</p><p><strong>Reflect:</strong> When I teach or advise, do I leave room for honest questions?</p><p><strong>Practice:</strong> Ask a younger believer or new member what they find confusing, and look for an answer together without embarrassment.</p><p><strong>Prayer:</strong> Patient God, help our communities teach faithfully and listen with gentleness. Amen.</p>","references":["Deuteronomy 6:6-7","1 Peter 3:15-16"]},{"day_number":22,"title":"Marriage Promises Deserve Care","content":"<p><strong>Read:</strong> Ephesians 5:21; 1 Corinthians 13:4-7</p><p><strong>Source and historical context:</strong> The marriage section describes where the couple stands, the officiant’s role, vows, the ring, prayers, and other ceremonial details. Some recommendations assume Victorian gender roles and the Church of England’s legal arrangements.</p><p><strong>Devotional focus:</strong> A wedding service should direct attention beyond its beauty to the responsibility of love. Paul calls Christians to mutual care, and 1 Corinthians describes love as patient and kind. Free consent, honesty, safety, and respect are essential pastoral safeguards in marriage. The 1881 rubrics reflect Victorian gender and legal assumptions, and none should be used to justify coercion, unequal human dignity, or concealing abuse.</p><p><strong>Reflect:</strong> What qualities matter most in the commitments I make to people I love?</p><p><strong>Practice:</strong> Talk with someone you trust about how kindness, consent, and faithful accountability appear in real relationships.</p><p><strong>Prayer:</strong> God of faithful love, teach us to honor promises without diminishing another person’s freedom or worth. Amen.</p>","references":["Ephesians 5:21","1 Corinthians 13:4-7"]},{"day_number":23,"title":"Be Present with the Sick and Troubled","content":"<p><strong>Read:</strong> James 5:13-16; Psalm 34:17-18</p><p><strong>Source and historical context:</strong> The guide concludes its notes on marriage and introduces prayers for visiting people who are ill, including a prayer for those troubled in mind or conscience. It discusses pastoral advice, personal prayer, and practical choices about the service.</p><p><strong>Devotional focus:</strong> Illness and distress are not failures of faith. James invites the sick to seek prayer and describes mutual confession, but he does not teach that every illness is caused by personal wrongdoing. Psalm 34 uses the language of the brokenhearted to express God’s care. Religious visitors should bring listening, comfort, and practical help—not pressure, speculation about blame, or promises of a specific outcome. Pastoral prayer belongs alongside sound medical and mental-health support.</p><p><strong>Reflect:</strong> How can I accompany someone who is unwell without assuming I know what they need?</p><p><strong>Practice:</strong> Send a gentle check-in to someone facing illness or anxiety. Offer one specific, optional form of help.</p><p><strong>Prayer:</strong> God of compassion, strengthen the weary and guide us to care with wisdom. Amen.</p>","references":["James 5:13-16","Psalm 34:17-18"]},{"day_number":24,"title":"God Is Near When Communion Is Difficult","content":"<p><strong>Read:</strong> Romans 8:38-39; 2 Corinthians 4:16-18</p><p><strong>Source and historical context:</strong> The Communion of the Sick section addresses serious illness, epidemics, and practical difficulty swallowing bread or wine. A historical Prayer Book rubric gives a particular spiritual assurance to a sick person unable to receive Communion by mouth, explicitly speaking of repentance, faith in Christ’s saving death, remembrance, and thanksgiving; it is not a blanket statement that denominational sacramental teaching is irrelevant.</p><p><strong>Devotional focus:</strong> The bodily limitations of illness can interrupt familiar religious practices. They do not erase a person’s dignity or place in God’s love. Romans 8 promises that no suffering or created power can separate believers from the love of God in Christ; that assurance does not erase legitimate differences about sacramental reception. We can offer prayer and pastoral care with sensitivity to health, personal consent, and denominational practice rather than making fragile bodies carry spiritual guilt.</p><p><strong>Reflect:</strong> Have I unintentionally treated physical limitation as a failure of devotion?</p><p><strong>Practice:</strong> Ask how to include an ill or homebound member in community prayer or fellowship while respecting their health and choices.</p><p><strong>Prayer:</strong> God who stays near, hold us in love when ordinary practices become difficult. Amen.</p>","references":["Romans 8:38-39","2 Corinthians 4:16-18"]},{"day_number":25,"title":"Mourning with Dignity and Hope","content":"<p><strong>Read:</strong> John 11:17-36; Romans 12:15</p><p><strong>Source and historical context:</strong> The guide discusses visits during contagious illness and the burial service. Some historical restrictions concern people who died without baptism, under excommunication, or by suicide; these reflect the church rules and social assumptions of the period.</p><p><strong>Devotional focus:</strong> In John 11:17–36, Jesus speaks of resurrection to Martha, receives Mary’s grief, and weeps; the larger context is needed to support both parts of this sentence. Christian hope does not require families to hide grief, and a person’s death should never be used as an occasion for speculation or shame. Those bereaved by suicide or other painful circumstances deserve compassionate, nonjudgmental care and freedom to lament; a historical rule about use of a burial office must not become a pronouncement about the deceased person’s eternal fate. The historical exclusions described here should not be mistaken for universal judgments about a person’s eternal fate.</p><p><strong>Reflect:</strong> How can I respond to bereavement without rushing to explain or correct someone’s sorrow?</p><p><strong>Practice:</strong> Reach out to a grieving person with a simple message of remembrance or an offer of practical support.</p><p><strong>Prayer:</strong> Christ of resurrection, meet mourners with compassion and sustain hope without silencing grief. Amen.</p>","references":["John 11:17-36","Romans 12:15"]},{"day_number":26,"title":"Prayer Holds Gratitude and Lament Together","content":"<p><strong>Read:</strong> Psalm 116:1-9; Luke 18:9-14</p><p><strong>Source and historical context:</strong> This segment finishes the historical Thanksgiving of Women after Childbirth and proceeds to the Commination prayers for repentance. The notes address prayers after childbirth, including a painful case in which the child has died. This historical liturgical provision should be described without implying that the bereaved parent must give thanks for the death.</p><p><strong>Devotional focus:</strong> Human life is not tidy enough to fit one emotion at a time. Gratitude, exhaustion, relief, guilt, and grief may exist together. Psalm 116 gives thanks for deliverance from mortal peril, while Luke 18 warns against the self-righteous prayer that despises another. Neither text assigns one required emotional response to every childbirth or loss. We can come as we are, asking for mercy without pretending that pain or repentance follows a schedule.</p><p><strong>Reflect:</strong> What feeling have I been told to hide in a moment when I needed prayer?</p><p><strong>Practice:</strong> Pray Psalm 116 thoughtfully, leaving space to name one gratitude and one grief without trying to resolve both today.</p><p><strong>Prayer:</strong> Merciful God, welcome our thanks and our tears, and teach us humility without humiliation. Amen.</p>","references":["Psalm 116:1-9","Luke 18:9-14"]},{"day_number":27,"title":"Let Careful Practice Lead to Love","content":"<p><strong>Read:</strong> Micah 6:8; 1 Corinthians 14:40</p><p><strong>Source and historical context:</strong> The closing notes revisit old legal interpretations of vestments and marriage rubrics and even the proper cleansing of Communion vessels. The authors sought practical consistency across disputes about worship that mattered deeply in their Anglican context.</p><p><strong>Devotional focus:</strong> Details can carry reverence and history. They can also become an endless argument that forgets the people worship is meant to serve. Micah 6:8 calls Israel to justice, covenant kindness, and humble walking with God; 1 Corinthians 14:40 seeks ordered worship in a chapter concerned with intelligible contributions from the gathered church. Thoughtful ritual practice has a place within a tradition when it helps the community worship faithfully, while justice and love remain indispensable ethical responsibilities. Let us take care with traditions while refusing to measure another believer only by ceremonial precision.</p><p><strong>Reflect:</strong> Has attention to religious detail strengthened my love, or displaced it?</p><p><strong>Practice:</strong> Identify one meaningful tradition worth understanding better, and one act of mercy you can put into practice this week.</p><p><strong>Prayer:</strong> God of truth and mercy, let the care we give to worship bear fruit in justice and love. Amen.</p>","references":["Micah 6:8","1 Corinthians 14:40"]}]$wave49_payload$::jsonb;
+  v_src text;
+  v_total integer;
+  v_day_count integer;
+  v_unique_count integer;
+  v_first integer;
+  v_last integer;
+  v_duplicate_refs integer;
+  v_day record;
+  v_day_id uuid;
+  v_refs text[];
+  v_global_count integer;
+BEGIN
+  SELECT source_url,total_days INTO v_src,v_total
+  FROM public.devotional_plans WHERE id=v_plan FOR UPDATE;
+  IF NOT FOUND OR v_src IS DISTINCT FROM 'https://www.gutenberg.org/ebooks/31177'
+     OR v_total IS DISTINCT FROM 27 THEN
+    RAISE EXCEPTION 'Wave49 Plan355 preflight failed: plan missing or source/day-count mismatch';
+  END IF;
+  SELECT count(*),count(DISTINCT day_number),min(day_number),max(day_number)
+  INTO v_day_count,v_unique_count,v_first,v_last
+  FROM public.devotional_days WHERE plan_id=v_plan;
+  IF v_day_count<>27 OR v_unique_count<>27 OR v_first<>1 OR v_last<>27 THEN
+    RAISE EXCEPTION 'Wave49 Plan355 preflight failed: expected day numbers 1..27';
+  END IF;
+  SELECT count(*) INTO v_duplicate_refs
+  FROM (SELECT sr.day_id FROM public.scripture_references sr
+        JOIN public.devotional_days d ON d.id=sr.day_id
+        WHERE d.plan_id=v_plan AND sr.user_id IS NULL
+        GROUP BY sr.day_id HAVING count(*)>1) q;
+  IF v_duplicate_refs>0 THEN
+    RAISE EXCEPTION 'Wave49 Plan355 preflight failed: duplicate public Scripture rows';
+  END IF;
+  IF jsonb_array_length(v_days)<>27 THEN
+    RAISE EXCEPTION 'Wave49 payload must contain 27 days';
+  END IF;
+
+  UPDATE public.devotional_plans
+  SET title='Worship with Understanding: 27 Readings Inspired by Ritual Conformity',
+      description='Twenty-seven original Scripture-led reflections adapted from the 1880–1881 Anglican conference text Ritual Conformity (published 1881), chaired by Berdmore Compton. Explore shared prayer, Scripture, church seasons, Communion, baptism, marriage, pastoral care, and Christian hope through historically sourced context, theological reflection, practice, and prayer. The conference comments were proposals from particular Anglican clergy and students of ritual, not universally binding Christian rules or a statement of current Church of England law. Differences in sacramental interpretation, pastoral safeguarding, and Scripture context are signposted. Edited and awaiting independent human theological and editorial approval; draft only.',
+      status='draft',updated_at=now()
+  WHERE id=v_plan;
+
+  FOR v_day IN SELECT * FROM jsonb_to_recordset(v_days)
+       AS r(day_number integer,title text,content text,"references" jsonb)
+       ORDER BY day_number LOOP
+    IF v_day.day_number NOT BETWEEN 1 AND 27 OR v_day.title IS NULL
+       OR v_day.content IS NULL OR jsonb_array_length(v_day."references")<>2 THEN
+      RAISE EXCEPTION 'Wave49 malformed day payload: %',v_day.day_number;
+    END IF;
+    SELECT d.id INTO STRICT v_day_id
+    FROM public.devotional_days d WHERE d.plan_id=v_plan
+      AND d.day_number=v_day.day_number FOR UPDATE;
+    UPDATE public.devotional_days
+    SET title=v_day.title,content=v_day.content,updated_at=now()
+    WHERE id=v_day_id AND (title IS DISTINCT FROM v_day.title
+          OR content IS DISTINCT FROM v_day.content);
+    SELECT ARRAY(SELECT jsonb_array_elements_text(v_day."references")) INTO v_refs;
+    SELECT count(*) INTO v_global_count FROM public.scripture_references
+      WHERE day_id=v_day_id AND user_id IS NULL;
+    IF v_global_count=0 THEN
+      INSERT INTO public.scripture_references
+      (user_id,day_id,reference,created_at,updated_at)
+      VALUES (NULL,v_day_id,v_refs,now(),now());
+    ELSIF v_global_count=1 THEN
+      UPDATE public.scripture_references SET reference=v_refs,updated_at=now()
+      WHERE day_id=v_day_id AND user_id IS NULL AND reference IS DISTINCT FROM v_refs;
+    ELSE
+      RAISE EXCEPTION 'Wave49 duplicate public Scripture row, day %',v_day.day_number;
+    END IF;
+  END LOOP;
+
+  IF EXISTS (SELECT 1 FROM public.devotional_days d
+     WHERE d.plan_id=v_plan AND
+       (d.content NOT LIKE '%<strong>Read:</strong>%'
+        OR d.content NOT LIKE '%<strong>Devotional focus:</strong>%'
+        OR d.content NOT LIKE '%<strong>Prayer:</strong>%')) THEN
+    RAISE EXCEPTION 'Wave49 postflight: missing devotional section';
+  END IF;
+  IF EXISTS (SELECT 1 FROM public.devotional_days d
+      LEFT JOIN public.scripture_references sr
+        ON sr.day_id=d.id AND sr.user_id IS NULL
+      WHERE d.plan_id=v_plan AND
+        (sr.day_id IS NULL OR cardinality(sr.reference)<>2)) THEN
+    RAISE EXCEPTION 'Wave49 postflight: expected two references per day';
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM public.devotional_plans
+      WHERE id=v_plan AND status='draft' AND total_days=27) THEN
+    RAISE EXCEPTION 'Wave49 postflight: draft plan missing';
+  END IF;
+END;
+$review49$;
+COMMIT;
+-- END CONSOLIDATED SOURCE: 20261027000000_repair_draft_devotional_plans_wave_35.sql
+
+-- BEGIN CONSOLIDATED SOURCE: 20261027085000_repair_and_publish_devotional_plans_waves_42_48.sql sha256=217ea4cacaf1693858482c084a180862c3d60e0399bab23d764c487138b3853b
 -- Waves 42-48: consolidated, self-contained repair and publication migration.
 -- Installs the effective reviewed seed content for seven Adapt-classified plans.
 -- Existing plan/day UUIDs and stored reading progress are preserved.
@@ -7228,3 +16231,5 @@ END
 $apply_waves42_48$;
 
 COMMIT;
+-- END CONSOLIDATED SOURCE: 20261027085000_repair_and_publish_devotional_plans_waves_42_48.sql
+
