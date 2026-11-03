@@ -2,10 +2,19 @@ import { addPlanDayComment, deletePlanDayComment, updatePlanDayComment } from '@
 import { PlanDayComment } from '@/src/types/types';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { fetchPlanDayComments } from '../api/groupQueries';
+import { useAuth } from '../state/AuthContext';
 
 export function useComments(planId: string, dayId: string, progressId: string, group_id?: string) {
   const queryClient = useQueryClient();
-  const queryKey = ['day_comments', planId, dayId, progressId, group_id] as const;
+  const { session } = useAuth();
+  const queryKey = [
+    'day_comments',
+    planId,
+    dayId,
+    progressId,
+    group_id,
+    session?.user.id ?? 'guest',
+  ] as const;
 
   const fetchComments = useQuery({
     queryKey,

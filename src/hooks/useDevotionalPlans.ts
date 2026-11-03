@@ -10,9 +10,17 @@ import {
 } from '@/src/api/queries';
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import { useMemo } from 'react';
+import { useAuth } from '../state/AuthContext';
+import { planDetailKey } from '../lib/queryKeys';
 export const useRelatedPlans = (tags: string[], currentPlanId: string) => {
+  const { session } = useAuth();
   return useQuery({
-    queryKey: ['related_plans', currentPlanId],
+    queryKey: [
+      'related_plans',
+      currentPlanId,
+      [...new Set(tags)].sort(),
+      session?.user.id ?? 'guest',
+    ],
     enabled: !!tags.length && !!currentPlanId,
 
     queryFn: async () => searchRelatedPlans(currentPlanId, tags),
@@ -20,9 +28,10 @@ export const useRelatedPlans = (tags: string[], currentPlanId: string) => {
 };
 
 export const useSearchPlans = (query: string) => {
+  const { session } = useAuth();
   return useInfiniteQuery({
     enabled: query.trim().length > 0,
-    queryKey: ['search_plans', query],
+    queryKey: ['search_plans', query, session?.user.id ?? 'guest'],
     staleTime: 1000 * 60 * 60 * 24,
 
     queryFn: async ({ pageParam }) => searchPlans({ pageParam, query }),
@@ -33,8 +42,9 @@ export const useSearchPlans = (query: string) => {
 };
 
 export const useFetchDevotionalPlanById = (id: string) => {
+  const { session } = useAuth();
   return useQuery({
-    queryKey: ['plan', id],
+    queryKey: planDetailKey(id, session?.user.id),
     enabled: !!id,
     queryFn: async () => fetchPlanById(id),
   });
@@ -49,6 +59,7 @@ export const usePlanTags = () => {
 };
 
 export const usePlans = (selectedTags: string[] = []) => {
+  const { session } = useAuth();
   const normalizedSelectedTags = useMemo(
     () =>
       Array.from(new Set(selectedTags.map((tag) => tag.trim().toLowerCase()).filter(Boolean))).sort(
@@ -58,7 +69,7 @@ export const usePlans = (selectedTags: string[] = []) => {
   );
 
   const plansQuery = useInfiniteQuery({
-    queryKey: ['discover_plans', normalizedSelectedTags],
+    queryKey: ['discover_plans', normalizedSelectedTags, session?.user.id ?? 'guest'],
     staleTime: 1000 * 60 * 60 * 24,
     queryFn: async ({ pageParam }) => fetchPlans({ pageParam, tags: normalizedSelectedTags }),
     initialPageParam: null as PlanCursor | null,
@@ -71,8 +82,9 @@ export const usePlans = (selectedTags: string[] = []) => {
 };
 
 export const useFetchPlansByIds = (planIds: string[]) => {
+  const { session } = useAuth();
   return useQuery({
-    queryKey: ['plans_by_ids', planIds],
+    queryKey: ['plans_by_ids', planIds, session?.user.id ?? 'guest'],
     enabled: planIds.length > 0,
     queryFn: async () => await fetchUserPlans(planIds),
   });

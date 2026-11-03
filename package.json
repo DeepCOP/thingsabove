@@ -11,7 +11,8 @@
     "lint": "expo lint",
     "prettier-check": "prettier --check .",
     "format": "prettier --write .",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test:query-cache": "node --test script/query-cache.test.cjs"
   },
   "dependencies": {
     "@expo-google-fonts/merriweather": "^0.4.2",
