@@ -95,13 +95,9 @@ export const fetchPlanById = async (id: string) => {
 
   if (error) throw error;
 
-  const plan = data?.[0];
-
-  if (!plan) {
-    throw new Error('Plan not found');
-  }
-
-  return plan;
+  // An empty successful response confirms unavailability. Transport/RPC errors
+  // still throw above so an offline refetch retains the last usable plan.
+  return data?.[0] ?? null;
 };
 
 export const fetchDayItems = async ({

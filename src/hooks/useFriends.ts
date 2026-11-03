@@ -7,11 +7,15 @@ import {
   searchUsersByName,
 } from '@/src/api/queries';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { COMMUNITY_STALE_TIME } from '../lib/queryCache';
+import { cacheStaleTime } from '../lib/queryCachePolicy';
+import { invalidateFriendQueries } from '../lib/queryInvalidation';
+import { useAuth } from '../state/AuthContext';
 
 export function useFriends(userId: string | undefined) {
   return useQuery({
     queryKey: ['friends', userId],
-    staleTime: 1000 * 60 * 60 * 24,
+    staleTime: cacheStaleTime(COMMUNITY_STALE_TIME),
     enabled: !!userId,
     queryFn: async () => await fetchUserFriends({ userId: userId! }),
   });
@@ -26,6 +30,7 @@ export function useFriendship({
 }) {
   return useQuery({
     queryKey: ['friendship', userId, friendId],
+    staleTime: cacheStaleTime(COMMUNITY_STALE_TIME),
     enabled: !!userId && !!friendId && userId !== friendId,
     queryFn: async () => await fetchFriendship({ userId: userId!, friendId: friendId! }),
   });
@@ -37,16 +42,7 @@ export function useAddFriend() {
   return useMutation({
     mutationFn: async ({ friendId }: { friendId: string; userId: string }) =>
       await addFriend({ receiver_id: friendId }),
-    onSuccess: async (_data, variables) => {
-      await Promise.all([
-        qc.invalidateQueries({ queryKey: ['friends', variables.userId] }),
-        qc.invalidateQueries({
-          queryKey: ['friendship', variables.userId, variables.friendId],
-        }),
-        qc.invalidateQueries({ queryKey: ['get_user_by_email'] }),
-        qc.invalidateQueries({ queryKey: ['search_users_by_name'] }),
-      ]);
-    },
+    onSuccess: (_data, variables) => invalidateFriendQueries(qc, variables.userId),
   });
 }
 
@@ -76,35 +72,30 @@ export function useGetUserByEmail({ query, userId }: { query: string; userId: st
 
 export function useAcceptFriendRequest() {
   const qc = useQueryClient();
+  const { session } = useAuth();
 
   return useMutation({
     mutationFn: async ({ friendId }: { friendId: string }) => await acceptFriendRequest(friendId),
 
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['friends'] });
-      qc.invalidateQueries({ queryKey: ['friend_requests'] });
-      qc.invalidateQueries({ queryKey: ['friendship'] });
-    },
+    onSuccess: () => invalidateFriendQueries(qc, session?.user.id),
   });
 }
 
 export function useDeclineFriendRequest() {
   const qc = useQueryClient();
+  const { session } = useAuth();
 
   return useMutation({
     mutationFn: async ({ friendId }: { friendId: string }) => await declineFriendRequest(friendId),
 
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['friend_requests'] });
-      qc.invalidateQueries({ queryKey: ['friends'] });
-      qc.invalidateQueries({ queryKey: ['friendship'] });
-    },
+    onSuccess: () => invalidateFriendQueries(qc, session?.user.id),
   });
 }
 
 export function usePendingFriendRequests(userId: string | undefined) {
   return useQuery({
     queryKey: ['friend_requests', userId],
+    staleTime: cacheStaleTime(COMMUNITY_STALE_TIME),
     enabled: !!userId,
     queryFn: async () => await fetchPendingFriendRequests(),
   });

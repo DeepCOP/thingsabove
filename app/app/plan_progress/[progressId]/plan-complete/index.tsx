@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { useFetchDevotionalPlanById } from '@/src/hooks/useDevotionalPlans';
 import { usePlanRating } from '@/src/hooks/usePlanReactions';
 import PlanCompleteScreen from '@/src/screens/PlanCompleteScreen';
+import PlanUnavailable from '@/src/components/PlanUnavailable';
 import { useAuth } from '@/src/state/AuthContext';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
@@ -32,6 +33,8 @@ export default function PlanComplete() {
       setAnimationComplete(true);
     });
   }, [progressAnim]);
+
+  if (plan === null) return <PlanUnavailable />;
 
   return (
     <PlanCompleteScreen

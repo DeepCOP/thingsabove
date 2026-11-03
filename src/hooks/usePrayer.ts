@@ -26,6 +26,10 @@ import {
   useQuery,
   useQueryClient,
 } from '@tanstack/react-query';
+import { useMemo } from 'react';
+import { COMMUNITY_STALE_TIME } from '../lib/queryCache';
+import { cacheStaleTime } from '../lib/queryCachePolicy';
+import { useRefreshQueryOnFocus } from './useRefreshQueryOnFocus';
 
 const prayerRequestsKey = (userId: string | undefined) => ['prayer_requests', userId] as const;
 
@@ -59,9 +63,11 @@ const togglePrayerSupportFields = <
 export function usePrayerBoard(scope: PrayerScope, filter: PrayerFilter) {
   const { session } = useAuth();
   const userId = session?.user?.id;
+  const queryKey = useMemo(() => prayerBoardKey(userId, scope, filter), [userId, scope, filter]);
 
-  return useInfiniteQuery({
-    queryKey: prayerBoardKey(userId, scope, filter),
+  const query = useInfiniteQuery({
+    queryKey,
+    staleTime: cacheStaleTime(COMMUNITY_STALE_TIME),
     initialPageParam: null as PrayerRequestCursor | null,
     queryFn: async ({ pageParam }) =>
       await fetchPrayerRequests({
@@ -72,28 +78,38 @@ export function usePrayerBoard(scope: PrayerScope, filter: PrayerFilter) {
       }),
     getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
   });
+  useRefreshQueryOnFocus(queryKey);
+  return query;
 }
 
 export function usePrayerRequest(requestId: string | undefined) {
   const { session } = useAuth();
   const userId = session?.user?.id;
+  const queryKey = useMemo(() => prayerRequestKey(userId, requestId), [userId, requestId]);
 
-  return useQuery({
-    queryKey: prayerRequestKey(userId, requestId),
+  const query = useQuery({
+    queryKey,
+    staleTime: cacheStaleTime(COMMUNITY_STALE_TIME),
     enabled: !!requestId,
     queryFn: async () => await fetchPrayerRequestDetail(requestId!),
   });
+  useRefreshQueryOnFocus(queryKey);
+  return query;
 }
 
 export function usePrayerRequestEncouragements(requestId: string | undefined) {
   const { session } = useAuth();
   const userId = session?.user?.id;
+  const queryKey = useMemo(() => prayerEncouragementsKey(userId, requestId), [userId, requestId]);
 
-  return useQuery({
-    queryKey: prayerEncouragementsKey(userId, requestId),
+  const query = useQuery({
+    queryKey,
+    staleTime: cacheStaleTime(COMMUNITY_STALE_TIME),
     enabled: !!requestId,
     queryFn: async () => await fetchPrayerRequestEncouragements(requestId!),
   });
+  useRefreshQueryOnFocus(queryKey);
+  return query;
 }
 
 export function useSavePrayerRequest() {

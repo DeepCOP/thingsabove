@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import LoadingSpinner from '@/src/components/LoadingSpinner';
+import PlanUnavailable from '@/src/components/PlanUnavailable';
 import PlanPreviewSection from '@/src/components/PlanPreviewSection';
 import PlanCoverImage from '@/src/components/PlanCoverImage';
 import PlanVisibilityBadge from '@/src/components/PlanVisibilityBadge';
@@ -84,6 +85,8 @@ export default function DevotionalDetailScreen({
 
     bottomSheetRef.current?.expand();
   };
+
+  if (plan === null) return <PlanUnavailable />;
 
   if (isLoading) {
     return <LoadingSpinner style={{ marginTop: 30 }} />;
