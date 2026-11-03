@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { useFetchDevotionalPlanById } from '@/src/hooks/useDevotionalPlans';
+import PlanUnavailable from '@/src/components/PlanUnavailable';
 import { useStartPlanProgress } from '@/src/hooks/usePlanProgress';
 import dayjs from '@/src/lib/dayjs';
 import PickStartDateScreen from '@/src/screens/PickStartDateScreen';
@@ -64,6 +65,8 @@ export default function PickStartDate() {
       },
     );
   };
+
+  if (plan === null) return <PlanUnavailable />;
 
   if (planQuery.isLoading) {
     return <ActivityIndicator style={{ marginTop: 30 }} size="large" />;

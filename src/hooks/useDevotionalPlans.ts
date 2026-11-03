@@ -8,10 +8,12 @@ import {
   searchPlans,
   searchRelatedPlans,
 } from '@/src/api/queries';
-import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
+import { useInfiniteQuery, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useMemo } from 'react';
 import { useAuth } from '../state/AuthContext';
 import { planDetailKey } from '../lib/queryKeys';
+import { fetchPlanWithAvailability } from '../lib/unavailablePlan';
+import { useRefreshQueryOnFocus } from './useRefreshQueryOnFocus';
 export const useRelatedPlans = (tags: string[], currentPlanId: string) => {
   const { session } = useAuth();
   return useQuery({
@@ -43,11 +45,17 @@ export const useSearchPlans = (query: string) => {
 
 export const useFetchDevotionalPlanById = (id: string) => {
   const { session } = useAuth();
-  return useQuery({
-    queryKey: planDetailKey(id, session?.user.id),
+  const client = useQueryClient();
+  const userId = session?.user.id;
+  const queryKey = useMemo(() => planDetailKey(id, userId), [id, userId]);
+  const query = useQuery({
+    queryKey,
     enabled: !!id,
-    queryFn: async () => fetchPlanById(id),
+    refetchOnMount: 'always',
+    queryFn: () => fetchPlanWithAvailability(client, id, () => fetchPlanById(id)),
   });
+  useRefreshQueryOnFocus(queryKey);
+  return query;
 };
 
 export const usePlanTags = () => {
