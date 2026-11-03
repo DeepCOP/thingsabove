@@ -12,6 +12,7 @@ import { useInfiniteQuery, useQuery, useQueryClient } from '@tanstack/react-quer
 import { useMemo } from 'react';
 import { useAuth } from '../state/AuthContext';
 import { planDetailKey } from '../lib/queryKeys';
+import { cacheStaleTime } from '../lib/queryCachePolicy';
 import { fetchPlanWithAvailability } from '../lib/unavailablePlan';
 import { useRefreshQueryOnFocus } from './useRefreshQueryOnFocus';
 export const useRelatedPlans = (tags: string[], currentPlanId: string) => {
@@ -34,7 +35,7 @@ export const useSearchPlans = (query: string) => {
   return useInfiniteQuery({
     enabled: query.trim().length > 0,
     queryKey: ['search_plans', query, session?.user.id ?? 'guest'],
-    staleTime: 1000 * 60 * 60 * 24,
+    staleTime: cacheStaleTime(1000 * 60 * 60 * 24),
 
     queryFn: async ({ pageParam }) => searchPlans({ pageParam, query }),
 
@@ -61,7 +62,7 @@ export const useFetchDevotionalPlanById = (id: string) => {
 export const usePlanTags = () => {
   return useQuery({
     queryKey: ['plan_tags'],
-    staleTime: 1000 * 60 * 60 * 24,
+    staleTime: cacheStaleTime(1000 * 60 * 60 * 24),
     queryFn: fetchPlanTags,
   });
 };
@@ -78,7 +79,7 @@ export const usePlans = (selectedTags: string[] = []) => {
 
   const plansQuery = useInfiniteQuery({
     queryKey: ['discover_plans', normalizedSelectedTags, session?.user.id ?? 'guest'],
-    staleTime: 1000 * 60 * 60 * 24,
+    staleTime: cacheStaleTime(1000 * 60 * 60 * 24),
     queryFn: async ({ pageParam }) => fetchPlans({ pageParam, tags: normalizedSelectedTags }),
     initialPageParam: null as PlanCursor | null,
     getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,

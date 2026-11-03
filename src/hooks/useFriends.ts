@@ -8,13 +8,14 @@ import {
 } from '@/src/api/queries';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { COMMUNITY_STALE_TIME } from '../lib/queryCache';
+import { cacheStaleTime } from '../lib/queryCachePolicy';
 import { invalidateFriendQueries } from '../lib/queryInvalidation';
 import { useAuth } from '../state/AuthContext';
 
 export function useFriends(userId: string | undefined) {
   return useQuery({
     queryKey: ['friends', userId],
-    staleTime: COMMUNITY_STALE_TIME,
+    staleTime: cacheStaleTime(COMMUNITY_STALE_TIME),
     enabled: !!userId,
     queryFn: async () => await fetchUserFriends({ userId: userId! }),
   });
@@ -29,7 +30,7 @@ export function useFriendship({
 }) {
   return useQuery({
     queryKey: ['friendship', userId, friendId],
-    staleTime: COMMUNITY_STALE_TIME,
+    staleTime: cacheStaleTime(COMMUNITY_STALE_TIME),
     enabled: !!userId && !!friendId && userId !== friendId,
     queryFn: async () => await fetchFriendship({ userId: userId!, friendId: friendId! }),
   });
@@ -94,7 +95,7 @@ export function useDeclineFriendRequest() {
 export function usePendingFriendRequests(userId: string | undefined) {
   return useQuery({
     queryKey: ['friend_requests', userId],
-    staleTime: COMMUNITY_STALE_TIME,
+    staleTime: cacheStaleTime(COMMUNITY_STALE_TIME),
     enabled: !!userId,
     queryFn: async () => await fetchPendingFriendRequests(),
   });

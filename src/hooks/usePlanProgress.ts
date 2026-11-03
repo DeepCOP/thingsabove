@@ -10,6 +10,7 @@ import { startPlanProgress, stopPlanProgress } from '../api/mutations';
 import { useAuth } from '../state/AuthContext';
 import { groupProgressMembersKey } from '../lib/queryKeys';
 import { COMMUNITY_STALE_TIME } from '../lib/queryCache';
+import { cacheStaleTime } from '../lib/queryCachePolicy';
 
 export function usePlanProgress(progress_id: string, user_id: string | undefined) {
   const planProgressQuery = useQuery({
@@ -82,7 +83,7 @@ export const useGroupPlanProgressList = (userIds: string[], groupId: string) => 
   const { session } = useAuth();
   const usersPlanProgress = useQuery({
     queryKey: groupProgressMembersKey(groupId, session?.user.id, userIds),
-    staleTime: COMMUNITY_STALE_TIME,
+    staleTime: cacheStaleTime(COMMUNITY_STALE_TIME),
     enabled: !!userIds && userIds.length > 0 && !!groupId,
     queryFn: async () => fetchGroupPlanProgressList({ userIds, groupId }),
   });

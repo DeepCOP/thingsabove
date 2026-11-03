@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '../state/AuthContext';
 import { COMMUNITY_STALE_TIME } from '../lib/queryCache';
+import { cacheStaleTime } from '../lib/queryCachePolicy';
 import {
   fetchPlanGroupByGroupId,
   fetchPlanGroupInvitation,
@@ -22,7 +23,7 @@ export function usePlanGroupMembers(groupId: string) {
   return useQuery({
     queryKey: ['plan_group_members', groupId, session?.user.id ?? 'guest'],
     enabled: !!groupId,
-    staleTime: COMMUNITY_STALE_TIME,
+    staleTime: cacheStaleTime(COMMUNITY_STALE_TIME),
     queryFn: async () => await fetchPlanGroupMembers({ groupId }),
   });
 }
@@ -41,7 +42,7 @@ export function usePlanGroupInvitationMembers(groupId: string) {
   return useQuery({
     queryKey: ['plan_group_invitation_members', groupId, session?.user.id ?? 'guest'],
     enabled: !!groupId,
-    staleTime: COMMUNITY_STALE_TIME,
+    staleTime: cacheStaleTime(COMMUNITY_STALE_TIME),
     queryFn: async () => await fetchPlanGroupInvitationMembers({ groupId }),
   });
 }

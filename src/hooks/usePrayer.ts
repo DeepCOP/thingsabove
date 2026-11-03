@@ -28,6 +28,7 @@ import {
 } from '@tanstack/react-query';
 import { useMemo } from 'react';
 import { COMMUNITY_STALE_TIME } from '../lib/queryCache';
+import { cacheStaleTime } from '../lib/queryCachePolicy';
 import { useRefreshQueryOnFocus } from './useRefreshQueryOnFocus';
 
 const prayerRequestsKey = (userId: string | undefined) => ['prayer_requests', userId] as const;
@@ -66,7 +67,7 @@ export function usePrayerBoard(scope: PrayerScope, filter: PrayerFilter) {
 
   const query = useInfiniteQuery({
     queryKey,
-    staleTime: COMMUNITY_STALE_TIME,
+    staleTime: cacheStaleTime(COMMUNITY_STALE_TIME),
     initialPageParam: null as PrayerRequestCursor | null,
     queryFn: async ({ pageParam }) =>
       await fetchPrayerRequests({
@@ -88,7 +89,7 @@ export function usePrayerRequest(requestId: string | undefined) {
 
   const query = useQuery({
     queryKey,
-    staleTime: COMMUNITY_STALE_TIME,
+    staleTime: cacheStaleTime(COMMUNITY_STALE_TIME),
     enabled: !!requestId,
     queryFn: async () => await fetchPrayerRequestDetail(requestId!),
   });
@@ -103,7 +104,7 @@ export function usePrayerRequestEncouragements(requestId: string | undefined) {
 
   const query = useQuery({
     queryKey,
-    staleTime: COMMUNITY_STALE_TIME,
+    staleTime: cacheStaleTime(COMMUNITY_STALE_TIME),
     enabled: !!requestId,
     queryFn: async () => await fetchPrayerRequestEncouragements(requestId!),
   });
