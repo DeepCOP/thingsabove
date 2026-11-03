@@ -1,5 +1,6 @@
 import { createAsyncStoragePersister } from '@tanstack/query-async-storage-persister';
 import { QueryClient } from '@tanstack/react-query';
+import { cacheStaleTime, installQueryCachePolicy, shouldPersistQuery } from './queryCachePolicy';
 
 export const QUERY_CACHE_MAX_AGE = 24 * 60 * 60 * 1000;
 export const COMMUNITY_STALE_TIME = 30 * 1000;
@@ -26,7 +27,7 @@ export function createAccountQueryCacheFactory(storage: CacheStorage) {
     const client = new QueryClient({
       defaultOptions: {
         queries: {
-          staleTime: 60 * 1000,
+          staleTime: cacheStaleTime(60 * 1000),
           gcTime: QUERY_CACHE_MAX_AGE,
           retry: 3,
           refetchOnReconnect: 'always',
@@ -34,6 +35,7 @@ export function createAccountQueryCacheFactory(storage: CacheStorage) {
         mutations: { retry: 0 },
       },
     });
+    installQueryCachePolicy(client);
     const storagePersister = createAsyncStoragePersister({
       storage: {
         getItem: (key) => enqueue(async () => (active ? storage.getItem(key) : null)),
@@ -55,13 +57,27 @@ export function createAccountQueryCacheFactory(storage: CacheStorage) {
         buster: `v2:${accountId}`,
         maxAge: QUERY_CACHE_MAX_AGE,
         // There are no mutation defaults to safely resume persisted mutations.
-        dehydrateOptions: { shouldDehydrateMutation: () => false },
+        dehydrateOptions: {
+          shouldDehydrateMutation: () => false,
+          shouldDehydrateQuery: shouldPersistQuery,
+        },
         persister: {
           ...storagePersister,
           restoreClient: async () => {
             const snapshot = await storagePersister.restoreClient();
             // An account can change while AsyncStorage is still reading.
-            return active ? snapshot : undefined;
+            if (!active || !snapshot) return undefined;
+            const queries = snapshot.clientState.queries.filter((query) =>
+              shouldPersistQuery(query),
+            );
+            if (queries.length === snapshot.clientState.queries.length) return snapshot;
+            const filtered = {
+              ...snapshot,
+              clientState: { ...snapshot.clientState, queries },
+            };
+            // Clean older snapshots without discarding successful offline data.
+            await storagePersister.persistClient(filtered);
+            return active ? filtered : undefined;
           },
         },
       },
