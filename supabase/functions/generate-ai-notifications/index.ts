@@ -2,7 +2,7 @@ import { serve } from 'https://deno.land/std/http/server.ts';
 import { GoogleGenerativeAI } from 'https://esm.sh/@google/generative-ai';
 import { createClient, type SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
-const MODEL_NAME = 'gemini-2.5-flash';
+const MODEL_NAME = 'gemini-3.5-flash-lite';
 const PLANNER_LIMIT = 12;
 const PLANNER_REQUEST_DELAY_MS = 1200;
 const DEFAULT_NOTIFICATION_WINDOW_HOURS = 36;
