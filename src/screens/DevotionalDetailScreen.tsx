@@ -1,14 +1,13 @@
-import { useTranslation } from 'react-i18next';
 import LoadingSpinner from '@/src/components/LoadingSpinner';
-import PlanPreviewSection from '@/src/components/PlanPreviewSection';
 import PlanCoverImage from '@/src/components/PlanCoverImage';
+import PlanPreviewSection from '@/src/components/PlanPreviewSection';
 import PlanVisibilityBadge from '@/src/components/PlanVisibilityBadge';
 import { RelatedPlansSection } from '@/src/components/RelatedPlans';
 import { Ionicons } from '@expo/vector-icons';
 import BottomSheet from '@gorhom/bottom-sheet';
 import { useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
-  ActivityIndicator,
   ScrollView,
   Text,
   TouchableOpacity,
