@@ -73,12 +73,6 @@ DECLARE
     "maximum_words": 21264
   },
   {
-    "id": "90000000-0000-0000-0000-000000000356",
-    "title": "Life of David W. Patten, the First Apostolic Martyr",
-    "oversized_days": 1,
-    "maximum_words": 20738
-  },
-  {
     "id": "90000000-0000-0000-0000-000000000320",
     "title": "In Answer to Prayer",
     "oversized_days": 1,
@@ -101,12 +95,6 @@ DECLARE
     "title": "The Ministry of Intercession",
     "oversized_days": 10,
     "maximum_words": 14859
-  },
-  {
-    "id": "90000000-0000-0000-0000-000000000314",
-    "title": "The Double Search: Studies in Atonement and Prayer",
-    "oversized_days": 1,
-    "maximum_words": 14521
   },
   {
     "id": "90000000-0000-0000-0000-000000000233",
@@ -175,12 +163,6 @@ DECLARE
     "maximum_words": 9498
   },
   {
-    "id": "90000000-0000-0000-0000-000000000385",
-    "title": "Welsh Nationality, and How Alone It is to Be Saved: A Sermon",
-    "oversized_days": 1,
-    "maximum_words": 9481
-  },
-  {
     "id": "90000000-0000-0000-0000-000000000291",
     "title": "On Union with God",
     "oversized_days": 1,
@@ -205,12 +187,6 @@ DECLARE
     "maximum_words": 8585
   },
   {
-    "id": "90000000-0000-0000-0000-000000000353",
-    "title": "Food and Morals",
-    "oversized_days": 1,
-    "maximum_words": 8041
-  },
-  {
     "id": "90000000-0000-0000-0000-000000000228",
     "title": "Consolation in Life and Death, Derived from the Life of Christ",
     "oversized_days": 1,
@@ -233,12 +209,6 @@ DECLARE
     "title": "The True Ministers of Christ Accredited by the Holy Spirit: A Sermon",
     "oversized_days": 1,
     "maximum_words": 7758
-  },
-  {
-    "id": "90000000-0000-0000-0000-000000000360",
-    "title": "Fugitive Slave Law",
-    "oversized_days": 1,
-    "maximum_words": 7703
   },
   {
     "id": "90000000-0000-0000-0000-000000000246",
@@ -323,12 +293,6 @@ DECLARE
     "title": "A Prayer Book for Soldiers and Sailors",
     "oversized_days": 2,
     "maximum_words": 5765
-  },
-  {
-    "id": "90000000-0000-0000-0000-000000000372",
-    "title": "Salvation Universal",
-    "oversized_days": 1,
-    "maximum_words": 5701
   },
   {
     "id": "90000000-0000-0000-0000-000000000225",
@@ -427,12 +391,6 @@ DECLARE
     "maximum_words": 4334
   },
   {
-    "id": "90000000-0000-0000-0000-000000000389",
-    "title": "A Sermon preached at Christ Church, Kensington, on May 1, 1859",
-    "oversized_days": 1,
-    "maximum_words": 3700
-  },
-  {
     "id": "90000000-0000-0000-0000-000000000203",
     "title": "Humility: The Beauty of Holiness",
     "oversized_days": 1,
@@ -469,7 +427,7 @@ DECLARE
     "maximum_words": 2612
   }
 ]$oversized_payload$::jsonb;
-  v_expected_count constant integer := 77;
+  v_expected_count constant integer := 70;
   v_payload_count integer;
   v_matching_count integer;
   v_updated_count integer;
@@ -513,7 +471,7 @@ BEGIN
 
   UPDATE public.devotional_plans AS plan
   SET status = 'draft',
-      updated_at = timestamptz '2026-11-02 12:00:00+03'
+      updated_at = now()
   FROM jsonb_to_recordset(v_payload)
     AS item(id uuid, title text, oversized_days integer, maximum_words integer)
   WHERE plan.id = item.id;

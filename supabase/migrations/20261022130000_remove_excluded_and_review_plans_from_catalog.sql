@@ -1,7 +1,7 @@
 -- Remove plans marked Exclude or Review doctrine by the devotional audit
 -- from the published catalog. Keep their records and user progress intact.
 update public.devotional_plans
-set status = 'draft', updated_at = timestamptz '2026-10-22 13:00:00+00'
+set status = 'draft', updated_at = now()
 where id in (
   '90000000-0000-0000-0000-000000000241'::uuid, -- The Ministry of the Spirit (Review doctrine)
   '90000000-0000-0000-0000-000000000314'::uuid, -- The Double Search (Review doctrine)

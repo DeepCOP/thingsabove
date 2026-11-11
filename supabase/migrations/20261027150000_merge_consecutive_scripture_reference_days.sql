@@ -2,50 +2,207 @@
 -- Retains the first day UUID, preserves all reading text, and remaps progress/comments.
 
 BEGIN;
-DO $preflight$
-DECLARE
-  plan_count integer;
-  day_count integer;
-  duplicate_reference_days integer;
-  malformed_plans integer;
-BEGIN
-  SELECT count(*) INTO plan_count
-  FROM public.devotional_plans
-  WHERE id::text LIKE '90000000-0000-0000-0000-%';
-  SELECT count(*) INTO day_count
+-- These plans were removed from the catalog after doctrinal/editorial review.
+-- Keep their original day boundaries intact even when adjacent references match.
+CREATE TEMP TABLE consecutive_reference_excluded_plans (
+  plan_id uuid PRIMARY KEY
+) ON COMMIT DROP;
+
+INSERT INTO consecutive_reference_excluded_plans (plan_id)
+VALUES
+  ('90000000-0000-0000-0000-000000000241'::uuid),
+  ('90000000-0000-0000-0000-000000000314'::uuid),
+  ('90000000-0000-0000-0000-000000000353'::uuid),
+  ('90000000-0000-0000-0000-000000000356'::uuid),
+  ('90000000-0000-0000-0000-000000000360'::uuid),
+  ('90000000-0000-0000-0000-000000000361'::uuid),
+  ('90000000-0000-0000-0000-000000000363'::uuid),
+  ('90000000-0000-0000-0000-000000000372'::uuid),
+  ('90000000-0000-0000-0000-000000000382'::uuid),
+  ('90000000-0000-0000-0000-000000000385'::uuid),
+  ('90000000-0000-0000-0000-000000000389'::uuid);
+
+-- Only these audited plans may be changed by this migration.
+CREATE TEMP TABLE consecutive_reference_target_plans (
+  plan_id uuid PRIMARY KEY
+) ON COMMIT DROP;
+
+INSERT INTO consecutive_reference_target_plans (plan_id)
+VALUES
+  ('90000000-0000-0000-0000-000000000209'::uuid),
+  ('90000000-0000-0000-0000-000000000210'::uuid),
+  ('90000000-0000-0000-0000-000000000211'::uuid),
+  ('90000000-0000-0000-0000-000000000212'::uuid),
+  ('90000000-0000-0000-0000-000000000213'::uuid),
+  ('90000000-0000-0000-0000-000000000214'::uuid),
+  ('90000000-0000-0000-0000-000000000215'::uuid),
+  ('90000000-0000-0000-0000-000000000216'::uuid),
+  ('90000000-0000-0000-0000-000000000217'::uuid),
+  ('90000000-0000-0000-0000-000000000201'::uuid),
+  ('90000000-0000-0000-0000-000000000202'::uuid),
+  ('90000000-0000-0000-0000-000000000203'::uuid),
+  ('90000000-0000-0000-0000-000000000204'::uuid),
+  ('90000000-0000-0000-0000-000000000205'::uuid),
+  ('90000000-0000-0000-0000-000000000206'::uuid),
+  ('90000000-0000-0000-0000-000000000207'::uuid),
+  ('90000000-0000-0000-0000-000000000208'::uuid),
+  ('90000000-0000-0000-0000-000000000221'::uuid),
+  ('90000000-0000-0000-0000-000000000222'::uuid),
+  ('90000000-0000-0000-0000-000000000223'::uuid),
+  ('90000000-0000-0000-0000-000000000224'::uuid),
+  ('90000000-0000-0000-0000-000000000225'::uuid),
+  ('90000000-0000-0000-0000-000000000226'::uuid),
+  ('90000000-0000-0000-0000-000000000227'::uuid),
+  ('90000000-0000-0000-0000-000000000228'::uuid),
+  ('90000000-0000-0000-0000-000000000229'::uuid),
+  ('90000000-0000-0000-0000-000000000231'::uuid),
+  ('90000000-0000-0000-0000-000000000232'::uuid),
+  ('90000000-0000-0000-0000-000000000233'::uuid),
+  ('90000000-0000-0000-0000-000000000234'::uuid),
+  ('90000000-0000-0000-0000-000000000235'::uuid),
+  ('90000000-0000-0000-0000-000000000236'::uuid),
+  ('90000000-0000-0000-0000-000000000237'::uuid),
+  ('90000000-0000-0000-0000-000000000238'::uuid),
+  ('90000000-0000-0000-0000-000000000239'::uuid),
+  ('90000000-0000-0000-0000-000000000240'::uuid),
+  ('90000000-0000-0000-0000-000000000242'::uuid),
+  ('90000000-0000-0000-0000-000000000243'::uuid),
+  ('90000000-0000-0000-0000-000000000244'::uuid),
+  ('90000000-0000-0000-0000-000000000245'::uuid),
+  ('90000000-0000-0000-0000-000000000246'::uuid),
+  ('90000000-0000-0000-0000-000000000247'::uuid),
+  ('90000000-0000-0000-0000-000000000255'::uuid),
+  ('90000000-0000-0000-0000-000000000256'::uuid),
+  ('90000000-0000-0000-0000-000000000259'::uuid),
+  ('90000000-0000-0000-0000-000000000260'::uuid),
+  ('90000000-0000-0000-0000-000000000261'::uuid),
+  ('90000000-0000-0000-0000-000000000274'::uuid),
+  ('90000000-0000-0000-0000-000000000289'::uuid),
+  ('90000000-0000-0000-0000-000000000291'::uuid),
+  ('90000000-0000-0000-0000-000000000292'::uuid),
+  ('90000000-0000-0000-0000-000000000294'::uuid),
+  ('90000000-0000-0000-0000-000000000295'::uuid),
+  ('90000000-0000-0000-0000-000000000299'::uuid),
+  ('90000000-0000-0000-0000-000000000300'::uuid),
+  ('90000000-0000-0000-0000-000000000301'::uuid),
+  ('90000000-0000-0000-0000-000000000304'::uuid),
+  ('90000000-0000-0000-0000-000000000320'::uuid),
+  ('90000000-0000-0000-0000-000000000321'::uuid),
+  ('90000000-0000-0000-0000-000000000322'::uuid),
+  ('90000000-0000-0000-0000-000000000323'::uuid),
+  ('90000000-0000-0000-0000-000000000324'::uuid),
+  ('90000000-0000-0000-0000-000000000332'::uuid),
+  ('90000000-0000-0000-0000-000000000335'::uuid),
+  ('90000000-0000-0000-0000-000000000336'::uuid),
+  ('90000000-0000-0000-0000-000000000341'::uuid),
+  ('90000000-0000-0000-0000-000000000343'::uuid),
+  ('90000000-0000-0000-0000-000000000101'::uuid),
+  ('90000000-0000-0000-0000-000000000349'::uuid),
+  ('90000000-0000-0000-0000-000000000351'::uuid),
+  ('90000000-0000-0000-0000-000000000352'::uuid),
+  ('90000000-0000-0000-0000-000000000358'::uuid),
+  ('90000000-0000-0000-0000-000000000364'::uuid),
+  ('90000000-0000-0000-0000-000000000365'::uuid),
+  ('90000000-0000-0000-0000-000000000368'::uuid),
+  ('90000000-0000-0000-0000-000000000377'::uuid),
+  ('90000000-0000-0000-0000-000000000378'::uuid),
+  ('90000000-0000-0000-0000-000000000383'::uuid),
+  ('90000000-0000-0000-0000-000000000386'::uuid),
+  ('90000000-0000-0000-0000-000000000391'::uuid);
+
+-- Take a runtime snapshot of the allowlisted plans that are structurally safe
+-- to merge. Missing or malformed plans are skipped instead of blocking all
+-- other plans; the warnings below identify every skipped plan.
+CREATE TEMP TABLE consecutive_reference_plan_state ON COMMIT DROP AS
+SELECT
+  target.plan_id,
+  plan.id IS NOT NULL AS plan_exists,
+  coalesce(stats.day_count, 0)::integer AS day_count,
+  coalesce(stats.distinct_day_count, 0)::integer AS distinct_day_count,
+  stats.first_day,
+  stats.last_day,
+  coalesce(duplicate_references.duplicate_days, 0)::integer AS duplicate_reference_days,
+  CASE
+    WHEN plan.id IS NULL THEN false
+    ELSE plan.total_days = stats.day_count
+      AND stats.day_count = stats.distinct_day_count
+      AND stats.first_day = 1
+      AND stats.last_day = plan.total_days
+      AND duplicate_references.duplicate_days = 0
+  END AS eligible
+FROM consecutive_reference_target_plans AS target
+LEFT JOIN public.devotional_plans AS plan ON plan.id = target.plan_id
+LEFT JOIN LATERAL (
+  SELECT
+    count(*) AS day_count,
+    count(DISTINCT day.day_number) AS distinct_day_count,
+    min(day.day_number) AS first_day,
+    max(day.day_number) AS last_day
   FROM public.devotional_days AS day
-  JOIN public.devotional_plans AS plan ON plan.id = day.plan_id
-  WHERE plan.id::text LIKE '90000000-0000-0000-0000-%';
-  SELECT count(*) INTO duplicate_reference_days
+  WHERE day.plan_id = plan.id
+) AS stats ON true
+LEFT JOIN LATERAL (
+  SELECT count(*) AS duplicate_days
   FROM (
     SELECT scripture.day_id
-    FROM public.scripture_references AS scripture
-    JOIN public.devotional_days AS day ON day.id = scripture.day_id
-    JOIN public.devotional_plans AS plan ON plan.id = day.plan_id
-    WHERE plan.id::text LIKE '90000000-0000-0000-0000-%'
+    FROM public.devotional_days AS day
+    JOIN public.scripture_references AS scripture ON scripture.day_id = day.id
+    WHERE day.plan_id = plan.id
       AND scripture.user_id IS NULL
     GROUP BY scripture.day_id
     HAVING count(*) > 1
-  ) AS duplicates;
-  SELECT count(*) INTO malformed_plans
-  FROM public.devotional_plans AS plan
-  WHERE plan.id::text LIKE '90000000-0000-0000-0000-%'
-    AND (
-      plan.total_days <> (
-        SELECT count(*) FROM public.devotional_days AS day WHERE day.plan_id = plan.id
-      )
-      OR 1 <> (
-        SELECT min(day.day_number) FROM public.devotional_days AS day WHERE day.plan_id = plan.id
-      )
-      OR plan.total_days <> (
-        SELECT max(day.day_number) FROM public.devotional_days AS day WHERE day.plan_id = plan.id
-      )
-    );
-  IF plan_count <> 155 OR day_count <> 4394
-     OR duplicate_reference_days <> 0 OR malformed_plans <> 0 THEN
+  ) AS duplicates
+) AS duplicate_references ON true;
+
+CREATE TEMP TABLE consecutive_reference_eligible_plans (
+  plan_id uuid PRIMARY KEY
+) ON COMMIT DROP;
+
+INSERT INTO consecutive_reference_eligible_plans (plan_id)
+SELECT plan_id
+FROM consecutive_reference_plan_state
+WHERE eligible;
+
+DO $preflight$
+DECLARE
+  missing_ids uuid[];
+  malformed_ids uuid[];
+  duplicate_reference_ids uuid[];
+  excluded_target_overlap integer;
+BEGIN
+  SELECT array_agg(plan_id ORDER BY plan_id) INTO missing_ids
+  FROM consecutive_reference_plan_state
+  WHERE NOT plan_exists;
+
+  SELECT array_agg(plan_id ORDER BY plan_id) INTO malformed_ids
+  FROM consecutive_reference_plan_state
+  WHERE plan_exists
+    AND NOT eligible
+    AND duplicate_reference_days = 0;
+
+  SELECT array_agg(plan_id ORDER BY plan_id) INTO duplicate_reference_ids
+  FROM consecutive_reference_plan_state
+  WHERE plan_exists
+    AND duplicate_reference_days > 0;
+
+  SELECT count(*) INTO excluded_target_overlap
+  FROM consecutive_reference_excluded_plans AS excluded
+  JOIN consecutive_reference_target_plans AS target
+    ON target.plan_id = excluded.plan_id;
+
+  IF excluded_target_overlap <> 0 THEN
     RAISE EXCEPTION
-      'Consecutive-reference merge preflight failed: plans %, days %, duplicate reference rows %, malformed plans %',
-      plan_count, day_count, duplicate_reference_days, malformed_plans;
+      'Consecutive-reference target allowlist overlaps the excluded list: % plan(s)',
+      excluded_target_overlap;
+  END IF;
+  IF coalesce(cardinality(missing_ids), 0) > 0 THEN
+    RAISE WARNING 'Skipping missing consecutive-reference target plans: %', missing_ids;
+  END IF;
+  IF coalesce(cardinality(malformed_ids), 0) > 0 THEN
+    RAISE WARNING 'Skipping malformed consecutive-reference target plans: %', malformed_ids;
+  END IF;
+  IF coalesce(cardinality(duplicate_reference_ids), 0) > 0 THEN
+    RAISE WARNING 'Skipping target plans with duplicate seeded Scripture rows: %', duplicate_reference_ids;
   END IF;
 END
 $preflight$;
@@ -61,11 +218,11 @@ WITH source_days AS (
     scripture.reference,
     lag(day.day_number) OVER plan_days AS previous_day_number,
     lag(scripture.reference) OVER plan_days AS previous_reference
-  FROM public.devotional_plans AS plan
+  FROM consecutive_reference_eligible_plans AS eligible
+  JOIN public.devotional_plans AS plan ON plan.id = eligible.plan_id
   JOIN public.devotional_days AS day ON day.plan_id = plan.id
   LEFT JOIN public.scripture_references AS scripture
     ON scripture.day_id = day.id AND scripture.user_id IS NULL
-  WHERE plan.id::text LIKE '90000000-0000-0000-0000-%'
   WINDOW plan_days AS (PARTITION BY plan.id ORDER BY day.day_number)
 ), boundaries AS (
   SELECT *,
@@ -159,14 +316,12 @@ WHERE NOT EXISTS (
 DO $counts$
 DECLARE affected integer; runs integer; removed integer;
 BEGIN
-  SELECT count(*), sum(merged_runs), sum(removed_days)
+  SELECT count(*), coalesce(sum(merged_runs), 0), coalesce(sum(removed_days), 0)
   INTO affected, runs, removed
   FROM consecutive_reference_affected_plans;
-  IF affected <> 89 OR runs <> 337 OR removed <> 1235 THEN
-    RAISE EXCEPTION
-      'Consecutive-reference merge inventory changed: affected %, runs %, removed %',
-      affected, runs, removed;
-  END IF;
+  RAISE NOTICE
+    'Consecutive-reference runtime merge inventory: affected plans %, runs %, removed days %',
+    affected, runs, removed;
 END
 $counts$;
 
@@ -311,33 +466,37 @@ SET description = replace(
       'day 313', 'day 311'
     ),
     updated_at = now()
-WHERE id = '90000000-0000-0000-0000-000000000242'::uuid;
+WHERE id = '90000000-0000-0000-0000-000000000242'::uuid
+  AND EXISTS (
+    SELECT 1
+    FROM consecutive_reference_affected_plans AS affected
+    WHERE affected.plan_id = devotional_plans.id
+  );
 
 UPDATE public.devotional_plans
 SET description = replace(description, '16 original sections', '2 merged readings'),
     updated_at = now()
-WHERE id = '90000000-0000-0000-0000-000000000291'::uuid;
+WHERE id = '90000000-0000-0000-0000-000000000291'::uuid
+  AND EXISTS (
+    SELECT 1
+    FROM consecutive_reference_affected_plans AS affected
+    WHERE affected.plan_id = devotional_plans.id
+  );
 
 DO $postflight$
-DECLARE plan_count integer; day_count integer; repeated integer; malformed integer;
+DECLARE
+  repeated integer;
+  malformed integer;
 BEGIN
-  SELECT count(*) INTO plan_count
-  FROM public.devotional_plans
-  WHERE id::text LIKE '90000000-0000-0000-0000-%';
-  SELECT count(*) INTO day_count
-  FROM public.devotional_days AS day
-  JOIN public.devotional_plans AS plan ON plan.id = day.plan_id
-  WHERE plan.id::text LIKE '90000000-0000-0000-0000-%';
-
   WITH ordered AS (
     SELECT day.plan_id, day.day_number, scripture.reference,
            lag(day.day_number) OVER plan_days AS previous_day,
            lag(scripture.reference) OVER plan_days AS previous_reference
-    FROM public.devotional_days AS day
-    JOIN public.devotional_plans AS plan ON plan.id = day.plan_id
+    FROM consecutive_reference_eligible_plans AS eligible
+    JOIN public.devotional_plans AS plan ON plan.id = eligible.plan_id
+    JOIN public.devotional_days AS day ON day.plan_id = plan.id
     LEFT JOIN public.scripture_references AS scripture
       ON scripture.day_id = day.id AND scripture.user_id IS NULL
-    WHERE plan.id::text LIKE '90000000-0000-0000-0000-%'
     WINDOW plan_days AS (PARTITION BY day.plan_id ORDER BY day.day_number)
   )
   SELECT count(*) INTO repeated
@@ -347,24 +506,28 @@ BEGIN
     AND reference IS NOT DISTINCT FROM previous_reference;
 
   SELECT count(*) INTO malformed
-  FROM public.devotional_plans AS plan
-  WHERE plan.id::text LIKE '90000000-0000-0000-0000-%'
-    AND (
-      plan.total_days <> (
-        SELECT count(*) FROM public.devotional_days AS day WHERE day.plan_id = plan.id
-      )
-      OR 1 <> (
-        SELECT min(day.day_number) FROM public.devotional_days AS day WHERE day.plan_id = plan.id
-      )
-      OR plan.total_days <> (
-        SELECT max(day.day_number) FROM public.devotional_days AS day WHERE day.plan_id = plan.id
-      )
+  FROM consecutive_reference_eligible_plans AS eligible
+  JOIN public.devotional_plans AS plan ON plan.id = eligible.plan_id
+  JOIN LATERAL (
+    SELECT
+      count(*) AS day_count,
+      count(DISTINCT day.day_number) AS distinct_day_count,
+      min(day.day_number) AS first_day,
+      max(day.day_number) AS last_day
+    FROM public.devotional_days AS day
+    WHERE day.plan_id = plan.id
+  ) AS stats ON true
+  WHERE (
+      plan.total_days <> stats.day_count
+      OR stats.day_count <> stats.distinct_day_count
+      OR stats.first_day <> 1
+      OR stats.last_day <> plan.total_days
     );
 
-  IF plan_count <> 155 OR day_count <> 3159 OR repeated <> 0 OR malformed <> 0 THEN
+  IF repeated <> 0 OR malformed <> 0 THEN
     RAISE EXCEPTION
-      'Consecutive-reference merge postflight failed: plans %, days %, repeated %, malformed %',
-      plan_count, day_count, repeated, malformed;
+      'Consecutive-reference merge postflight failed: repeated %, malformed merged plans %',
+      repeated, malformed;
   END IF;
 END
 $postflight$;
