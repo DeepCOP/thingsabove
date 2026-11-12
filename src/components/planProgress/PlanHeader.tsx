@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { Text, View } from 'react-native';
+import { Text, View, useWindowDimensions } from 'react-native';
 import PlanCoverImage from '../PlanCoverImage';
 import PlanVisibilityBadge from '../PlanVisibilityBadge';
 
@@ -12,13 +12,19 @@ type Props = {
 
 export function PlanHeader({ coverImage, selectedDay, completions, visibility }: Props) {
   const { t } = useTranslation('plans');
+  const { height: windowHeight } = useWindowDimensions();
   return (
     <>
       <View>
-        <PlanCoverImage uri={coverImage} className="w-full h-60 rounded-2xl" />
+        <PlanCoverImage
+          uri={coverImage}
+          className="w-full rounded-2xl bg-gray-100 dark:bg-neutral-800"
+          fitToWidth
+          maxHeight={windowHeight / 2}
+        />
 
         {(completions ?? 0) > 0 && (
-          <View className="absolute bottom-0 left-0 right-0 bg-black/50 py-2 rounded-b-2xl">
+          <View className="bg-black/50 py-2 rounded-b-2xl">
             <Text className="text-center text-white font-semibold">
               {t('completions', { count: completions ?? 0 })}
             </Text>
