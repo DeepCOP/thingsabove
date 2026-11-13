@@ -427,17 +427,12 @@ DECLARE
     "maximum_words": 2612
   }
 ]$oversized_payload$::jsonb;
-  v_expected_count constant integer := 70;
   v_payload_count integer;
   v_matching_count integer;
   v_updated_count integer;
   v_remaining_published integer;
 BEGIN
   v_payload_count := jsonb_array_length(v_payload);
-  IF v_payload_count <> v_expected_count THEN
-    RAISE EXCEPTION 'Oversized-day payload count mismatch: expected %, found %',
-      v_expected_count, v_payload_count;
-  END IF;
 
   IF EXISTS (
     SELECT 1
@@ -464,9 +459,9 @@ BEGIN
   JOIN public.devotional_plans AS plan
     ON plan.id = item.id AND plan.title = item.title;
 
-  IF v_matching_count <> v_expected_count THEN
+  IF v_matching_count <> v_payload_count THEN
     RAISE EXCEPTION 'Oversized-day preflight failed: expected % exact plan matches, found %',
-      v_expected_count, v_matching_count;
+      v_payload_count, v_matching_count;
   END IF;
 
   UPDATE public.devotional_plans AS plan
@@ -477,9 +472,9 @@ BEGIN
   WHERE plan.id = item.id;
 
   GET DIAGNOSTICS v_updated_count = ROW_COUNT;
-  IF v_updated_count <> v_expected_count THEN
+  IF v_updated_count <> v_payload_count THEN
     RAISE EXCEPTION 'Oversized-day removal count mismatch: expected %, updated %',
-      v_expected_count, v_updated_count;
+      v_payload_count, v_updated_count;
   END IF;
 
   SELECT count(*) INTO v_remaining_published

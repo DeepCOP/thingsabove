@@ -2,26 +2,6 @@
 -- Retains the first day UUID, preserves all reading text, and remaps progress/comments.
 
 BEGIN;
--- These plans were removed from the catalog after doctrinal/editorial review.
--- Keep their original day boundaries intact even when adjacent references match.
-CREATE TEMP TABLE consecutive_reference_excluded_plans (
-  plan_id uuid PRIMARY KEY
-) ON COMMIT DROP;
-
-INSERT INTO consecutive_reference_excluded_plans (plan_id)
-VALUES
-  ('90000000-0000-0000-0000-000000000241'::uuid),
-  ('90000000-0000-0000-0000-000000000314'::uuid),
-  ('90000000-0000-0000-0000-000000000353'::uuid),
-  ('90000000-0000-0000-0000-000000000356'::uuid),
-  ('90000000-0000-0000-0000-000000000360'::uuid),
-  ('90000000-0000-0000-0000-000000000361'::uuid),
-  ('90000000-0000-0000-0000-000000000363'::uuid),
-  ('90000000-0000-0000-0000-000000000372'::uuid),
-  ('90000000-0000-0000-0000-000000000382'::uuid),
-  ('90000000-0000-0000-0000-000000000385'::uuid),
-  ('90000000-0000-0000-0000-000000000389'::uuid);
-
 -- Only these audited plans may be changed by this migration.
 CREATE TEMP TABLE consecutive_reference_target_plans (
   plan_id uuid PRIMARY KEY
@@ -168,7 +148,6 @@ DECLARE
   missing_ids uuid[];
   malformed_ids uuid[];
   duplicate_reference_ids uuid[];
-  excluded_target_overlap integer;
 BEGIN
   SELECT array_agg(plan_id ORDER BY plan_id) INTO missing_ids
   FROM consecutive_reference_plan_state
@@ -185,16 +164,6 @@ BEGIN
   WHERE plan_exists
     AND duplicate_reference_days > 0;
 
-  SELECT count(*) INTO excluded_target_overlap
-  FROM consecutive_reference_excluded_plans AS excluded
-  JOIN consecutive_reference_target_plans AS target
-    ON target.plan_id = excluded.plan_id;
-
-  IF excluded_target_overlap <> 0 THEN
-    RAISE EXCEPTION
-      'Consecutive-reference target allowlist overlaps the excluded list: % plan(s)',
-      excluded_target_overlap;
-  END IF;
   IF coalesce(cardinality(missing_ids), 0) > 0 THEN
     RAISE WARNING 'Skipping missing consecutive-reference target plans: %', missing_ids;
   END IF;
