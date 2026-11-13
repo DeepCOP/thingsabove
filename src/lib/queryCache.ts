@@ -1,6 +1,6 @@
 import { createAsyncStoragePersister } from '@tanstack/query-async-storage-persister';
 import { QueryClient } from '@tanstack/react-query';
-import { cacheStaleTime, installQueryCachePolicy, shouldPersistQuery } from './queryCachePolicy';
+import { cacheStaleTime, shouldPersistQuery } from './queryCachePolicy';
 
 export const QUERY_CACHE_MAX_AGE = 24 * 60 * 60 * 1000;
 export const COMMUNITY_STALE_TIME = 30 * 1000;
@@ -35,7 +35,6 @@ export function createAccountQueryCacheFactory(storage: CacheStorage) {
         mutations: { retry: 0 },
       },
     });
-    installQueryCachePolicy(client);
     const storagePersister = createAsyncStoragePersister({
       storage: {
         getItem: (key) => enqueue(async () => (active ? storage.getItem(key) : null)),

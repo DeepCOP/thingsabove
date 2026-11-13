@@ -19,14 +19,18 @@ function belongsToPlan(value: unknown, planId: string): boolean {
 function withoutPlan(data: unknown, planId: string): unknown {
   if (Array.isArray(data)) return data.filter((item) => !belongsToPlan(item, planId));
   if (!data || typeof data !== 'object') return data;
-  const infinite = data as { pages?: { items: unknown[] }[] };
+  const infinite = data as { pages?: ({ items?: unknown } | null)[] };
   if (!Array.isArray(infinite.pages)) return data;
   return {
     ...infinite,
-    pages: infinite.pages.map((page) => ({
-      ...page,
-      items: page.items.filter((item) => !belongsToPlan(item, planId)),
-    })),
+    pages: infinite.pages.map((page) =>
+      Array.isArray(page?.items)
+        ? {
+            ...page,
+            items: page.items.filter((item) => !belongsToPlan(item, planId)),
+          }
+        : page,
+    ),
   };
 }
 
