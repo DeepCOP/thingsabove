@@ -29,7 +29,7 @@ import {
 import { useMemo } from 'react';
 import { COMMUNITY_STALE_TIME } from '../lib/queryCache';
 import { cacheStaleTime } from '../lib/queryCachePolicy';
-import { useRefreshQueryOnFocus } from './useRefreshQueryOnFocus';
+import { useRefetchStaleQueryOnFocus } from './useRefreshQueryOnFocus';
 
 const prayerRequestsKey = (userId: string | undefined) => ['prayer_requests', userId] as const;
 
@@ -78,7 +78,7 @@ export function usePrayerBoard(scope: PrayerScope, filter: PrayerFilter) {
       }),
     getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
   });
-  useRefreshQueryOnFocus(queryKey);
+  useRefetchStaleQueryOnFocus(queryKey);
   return query;
 }
 
@@ -93,7 +93,7 @@ export function usePrayerRequest(requestId: string | undefined) {
     enabled: !!requestId,
     queryFn: async () => await fetchPrayerRequestDetail(requestId!),
   });
-  useRefreshQueryOnFocus(queryKey);
+  useRefetchStaleQueryOnFocus(queryKey);
   return query;
 }
 
@@ -108,7 +108,7 @@ export function usePrayerRequestEncouragements(requestId: string | undefined) {
     enabled: !!requestId,
     queryFn: async () => await fetchPrayerRequestEncouragements(requestId!),
   });
-  useRefreshQueryOnFocus(queryKey);
+  useRefetchStaleQueryOnFocus(queryKey);
   return query;
 }
 

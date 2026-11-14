@@ -14,7 +14,7 @@ import { useAuth } from '../state/AuthContext';
 import { planDetailKey } from '../lib/queryKeys';
 import { cacheStaleTime } from '../lib/queryCachePolicy';
 import { fetchPlanWithAvailability } from '../lib/unavailablePlan';
-import { useRefreshQueryOnFocus } from './useRefreshQueryOnFocus';
+import { useRefetchStaleQueryOnFocus } from './useRefreshQueryOnFocus';
 export const useRelatedPlans = (tags: string[], currentPlanId: string) => {
   const { session } = useAuth();
   return useQuery({
@@ -55,7 +55,7 @@ export const useFetchDevotionalPlanById = (id: string) => {
     refetchOnMount: 'always',
     queryFn: () => fetchPlanWithAvailability(client, id, () => fetchPlanById(id)),
   });
-  useRefreshQueryOnFocus(queryKey);
+  useRefetchStaleQueryOnFocus(queryKey);
   return query;
 };
 
