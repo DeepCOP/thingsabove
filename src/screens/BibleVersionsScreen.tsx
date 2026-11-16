@@ -367,7 +367,6 @@ export default function BibleVersionsScreen({ mode, onAddPress, onVersionPress, 
                 </TouchableOpacity>
               ) : (
                 <>
-                  <Ionicons name="checkmark-circle" size={30} color="#2fca70" />
                   <TouchableOpacity
                     accessibilityRole="button"
                     accessibilityLabel={t('manageVersion', { version: entry.label })}
