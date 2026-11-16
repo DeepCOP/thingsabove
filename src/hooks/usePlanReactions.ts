@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { planDetailKey } from '../lib/queryKeys';
 import { upsertPlanRating } from '../api/mutations';
 import { fetchMyPlanRating, reportPlan, togglePlanReaction } from '../api/queries';
 
@@ -273,7 +274,7 @@ function updateInfinitePlanPagesRating(data: unknown, planId: string, next: Plan
 export function useTogglePlanReaction(planId: string, userId: string) {
   const qc = useQueryClient();
   const reactionKey = ['plan_reactions', planId, userId] as const;
-  const planKey = ['plan', planId] as const;
+  const planKey = planDetailKey(planId, userId);
 
   return useMutation({
     mutationFn: async () => togglePlanReaction(planId, userId),
@@ -356,7 +357,7 @@ export function usePlanRating(planId: string | undefined, userId: string | undef
     resolvedPlanId || 'unknown',
     resolvedUserId || 'guest',
   ] as const;
-  const planKey = ['plan', resolvedPlanId] as const;
+  const planKey = planDetailKey(resolvedPlanId, resolvedUserId);
 
   const planRatingQuery = useQuery({
     queryKey: ratingKey,

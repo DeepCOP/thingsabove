@@ -7,6 +7,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { findBookInBible, getBibleDotComBookCode, getBookNameForId } from '@/src/bible/books';
 import { localizeBibleError } from '@/src/bible/versionPresentation';
 import PlanCoverImage from '@/src/components/PlanCoverImage';
+import PlanUnavailable from '@/src/components/PlanUnavailable';
 import ReaderBottomBar from '@/src/components/ReaderBottomBar';
 import BibleAttribution from '@/src/components/BibleAttribution';
 import ScriptureSelectionMenu from '@/src/components/ScriptureSelectionMenu';
@@ -482,6 +483,8 @@ export default function DevotionalPlanReader({
       width: menuWidth,
     };
   }, [height, insets.bottom, insets.top, menuAnchor.x, menuAnchor.y, menuHeight, width]);
+
+  if (plan === null) return <PlanUnavailable />;
 
   return (
     <>

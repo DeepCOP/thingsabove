@@ -12,6 +12,7 @@ import {
   useStopPlanProgress,
 } from '@/src/hooks/usePlanProgress';
 import dayjs from '@/src/lib/dayjs';
+import { planDetailKey } from '@/src/lib/queryKeys';
 import { useAuth } from '@/src/state/AuthContext';
 import { useAppStore } from '@/src/state/useAppStore';
 import {
@@ -166,7 +167,7 @@ export default function PlanProgress() {
       const planId = plan.id;
       if (!planId) return;
 
-      const planKey = ['plan', planId] as const;
+      const planKey = planDetailKey(planId, session?.user.id);
       qc.setQueryData(planKey, (old: unknown) => incrementPlanCompletions(old, planId));
       qc.setQueriesData({ queryKey: ['discover_plans'] }, (old: unknown) =>
         incrementPlanCompletionsInInfiniteData(old, planId),

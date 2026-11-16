@@ -37,6 +37,8 @@ import { supabase } from '@/src/lib/supabaseClient';
 import { AuthProvider, useAuth } from '@/src/state/AuthContext';
 import { BibleProvider } from '@/src/state/BibleContext';
 import { useAppStore } from '@/src/state/useAppStore';
+import { useQueryClient } from '@tanstack/react-query';
+import { invalidateFriendQueries } from '@/src/lib/queryInvalidation';
 import '../global.css';
 
 SplashScreen.preventAutoHideAsync();
@@ -68,24 +70,25 @@ export default function RootLayout() {
 
 function RootLayoutContent() {
   const { session, loading } = useAuth();
+  const queryClient = useQueryClient();
+  const userId = session?.user.id;
   const [hasHydratedAppStore, setHasHydratedAppStore] = useState(() =>
     useAppStore.persist.hasHydrated(),
   );
-  const { notificationsQuery, notificationsCountQuery } = useNotifications(session?.user?.id);
-
-  const friendsQuery = useFriends(session?.user.id);
-  const pendingFriendsQuery = usePendingFriendRequests(session?.user.id);
+  useNotifications(userId);
+  useFriends(userId);
+  usePendingFriendRequests(userId);
 
   useUserLocation();
   const handleNotificationsNew = useCallback(() => {
-    notificationsQuery.refetch();
-    notificationsCountQuery.refetch();
-  }, [notificationsQuery, notificationsCountQuery]);
+    if (!userId) return;
+    void queryClient.invalidateQueries({ queryKey: ['notifications', userId] });
+    void queryClient.invalidateQueries({ queryKey: ['notifications_count', userId] });
+  }, [queryClient, userId]);
 
   const handleFriendsNew = useCallback(() => {
-    friendsQuery.refetch();
-    pendingFriendsQuery.refetch();
-  }, [friendsQuery, pendingFriendsQuery]);
+    void invalidateFriendQueries(queryClient, userId);
+  }, [queryClient, userId]);
 
   useRealtimeNotifications(session?.user?.id, handleNotificationsNew);
   useRealtimeFriends(session?.user?.id, handleFriendsNew);

@@ -3,6 +3,7 @@ import { toggleDayCompletion, toggleItemCompletion } from '@/src/api/mutations';
 import { fetchDayItems } from '@/src/api/queries';
 import { DayItemsProgress, DayItemType, PlanProgress } from '@/src/types/types';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { invalidateGroupProgress } from '../lib/queryInvalidation';
 
 interface Params {
   user_id: string;
@@ -155,6 +156,7 @@ export function useDayItemsProgress({ user_id, plan_id, progress_id, day_id, gro
       queryClient.invalidateQueries({ queryKey: getDayItemsKey(day_id) });
       queryClient.invalidateQueries({ queryKey: planProgressKey });
       queryClient.invalidateQueries({ queryKey: myPlanProgressPlansKey });
+      void invalidateGroupProgress(queryClient, normalizedGroupId);
     },
   });
 
@@ -219,6 +221,7 @@ export function useDayItemsProgress({ user_id, plan_id, progress_id, day_id, gro
       queryClient.invalidateQueries({ queryKey: getDayItemsKey(targetDayId) });
       queryClient.invalidateQueries({ queryKey: planProgressKey });
       queryClient.invalidateQueries({ queryKey: myPlanProgressPlansKey });
+      void invalidateGroupProgress(queryClient, normalizedGroupId);
     },
   });
 

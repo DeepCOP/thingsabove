@@ -1,63 +1,68 @@
-// lib/queryClient.ts
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { QueryClient } from '@tanstack/react-query';
-import {
-  PersistQueryClientProvider,
-  persistQueryClient,
-} from '@tanstack/react-query-persist-client';
+import NetInfo from '@react-native-community/netinfo';
+import { focusManager, onlineManager } from '@tanstack/react-query';
+import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
+import React, { useEffect, useState } from 'react';
+import { AppState, Platform } from 'react-native';
+import { useAuth } from '../state/AuthContext';
+import { createAccountQueryCacheFactory } from './queryCache';
 
-import { createAsyncStoragePersister } from '@tanstack/query-async-storage-persister';
-import React from 'react';
+const createAccountQueryCache = createAccountQueryCacheFactory(AsyncStorage);
 
-export const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 1000 * 60 * 60 * 24,
-      retry: 3,
+function AccountQueryProvider({
+  accountId,
+  children,
+}: {
+  accountId: string;
+  children: React.ReactNode;
+}) {
+  const [cache] = useState(() => createAccountQueryCache(accountId));
 
-      refetchOnReconnect: 'always',
-    },
-    mutations: {
-      retry: 0,
-      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
-    },
-  },
-});
-
-// create persistor
-const asyncStoragePersistor = createAsyncStoragePersister({
-  storage: AsyncStorage,
-});
-
-// helper react component to wrap app
-export function QueryProviderWrapper({ children }: { children: React.ReactNode }) {
-  const shouldDehydrateQuery = (query: { state: { status: string; data: unknown } }) => {
-    if (query.state.status !== 'success') return false;
-    const data = query.state.data;
-    if (data == null) return false;
-    if (Array.isArray(data) && data.length === 0) return false;
-    return true;
-  };
-
-  // persist on mount
-  React.useEffect(() => {
-    persistQueryClient({
-      queryClient,
-      persister: asyncStoragePersistor,
-      maxAge: 1000 * 60 * 60 * 24, // 24 hours
-      buster: 'v1', // change to force refetch / reset
-      dehydrateOptions: { shouldDehydrateQuery },
-    });
-  }, []);
+  useEffect(() => {
+    cache.activate();
+    return () => {
+      void cache.deactivate();
+    };
+  }, [cache]);
 
   return (
-    <PersistQueryClientProvider
-      client={queryClient}
-      persistOptions={{
-        persister: asyncStoragePersistor,
-        dehydrateOptions: { shouldDehydrateQuery },
-      }}>
+    <PersistQueryClientProvider client={cache.client} persistOptions={cache.persistOptions}>
       {children}
     </PersistQueryClientProvider>
+  );
+}
+
+export function QueryProviderWrapper({ children }: { children: React.ReactNode }) {
+  const { session, loading } = useAuth();
+  const accountId = session?.user.id ?? 'guest';
+
+  useEffect(() => {
+    if (Platform.OS === 'web') return;
+
+    onlineManager.setEventListener((setOnline) =>
+      NetInfo.addEventListener((state) => {
+        setOnline(state.isConnected === true && state.isInternetReachable !== false);
+      }),
+    );
+    focusManager.setFocused(AppState.currentState === 'active');
+    const subscription = AppState.addEventListener('change', (state) => {
+      focusManager.setFocused(state === 'active');
+    });
+
+    return () => {
+      subscription.remove();
+      onlineManager.setEventListener(() => undefined);
+      focusManager.setFocused(undefined);
+    };
+  }, []);
+
+  // Resolve auth before restoring. Remounting gives each account a fresh client,
+  // including when a user signs out and continues browsing as a guest.
+  if (loading) return null;
+
+  return (
+    <AccountQueryProvider key={accountId} accountId={accountId}>
+      {children}
+    </AccountQueryProvider>
   );
 }

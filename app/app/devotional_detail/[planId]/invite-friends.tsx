@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import LoadingSpinner from '@/src/components/LoadingSpinner';
+import PlanUnavailable from '@/src/components/PlanUnavailable';
 import { fetchPlanGroupInviteCode } from '@/src/api/groupQueries';
 import { useCreatePlanGroup } from '@/src/hooks/useCreatePlanGroup';
 import { useFetchDevotionalPlanById } from '@/src/hooks/useDevotionalPlans';
@@ -44,7 +45,13 @@ export default function InviteFriends() {
   const insets = useSafeAreaInsets();
   const createPlanGroupMutation = useCreatePlanGroup();
 
-  if (friendsQuery.isLoading || (!!groupId && planGroupMembersQuery.isLoading)) {
+  if (planQuery.data === null) return <PlanUnavailable />;
+
+  if (
+    planQuery.isLoading ||
+    friendsQuery.isLoading ||
+    (!!groupId && planGroupMembersQuery.isLoading)
+  ) {
     return (
       <LoadingSpinner style={{ marginTop: 30 }} ViewStyles={{ paddingBottom: insets.bottom }} />
     );

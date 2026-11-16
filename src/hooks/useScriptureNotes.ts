@@ -7,12 +7,19 @@ import {
 import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useMemo } from 'react';
 import { ScriptureNoteContext } from '../types/types';
+import { useAuth } from '../state/AuthContext';
 
 export function useScriptureNotes(context: ScriptureNoteContext | null) {
   const qc = useQueryClient();
+  const { session } = useAuth();
 
   const notesQuery = useInfiniteQuery({
-    queryKey: ['scripture_notes', context?.noteType, context?.scopeKey],
+    queryKey: [
+      'scripture_notes',
+      context?.noteType,
+      context?.scopeKey,
+      session?.user.id ?? 'guest',
+    ],
     enabled: !!context,
     staleTime: 0,
     queryFn: async ({ pageParam }: { pageParam: number }) => {

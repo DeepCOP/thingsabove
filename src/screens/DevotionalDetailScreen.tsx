@@ -1,4 +1,5 @@
 import LoadingSpinner from '@/src/components/LoadingSpinner';
+import PlanUnavailable from '@/src/components/PlanUnavailable';
 import PlanCoverImage from '@/src/components/PlanCoverImage';
 import PlanPreviewSection from '@/src/components/PlanPreviewSection';
 import PlanVisibilityBadge from '@/src/components/PlanVisibilityBadge';
@@ -92,6 +93,8 @@ export default function DevotionalDetailScreen({
 
     bottomSheetRef.current?.expand();
   };
+
+  if (plan === null) return <PlanUnavailable />;
 
   if (isLoading) {
     return <LoadingSpinner style={{ marginTop: 30 }} />;
