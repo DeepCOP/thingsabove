@@ -165,10 +165,9 @@ begin
     returning id into v_day_id;
 
     insert into public.scripture_references (
-      user_id, day_id, reference, created_at, updated_at
+      day_id, reference, created_at, updated_at
     )
     values (
-      null,
       v_day_id,
       array[v_month_ref[v_month], v_evening_ref[v_evening_idx]],
       v_now,
@@ -753,10 +752,9 @@ $plans$::jsonb)
       returning id into v_day_id;
 
       insert into public.scripture_references (
-        user_id, day_id, reference, created_at, updated_at
+        day_id, reference, created_at, updated_at
       )
       values (
-        null,
         v_day_id,
         array(select jsonb_array_elements_text(v_day -> 'references')),
         v_now,
@@ -852,10 +850,9 @@ begin
     returning id into v_day_id;
 
     insert into public.scripture_references (
-      user_id, day_id, reference, created_at, updated_at
+      day_id, reference, created_at, updated_at
     )
     values (
-      null,
       v_day_id,
       array[v_group_ref_one[v_group], v_group_ref_two[v_group], v_position_ref[v_position]],
       v_now,
@@ -978,10 +975,9 @@ begin
     returning id into v_day_id;
 
     insert into public.scripture_references (
-      user_id, day_id, reference, created_at, updated_at
+      day_id, reference, created_at, updated_at
     )
     values (
-      null,
       v_day_id,
       array[v_group_ref_one[v_group], v_group_ref_two[v_group], v_position_ref[v_position]],
       v_now,
@@ -16358,14 +16354,12 @@ $plans$::jsonb)
       returning id into v_day_id;
 
       insert into public.scripture_references (
-        user_id,
         day_id,
         reference,
         created_at,
         updated_at
       )
       values (
-        null,
         v_day_id,
         array(select jsonb_array_elements_text(coalesce(v_day -> 'references', '[]'::jsonb))),
         v_now,
@@ -25628,10 +25622,9 @@ $plans$::jsonb)
       returning id into v_day_id;
 
       insert into public.scripture_references (
-        user_id, day_id, reference, created_at, updated_at
+        day_id, reference, created_at, updated_at
       )
       values (
-        null,
         v_day_id,
         array(select jsonb_array_elements_text(coalesce(v_day -> 'references', '[]'::jsonb))),
         v_now,
@@ -52692,10 +52685,9 @@ $plans$::jsonb)
       returning id into v_day_id;
 
       insert into public.scripture_references (
-        user_id, day_id, reference, created_at, updated_at
+        day_id, reference, created_at, updated_at
       )
       values (
-        null,
         v_day_id,
         array(select jsonb_array_elements_text(coalesce(v_day -> 'references', '[]'::jsonb))),
         v_now,
@@ -58522,10 +58514,9 @@ $plans$::jsonb)
       returning id into v_day_id;
 
       insert into public.scripture_references (
-        user_id, day_id, reference, created_at, updated_at
+        day_id, reference, created_at, updated_at
       )
       values (
-        null,
         v_day_id,
         array(select jsonb_array_elements_text(coalesce(v_day -> 'references', '[]'::jsonb))),
         v_now,

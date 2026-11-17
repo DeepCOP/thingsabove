@@ -88,11 +88,11 @@ BEGIN
     -- For an existing imported day, update the existing catalog reference row.
     UPDATE public.scripture_references
        SET reference = v_ref
-     WHERE day_id = v_day AND user_id IS NULL;
+     WHERE day_id = v_day;
     GET DIAGNOSTICS v_existing = ROW_COUNT;
     IF v_existing = 0 THEN
-      INSERT INTO public.scripture_references (id,day_id,user_id,reference)
-      VALUES (gen_random_uuid(),v_day,NULL,v_ref);
+      INSERT INTO public.scripture_references (id,day_id,reference)
+      VALUES (gen_random_uuid(),v_day,v_ref);
     ELSIF v_existing > 1 THEN
       RAISE EXCEPTION 'Duplicate catalog scripture reference rows on day %', v_day;
     END IF;
@@ -109,7 +109,7 @@ BEGIN
     SELECT 1 FROM public.devotional_days d
     WHERE d.plan_id=v_plan AND (d.content <> '' OR NOT EXISTS (
        SELECT 1 FROM public.scripture_references s
-       WHERE s.day_id=d.id AND s.user_id IS NULL
+       WHERE s.day_id=d.id
          AND cardinality(s.reference)>0))) THEN
     RAISE EXCEPTION 'Reading plan scripture/content validation failed';
   END IF;
@@ -737,8 +737,8 @@ BEGIN
   ) THEN RAISE EXCEPTION 'Existing Scripture assignment differs for an imported day'; END IF;
 END $$;
 
-INSERT INTO public.scripture_references (id,user_id,day_id,reference)
-SELECT gen_random_uuid(),NULL,d.id,a.reference
+INSERT INTO public.scripture_references (id,day_id,reference)
+SELECT gen_random_uuid(),d.id,a.reference
 FROM import_reading_assignments a
 JOIN public.devotional_days d ON d.plan_id=a.plan_id AND d.day_number=a.day_number
 WHERE NOT EXISTS (SELECT 1 FROM public.scripture_references r WHERE r.day_id=d.id);
@@ -965,8 +965,8 @@ BEGIN
  ) THEN RAISE EXCEPTION 'Existing day content or reference assignments differ'; END IF;
 END $existing_days$;
 
-INSERT INTO public.scripture_references(id,user_id,day_id,reference)
-SELECT gen_random_uuid(),NULL,d.id,a.reference
+INSERT INTO public.scripture_references(id,day_id,reference)
+SELECT gen_random_uuid(),d.id,a.reference
 FROM _additional_reading_days a JOIN public.devotional_days d
 ON d.plan_id=a.plan_id AND d.day_number=a.day_number
 WHERE NOT EXISTS (SELECT 1 FROM public.scripture_references r WHERE r.day_id=d.id);
@@ -1699,8 +1699,8 @@ BEGIN
      OR (count(r.id)=1 AND bool_or(r.reference IS DISTINCT FROM a.reference))) THEN
      RAISE EXCEPTION 'Existing reading-day data differs; no changes committed'; END IF;
 END $check_existing$;
-INSERT INTO public.scripture_references(id,user_id,day_id,reference)
-SELECT gen_random_uuid(),NULL,d.id,a.reference FROM _reading_more_assignments a
+INSERT INTO public.scripture_references(id,day_id,reference)
+SELECT gen_random_uuid(),d.id,a.reference FROM _reading_more_assignments a
  JOIN public.devotional_days d ON d.plan_id=a.plan_id AND d.day_number=a.day_number
 WHERE NOT EXISTS (SELECT 1 FROM public.scripture_references r WHERE r.day_id=d.id);
 DO $validate_persisted$
@@ -2033,8 +2033,8 @@ BEGIN
 END
 $batch_existing_check$;
 
-INSERT INTO public.scripture_references(id,user_id,day_id,reference)
-SELECT gen_random_uuid(),NULL,d.id,a.reference
+INSERT INTO public.scripture_references(id,day_id,reference)
+SELECT gen_random_uuid(),d.id,a.reference
 FROM _batch_reading_days a
 JOIN public.devotional_days d ON d.plan_id=a.plan_id AND d.day_number=a.day_number
 WHERE NOT EXISTS (SELECT 1 FROM public.scripture_references s WHERE s.day_id=d.id);
