@@ -167,7 +167,11 @@ export default function BibleVersionDetails({
         {action === 'add' || entry.isDownloading ? (
           <ActivityIndicator size="small" color="#ffffff" />
         ) : (
-          needsDownload && <Ionicons name={'download-outline'} size={24} color="#ffffff" />
+          <Ionicons
+            name={needsDownload ? 'download-outline' : entry.isAdded ? 'checkmark-circle' : 'add'}
+            size={24}
+            color="#ffffff"
+          />
         )}
         <Text style={[styles.buttonText, { color: '#ffffff' }]}>
           {action === 'add' || entry.isDownloading
