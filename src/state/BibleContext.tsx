@@ -27,6 +27,8 @@ import {
 } from '@/src/lib/bibleVersionService';
 import { useAuth } from '@/src/state/AuthContext';
 import { useAppStore } from '@/src/state/useAppStore';
+import { useBiblePreferences } from '@/src/hooks/useBiblePreferences';
+import { useBiblePreferencesStore } from './useBiblePreferencesStore';
 import {
   createContext,
   type ReactNode,
@@ -67,6 +69,13 @@ type BibleContextType = {
   refreshVersionsCatalog: () => Promise<void>;
   loadVersionAttribution: (versionId: BibleVersionId) => Promise<void>;
   bookNames: string[];
+  preferencesReady: boolean;
+  preferencesSyncError: boolean;
+  retryPreferencesSync: () => void;
+  canImportLibrary: boolean;
+  importLibrary: () => void;
+  dismissLibraryImport: () => void;
+  preferredVersionId: string;
 };
 
 const BibleContext = createContext<BibleContextType | null>(null);
@@ -78,14 +87,21 @@ export function BibleProvider({ children }: { children: ReactNode }) {
   const { session, loading: authLoading } = useAuth();
   const authenticatedUserId = session?.user.id ?? null;
   const catalogRequestId = useRef(0);
-  const persistedVersion = useAppStore((state) => state.version);
-  const setPersistedVersion = useAppStore((state) => state.setVersion);
+  const account = authenticatedUserId ?? 'guest';
+  const library = useBiblePreferences(authenticatedUserId);
+  const { preferences, change: changePreferences } = library;
+  const persistedVersion = preferences.preferredVersionId ?? DEFAULT_BIBLE_VERSION_ID;
+  const setPersistedVersion = useCallback(
+    (id: string) => {
+      changePreferences({ preferredVersionId: id, versionId: id, added: true });
+    },
+    [changePreferences],
+  );
   const bibleVersionStates = useAppStore((state) => state.bibleVersionStates);
   const setBibleVersionState = useAppStore((state) => state.setBibleVersionState);
   const clearBibleVersionState = useAppStore((state) => state.clearBibleVersionState);
   const savedBibleVersions = useAppStore((state) => state.savedBibleVersions);
   const saveBibleVersion = useAppStore((state) => state.saveBibleVersion);
-  const forgetBibleVersion = useAppStore((state) => state.forgetBibleVersion);
   const installationRequests = useRef(new Map<BibleVersionId, Promise<void>>());
   const removalRequests = useRef(new Map<BibleVersionId, Promise<void>>());
   const attributionRequests = useRef(new Map<BibleVersionId, Promise<void>>());
@@ -221,18 +237,20 @@ export function BibleProvider({ children }: { children: ReactNode }) {
   );
 
   useEffect(() => {
-    // Existing downloaded versions and the previously selected online translation
-    // join My Versions automatically when upgrading to a saved library.
+    // Cache metadata for this account's saved IDs, without adding device-wide
+    // downloads to its library or queuing metadata refreshes as user edits.
     for (const entry of catalogVersions) {
-      if (
-        (!entry.isBundled && isVersionInstalled(entry.id)) ||
-        (isOnlineBibleVersion(entry) &&
-          (Boolean(savedBibleVersions[entry.id]) || entry.id === persistedVersion))
-      ) {
+      if (preferences.savedVersionIds.includes(entry.id) || entry.id === persistedVersion) {
         saveBibleVersion(entry);
       }
     }
-  }, [catalogVersions, isVersionInstalled, persistedVersion, saveBibleVersion, savedBibleVersions]);
+  }, [
+    catalogVersions,
+    preferences.savedVersionIds,
+    persistedVersion,
+    saveBibleVersion,
+    savedBibleVersions,
+  ]);
 
   // The bundled reader can open while the remote download catalog is refreshing.
   const versionToLoad =
@@ -240,18 +258,6 @@ export function BibleProvider({ children }: { children: ReactNode }) {
       ? versionMap[persistedVersion]
       : defaultVersion;
   const installStateToLoad = bibleVersionStates[versionToLoad.id];
-
-  useEffect(() => {
-    if (!versionsCatalogLoading && !versionsCatalogError && versionToLoad.id !== persistedVersion) {
-      setPersistedVersion(DEFAULT_BIBLE_VERSION_ID);
-    }
-  }, [
-    persistedVersion,
-    setPersistedVersion,
-    versionToLoad.id,
-    versionsCatalogLoading,
-    versionsCatalogError,
-  ]);
 
   useEffect(() => {
     let cancelled = false;
@@ -297,7 +303,6 @@ export function BibleProvider({ children }: { children: ReactNode }) {
           checksum: undefined,
           error: `${message} Please download it again.`,
         });
-        setPersistedVersion(DEFAULT_BIBLE_VERSION_ID);
       } finally {
         if (!cancelled) setLoadingVersionId(null);
       }
@@ -307,10 +312,11 @@ export function BibleProvider({ children }: { children: ReactNode }) {
     return () => {
       cancelled = true;
     };
-  }, [installStateToLoad, readerAttempt, setBibleVersionState, setPersistedVersion, versionToLoad]);
+  }, [installStateToLoad, readerAttempt, setBibleVersionState, versionToLoad]);
 
   const setVersion = useCallback(
     async (versionId: BibleVersionId) => {
+      if (!library.ready) throw new Error('Bible preferences are still loading. Please try again.');
       if (!versionMap[versionId]) {
         throw new Error(`${versionId} is not available right now.`);
       }
@@ -350,11 +356,13 @@ export function BibleProvider({ children }: { children: ReactNode }) {
       retryReader,
       saveBibleVersion,
       authenticatedUserId,
+      library.ready,
     ],
   );
 
   const installVersion = useCallback(
     async (versionId: BibleVersionId) => {
+      if (!library.ready) throw new Error('Bible preferences are still loading. Please try again.');
       const existing = installationRequests.current.get(versionId);
       if (existing) return existing;
       if (removalRequests.current.has(versionId)) {
@@ -374,6 +382,8 @@ export function BibleProvider({ children }: { children: ReactNode }) {
           useAppStore.getState().bibleVersionStates[versionId],
         )
       ) {
+        saveBibleVersion(selectedVersion);
+        changePreferences({ versionId, added: true });
         return;
       }
       const pending = Promise.resolve().then(async () => {
@@ -381,6 +391,7 @@ export function BibleProvider({ children }: { children: ReactNode }) {
         try {
           const installed = await installBibleVersion(selectedVersion);
           saveBibleVersion(selectedVersion);
+          changePreferences({ versionId, added: true });
           setBibleVersionState(versionId, {
             status: 'downloaded',
             localUri: installed.localUri,
@@ -402,7 +413,7 @@ export function BibleProvider({ children }: { children: ReactNode }) {
       installationRequests.current.set(versionId, pending);
       return pending;
     },
-    [saveBibleVersion, setBibleVersionState, versionMap],
+    [saveBibleVersion, setBibleVersionState, versionMap, changePreferences, library.ready],
   );
 
   const addVersion = useCallback(
@@ -415,15 +426,17 @@ export function BibleProvider({ children }: { children: ReactNode }) {
           throw new Error('This version is being removed. Please try again.');
         }
         saveBibleVersion(selectedVersion);
+        changePreferences({ versionId, added: true });
         return;
       }
       await installVersion(versionId);
     },
-    [authenticatedUserId, installVersion, saveBibleVersion, versionMap],
+    [authenticatedUserId, installVersion, saveBibleVersion, versionMap, changePreferences],
   );
 
   const removeVersion = useCallback(
     async (versionId: BibleVersionId) => {
+      if (!library.ready) throw new Error('Bible preferences are still loading. Please try again.');
       const existing = removalRequests.current.get(versionId);
       if (existing) return existing;
       if (installationRequests.current.has(versionId)) {
@@ -437,11 +450,15 @@ export function BibleProvider({ children }: { children: ReactNode }) {
       const pending = Promise.resolve().then(async () => {
         try {
           if (!isOnlineBibleVersion(selectedVersion)) await removeBibleVersion(selectedVersion);
-          if (useAppStore.getState().version === versionId) {
-            setPersistedVersion(DEFAULT_BIBLE_VERSION_ID);
-          }
+          const selected =
+            useBiblePreferencesStore.getState().accounts[account]?.preferredVersionId;
+          changePreferences({
+            versionId,
+            added: false,
+            ...(selected === versionId ? { preferredVersionId: DEFAULT_BIBLE_VERSION_ID } : {}),
+          });
           clearBibleVersionState(versionId);
-          forgetBibleVersion(versionId);
+          // Metadata may still be needed by another account on this device.
         } finally {
           removalRequests.current.delete(versionId);
         }
@@ -449,7 +466,7 @@ export function BibleProvider({ children }: { children: ReactNode }) {
       removalRequests.current.set(versionId, pending);
       return pending;
     },
-    [clearBibleVersionState, forgetBibleVersion, setPersistedVersion, versionMap],
+    [clearBibleVersionState, changePreferences, account, versionMap, library.ready],
   );
 
   const versions = useMemo(
@@ -459,7 +476,7 @@ export function BibleProvider({ children }: { children: ReactNode }) {
           const installState = bibleVersionStates[entry.id];
           const installed = isVersionInstalled(entry.id);
           const isOnline = isOnlineBibleVersion(entry);
-          const isAdded = installed || (isOnline && Boolean(savedBibleVersions[entry.id]));
+          const isAdded = entry.isBundled || preferences.savedVersionIds.includes(entry.id);
 
           return {
             ...entry,
@@ -486,7 +503,13 @@ export function BibleProvider({ children }: { children: ReactNode }) {
 
           return a.id.localeCompare(b.id);
         }),
-    [availableVersions, bibleVersionStates, isVersionInstalled, savedBibleVersions, version],
+    [
+      availableVersions,
+      bibleVersionStates,
+      isVersionInstalled,
+      preferences.savedVersionIds,
+      version,
+    ],
   );
 
   const bookNames = useMemo(() => books.map((book) => book.name), [books]);
@@ -512,6 +535,13 @@ export function BibleProvider({ children }: { children: ReactNode }) {
         refreshVersionsCatalog,
         loadVersionAttribution,
         bookNames,
+        preferencesReady: library.ready,
+        preferencesSyncError: library.syncError,
+        retryPreferencesSync: library.retrySync,
+        canImportLibrary: library.canImport,
+        importLibrary: library.importLegacy,
+        dismissLibraryImport: library.dismissImport,
+        preferredVersionId: persistedVersion,
       }}>
       {children}
     </BibleContext.Provider>

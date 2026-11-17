@@ -38,6 +38,7 @@ export default function BibleVersionDetails({
     setVersion,
     loadingVersionId,
     loadVersionAttribution,
+    preferencesReady,
   } = useBible();
   const entry = versions.find((version) => version.id === versionId);
   const entryId = entry?.id;
@@ -105,9 +106,11 @@ export default function BibleVersionDetails({
   }
 
   const provider = BIBLE_SOURCE_LABELS[entry.source ?? 'offline'];
-  const busy = Boolean(action) || entry.isDownloading || loadingVersionId === entry.id;
-  const addDisabled = entry.isAdded || busy || (isOffline && !entry.isOnline);
-  const readDisabled = busy || (isOffline && entry.isOnline);
+  const busy =
+    !preferencesReady || Boolean(action) || entry.isDownloading || loadingVersionId === entry.id;
+  const needsDownload = !entry.isOnline && !entry.isInstalled;
+  const addDisabled = (entry.isAdded && !needsDownload) || busy || (isOffline && needsDownload);
+  const readDisabled = busy || needsDownload || (isOffline && entry.isOnline);
   const learnMoreUrl =
     entry.source === 'youversion' && /^\d+$/.test(entry.providerBibleId ?? '')
       ? `https://www.bible.com/versions/${entry.providerBibleId}`
@@ -164,18 +167,20 @@ export default function BibleVersionDetails({
         {action === 'add' || entry.isDownloading ? (
           <ActivityIndicator size="small" color="#ffffff" />
         ) : (
-          <Ionicons name={entry.isAdded ? 'checkmark' : 'add'} size={24} color="#ffffff" />
+          needsDownload && <Ionicons name={'download-outline'} size={24} color="#ffffff" />
         )}
         <Text style={[styles.buttonText, { color: '#ffffff' }]}>
           {action === 'add' || entry.isDownloading
             ? entry.isOnline
               ? t('addingVersion')
               : t('downloading')
-            : entry.isAdded
-              ? t('addedToLibrary')
-              : entry.isOnline
-                ? t('addToLibrary')
-                : t('downloadAndAdd')}
+            : needsDownload && entry.isAdded
+              ? t('download')
+              : entry.isAdded
+                ? t('addedToLibrary')
+                : entry.isOnline
+                  ? t('addToLibrary')
+                  : t('downloadAndAdd')}
         </Text>
       </TouchableOpacity>
 

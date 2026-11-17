@@ -57,6 +57,12 @@ export default function BibleVersionsScreen({ mode, onAddPress, onVersionPress, 
     versionsCatalogLoading,
     versionsCatalogError,
     refreshVersionsCatalog,
+    preferencesReady,
+    preferencesSyncError,
+    retryPreferencesSync,
+    canImportLibrary,
+    importLibrary,
+    dismissLibraryImport,
   } = useBible();
   const dark = useColorScheme() === 'dark';
   const { isConnected, isInternetReachable } = useNetInfo();
@@ -147,7 +153,10 @@ export default function BibleVersionsScreen({ mode, onAddPress, onVersionPress, 
           });
   const optionEntry = versions.find((entry) => entry.id === optionsId);
   const busy = (entry: BibleVersionListItem) =>
-    busyIds.has(entry.id) || entry.isDownloading || loadingVersionId === entry.id;
+    !preferencesReady ||
+    busyIds.has(entry.id) ||
+    entry.isDownloading ||
+    loadingVersionId === entry.id;
   const status = (entry: BibleVersionListItem) => (
     <View style={styles.status}>
       {entry.isOnline ? (
@@ -183,6 +192,29 @@ export default function BibleVersionsScreen({ mode, onAddPress, onVersionPress, 
         contentContainerStyle={styles.content}
         ListHeaderComponent={
           <>
+            {mode === 'library' && canImportLibrary ? (
+              <View style={[styles.noticeBox, { borderColor: colors.border }]}>
+                <Text style={[styles.noticeText, { color: colors.secondary }]}>
+                  {t('importLibraryNotice')}
+                </Text>
+                <TouchableOpacity accessibilityRole="button" onPress={importLibrary}>
+                  <Text style={styles.link}>{t('importLibrary')}</Text>
+                </TouchableOpacity>
+                <TouchableOpacity accessibilityRole="button" onPress={dismissLibraryImport}>
+                  <Text style={styles.link}>{t('skipImport')}</Text>
+                </TouchableOpacity>
+              </View>
+            ) : null}
+            {preferencesSyncError ? (
+              <View style={[styles.noticeBox, { borderColor: colors.border }]}>
+                <Text style={[styles.noticeText, { color: colors.secondary }]}>
+                  {t('preferencesSyncError')}
+                </Text>
+                <TouchableOpacity accessibilityRole="button" onPress={retryPreferencesSync}>
+                  <Text style={styles.link}>{t('retry')}</Text>
+                </TouchableOpacity>
+              </View>
+            ) : null}
             {mode === 'library' ? (
               <Text style={[styles.intro, { color: colors.secondary }]}>{t('libraryIntro')}</Text>
             ) : (
@@ -340,11 +372,16 @@ export default function BibleVersionsScreen({ mode, onAddPress, onVersionPress, 
               ]}>
               <TouchableOpacity
                 accessibilityRole="button"
-                accessibilityLabel={t(entry.isOnline ? 'versionDetailsLabel' : 'readVersionLabel', {
-                  version: entry.label,
-                })}
+                accessibilityLabel={t(
+                  entry.isOnline || !entry.isInstalled ? 'versionDetailsLabel' : 'readVersionLabel',
+                  {
+                    version: entry.label,
+                  },
+                )}
                 disabled={busy(entry)}
-                onPress={() => (entry.isOnline ? onVersionPress(entry.id) : read(entry))}
+                onPress={() =>
+                  entry.isOnline || !entry.isInstalled ? onVersionPress(entry.id) : read(entry)
+                }
                 style={{ flex: 1 }}>
                 <View style={styles.nameRow}>
                   <Text style={[styles.libraryAbbr, { color: colors.text }]}>
@@ -357,7 +394,7 @@ export default function BibleVersionsScreen({ mode, onAddPress, onVersionPress, 
               </TouchableOpacity>
               {busy(entry) ? (
                 <ActivityIndicator color={colors.blue} style={{ marginHorizontal: 10 }} />
-              ) : entry.isOnline ? (
+              ) : entry.isOnline || !entry.isInstalled ? (
                 <TouchableOpacity
                   accessibilityRole="button"
                   accessibilityLabel={t('detailsFor', { version: entry.label })}
@@ -409,16 +446,22 @@ export default function BibleVersionsScreen({ mode, onAddPress, onVersionPress, 
                       })
                 }
                 accessibilityState={{
-                  disabled: entry.isAdded || busy(entry) || (offline && !entry.isOnline),
+                  disabled:
+                    entry.isAdded ||
+                    busy(entry) ||
+                    (offline && !entry.isOnline && !entry.isInstalled),
                   busy: busy(entry),
                 }}
-                disabled={entry.isAdded || busy(entry) || (offline && !entry.isOnline)}
+                disabled={
+                  entry.isAdded || busy(entry) || (offline && !entry.isOnline && !entry.isInstalled)
+                }
                 onPress={() => void run(entry.id, () => addVersion(entry.id))}
                 style={[
                   styles.addButton,
                   {
                     backgroundColor: entry.isAdded ? colors.added : colors.blue,
-                    opacity: offline && !entry.isOnline && !entry.isAdded ? 0.5 : 1,
+                    opacity:
+                      offline && !entry.isOnline && !entry.isInstalled && !entry.isAdded ? 0.5 : 1,
                   },
                 ]}>
                 {busy(entry) ? (
