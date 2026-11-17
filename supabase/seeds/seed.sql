@@ -60070,14 +60070,12 @@ SELECT
   coalesce(stats.distinct_day_count, 0)::integer AS distinct_day_count,
   stats.first_day,
   stats.last_day,
-  coalesce(duplicate_references.duplicate_days, 0)::integer AS duplicate_reference_days,
   CASE
     WHEN plan.id IS NULL THEN false
     ELSE plan.total_days = stats.day_count
       AND stats.day_count = stats.distinct_day_count
       AND stats.first_day = 1
       AND stats.last_day = plan.total_days
-      AND duplicate_references.duplicate_days = 0
   END AS eligible
 FROM consecutive_reference_target_plans AS target
 LEFT JOIN public.devotional_plans AS plan ON plan.id = target.plan_id
@@ -60089,19 +60087,7 @@ LEFT JOIN LATERAL (
     max(day.day_number) AS last_day
   FROM public.devotional_days AS day
   WHERE day.plan_id = plan.id
-) AS stats ON true
-LEFT JOIN LATERAL (
-  SELECT count(*) AS duplicate_days
-  FROM (
-    SELECT scripture.day_id
-    FROM public.devotional_days AS day
-    JOIN public.scripture_references AS scripture ON scripture.day_id = day.id
-    WHERE day.plan_id = plan.id
-      AND scripture.user_id IS NULL
-    GROUP BY scripture.day_id
-    HAVING count(*) > 1
-  ) AS duplicates
-) AS duplicate_references ON true;
+) AS stats ON true;
 
 CREATE TEMP TABLE consecutive_reference_eligible_plans (
   plan_id uuid PRIMARY KEY
@@ -60116,7 +60102,6 @@ DO $preflight$
 DECLARE
   missing_ids uuid[];
   malformed_ids uuid[];
-  duplicate_reference_ids uuid[];
 BEGIN
   SELECT array_agg(plan_id ORDER BY plan_id) INTO missing_ids
   FROM consecutive_reference_plan_state
@@ -60125,22 +60110,13 @@ BEGIN
   SELECT array_agg(plan_id ORDER BY plan_id) INTO malformed_ids
   FROM consecutive_reference_plan_state
   WHERE plan_exists
-    AND NOT eligible
-    AND duplicate_reference_days = 0;
-
-  SELECT array_agg(plan_id ORDER BY plan_id) INTO duplicate_reference_ids
-  FROM consecutive_reference_plan_state
-  WHERE plan_exists
-    AND duplicate_reference_days > 0;
+    AND NOT eligible;
 
   IF coalesce(cardinality(missing_ids), 0) > 0 THEN
     RAISE WARNING 'Skipping missing consecutive-reference target plans: %', missing_ids;
   END IF;
   IF coalesce(cardinality(malformed_ids), 0) > 0 THEN
     RAISE WARNING 'Skipping malformed consecutive-reference target plans: %', malformed_ids;
-  END IF;
-  IF coalesce(cardinality(duplicate_reference_ids), 0) > 0 THEN
-    RAISE WARNING 'Skipping target plans with duplicate seeded Scripture rows: %', duplicate_reference_ids;
   END IF;
 END
 $preflight$;
@@ -60159,8 +60135,18 @@ WITH source_days AS (
   FROM consecutive_reference_eligible_plans AS eligible
   JOIN public.devotional_plans AS plan ON plan.id = eligible.plan_id
   JOIN public.devotional_days AS day ON day.plan_id = plan.id
-  LEFT JOIN public.scripture_references AS scripture
-    ON scripture.day_id = day.id AND scripture.user_id IS NULL
+  LEFT JOIN LATERAL (
+    -- Flatten every seeded reference row into one canonical signature so days
+    -- with multiple references merge only when their complete sets match.
+    SELECT array_agg(
+      DISTINCT reference_item.reference ORDER BY reference_item.reference
+    ) AS reference
+    FROM public.scripture_references AS seeded
+    CROSS JOIN LATERAL unnest(coalesce(seeded.reference, '{}'::text[]))
+      AS reference_item(reference)
+    WHERE seeded.day_id = day.id
+      AND seeded.user_id IS NULL
+  ) AS scripture ON true
   WINDOW plan_days AS (PARTITION BY plan.id ORDER BY day.day_number)
 ), boundaries AS (
   SELECT *,
@@ -60385,13 +60371,6 @@ SET day_number = groups.new_day_number,
 FROM consecutive_reference_groups AS groups
 WHERE day.id = groups.keeper_day_id;
 
-UPDATE public.scripture_references AS scripture
-SET reference = groups.reference,
-    updated_at = now()
-FROM consecutive_reference_groups AS groups
-WHERE scripture.day_id = groups.keeper_day_id
-  AND scripture.user_id IS NULL;
-
 UPDATE public.devotional_plans AS plan
 SET total_days = affected.new_total_days,
     updated_at = now()
@@ -60433,8 +60412,16 @@ BEGIN
     FROM consecutive_reference_eligible_plans AS eligible
     JOIN public.devotional_plans AS plan ON plan.id = eligible.plan_id
     JOIN public.devotional_days AS day ON day.plan_id = plan.id
-    LEFT JOIN public.scripture_references AS scripture
-      ON scripture.day_id = day.id AND scripture.user_id IS NULL
+    LEFT JOIN LATERAL (
+      SELECT array_agg(
+        DISTINCT reference_item.reference ORDER BY reference_item.reference
+      ) AS reference
+      FROM public.scripture_references AS seeded
+      CROSS JOIN LATERAL unnest(coalesce(seeded.reference, '{}'::text[]))
+        AS reference_item(reference)
+      WHERE seeded.day_id = day.id
+        AND seeded.user_id IS NULL
+    ) AS scripture ON true
     WINDOW plan_days AS (PARTITION BY day.plan_id ORDER BY day.day_number)
   )
   SELECT count(*) INTO repeated
