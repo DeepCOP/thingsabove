@@ -93,8 +93,6 @@ const getDeleteAccountReferenceCounts = (
     getReferenceCount(supabase, 'comments', 'user_id', userId),
     getReferenceCount(supabase, 'notifications', 'user_id', userId),
     getReferenceCount(supabase, 'devotional_plans', 'author_id', userId),
-    getReferenceCount(supabase, 'scripture_references', 'user_id', userId),
-    getReferenceCount(supabase, 'scripture_references_draft', 'user_id', userId),
     getReferenceCount(supabase, 'reports', 'user_id', userId),
     getReferenceCount(supabase, 'plan_reactions', 'user_id', userId),
     getReferenceCount(supabase, 'plan_ratings', 'user_id', userId),
