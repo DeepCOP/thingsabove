@@ -80,8 +80,6 @@ BEGIN
   LOOP
     INSERT INTO public.devotional_days (id,plan_id,day_number,content,title)
     VALUES (gen_random_uuid(),v_plan,v_day_num,'',NULL)
-    ON CONFLICT (plan_id,day_number)
-    DO UPDATE SET content = '', title = NULL
     RETURNING id INTO v_day;
 
     -- The schema has no unique key on scripture_references.day_id.
@@ -718,11 +716,10 @@ ON CONFLICT (id) DO UPDATE SET
   tags=(SELECT ARRAY(SELECT DISTINCT t FROM unnest(coalesce(public.devotional_plans.tags,'{}'::text[]) || ARRAY['reading']::text[]) AS t ORDER BY t)),
   total_days=EXCLUDED.total_days;
 
--- Conflict resolution retains existing day UUIDs and unrelated progress links.
+-- These days must be new; unexpected duplicates abort the migration.
 INSERT INTO public.devotional_days (id,plan_id,day_number,content,title)
 SELECT gen_random_uuid(),a.plan_id,a.day_number,'',NULL
-FROM import_reading_assignments a
-ON CONFLICT (plan_id,day_number) DO UPDATE SET content='',title=NULL;
+FROM import_reading_assignments a;
 
 -- One reference row per imported day. Preserve existing reference-row IDs.
 -- If a day already has reference rows, require them to match rather than overwriting user data.
