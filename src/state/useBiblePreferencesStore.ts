@@ -18,7 +18,6 @@ type State = {
   change: (account: string, change: Parameters<typeof changeBiblePreferences>[1]) => void;
   reconcile: (account: string, remote: BiblePreferences, sent: PendingBibleChanges) => void;
   importLegacy: (account: string) => void;
-  dismissImport: (account: string) => void;
 };
 
 export const useBiblePreferencesStore = create<State>()(
@@ -72,16 +71,6 @@ export const useBiblePreferencesStore = create<State>()(
           }
           return { accounts: { ...state.accounts, [account]: { ...next, importDismissed: true } } };
         }),
-      dismissImport: (account) =>
-        set((state) => ({
-          accounts: {
-            ...state.accounts,
-            [account]: {
-              ...(state.accounts[account] ?? EMPTY_BIBLE_PREFERENCES),
-              importDismissed: true,
-            },
-          },
-        })),
     }),
     {
       name: 'bible-account-preferences',

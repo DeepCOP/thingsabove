@@ -148,6 +148,22 @@ export function useBiblePreferences(userId: string | null) {
     };
   }, [userId, hydrated, initialized, attempt]);
 
+  // After the first successful sync for a signed-in account, merge the versions
+  // previously saved on this device into it. importLegacy marks the account as
+  // imported (importDismissed), so this runs at most once per account.
+  const shouldImport = Boolean(
+    userId &&
+    syncedAccount === userId &&
+    hydrated &&
+    legacy &&
+    !preferences.importDismissed &&
+    (legacy.savedVersionIds.length ||
+      (legacy.preferredVersionId && legacy.preferredVersionId !== 'KJV')),
+  );
+  useEffect(() => {
+    if (shouldImport) useBiblePreferencesStore.getState().importLegacy(account);
+  }, [shouldImport, account]);
+
   const change = useCallback(
     (edit: Parameters<typeof changeBiblePreferences>[1]) => {
       if (!hydrated) throw new Error('Bible preferences are still loading. Please try again.');
@@ -161,16 +177,5 @@ export function useBiblePreferences(userId: string | null) {
     change,
     syncError,
     retrySync,
-    canImport: Boolean(
-      userId &&
-      syncedAccount === userId &&
-      hydrated &&
-      legacy &&
-      !preferences.importDismissed &&
-      (legacy.savedVersionIds.length ||
-        (legacy.preferredVersionId && legacy.preferredVersionId !== 'KJV')),
-    ),
-    importLegacy: () => useBiblePreferencesStore.getState().importLegacy(account),
-    dismissImport: () => useBiblePreferencesStore.getState().dismissImport(account),
   };
 }

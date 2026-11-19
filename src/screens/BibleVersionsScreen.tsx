@@ -60,9 +60,6 @@ export default function BibleVersionsScreen({ mode, onAddPress, onVersionPress, 
     preferencesReady,
     preferencesSyncError,
     retryPreferencesSync,
-    canImportLibrary,
-    importLibrary,
-    dismissLibraryImport,
   } = useBible();
   const dark = useColorScheme() === 'dark';
   const { isConnected, isInternetReachable } = useNetInfo();
@@ -192,19 +189,6 @@ export default function BibleVersionsScreen({ mode, onAddPress, onVersionPress, 
         contentContainerStyle={styles.content}
         ListHeaderComponent={
           <>
-            {mode === 'library' && canImportLibrary ? (
-              <View style={[styles.noticeBox, { borderColor: colors.border }]}>
-                <Text style={[styles.noticeText, { color: colors.secondary }]}>
-                  {t('importLibraryNotice')}
-                </Text>
-                <TouchableOpacity accessibilityRole="button" onPress={importLibrary}>
-                  <Text style={styles.link}>{t('importLibrary')}</Text>
-                </TouchableOpacity>
-                <TouchableOpacity accessibilityRole="button" onPress={dismissLibraryImport}>
-                  <Text style={styles.link}>{t('skipImport')}</Text>
-                </TouchableOpacity>
-              </View>
-            ) : null}
             {preferencesSyncError ? (
               <View style={[styles.noticeBox, { borderColor: colors.border }]}>
                 <Text style={[styles.noticeText, { color: colors.secondary }]}>

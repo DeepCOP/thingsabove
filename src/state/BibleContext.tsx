@@ -72,9 +72,6 @@ type BibleContextType = {
   preferencesReady: boolean;
   preferencesSyncError: boolean;
   retryPreferencesSync: () => void;
-  canImportLibrary: boolean;
-  importLibrary: () => void;
-  dismissLibraryImport: () => void;
   preferredVersionId: string;
 };
 
@@ -538,9 +535,6 @@ export function BibleProvider({ children }: { children: ReactNode }) {
         preferencesReady: library.ready,
         preferencesSyncError: library.syncError,
         retryPreferencesSync: library.retrySync,
-        canImportLibrary: library.canImport,
-        importLibrary: library.importLegacy,
-        dismissLibraryImport: library.dismissImport,
         preferredVersionId: persistedVersion,
       }}>
       {children}
