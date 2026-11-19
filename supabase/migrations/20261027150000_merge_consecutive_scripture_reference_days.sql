@@ -282,6 +282,11 @@ $counts$;
 
 -- Re-map numeric progress before day numbers change. A merged day is recorded as
 -- completed only when every original day in that merged run was completed.
+-- Renumbering completed_days is not a real completion, so suppress the group
+-- "completed Day N" notification (and its push http_post) for this remap.
+ALTER TABLE public.plan_progress
+  DISABLE TRIGGER notify_group_plan_day_completed_on_progress;
+
 UPDATE public.plan_progress AS progress
 SET current_day = coalesce(
       (
@@ -308,6 +313,9 @@ SET current_day = coalesce(
     updated_at = now()
 FROM consecutive_reference_affected_plans AS affected
 WHERE affected.plan_id = progress.plan_id;
+
+ALTER TABLE public.plan_progress
+  ENABLE TRIGGER notify_group_plan_day_completed_on_progress;
 
 -- Snapshot item progress at the retained day. Devotional completion requires
 -- completion of every original day; identical Scripture items use logical OR.
