@@ -877,134 +877,9 @@ begin
   for item in select value from jsonb_array_elements($adapt_refs$
 [
   {
-    "id": "90000000-0000-0000-0000-000000000283",
-    "day_number": 1,
-    "references": []
-  },
-  {
-    "id": "90000000-0000-0000-0000-000000000283",
-    "day_number": 2,
-    "references": []
-  },
-  {
-    "id": "90000000-0000-0000-0000-000000000283",
-    "day_number": 3,
-    "references": []
-  },
-  {
-    "id": "90000000-0000-0000-0000-000000000283",
-    "day_number": 4,
-    "references": []
-  },
-  {
-    "id": "90000000-0000-0000-0000-000000000283",
-    "day_number": 5,
-    "references": []
-  },
-  {
-    "id": "90000000-0000-0000-0000-000000000283",
-    "day_number": 6,
-    "references": []
-  },
-  {
-    "id": "90000000-0000-0000-0000-000000000283",
-    "day_number": 7,
-    "references": []
-  },
-  {
-    "id": "90000000-0000-0000-0000-000000000283",
-    "day_number": 8,
-    "references": []
-  },
-  {
-    "id": "90000000-0000-0000-0000-000000000283",
-    "day_number": 9,
-    "references": []
-  },
-  {
-    "id": "90000000-0000-0000-0000-000000000283",
-    "day_number": 10,
-    "references": []
-  },
-  {
-    "id": "90000000-0000-0000-0000-000000000283",
-    "day_number": 11,
-    "references": []
-  },
-  {
-    "id": "90000000-0000-0000-0000-000000000283",
-    "day_number": 12,
-    "references": []
-  },
-  {
-    "id": "90000000-0000-0000-0000-000000000283",
-    "day_number": 13,
-    "references": []
-  },
-  {
-    "id": "90000000-0000-0000-0000-000000000283",
-    "day_number": 14,
-    "references": []
-  },
-  {
-    "id": "90000000-0000-0000-0000-000000000283",
-    "day_number": 15,
-    "references": []
-  },
-  {
-    "id": "90000000-0000-0000-0000-000000000283",
-    "day_number": 16,
-    "references": []
-  },
-  {
-    "id": "90000000-0000-0000-0000-000000000283",
-    "day_number": 17,
-    "references": []
-  },
-  {
-    "id": "90000000-0000-0000-0000-000000000283",
-    "day_number": 18,
-    "references": []
-  },
-  {
-    "id": "90000000-0000-0000-0000-000000000283",
-    "day_number": 19,
-    "references": []
-  },
-  {
-    "id": "90000000-0000-0000-0000-000000000283",
-    "day_number": 20,
-    "references": []
-  },
-  {
-    "id": "90000000-0000-0000-0000-000000000283",
-    "day_number": 21,
-    "references": []
-  },
-  {
-    "id": "90000000-0000-0000-0000-000000000283",
-    "day_number": 22,
-    "references": []
-  },
-  {
-    "id": "90000000-0000-0000-0000-000000000283",
-    "day_number": 23,
-    "references": []
-  },
-  {
-    "id": "90000000-0000-0000-0000-000000000283",
-    "day_number": 24,
-    "references": []
-  },
-  {
-    "id": "90000000-0000-0000-0000-000000000283",
-    "day_number": 25,
-    "references": []
-  },
-  {
     "id": "90000000-0000-0000-0000-000000000310",
     "day_number": 1,
-    "references": []
+    "references": ["Psalms 23:1-6"]
   },
   {
     "id": "90000000-0000-0000-0000-000000000327",
@@ -3181,13 +3056,810 @@ $adapt_new_days$::jsonb) loop
 end
 $$;
 
--- Republish six reviewed devotional adaptations.
+-- Assign the supplied Scripture anchors to the 114 readings split from the
+-- original single-day Little Folded Hands import. Day 1 retains its historical
+-- reference from the August modernization migration.
+do $$
+declare
+  item jsonb;
+  target_day_id uuid;
+begin
+  for item in select value from jsonb_array_elements($plan310_refs$
+[
+  {
+    "day_number": 2,
+    "references": [
+      "Psalms 5:3",
+      "1 John 1:9"
+    ]
+  },
+  {
+    "day_number": 3,
+    "references": [
+      "Psalms 4:8",
+      "Psalms 5:3"
+    ]
+  },
+  {
+    "day_number": 4,
+    "references": [
+      "John 10:27-28",
+      "Psalms 73:24"
+    ]
+  },
+  {
+    "day_number": 5,
+    "references": [
+      "Psalms 19:14",
+      "Colossians 3:17"
+    ]
+  },
+  {
+    "day_number": 6,
+    "references": [
+      "John 10:11-14",
+      "Psalms 23:1-4"
+    ]
+  },
+  {
+    "day_number": 7,
+    "references": [
+      "Psalms 100:1-5",
+      "John 10:27-28"
+    ]
+  },
+  {
+    "day_number": 8,
+    "references": [
+      "James 1:17",
+      "Psalms 92:1-2"
+    ]
+  },
+  {
+    "day_number": 9,
+    "references": [
+      "Colossians 3:17",
+      "Psalms 121:7-8"
+    ]
+  },
+  {
+    "day_number": 10,
+    "references": [
+      "John 10:27-28",
+      "Matthew 7:13-14"
+    ]
+  },
+  {
+    "day_number": 11,
+    "references": [
+      "Ephesians 4:29",
+      "Colossians 3:17"
+    ]
+  },
+  {
+    "day_number": 12,
+    "references": [
+      "Colossians 3:17",
+      "Philippians 4:8"
+    ]
+  },
+  {
+    "day_number": 13,
+    "references": [
+      "Ephesians 6:1-4",
+      "Philippians 2:5"
+    ]
+  },
+  {
+    "day_number": 14,
+    "references": [
+      "Psalms 118:24",
+      "James 1:17"
+    ]
+  },
+  {
+    "day_number": 15,
+    "references": [
+      "Romans 12:1-2"
+    ]
+  },
+  {
+    "day_number": 16,
+    "references": [
+      "Psalms 92:1-2",
+      "Romans 12:1"
+    ]
+  },
+  {
+    "day_number": 17,
+    "references": [
+      "Colossians 3:17",
+      "Psalms 23:3"
+    ]
+  },
+  {
+    "day_number": 18,
+    "references": [
+      "Psalms 91:11-12",
+      "Psalms 121:7-8"
+    ]
+  },
+  {
+    "day_number": 19,
+    "references": [
+      "Mark 10:13-16"
+    ]
+  },
+  {
+    "day_number": 20,
+    "references": [
+      "Psalms 4:8",
+      "Psalms 31:5"
+    ]
+  },
+  {
+    "day_number": 21,
+    "references": [
+      "Psalms 91:11-12",
+      "Psalms 121:8"
+    ]
+  },
+  {
+    "day_number": 22,
+    "references": [
+      "1 John 1:9",
+      "Psalms 4:8"
+    ]
+  },
+  {
+    "day_number": 23,
+    "references": [
+      "Psalms 4:8"
+    ]
+  },
+  {
+    "day_number": 24,
+    "references": [
+      "Psalms 121:7-8"
+    ]
+  },
+  {
+    "day_number": 25,
+    "references": [
+      "John 8:12",
+      "Psalms 27:1"
+    ]
+  },
+  {
+    "day_number": 26,
+    "references": [
+      "1 John 1:9",
+      "Romans 5:1"
+    ]
+  },
+  {
+    "day_number": 27,
+    "references": [
+      "Psalms 91:4",
+      "Mark 10:13-16"
+    ]
+  },
+  {
+    "day_number": 28,
+    "references": [
+      "John 10:11-14",
+      "Psalms 4:8"
+    ]
+  },
+  {
+    "day_number": 29,
+    "references": [
+      "Psalms 4:8",
+      "1 John 1:9"
+    ]
+  },
+  {
+    "day_number": 30,
+    "references": [
+      "Luke 24:29",
+      "Psalms 46:1"
+    ]
+  },
+  {
+    "day_number": 31,
+    "references": [
+      "1 John 1:9",
+      "Psalms 4:8"
+    ]
+  },
+  {
+    "day_number": 32,
+    "references": [
+      "Matthew 6:11",
+      "Psalms 4:8"
+    ]
+  },
+  {
+    "day_number": 33,
+    "references": [
+      "Psalms 91:4",
+      "Psalms 4:8"
+    ]
+  },
+  {
+    "day_number": 34,
+    "references": [
+      "2 Corinthians 5:21",
+      "Isaiah 61:10"
+    ]
+  },
+  {
+    "day_number": 35,
+    "references": [
+      "Psalms 121:7-8",
+      "John 8:12"
+    ]
+  },
+  {
+    "day_number": 36,
+    "references": [
+      "1 John 1:9",
+      "Psalms 4:8"
+    ]
+  },
+  {
+    "day_number": 37,
+    "references": [
+      "1 John 1:9",
+      "Psalms 91:11-12"
+    ]
+  },
+  {
+    "day_number": 38,
+    "references": [
+      "Romans 8:15"
+    ]
+  },
+  {
+    "day_number": 39,
+    "references": [
+      "Romans 8:15",
+      "Matthew 6:11"
+    ]
+  },
+  {
+    "day_number": 40,
+    "references": [
+      "Matthew 18:20",
+      "James 1:17"
+    ]
+  },
+  {
+    "day_number": 41,
+    "references": [
+      "John 6:35"
+    ]
+  },
+  {
+    "day_number": 42,
+    "references": [
+      "James 1:17",
+      "Luke 14:15"
+    ]
+  },
+  {
+    "day_number": 43,
+    "references": [
+      "James 1:17",
+      "1 Timothy 4:4-5"
+    ]
+  },
+  {
+    "day_number": 44,
+    "references": [
+      "John 6:35",
+      "Colossians 3:17"
+    ]
+  },
+  {
+    "day_number": 45,
+    "references": [
+      "1 Timothy 4:4-5"
+    ]
+  },
+  {
+    "day_number": 46,
+    "references": [
+      "Psalms 145:15-16"
+    ]
+  },
+  {
+    "day_number": 47,
+    "references": [
+      "1 Corinthians 10:31",
+      "Colossians 3:17"
+    ]
+  },
+  {
+    "day_number": 48,
+    "references": [
+      "Colossians 3:17"
+    ]
+  },
+  {
+    "day_number": 49,
+    "references": [
+      "1 Thessalonians 5:18"
+    ]
+  },
+  {
+    "day_number": 50,
+    "references": [
+      "Psalms 23:1"
+    ]
+  },
+  {
+    "day_number": 51,
+    "references": [
+      "1 Timothy 4:4-5"
+    ]
+  },
+  {
+    "day_number": 52,
+    "references": [
+      "Hebrews 13:5",
+      "1 John 1:9"
+    ]
+  },
+  {
+    "day_number": 53,
+    "references": [
+      "Deuteronomy 8:3",
+      "John 6:35"
+    ]
+  },
+  {
+    "day_number": 54,
+    "references": [
+      "Psalms 136:1"
+    ]
+  },
+  {
+    "day_number": 55,
+    "references": [
+      "Psalms 103:1-2"
+    ]
+  },
+  {
+    "day_number": 56,
+    "references": [
+      "James 1:17",
+      "Colossians 3:17"
+    ]
+  },
+  {
+    "day_number": 57,
+    "references": [
+      "Psalms 145:15-16",
+      "James 2:15-16"
+    ]
+  },
+  {
+    "day_number": 58,
+    "references": [
+      "Colossians 3:17",
+      "James 1:22"
+    ]
+  },
+  {
+    "day_number": 59,
+    "references": [
+      "Ephesians 5:20"
+    ]
+  },
+  {
+    "day_number": 60,
+    "references": [
+      "Matthew 6:11",
+      "John 6:35"
+    ]
+  },
+  {
+    "day_number": 61,
+    "references": [
+      "Psalms 145:9",
+      "Psalms 103:1-2"
+    ]
+  },
+  {
+    "day_number": 62,
+    "references": [
+      "Matthew 14:30"
+    ]
+  },
+  {
+    "day_number": 63,
+    "references": [
+      "Mark 10:47-52"
+    ]
+  },
+  {
+    "day_number": 64,
+    "references": [
+      "James 5:14-15",
+      "Mark 10:13-16"
+    ]
+  },
+  {
+    "day_number": 65,
+    "references": [
+      "2 Corinthians 12:9-10"
+    ]
+  },
+  {
+    "day_number": 66,
+    "references": [
+      "Romans 8:28"
+    ]
+  },
+  {
+    "day_number": 67,
+    "references": [
+      "Psalms 34:17-18"
+    ]
+  },
+  {
+    "day_number": 68,
+    "references": [
+      "James 5:14-15"
+    ]
+  },
+  {
+    "day_number": 69,
+    "references": [
+      "Psalms 34:18",
+      "James 5:14-15"
+    ]
+  },
+  {
+    "day_number": 70,
+    "references": [
+      "Psalms 57:1",
+      "Psalms 46:1"
+    ]
+  },
+  {
+    "day_number": 71,
+    "references": [
+      "1 Peter 1:18-19",
+      "Psalms 46:1"
+    ]
+  },
+  {
+    "day_number": 72,
+    "references": [
+      "Psalms 73:28"
+    ]
+  },
+  {
+    "day_number": 73,
+    "references": [
+      "Matthew 9:12",
+      "James 5:14-15"
+    ]
+  },
+  {
+    "day_number": 74,
+    "references": [
+      "James 5:14-15"
+    ]
+  },
+  {
+    "day_number": 75,
+    "references": [
+      "Revelation 21:23",
+      "John 14:6"
+    ]
+  },
+  {
+    "day_number": 76,
+    "references": [
+      "Matthew 18:3-4",
+      "Psalms 121:8"
+    ]
+  },
+  {
+    "day_number": 77,
+    "references": [
+      "Psalms 23:1-3",
+      "John 10:11"
+    ]
+  },
+  {
+    "day_number": 78,
+    "references": [
+      "James 1:17",
+      "1 Timothy 6:6-8"
+    ]
+  },
+  {
+    "day_number": 79,
+    "references": [
+      "John 8:12"
+    ]
+  },
+  {
+    "day_number": 80,
+    "references": [
+      "Psalms 73:24",
+      "John 14:2-3"
+    ]
+  },
+  {
+    "day_number": 81,
+    "references": [
+      "James 1:17",
+      "Psalms 51:10"
+    ]
+  },
+  {
+    "day_number": 82,
+    "references": [
+      "John 14:26"
+    ]
+  },
+  {
+    "day_number": 83,
+    "references": [
+      "Hebrews 10:24-25"
+    ]
+  },
+  {
+    "day_number": 84,
+    "references": [
+      "Luke 8:15",
+      "James 1:22"
+    ]
+  },
+  {
+    "day_number": 85,
+    "references": [
+      "2 Timothy 4:2",
+      "John 14:26"
+    ]
+  },
+  {
+    "day_number": 86,
+    "references": [
+      "1 Corinthians 3:6-7"
+    ]
+  },
+  {
+    "day_number": 87,
+    "references": [
+      "Proverbs 2:1-6",
+      "Colossians 3:23"
+    ]
+  },
+  {
+    "day_number": 88,
+    "references": [
+      "James 1:22",
+      "2 Timothy 4:1"
+    ]
+  },
+  {
+    "day_number": 89,
+    "references": [
+      "Luke 8:11-15"
+    ]
+  },
+  {
+    "day_number": 90,
+    "references": [
+      "2 Corinthians 13:14",
+      "Ephesians 4:3-6"
+    ]
+  },
+  {
+    "day_number": 91,
+    "references": [
+      "1 Samuel 3:9-10"
+    ]
+  },
+  {
+    "day_number": 92,
+    "references": [
+      "Colossians 3:16",
+      "John 14:23"
+    ]
+  },
+  {
+    "day_number": 93,
+    "references": [
+      "Psalms 121:8",
+      "Colossians 3:17"
+    ]
+  },
+  {
+    "day_number": 94,
+    "references": [
+      "Ephesians 1:5",
+      "Romans 12:1"
+    ]
+  },
+  {
+    "day_number": 95,
+    "references": [
+      "Colossians 3:16",
+      "James 1:22"
+    ]
+  },
+  {
+    "day_number": 96,
+    "references": [
+      "John 3:16",
+      "Luke 2:10-11"
+    ]
+  },
+  {
+    "day_number": 97,
+    "references": [
+      "Luke 2:11",
+      "Psalms 65:11"
+    ]
+  },
+  {
+    "day_number": 98,
+    "references": [
+      "Luke 2:4-7",
+      "Ephesians 3:17"
+    ]
+  },
+  {
+    "day_number": 99,
+    "references": [
+      "Luke 2:7",
+      "John 1:14"
+    ]
+  },
+  {
+    "day_number": 100,
+    "references": [
+      "Luke 2:10-11",
+      "Isaiah 9:6"
+    ]
+  },
+  {
+    "day_number": 101,
+    "references": [
+      "Luke 2:11",
+      "Ephesians 3:17"
+    ]
+  },
+  {
+    "day_number": 102,
+    "references": [
+      "John 15:4-5"
+    ]
+  },
+  {
+    "day_number": 103,
+    "references": [
+      "1 Corinthians 15:3-4",
+      "Hebrews 7:25"
+    ]
+  },
+  {
+    "day_number": 104,
+    "references": [
+      "John 1:29",
+      "Philippians 2:5"
+    ]
+  },
+  {
+    "day_number": 105,
+    "references": [
+      "Ephesians 2:10",
+      "Philippians 2:5"
+    ]
+  },
+  {
+    "day_number": 106,
+    "references": [
+      "Mark 10:13-16",
+      "John 14:2-3"
+    ]
+  },
+  {
+    "day_number": 107,
+    "references": [
+      "Galatians 5:22-23",
+      "John 14:26"
+    ]
+  },
+  {
+    "day_number": 108,
+    "references": [
+      "Philippians 2:6-11",
+      "Luke 2:7"
+    ]
+  },
+  {
+    "day_number": 109,
+    "references": [
+      "Ephesians 6:1-4",
+      "Colossians 3:20-21"
+    ]
+  },
+  {
+    "day_number": 110,
+    "references": [
+      "Proverbs 2:1-6",
+      "James 3:1"
+    ]
+  },
+  {
+    "day_number": 111,
+    "references": [
+      "1 Peter 5:2-4",
+      "2 Timothy 4:2"
+    ]
+  },
+  {
+    "day_number": 112,
+    "references": [
+      "Psalms 23:4",
+      "John 14:1-3"
+    ]
+  },
+  {
+    "day_number": 113,
+    "references": [
+      "Matthew 6:9-13"
+    ]
+  },
+  {
+    "day_number": 114,
+    "references": [
+      "Psalms 23:1-6"
+    ]
+  },
+  {
+    "day_number": 115,
+    "references": [
+      "Revelation 5:13",
+      "2 Corinthians 13:14"
+    ]
+  }
+]
+$plan310_refs$::jsonb) loop
+    select id into strict target_day_id
+    from public.devotional_days
+    where plan_id = '90000000-0000-0000-0000-000000000310'::uuid
+      and day_number = (item ->> 'day_number')::integer;
+    update public.scripture_references
+    set reference = array(select jsonb_array_elements_text(item -> 'references')),
+        updated_at = now()
+    where day_id = target_day_id and user_id is null;
+    if not found then
+      insert into public.scripture_references (user_id, day_id, reference, created_at, updated_at)
+      values (null, target_day_id,
+              array(select jsonb_array_elements_text(item -> 'references')),
+              now(), now());
+    end if;
+  end loop;
+end
+$$;
+
+-- The restored historical references for plan 283 need review against its
+-- newly written prayers. Keep that plan draft until its daily anchors are reviewed.
+-- Republish five reviewed devotional adaptations.
 update public.devotional_plans
 set status = 'published', updated_at = now()
 where id in (
-  '90000000-0000-0000-0000-000000000283'::uuid,
-  '90000000-0000-0000-0000-000000000310'::uuid,
   '90000000-0000-0000-0000-000000000373'::uuid,
+  '90000000-0000-0000-0000-000000000310'::uuid,
   '90000000-0000-0000-0000-000000000374'::uuid,
   '90000000-0000-0000-0000-000000000393'::uuid,
   '90000000-0000-0000-0000-000000000397'::uuid
@@ -7314,16 +7986,15 @@ declare
   present_days integer;
   first_day integer;
   last_day integer;
-  source_link text;
   reported_total integer;
 begin
-  select source_url, total_days into source_link, reported_total
+  select total_days into reported_total
   from public.devotional_plans where id = '90000000-0000-0000-0000-000000000248'::uuid;
   if not found then
     raise exception 'Plan 248 is missing';
   end if;
-  if source_link is distinct from 'https://www.gutenberg.org/ebooks/25141' or reported_total <> 27 then
-    raise exception 'Plan 248 source URL or total_days differs from the reviewed seed';
+  if reported_total <> 27 then
+    raise exception 'Plan 248 total_days differs from the reviewed plan';
   end if;
   select count(*), min(day_number), max(day_number)
   into present_days, first_day, last_day
@@ -7882,16 +8553,15 @@ declare
   present_days integer;
   first_day integer;
   last_day integer;
-  matching_source text;
   reported_total integer;
 begin
-  select source_url, total_days into matching_source, reported_total
+  select total_days into reported_total
   from public.devotional_plans where id = '90000000-0000-0000-0000-000000000253'::uuid;
   if not found then
     raise exception 'Plan 253 is missing';
   end if;
-  if matching_source is distinct from 'https://www.gutenberg.org/ebooks/21997' or reported_total <> 29 then
-    raise exception 'Plan 253 source URL or total_days differs from the reviewed seed';
+  if reported_total <> 29 then
+    raise exception 'Plan 253 total_days differs from the reviewed plan';
   end if;
   select count(*), min(day_number), max(day_number) into present_days, first_day, last_day
   from public.devotional_days where plan_id = '90000000-0000-0000-0000-000000000253'::uuid;
@@ -8514,16 +9184,15 @@ declare
   present_days integer;
   first_day integer;
   last_day integer;
-  source_link text;
   reported_total integer;
 begin
-  select source_url, total_days into source_link, reported_total
+  select total_days into reported_total
   from public.devotional_plans where id = '90000000-0000-0000-0000-000000000264'::uuid;
   if not found then
     raise exception 'Plan 264 is missing';
   end if;
-  if source_link is distinct from 'https://www.gutenberg.org/ebooks/48247' or reported_total <> 16 then
-    raise exception 'Plan 264 source URL or total_days differs from the reviewed source';
+  if reported_total <> 16 then
+    raise exception 'Plan 264 total_days differs from the reviewed plan';
   end if;
   select count(*), min(day_number), max(day_number) into present_days, first_day, last_day
   from public.devotional_days where plan_id = '90000000-0000-0000-0000-000000000264'::uuid;
@@ -9176,17 +9845,16 @@ declare
   present_days integer;
   first_day integer;
   last_day integer;
-  source_link text;
   reported_total integer;
 begin
-  select source_url, total_days into source_link, reported_total
+  select total_days into reported_total
   from public.devotional_plans
   where id = '90000000-0000-0000-0000-000000000268'::uuid;
   if not found then
     raise exception 'Plan 268 is missing';
   end if;
-  if source_link is distinct from 'https://www.gutenberg.org/ebooks/1911' or reported_total is distinct from 18 then
-    raise exception 'Plan 268 source URL or total_days differs from the reviewed source';
+  if reported_total is distinct from 18 then
+    raise exception 'Plan 268 total_days differs from the reviewed plan';
   end if;
   select count(*), min(day_number), max(day_number)
   into present_days, first_day, last_day
@@ -9616,17 +10284,16 @@ declare
   present_days integer;
   first_day integer;
   last_day integer;
-  source_link text;
   reported_total integer;
 begin
-  select source_url, total_days into source_link, reported_total
+  select total_days into reported_total
   from public.devotional_plans
   where id = '90000000-0000-0000-0000-000000000282'::uuid;
   if not found then
     raise exception 'Plan 282 is missing';
   end if;
-  if source_link is distinct from 'https://www.gutenberg.org/ebooks/11435' or reported_total is distinct from 27 then
-    raise exception 'Plan 282 source URL or total_days differs from reviewed source';
+  if reported_total is distinct from 27 then
+    raise exception 'Plan 282 total_days differs from the reviewed plan';
   end if;
   select count(*), min(day_number), max(day_number)
   into present_days, first_day, last_day
@@ -10222,16 +10889,14 @@ declare
   first_day integer;
   last_day integer;
   distinct_days integer;
-  source_link text;
   reported_total integer;
 begin
-  select source_url, total_days into source_link, reported_total
+  select total_days into reported_total
   from public.devotional_plans
   where id = '90000000-0000-0000-0000-000000000284'::uuid;
   if not found then raise exception 'Plan 284 is missing'; end if;
-  if source_link is distinct from 'https://www.gutenberg.org/ebooks/28104'
-     or reported_total is distinct from 32 then
-    raise exception 'Plan 284 source URL or total_days differs from reviewed source';
+  if reported_total is distinct from 32 then
+    raise exception 'Plan 284 total_days differs from the reviewed plan';
   end if;
   select count(*), min(day_number), max(day_number), count(distinct day_number)
   into present_days, first_day, last_day, distinct_days
@@ -10917,16 +11582,14 @@ declare
   first_day integer;
   last_day integer;
   distinct_days integer;
-  source_link text;
   reported_total integer;
 begin
-  select source_url, total_days into source_link, reported_total
+  select total_days into reported_total
   from public.devotional_plans
   where id = '90000000-0000-0000-0000-000000000285'::uuid;
   if not found then raise exception 'Plan 285 is missing'; end if;
-  if source_link is distinct from 'https://www.gutenberg.org/ebooks/4738'
-     or reported_total is distinct from 12 then
-    raise exception 'Plan 285 source URL or total_days differs from reviewed source';
+  if reported_total is distinct from 12 then
+    raise exception 'Plan 285 total_days differs from the reviewed plan';
   end if;
   select count(*), min(day_number), max(day_number), count(distinct day_number)
   into present_days, first_day, last_day, distinct_days
@@ -11253,16 +11916,14 @@ declare
   first_day integer;
   last_day integer;
   distinct_days integer;
-  source_link text;
   reported_total integer;
 begin
-  select source_url, total_days into source_link, reported_total
+  select total_days into reported_total
   from public.devotional_plans
   where id = '90000000-0000-0000-0000-000000000298'::uuid;
   if not found then raise exception 'Plan 298 is missing'; end if;
-  if source_link is distinct from 'https://www.gutenberg.org/ebooks/60138'
-     or reported_total is distinct from 17 then
-    raise exception 'Plan 298 source URL or total_days differs from reviewed source';
+  if reported_total is distinct from 17 then
+    raise exception 'Plan 298 total_days differs from the reviewed plan';
   end if;
   select count(*), min(day_number), max(day_number), count(distinct day_number)
   into present_days, first_day, last_day, distinct_days
@@ -11678,16 +12339,14 @@ declare
   first_day integer;
   last_day integer;
   distinct_days integer;
-  source_link text;
   reported_total integer;
 begin
-  select source_url, total_days into source_link, reported_total
+  select total_days into reported_total
   from public.devotional_plans
   where id = '90000000-0000-0000-0000-000000000311'::uuid;
   if not found then raise exception 'Plan 311 is missing'; end if;
-  if source_link is distinct from 'https://www.gutenberg.org/ebooks/16423'
-     or reported_total is distinct from 15 then
-    raise exception 'Plan 311 source URL or total_days differs from reviewed source';
+  if reported_total is distinct from 15 then
+    raise exception 'Plan 311 total_days differs from the reviewed plan';
   end if;
   select count(*), min(day_number), max(day_number), count(distinct day_number)
   into present_days, first_day, last_day, distinct_days
@@ -12062,19 +12721,18 @@ begin;
 
 do $$
 declare
-  expected_source text;
   expected_total integer;
   present_days integer;
   first_day integer;
   last_day integer;
   distinct_days integer;
 begin
-  select source_url, total_days into expected_source, expected_total
+  select total_days into expected_total
   from public.devotional_plans
   where id = '90000000-0000-0000-0000-000000000317'::uuid;
   if not found then raise exception 'Plan 317 is missing'; end if;
-  if expected_source is distinct from 'https://www.gutenberg.org/ebooks/15419' or expected_total is distinct from 20 then
-    raise exception 'Plan 317 source URL or total_days differs from reviewed source';
+  if expected_total is distinct from 20 then
+    raise exception 'Plan 317 total_days differs from the reviewed plan';
   end if;
   select count(*), min(day_number), max(day_number), count(distinct day_number)
   into present_days, first_day, last_day, distinct_days
@@ -12533,19 +13191,18 @@ begin;
 
 do $$
 declare
-  current_source text;
   current_total integer;
   row_count integer;
   first_day integer;
   last_day integer;
   unique_days integer;
 begin
-  select source_url, total_days into current_source, current_total
+  select total_days into current_total
   from public.devotional_plans
   where id = '90000000-0000-0000-0000-000000000325'::uuid;
   if not found then raise exception 'Plan 325 is missing'; end if;
-  if current_source is distinct from 'https://www.gutenberg.org/ebooks/62944' or current_total is distinct from 22 then
-    raise exception 'Plan 325 source URL or total_days differs from reviewed source';
+  if current_total is distinct from 22 then
+    raise exception 'Plan 325 total_days differs from the reviewed plan';
   end if;
   select count(*), min(day_number), max(day_number), count(distinct day_number)
   into row_count, first_day, last_day, unique_days
@@ -13044,19 +13701,18 @@ begin;
 
 do $$
 declare
-  current_source text;
   current_total integer;
   day_count integer;
   first_day integer;
   last_day integer;
   unique_days integer;
 begin
-  select source_url, total_days into current_source, current_total
+  select total_days into current_total
   from public.devotional_plans
   where id = '90000000-0000-0000-0000-000000000328'::uuid;
   if not found then raise exception 'Plan 328 missing'; end if;
-  if current_source is distinct from 'https://www.gutenberg.org/ebooks/13889' or current_total is distinct from 32 then
-    raise exception 'Plan 328 metadata differs from source reviewed for Wave 26';
+  if current_total is distinct from 32 then
+    raise exception 'Plan 328 total_days differs from the plan reviewed for Wave 26';
   end if;
   select count(*), min(day_number), max(day_number), count(distinct day_number)
   into day_count, first_day, last_day, unique_days
@@ -13732,19 +14388,18 @@ begin;
 
 do $$
 declare
-  current_source text;
   current_total integer;
   day_count integer;
   first_day integer;
   last_day integer;
   unique_days integer;
 begin
-  select source_url, total_days into current_source, current_total
+  select total_days into current_total
   from public.devotional_plans
   where id = '90000000-0000-0000-0000-000000000329'::uuid;
   if not found then raise exception 'Plan 329 missing'; end if;
-  if current_source is distinct from 'https://www.gutenberg.org/ebooks/7125' or current_total is distinct from 27 then
-    raise exception 'Plan 329 metadata differs from source reviewed for Wave 27';
+  if current_total is distinct from 27 then
+    raise exception 'Plan 329 total_days differs from the plan reviewed for Wave 27';
   end if;
   select count(*), min(day_number), max(day_number), count(distinct day_number)
   into day_count, first_day, last_day, unique_days
@@ -14330,19 +14985,18 @@ begin;
 
 do $$
 declare
-  current_source text;
   current_total integer;
   day_count integer;
   first_day integer;
   last_day integer;
   unique_days integer;
 begin
-  select source_url, total_days into current_source, current_total
+  select total_days into current_total
   from public.devotional_plans
   where id = '90000000-0000-0000-0000-000000000338'::uuid;
   if not found then raise exception 'Plan 338 missing'; end if;
-  if current_source is distinct from 'https://www.gutenberg.org/ebooks/33649' or current_total is distinct from 11 then
-    raise exception 'Plan 338 metadata differs from source reviewed for Wave 28';
+  if current_total is distinct from 11 then
+    raise exception 'Plan 338 total_days differs from the plan reviewed for Wave 28';
   end if;
   select count(*), min(day_number), max(day_number), count(distinct day_number)
   into day_count, first_day, last_day, unique_days
@@ -14640,18 +15294,17 @@ begin;
 
 do $$
 declare
-  current_source text;
   current_total integer;
   day_count integer;
   first_day integer;
   last_day integer;
   unique_days integer;
 begin
-  select source_url, total_days into current_source, current_total
+  select total_days into current_total
   from public.devotional_plans where id = '90000000-0000-0000-0000-000000000342'::uuid;
   if not found then raise exception 'Plan 342 missing'; end if;
-  if current_source is distinct from 'https://www.gutenberg.org/ebooks/75031' or current_total is distinct from 27 then
-    raise exception 'Plan 342 source URL or total days differs from Wave 29 review';
+  if current_total is distinct from 27 then
+    raise exception 'Plan 342 total_days differs from the Wave 29 review';
   end if;
   select count(*), min(day_number), max(day_number), count(distinct day_number)
   into day_count, first_day, last_day, unique_days
@@ -15237,7 +15890,6 @@ begin;
 
 do $$
 declare
-  current_source text;
   current_total integer;
   day_count integer;
   first_day integer;
@@ -15245,11 +15897,11 @@ declare
   unique_days integer;
   duplicates integer;
 begin
-  select source_url, total_days into current_source, current_total
+  select total_days into current_total
   from public.devotional_plans where id = '90000000-0000-0000-0000-000000000355'::uuid;
   if not found then raise exception 'Plan 355 missing'; end if;
-  if current_source is distinct from 'https://www.gutenberg.org/ebooks/31177' or current_total is distinct from 27 then
-    raise exception 'Plan 355 source URL or total days differs from Wave 30 review';
+  if current_total is distinct from 27 then
+    raise exception 'Plan 355 total_days differs from the Wave 30 review';
   end if;
   select count(*), min(day_number), max(day_number), count(distinct day_number)
   into day_count, first_day, last_day, unique_days
@@ -15848,7 +16500,6 @@ begin;
 
 do $$
 declare
-  current_source text;
   current_total integer;
   day_count integer;
   first_day integer;
@@ -15856,11 +16507,11 @@ declare
   unique_days integer;
   duplicates integer;
 begin
-  select source_url, total_days into current_source, current_total
+  select total_days into current_total
   from public.devotional_plans where id = '90000000-0000-0000-0000-000000000362'::uuid;
   if not found then raise exception 'Plan 362 missing'; end if;
-  if current_source is distinct from 'https://www.gutenberg.org/ebooks/24153' or current_total is distinct from 30 then
-    raise exception 'Plan 362 source URL or total days differs from Wave 31 review';
+  if current_total is distinct from 30 then
+    raise exception 'Plan 362 total_days differs from the Wave 31 review';
   end if;
   select count(*), min(day_number), max(day_number), count(distinct day_number)
   into day_count, first_day, last_day, unique_days
@@ -16510,7 +17161,6 @@ begin;
 
 do $$
 declare
-  current_source text;
   current_total integer;
   day_count integer;
   first_day integer;
@@ -16518,11 +17168,11 @@ declare
   unique_days integer;
   duplicates integer;
 begin
-  select source_url, total_days into current_source, current_total
+  select total_days into current_total
   from public.devotional_plans where id = '90000000-0000-0000-0000-000000000367'::uuid;
   if not found then raise exception 'Plan 367 missing'; end if;
-  if current_source is distinct from 'https://www.gutenberg.org/ebooks/49145' or current_total is distinct from 19 then
-    raise exception 'Plan 367 source URL or total days differs from Wave 32 review';
+  if current_total is distinct from 19 then
+    raise exception 'Plan 367 total_days differs from the Wave 32 review';
   end if;
   select count(*), min(day_number), max(day_number), count(distinct day_number)
   into day_count, first_day, last_day, unique_days
@@ -16975,10 +17625,10 @@ DECLARE n integer;
 BEGIN
   PERFORM 1 FROM public.devotional_plans
    WHERE id = '90000000-0000-0000-0000-000000000367'::uuid
-     AND source_url = 'https://www.gutenberg.org/ebooks/49145' AND total_days = 19
+     AND total_days = 19
    FOR UPDATE;
   IF NOT FOUND THEN
-    RAISE EXCEPTION 'Wave 47: Plan 367 missing or source_url / total_days mismatch';
+    RAISE EXCEPTION 'Wave 47: Plan 367 missing or total_days mismatch';
   END IF;
   SELECT count(*) INTO n FROM public.devotional_days
     WHERE plan_id='90000000-0000-0000-0000-000000000367'::uuid;
@@ -17180,7 +17830,7 @@ BEGIN
     ]
   }
 ]$wave47_payload$::jsonb)
-      AS x(day_number integer,title text,content text,references jsonb)) <> 19 THEN
+      AS x(day_number integer,title text,content text,"references" jsonb)) <> 19 THEN
      RAISE EXCEPTION 'Wave 47 payload row count invalid';
   END IF;
   FOR e IN
@@ -17357,11 +18007,11 @@ BEGIN
     ]
   }
 ]$wave47_payload$::jsonb)
-      AS x(day_number integer,title text,content text,references jsonb)
+      AS x(day_number integer,title text,content text,"references" jsonb)
     ORDER BY day_number
   LOOP
     IF e.day_number NOT BETWEEN 1 AND 19 OR e.title IS NULL OR e.content IS NULL
-       OR jsonb_typeof(e.references) <> 'array' OR jsonb_array_length(e.references) <> 2
+       OR jsonb_typeof(e."references") <> 'array' OR jsonb_array_length(e."references") <> 2
        OR e.content NOT LIKE '%<strong>Read:</strong>%'
        OR e.content NOT LIKE '%<strong>Prayer:</strong>%' THEN
       RAISE EXCEPTION 'Wave 47 malformed daily payload: %', e.day_number;
@@ -17377,11 +18027,11 @@ BEGIN
     IF ref_count > 1 THEN RAISE EXCEPTION 'Wave 47 duplicate global reference, day %', e.day_number; END IF;
     IF ref_count = 1 THEN
       UPDATE public.scripture_references r
-      SET reference=ARRAY(SELECT jsonb_array_elements_text(e.references)), updated_at=now()
+      SET reference=ARRAY(SELECT jsonb_array_elements_text(e."references")), updated_at=now()
       WHERE r.day_id=v_day_id AND r.user_id IS NULL;
     ELSE
       INSERT INTO public.scripture_references(user_id,day_id,reference,created_at,updated_at)
-       VALUES(NULL,v_day_id,ARRAY(SELECT jsonb_array_elements_text(e.references)),now(),now());
+       VALUES(NULL,v_day_id,ARRAY(SELECT jsonb_array_elements_text(e."references")),now(),now());
     END IF;
   END LOOP;
 END
@@ -17430,9 +18080,8 @@ DECLARE n int;
 BEGIN
   PERFORM 1 FROM public.devotional_plans WHERE
    id='90000000-0000-0000-0000-000000000362'::uuid
-   AND source_url='https://www.gutenberg.org/ebooks/24153'
    AND total_days=30 FOR UPDATE;
-  IF NOT FOUND THEN RAISE EXCEPTION 'Wave 48: plan 362 absent or identity/source/day total mismatch'; END IF;
+  IF NOT FOUND THEN RAISE EXCEPTION 'Wave 48: plan 362 absent or day total mismatch'; END IF;
   SELECT count(*) INTO n FROM public.devotional_days WHERE plan_id='90000000-0000-0000-0000-000000000362'::uuid;
   IF n<>30 OR (SELECT count(DISTINCT day_number) FROM public.devotional_days
     WHERE plan_id='90000000-0000-0000-0000-000000000362'::uuid)<>30
@@ -18065,7 +18714,6 @@ DO $review49$
 DECLARE
   v_plan constant uuid := '90000000-0000-0000-0000-000000000355'::uuid;
   v_days jsonb := $wave49_payload$[{"day_number":1,"title":"Seeking Unity without Erasing Difference","content":"<p><strong>Read:</strong> Ephesians 4:1-6; 1 Corinthians 14:40</p><p><strong>Source and historical context:</strong> On January 17, 1880, a group of Anglican clergy and students of ritual began discussions at All Saints, Margaret Street, London, about differences in practice among churches seeking to maintain Catholic doctrine and usage within the Church of England. The conference continued in 1880–1881 and published its agreed interpretations as Ritual Conformity in 1881, signed by chairman B. Compton and other participants. The comments were offered as proposals rather than binding rulings of the whole Church of England.</p><p><strong>Devotional focus:</strong> Order can serve love when it helps a congregation pray together. Yet sameness is not the same as unity, and Christians may worship faithfully through different traditions. Paul urges patience, gentleness, and a common commitment to peace. One worthy goal of a worship discussion is to help the whole body honor God while recognizing that sincere Christians may disagree about which practices best serve that goal.</p><p><strong>Reflect:</strong> When have I confused my preferred way of worship with the measure of another person’s faith?</p><p><strong>Practice:</strong> Listen to someone from a different church tradition. Ask what helps them pray, without starting a debate.</p><p><strong>Prayer:</strong> God of peace, teach us to cherish truth with humility and to seek unity without contempt. Amen.</p>","references":["Ephesians 4:1-6","1 Corinthians 14:40"]},{"day_number":2,"title":"Faithful Discernment Takes Patient Study","content":"<p><strong>Read:</strong> Proverbs 15:22; Colossians 3:16-17</p><p><strong>Source and historical context:</strong> The conference explained that its interpretations came from research, experience in parish ministry, and discussions requiring broad agreement. It traced key Prayer Book texts through the editions of 1549, 1552, and 1662, and noted later calendar changes, including those of 1871. Its interpreters cautioned that the rubrics use the technical language of their own periods.</p><p><strong>Devotional focus:</strong> No one participant knows everything. When questions about worship become difficult, we need careful listening, knowledge of the past, and attention to the needs of present congregations. Scripture invites believers to teach and admonish one another with wisdom. Patience can guard against careless changes while also keeping inherited interpretations open to responsible historical and pastoral examination.</p><p><strong>Reflect:</strong> Whose experience should I seek before deciding what is best for a community?</p><p><strong>Practice:</strong> Before arguing about a church practice, read its background and invite a thoughtful question from someone affected by it.</p><p><strong>Prayer:</strong> Lord, give me wisdom that welcomes correction and counsel that serves others well. Amen.</p>","references":["Proverbs 15:22","Colossians 3:16-17"]},{"day_number":3,"title":"Let Seasons Teach Us to Remember","content":"<p><strong>Read:</strong> Ecclesiastes 3:1-8; Romans 14:5-6</p><p><strong>Source and historical context:</strong> This segment lists the precedence of church festivals when holy days overlap. It also distinguishes periods of fasting and abstinence within a historical Anglican calendar, including Lent, Ember days, Rogation days, and Fridays.</p><p><strong>Devotional focus:</strong> For communities that observe it, a church calendar can set aside times to remember Christ’s coming, suffering, and resurrection, while making room for prayer and service. Romans 14 addresses believers who differ over the observance of days and other matters of conscience; it counsels respect, although it does not directly settle a nineteenth-century Anglican calendar dispute. The value of a season lies in the gratitude, repentance, and care it nurtures, not in perfect mastery of a complicated timetable.</p><p><strong>Reflect:</strong> What season or sacred moment could help me attend more carefully to God?</p><p><strong>Practice:</strong> Choose one upcoming Christian observance and learn its meaning. Consider one simple act of prayer or generosity connected to it.</p><p><strong>Prayer:</strong> God of all our days, help the rhythms of worship direct our hearts toward you and our neighbors. Amen.</p>","references":["Ecclesiastes 3:1-8","Romans 14:5-6"]},{"day_number":4,"title":"A Place Prepared for People","content":"<p><strong>Read:</strong> 1 Peter 2:4-5; James 2:1-4</p><p><strong>Source and historical context:</strong> The guide discusses where morning and evening prayer should be offered, the architecture of chancels, and church ornaments linked to sixteenth-century Anglican law. It also acknowledges that elaborate ritual may be impractical in some parishes and that the circumstances of worshippers should shape the introduction of unfamiliar practices.</p><p><strong>Devotional focus:</strong> Buildings, furnishings, and vestments can carry memory and beauty, but they are not the living heart of the church. Peter calls believers living stones, and James warns against allowing visible status to determine whom we honor. A well-prepared worship space should serve prayer and participation; accessibility and equal regard for worshippers are present-day pastoral applications rather than requirements stated by the Victorian conference.</p><p><strong>Reflect:</strong> Do our worship spaces make visitors, people with disabilities, and those with little money feel welcome?</p><p><strong>Practice:</strong> Notice one barrier to participation in a worship space and suggest a practical, respectful improvement.</p><p><strong>Prayer:</strong> Lord Jesus, build us into a welcoming people whose reverence makes room for everyone. Amen.</p>","references":["1 Peter 2:4-5","James 2:1-4"]},{"day_number":5,"title":"Let the Word Be Heard Clearly","content":"<p><strong>Read:</strong> Nehemiah 8:1-8; 1 Corinthians 14:9</p><p><strong>Source and historical context:</strong> After discussing the colors of historic church vestments, the authors turn to Morning Prayer. They distinguish between reading, saying, and singing Scripture, and ask how the congregation will best hear and understand the opening sentences.</p><p><strong>Devotional focus:</strong> Music and ceremony can deepen attention, but clarity matters more than display. At the public reading of the Law in Nehemiah, the people were helped to understand what they heard. In 1 Corinthians 14, Paul is specifically arguing that speech in the gathered church must be understandable if it is to build others up. Whether a passage is spoken or sung, love asks that it be audible, intelligible, and accessible to the community.</p><p><strong>Reflect:</strong> Could someone unfamiliar with our worship actually understand the words being spoken?</p><p><strong>Practice:</strong> Read a short Bible passage aloud at a comfortable pace, then share its meaning in plain language.</p><p><strong>Prayer:</strong> Speaking God, let your word reach our ears and shape our actions. Amen.</p>","references":["Nehemiah 8:1-8","1 Corinthians 14:9"]},{"day_number":6,"title":"Confession Is Something We Share","content":"<p><strong>Read:</strong> 1 John 1:8-9; Psalm 51:10-12</p><p><strong>Source and historical context:</strong> The rubrical notes explain why the congregation repeats a general confession after the minister and discusses the shared response “Amen.” The authors also describe how the Lord’s Prayer, psalms, and other responses are voiced by the worshipping assembly.</p><p><strong>Devotional focus:</strong> Shared confession is not meant to single out the most vulnerable or invite public humiliation. It gives the assembly words for acknowledging sin and seeking grace, without implying that each person has committed the same wrongs or must disclose private experiences publicly. When we say “Amen” to a prayer, we take part rather than leaving worship to a leader. Forgiveness opens a path toward honesty and repair; it should not become pressure to disclose private experiences without consent or safety.</p><p><strong>Reflect:</strong> Where do I need to exchange defensiveness for truthful, humble prayer?</p><p><strong>Practice:</strong> Pray Psalm 51 slowly. If you have harmed someone, consider a safe and specific step toward making amends.</p><p><strong>Prayer:</strong> Merciful God, meet our confession with grace and help our words become changed lives. Amen.</p>","references":["1 John 1:8-9","Psalm 51:10-12"]},{"day_number":7,"title":"A Community That Listens to Scripture","content":"<p><strong>Read:</strong> 2 Timothy 3:16-17; Luke 24:27-32</p><p><strong>Source and historical context:</strong> The guide sets out when the appointed psalms and Bible lessons may be changed and explains how Scripture readings, responses, and the Lord’s Prayer fit together in Morning Prayer. It treats regular listening to the full range of Scripture as a communal discipline.</p><p><strong>Devotional focus:</strong> It is easy to return only to the verses we already enjoy. A regular pattern of reading can introduce voices, questions, and promises we might otherwise miss. Christians read both Testaments in community; a regular pattern can help them attend to passages in their own contexts rather than only to passages that confirm familiar assumptions. The practice should lead toward understanding, not merely the completion of a reading schedule.</p><p><strong>Reflect:</strong> Which part of Scripture have I avoided because it seems unfamiliar or difficult?</p><p><strong>Practice:</strong> Read a passage outside your usual favorites, then write one honest question you would like to explore.</p><p><strong>Prayer:</strong> Lord, open our minds to your word and make us willing listeners. Amen.</p>","references":["2 Timothy 3:16-17","Luke 24:27-32"]},{"day_number":8,"title":"Songs of Hope at the Close of Day","content":"<p><strong>Read:</strong> Luke 1:46-55; Luke 2:25-32</p><p><strong>Source and historical context:</strong> The notes on Evening Prayer recommend retaining the Magnificat and the Nunc Dimittis whenever possible. They also discuss litanies, set prayers, and how congregations may remember specific people in common intercession.</p><p><strong>Devotional focus:</strong> Mary’s song celebrates God’s mercy to the lowly and recalls his promise to Israel; Simeon speaks of salvation prepared before all peoples, a light for the nations and glory for Israel. These biblical prayers can teach us how to end a day: not by pretending all is well, but by remembering what God has done and holding the world in hope. Shared intercession makes space for needs beyond our own.</p><p><strong>Reflect:</strong> What part of today needs to be entrusted to God in gratitude or sorrow?</p><p><strong>Practice:</strong> Pray the Magnificat or Nunc Dimittis this evening. Include one neighbor or community concern in your prayer.</p><p><strong>Prayer:</strong> Faithful God, gather our joys and griefs into the light of Christ. Amen.</p>","references":["Luke 1:46-55","Luke 2:25-32"]},{"day_number":9,"title":"Thanksgiving That Leads to Repair","content":"<p><strong>Read:</strong> Psalm 100:1-5; Matthew 5:23-24</p><p><strong>Source and historical context:</strong> The guide distinguishes the General Thanksgiving from particular thanksgivings, including a rubric that envisages the presence of those giving thanks. It then turns to preparation for Holy Communion, including the expectation that those who have seriously harmed others should seek reconciliation and make restitution where possible.</p><p><strong>Devotional focus:</strong> Gratitude is more than a pleasant feeling. Remembering God’s goodness can lead us to notice what we owe one another in honesty and care. Jesus connects worship with the work of reconciliation. Reconciliation may take time and must not require unsafe contact or override another person’s boundaries. A person who has caused harm can still pursue accountability and restitution where appropriate.</p><p><strong>Reflect:</strong> Is there a relationship or obligation I have avoided while asking God to bless my worship?</p><p><strong>Practice:</strong> Give thanks for one mercy today, then take one safe, proportionate action to correct a wrong or honor a neglected commitment.</p><p><strong>Prayer:</strong> God of mercy, make our thanks sincere and our repentance practical. Amen.</p>","references":["Psalm 100:1-5","Matthew 5:23-24"]},{"day_number":10,"title":"Sacred Space Is for Shared Worship","content":"<p><strong>Read:</strong> Hebrews 10:24-25; Luke 22:24-27</p><p><strong>Source and historical context:</strong> The writers compare church customs for positioning the communion table, the minister, and attendants. Their discussion engages historic English practice, the north side of the Lord’s Table and disputed interpretations of where the minister should stand; the conference’s conclusions were not a settled rule for all Anglicans.</p><p><strong>Devotional focus:</strong> Different traditions understand these arrangements differently. Across these differences, communities can ask whether their space supports worship, shared participation, and care, without reducing every tradition’s Eucharistic theology to remembrance alone. The Lord placed service, not ceremonial prestige, at the center of leadership. Reverence should strengthen fellowship rather than make worshippers feel that they are merely an audience.</p><p><strong>Reflect:</strong> In our gatherings, whose needs are considered when arrangements are made?</p><p><strong>Practice:</strong> Ask a fellow worshipper what helps them feel able to participate, and carry one suggestion to a responsible leader.</p><p><strong>Prayer:</strong> Servant King, keep our worship centered on your welcome and teach us to serve rather than seek importance. Amen.</p>","references":["Hebrews 10:24-25","Luke 22:24-27"]},{"day_number":11,"title":"Worship Leaders Serve the Congregation","content":"<p><strong>Read:</strong> 1 Corinthians 14:26; Mark 10:42-45</p><p><strong>Source and historical context:</strong> The guide cautions clergy that private devotional actions should not interrupt the public Communion rite or prevent the congregation from following its appointed order. It goes on to discuss public prayers, Bible readings, the Gospel, and church announcements.</p><p><strong>Devotional focus:</strong> Christian leadership carries responsibility for other people’s time, attention, and access to worship. Jesus defined greatness through service. Thoughtful preparation can make worship more welcoming, while a leader’s humility allows others to hear Scripture and respond without unnecessary obstacles. This applies beyond churches whenever one person guides a group.</p><p><strong>Reflect:</strong> Does my role in a group make participation easier for others or revolve around my preferences?</p><p><strong>Practice:</strong> If you lead, prepare one activity with participants’ needs in mind. If you attend, thank a person who quietly makes space for others.</p><p><strong>Prayer:</strong> Jesus, shape our leadership after your generosity and patience. Amen.</p>","references":["1 Corinthians 14:26","Mark 10:42-45"]},{"day_number":12,"title":"Preaching and Giving Belong Together","content":"<p><strong>Read:</strong> James 2:14-17; 2 Corinthians 9:6-8</p><p><strong>Source and historical context:</strong> The guide describes the sermon, the collection of alms, and the preparation of bread and wine for Communion. It recalls that offerings were once brought to a single basin and notes the practical needs of larger congregations.</p><p><strong>Devotional focus:</strong> The word proclaimed in worship should shape what a congregation does with its resources. James asks what faith means when a neighbor lacks food or clothing; In 2 Corinthians 9, Paul describes a collection for believers in need and urges willing rather than reluctant or coerced giving. Worshipful generosity protects dignity by serving actual needs rather than seeking attention or controlling recipients.</p><p><strong>Reflect:</strong> How does the faith I hear on Sunday influence my choices about time and money?</p><p><strong>Practice:</strong> Offer a modest contribution or practical help to a trustworthy effort meeting real needs, without expecting praise.</p><p><strong>Prayer:</strong> Generous Lord, join our listening to loving action. Amen.</p>","references":["James 2:14-17","2 Corinthians 9:6-8"]},{"day_number":13,"title":"Prepare the Table with Gratitude","content":"<p><strong>Read:</strong> 1 Corinthians 11:23-26; Luke 22:19-20</p><p><strong>Source and historical context:</strong> The authors discuss the historical practice of mixing a little water with Eucharistic wine, preparing the elements, and allowing sufficient time for a communal confession. These are directions within a particular Anglican liturgical debate, not universal Christian requirements.</p><p><strong>Devotional focus:</strong> In Luke and 1 Corinthians, Jesus gives bread and the cup in relation to his body, blood, and covenant; Paul calls the community to remember and proclaim his death. Christian traditions differ over how Christ is present and how the sacrament conveys grace. Careful preparation can invite attention to that gift, but small ritual details should not obscure the story of Christ’s self-giving love. Those who receive Communion should prepare according to their church’s teaching, with gratitude and serious regard for Christ and fellow worshippers, not as a display of ritual expertise.</p><p><strong>Reflect:</strong> What could help me approach Communion with attentiveness instead of habit or anxiety?</p><p><strong>Practice:</strong> Before your next Communion, read 1 Corinthians 11:23–26 and thank Christ for his generosity.</p><p><strong>Prayer:</strong> Lord Jesus, turn our attention from performance to your love, remembered and shared. Amen.</p>","references":["1 Corinthians 11:23-26","Luke 22:19-20"]},{"day_number":14,"title":"Mercy at the Heart of the Table","content":"<p><strong>Read:</strong> Hebrews 4:14-16; 1 Corinthians 11:28-29</p><p><strong>Source and historical context:</strong> The notes discuss who may lead the confession, how a minister offers words of forgiveness, and where to stand during the prayer of consecration. They also compare historic customs for lifting the bread and chalice.</p><p><strong>Devotional focus:</strong> The setting may vary across churches, yet the deeper invitation remains: examine ourselves with sincerity and come before Christ with trust in his mercy. In 1 Corinthians 11, self-examination accompanies a serious warning against eating and drinking without discerning the body, within a chapter concerned with divisions at the shared meal. It should not be weaponized for public shaming or endless fear. Churches differ over the minister’s words of absolution and their sacramental significance; whatever the practice, it should not obscure repentance, responsibility, mercy, and pastoral care.</p><p><strong>Reflect:</strong> Do I approach God mainly with fear of failure, or with honest trust in his grace?</p><p><strong>Practice:</strong> Read Hebrews 4:14–16 slowly; name one place where you need both accountability and mercy.</p><p><strong>Prayer:</strong> Compassionate Savior, receive us truthfully and lead us toward your healing grace. Amen.</p>","references":["Hebrews 4:14-16","1 Corinthians 11:28-29"]},{"day_number":15,"title":"One Bread, Many People","content":"<p><strong>Read:</strong> 1 Corinthians 10:16-17; Romans 14:19</p><p><strong>Source and historical context:</strong> This section explains gestures at the words of institution and the way people receive Communion. It urges the celebrant not to enforce needless uniformity in the manner of reception when people act reverently.</p><p><strong>Devotional focus:</strong> In 1 Corinthians 10:16–17, Paul speaks of participation in Christ’s body and blood and of believers becoming one body through the one bread; this is more than a lesson about reception technique. Ceremonial customs may differ across churches, but ministers should explain their own community’s practice and make reasonable pastoral accommodations rather than humiliating anyone over a gesture. What matters pastorally is that worshippers are treated with patience, the sacraments are handled responsibly, and people are not turned into spectacles over minor differences.</p><p><strong>Reflect:</strong> When have I focused on another worshipper’s gesture more than on our shared faith?</p><p><strong>Practice:</strong> At your next gathering, choose to encourage one another’s participation rather than critique harmless differences.</p><p><strong>Prayer:</strong> Christ, unite us in gratitude and help us honor one another at your table. Amen.</p>","references":["1 Corinthians 10:16-17","Romans 14:19"]},{"day_number":16,"title":"Prayer Is the Work of the Whole Body","content":"<p><strong>Read:</strong> Acts 2:42-47; 1 Corinthians 12:12-13</p><p><strong>Source and historical context:</strong> After discussing Communion gestures, the guide moves through prayers following Communion, the Gloria, and the number of people needed for a celebration. Its detailed requirements reflect a particular historical discipline.</p><p><strong>Devotional focus:</strong> The early believers prayed, broke bread, and shared life as a community. Acts depicts believers sharing teaching, prayers, fellowship, and material goods; this offers an ethical analogy for mutual participation, not a detailed model of later Communion rubrics. It is the shared response of people with different gifts and needs. We can make room for active participation while respecting how various traditions order their services.</p><p><strong>Reflect:</strong> In what way could I help someone experience worship as belonging rather than observing?</p><p><strong>Practice:</strong> Invite another person to join a prayer, song, reading, or act of service, without pressuring them to participate.</p><p><strong>Prayer:</strong> Holy Spirit, make us attentive members of one body, generous in our welcome. Amen.</p>","references":["Acts 2:42-47","1 Corinthians 12:12-13"]},{"day_number":17,"title":"The Table Should Not Forget the Poor","content":"<p><strong>Read:</strong> 1 Corinthians 11:20-22; James 2:1-5</p><p><strong>Source and historical context:</strong> This segment considers minimum numbers of communicants, the practice of receiving Communion through the church year, and the suitability of bread and wine. The conference argues that the Prayer Book gives the curate no authority to dismiss non-communicants from the church before Communion; that is distinct from the question of who is admitted to receive the sacrament.</p><p><strong>Devotional focus:</strong> Paul rebuked the Corinthian church when its shared meal humiliated those with little. Reverence includes the way people are treated, not only the quality of vessels or ingredients. Whatever a denomination’s rules governing reception, its pastoral care should not turn non-reception, poverty, or disability into an occasion for public humiliation.</p><p><strong>Reflect:</strong> Who might feel left out or ashamed in the way our community practices worship?</p><p><strong>Practice:</strong> Speak with a church leader about one respectful way to support the participation of a person who is overlooked.</p><p><strong>Prayer:</strong> God of the shared table, keep us from dishonoring those whom you love. Amen.</p>","references":["1 Corinthians 11:20-22","James 2:1-5"]},{"day_number":18,"title":"A Welcome Marked with Water","content":"<p><strong>Read:</strong> Matthew 28:18-20; Ephesians 4:4-6</p><p><strong>Source and historical context:</strong> The authors describe the reverent consumption of consecrated elements after Communion and then turn to the public baptism of children. They discuss the font, ministers’ clothing, and the value of baptisms taking place when the congregation can gather.</p><p><strong>Devotional focus:</strong> In Matthew 28, baptism belongs to Jesus’ commission to make disciples; many traditions understand it as a sacrament of incorporation and grace, while others emphasize a believer’s profession of faith. Traditions differ about its recipients and meaning, but all can recognize a call to treat persons with dignity and to take promises of care seriously. Where baptism is celebrated publicly, a congregation can undertake real responsibility to teach, protect, and support the person baptized, in accordance with its tradition.</p><p><strong>Reflect:</strong> What does it mean for my community to welcome and support someone beyond the day of a ceremony?</p><p><strong>Practice:</strong> Offer practical support to a new member, parent, or person exploring faith; ask what would actually be helpful.</p><p><strong>Prayer:</strong> Jesus, make our promises of welcome visible in patient, everyday love. Amen.</p>","references":["Matthew 28:18-20","Ephesians 4:4-6"]},{"day_number":19,"title":"Make Room for the Vulnerable","content":"<p><strong>Read:</strong> Mark 10:13-16; Isaiah 43:1-3</p><p><strong>Source and historical context:</strong> The guide gives detailed rubrics for baptism using water and discusses both public ceremonies and the private baptism of infants who are unwell. Its instructions reflect an Anglican sacramental framework and the medical uncertainties of its time.</p><p><strong>Devotional focus:</strong> In Mark 10, Jesus rebukes those hindering children and welcomes them; Isaiah 43, by contrast, originally addresses God’s covenant people Israel, and should not be recast as a promise of an uncomplicated life to every child. Churches can honor that welcome by taking vulnerability seriously and not treating someone’s illness as a reason for neglect or exclusion. When infants or other vulnerable people are ill, pastoral prayer and any requested rites should accompany, not delay or replace, appropriate medical care. The child and family deserve respect rather than an argument about ceremonial perfection.</p><p><strong>Reflect:</strong> Who needs gentle and practical attention in my community right now?</p><p><strong>Practice:</strong> Ask a parent, caregiver, or person facing illness what support would make their next week more manageable.</p><p><strong>Prayer:</strong> Welcoming Lord, help us protect the vulnerable and make room for their full dignity. Amen.</p>","references":["Mark 10:13-16","Isaiah 43:1-3"]},{"day_number":20,"title":"A Faithful Welcome, Not a Repeated Test","content":"<p><strong>Read:</strong> Acts 8:26-39; Ephesians 2:19-22</p><p><strong>Source and historical context:</strong> These pages explain how clergy assessed whether a child had previously been baptized, followed by ceremonies for children and adults. The writers emphasize valid administration according to the rules of their historical church.</p><p><strong>Devotional focus:</strong> Rules about baptism differ among Christian traditions, and the historical authors spoke from within one of them. Beneath the procedural questions is a human one: how do we receive and accompany someone seeking to belong? In Acts 8, an Ethiopian court official hears Philip explain Scripture and then asks to be baptized. The story is about the gospel moving across boundaries, although it does not establish one universal modern baptismal procedure. A church’s care should extend to understanding, discipleship, and ongoing community.</p><p><strong>Reflect:</strong> Have I made another person feel that belonging depends on passing my private test?</p><p><strong>Practice:</strong> Welcome someone who is exploring faith. Offer to listen to their questions without pressing for a premature commitment.</p><p><strong>Prayer:</strong> Lord Jesus, guide seekers toward truth and give our communities generous hearts. Amen.</p>","references":["Acts 8:26-39","Ephesians 2:19-22"]},{"day_number":21,"title":"Teach the Faith with Patience","content":"<p><strong>Read:</strong> Deuteronomy 6:6-7; 1 Peter 3:15-16</p><p><strong>Source and historical context:</strong> The guide moves from adult baptism to confirmation, catechism, and the preparation of candidates. It then introduces the public notice given before marriage. The authors expect church leaders to take teaching and communal responsibilities seriously.</p><p><strong>Devotional focus:</strong> Faith formation takes time, questions, and relationships. Deuteronomy 6 commands Israel to teach God’s words diligently in daily life; 1 Peter calls believers to explain their hope with gentleness and respect in the setting of suffering and scrutiny. Preparation for major commitments is not simply a checklist of correct answers; it is an opportunity for informed, willing participation and care from the people surrounding us.</p><p><strong>Reflect:</strong> When I teach or advise, do I leave room for honest questions?</p><p><strong>Practice:</strong> Ask a younger believer or new member what they find confusing, and look for an answer together without embarrassment.</p><p><strong>Prayer:</strong> Patient God, help our communities teach faithfully and listen with gentleness. Amen.</p>","references":["Deuteronomy 6:6-7","1 Peter 3:15-16"]},{"day_number":22,"title":"Marriage Promises Deserve Care","content":"<p><strong>Read:</strong> Ephesians 5:21; 1 Corinthians 13:4-7</p><p><strong>Source and historical context:</strong> The marriage section describes where the couple stands, the officiant’s role, vows, the ring, prayers, and other ceremonial details. Some recommendations assume Victorian gender roles and the Church of England’s legal arrangements.</p><p><strong>Devotional focus:</strong> A wedding service should direct attention beyond its beauty to the responsibility of love. Paul calls Christians to mutual care, and 1 Corinthians describes love as patient and kind. Free consent, honesty, safety, and respect are essential pastoral safeguards in marriage. The 1881 rubrics reflect Victorian gender and legal assumptions, and none should be used to justify coercion, unequal human dignity, or concealing abuse.</p><p><strong>Reflect:</strong> What qualities matter most in the commitments I make to people I love?</p><p><strong>Practice:</strong> Talk with someone you trust about how kindness, consent, and faithful accountability appear in real relationships.</p><p><strong>Prayer:</strong> God of faithful love, teach us to honor promises without diminishing another person’s freedom or worth. Amen.</p>","references":["Ephesians 5:21","1 Corinthians 13:4-7"]},{"day_number":23,"title":"Be Present with the Sick and Troubled","content":"<p><strong>Read:</strong> James 5:13-16; Psalm 34:17-18</p><p><strong>Source and historical context:</strong> The guide concludes its notes on marriage and introduces prayers for visiting people who are ill, including a prayer for those troubled in mind or conscience. It discusses pastoral advice, personal prayer, and practical choices about the service.</p><p><strong>Devotional focus:</strong> Illness and distress are not failures of faith. James invites the sick to seek prayer and describes mutual confession, but he does not teach that every illness is caused by personal wrongdoing. Psalm 34 uses the language of the brokenhearted to express God’s care. Religious visitors should bring listening, comfort, and practical help—not pressure, speculation about blame, or promises of a specific outcome. Pastoral prayer belongs alongside sound medical and mental-health support.</p><p><strong>Reflect:</strong> How can I accompany someone who is unwell without assuming I know what they need?</p><p><strong>Practice:</strong> Send a gentle check-in to someone facing illness or anxiety. Offer one specific, optional form of help.</p><p><strong>Prayer:</strong> God of compassion, strengthen the weary and guide us to care with wisdom. Amen.</p>","references":["James 5:13-16","Psalm 34:17-18"]},{"day_number":24,"title":"God Is Near When Communion Is Difficult","content":"<p><strong>Read:</strong> Romans 8:38-39; 2 Corinthians 4:16-18</p><p><strong>Source and historical context:</strong> The Communion of the Sick section addresses serious illness, epidemics, and practical difficulty swallowing bread or wine. A historical Prayer Book rubric gives a particular spiritual assurance to a sick person unable to receive Communion by mouth, explicitly speaking of repentance, faith in Christ’s saving death, remembrance, and thanksgiving; it is not a blanket statement that denominational sacramental teaching is irrelevant.</p><p><strong>Devotional focus:</strong> The bodily limitations of illness can interrupt familiar religious practices. They do not erase a person’s dignity or place in God’s love. Romans 8 promises that no suffering or created power can separate believers from the love of God in Christ; that assurance does not erase legitimate differences about sacramental reception. We can offer prayer and pastoral care with sensitivity to health, personal consent, and denominational practice rather than making fragile bodies carry spiritual guilt.</p><p><strong>Reflect:</strong> Have I unintentionally treated physical limitation as a failure of devotion?</p><p><strong>Practice:</strong> Ask how to include an ill or homebound member in community prayer or fellowship while respecting their health and choices.</p><p><strong>Prayer:</strong> God who stays near, hold us in love when ordinary practices become difficult. Amen.</p>","references":["Romans 8:38-39","2 Corinthians 4:16-18"]},{"day_number":25,"title":"Mourning with Dignity and Hope","content":"<p><strong>Read:</strong> John 11:17-36; Romans 12:15</p><p><strong>Source and historical context:</strong> The guide discusses visits during contagious illness and the burial service. Some historical restrictions concern people who died without baptism, under excommunication, or by suicide; these reflect the church rules and social assumptions of the period.</p><p><strong>Devotional focus:</strong> In John 11:17–36, Jesus speaks of resurrection to Martha, receives Mary’s grief, and weeps; the larger context is needed to support both parts of this sentence. Christian hope does not require families to hide grief, and a person’s death should never be used as an occasion for speculation or shame. Those bereaved by suicide or other painful circumstances deserve compassionate, nonjudgmental care and freedom to lament; a historical rule about use of a burial office must not become a pronouncement about the deceased person’s eternal fate. The historical exclusions described here should not be mistaken for universal judgments about a person’s eternal fate.</p><p><strong>Reflect:</strong> How can I respond to bereavement without rushing to explain or correct someone’s sorrow?</p><p><strong>Practice:</strong> Reach out to a grieving person with a simple message of remembrance or an offer of practical support.</p><p><strong>Prayer:</strong> Christ of resurrection, meet mourners with compassion and sustain hope without silencing grief. Amen.</p>","references":["John 11:17-36","Romans 12:15"]},{"day_number":26,"title":"Prayer Holds Gratitude and Lament Together","content":"<p><strong>Read:</strong> Psalm 116:1-9; Luke 18:9-14</p><p><strong>Source and historical context:</strong> This segment finishes the historical Thanksgiving of Women after Childbirth and proceeds to the Commination prayers for repentance. The notes address prayers after childbirth, including a painful case in which the child has died. This historical liturgical provision should be described without implying that the bereaved parent must give thanks for the death.</p><p><strong>Devotional focus:</strong> Human life is not tidy enough to fit one emotion at a time. Gratitude, exhaustion, relief, guilt, and grief may exist together. Psalm 116 gives thanks for deliverance from mortal peril, while Luke 18 warns against the self-righteous prayer that despises another. Neither text assigns one required emotional response to every childbirth or loss. We can come as we are, asking for mercy without pretending that pain or repentance follows a schedule.</p><p><strong>Reflect:</strong> What feeling have I been told to hide in a moment when I needed prayer?</p><p><strong>Practice:</strong> Pray Psalm 116 thoughtfully, leaving space to name one gratitude and one grief without trying to resolve both today.</p><p><strong>Prayer:</strong> Merciful God, welcome our thanks and our tears, and teach us humility without humiliation. Amen.</p>","references":["Psalm 116:1-9","Luke 18:9-14"]},{"day_number":27,"title":"Let Careful Practice Lead to Love","content":"<p><strong>Read:</strong> Micah 6:8; 1 Corinthians 14:40</p><p><strong>Source and historical context:</strong> The closing notes revisit old legal interpretations of vestments and marriage rubrics and even the proper cleansing of Communion vessels. The authors sought practical consistency across disputes about worship that mattered deeply in their Anglican context.</p><p><strong>Devotional focus:</strong> Details can carry reverence and history. They can also become an endless argument that forgets the people worship is meant to serve. Micah 6:8 calls Israel to justice, covenant kindness, and humble walking with God; 1 Corinthians 14:40 seeks ordered worship in a chapter concerned with intelligible contributions from the gathered church. Thoughtful ritual practice has a place within a tradition when it helps the community worship faithfully, while justice and love remain indispensable ethical responsibilities. Let us take care with traditions while refusing to measure another believer only by ceremonial precision.</p><p><strong>Reflect:</strong> Has attention to religious detail strengthened my love, or displaced it?</p><p><strong>Practice:</strong> Identify one meaningful tradition worth understanding better, and one act of mercy you can put into practice this week.</p><p><strong>Prayer:</strong> God of truth and mercy, let the care we give to worship bear fruit in justice and love. Amen.</p>","references":["Micah 6:8","1 Corinthians 14:40"]}]$wave49_payload$::jsonb;
-  v_src text;
   v_total integer;
   v_day_count integer;
   v_unique_count integer;
@@ -18077,11 +18725,10 @@ DECLARE
   v_refs text[];
   v_global_count integer;
 BEGIN
-  SELECT source_url,total_days INTO v_src,v_total
+  SELECT total_days INTO v_total
   FROM public.devotional_plans WHERE id=v_plan FOR UPDATE;
-  IF NOT FOUND OR v_src IS DISTINCT FROM 'https://www.gutenberg.org/ebooks/31177'
-     OR v_total IS DISTINCT FROM 27 THEN
-    RAISE EXCEPTION 'Wave49 Plan355 preflight failed: plan missing or source/day-count mismatch';
+  IF NOT FOUND OR v_total IS DISTINCT FROM 27 THEN
+    RAISE EXCEPTION 'Wave49 Plan355 preflight failed: plan missing or day-count mismatch';
   END IF;
   SELECT count(*),count(DISTINCT day_number),min(day_number),max(day_number)
   INTO v_day_count,v_unique_count,v_first,v_last
@@ -18187,7 +18834,6 @@ $waves42_48_payload$[
     "plan_id": "90000000-0000-0000-0000-000000000242",
     "title": "Thoughts for the Quiet Hour",
     "description": "An editorially reviewed anthology of 346 quiet-hour selections drawn from multiple Christian writers. Historical dates and attributions are preserved where appropriate, while identified theological, pastoral, and source-boundary problems are replaced with clearly labeled Scripture-led reflections. Wave 42 completes the sentence-level release screening and corrects the Genesis 32 reference on day 313. Source: Project Gutenberg ebook 37292.",
-    "source_url": "https://www.gutenberg.org/ebooks/37292",
     "total_days": 346,
     "days": [
       {
@@ -21008,7 +21654,6 @@ $waves42_48_payload$[
     "plan_id": "90000000-0000-0000-0000-000000000102",
     "title": "Morning and Evening: 366 Scripture-Guided Devotions",
     "description": "A 366-day morning-and-evening Scripture plan adapted from the verse calendar of Charles H. Spurgeon's Morning and Evening. Every one of the 732 positions retains its historical Scripture heading and now provides a clearly labeled, newly written contemporary reflection, practice, and prayer. The adaptation has been screened for Nicene compatibility, non-coercive pastoral language, modern English, disability and cultural dignity, and consistent two-reference metadata.",
-    "source_url": "https://ccel.org/ccel/spurgeon/morneve/morneve.d0101am.html",
     "total_days": 366,
     "days": [
       {
@@ -24312,7 +24957,6 @@ $waves42_48_payload$[
     "plan_id": "90000000-0000-0000-0000-000000000381",
     "title": "Jesus Fulfils the Law: 14 Readings on Grace, Scripture, and Neighborly Love",
     "description": "Fourteen independently written Scripture-led devotionals inspired by the anonymous public-domain work Jesus Fulfils the Law. The readings trace Christian interpretations of the Law and Prophets, Passover, Christ's priesthood and self-offering, faith, and life in the Spirit. Each reading has source context, reflection, practice, and prayer. Jewish festivals remain living Jewish traditions; historical anti-Catholic rhetoric, supersessionist claims, and fear-driven judgment language are not presented as Christian consensus. Wave 44 completes the fourteen-day adaptation and release review.",
-    "source_url": "https://www.gutenberg.org/ebooks/36425",
     "total_days": 14,
     "days": [
       {
@@ -24448,7 +25092,6 @@ $waves42_48_payload$[
     "plan_id": "90000000-0000-0000-0000-000000000392",
     "title": "Everyday Objects, Living Faith: 24 Scripture-Led Readings for Families",
     "description": "Twenty-four original, Scripture-led devotional readings inspired by C. H. Woolston’s historical Gospel Object Book, an object-teaching manual for ministers, adults, and children. The readings explore teaching children with care, learning through familiar symbols, grace, community, repentance and repair, the dignity of every person, spiritual growth, and Christmas generosity. Each day offers two Bible passages, historical context, a devotional focus, reflection, an attainable practice, and a prayer. The author’s hazardous object experiments, racial stereotypes, dated educational claims, and coercive disciplinary examples are not endorsed or reproduced as activities. This is an adaptation of 24 mechanically imported segments, not a reproduction of all the historical demonstrations. Wave 45 completes a further sentence-level release screening with targeted biblical-context and pastoral corrections.",
-    "source_url": "https://www.gutenberg.org/ebooks/73388",
     "total_days": 24,
     "days": [
       {
@@ -24674,7 +25317,6 @@ $waves42_48_payload$[
     "plan_id": "90000000-0000-0000-0000-000000000379",
     "title": "Seeing Faith Through Art: Eleven Scripture-Led Readings for Families",
     "description": "Eleven Scripture-led devotional reflections inspired by James Patrick’s Evangelists of Art: Picture-Sermons for Children, a historical collection of Christian art sermons. Move from Holman Hunt’s image of Jesus in the Temple and Paton’s depiction of Luther reading Scripture through classical stories about death, portraits of Scottish Reformation history, a visionary horseman, and Bunyan’s man with the muck-rake. Each reading offers Bible passages, context about the original artwork or story, a devotional reflection, a question, a practical response, and prayer. Artwork descriptions are historical literary material; images are not included or licensed by this adaptation.",
-    "source_url": "https://www.gutenberg.org/ebooks/30220",
     "total_days": 11,
     "days": [
       {
@@ -24783,7 +25425,6 @@ $waves42_48_payload$[
     "plan_id": "90000000-0000-0000-0000-000000000375",
     "title": "Faithful Discernment: 25 Readings on Scripture, Humility, and Christian Love",
     "description": "Twenty-five Scripture-led devotional readings inspired by Robert Waln’s 1826 Observations on the Sermons of Elias Hicks, a historical polemic within and around the Society of Friends. Explore humility, shared discernment, the relationship of Scripture and spiritual experience, meaningful worship, freedom of conscience, responsible speech, and practical compassion. The reflections distinguish Waln’s opinions from the beliefs of Elias Hicks and other Quaker traditions; historic accusations are not treated as proven facts. Each day offers Bible readings, historical context, reflection, an actionable practice, and prayer.",
-    "source_url": "https://www.gutenberg.org/ebooks/58078",
     "total_days": 25,
     "days": [
       {
@@ -25018,7 +25659,6 @@ $waves42_48_payload$[
     "plan_id": "90000000-0000-0000-0000-000000000371",
     "title": "Resurrection and Reason: 29 Readings on Testimony, Faith, and Hope",
     "description": "Twenty-nine Scripture-led devotional readings inspired by Thomas Sherlock’s eighteenth-century courtroom dialogue, Trial of the Witnesses of the Resurrection of Jesus. Explore the resurrection narratives, the nature of testimony, honest questions, faithful witness, the first Easter witnesses, and hope for transformed living. Sherlock’s arguments and literary verdict are identified as historical apologetics, not independent proof of every event or a real court finding. Each day includes Scripture, historical source context, devotional reflection, a practical response, and prayer.",
-    "source_url": "https://www.gutenberg.org/ebooks/5608",
     "total_days": 29,
     "days": [
       {
@@ -25292,11 +25932,10 @@ $waves42_48_payload$[
     PERFORM 1
     FROM public.devotional_plans
     WHERE id = plan_uuid
-      AND source_url IS NOT DISTINCT FROM plan_item->>'source_url'
       AND total_days = (plan_item->>'total_days')::integer
     FOR UPDATE;
     IF NOT FOUND THEN
-      RAISE EXCEPTION 'Waves 42-48 preflight: plan %, source, or day count mismatch', plan_uuid;
+      RAISE EXCEPTION 'Waves 42-48 preflight: plan % missing or day count mismatch', plan_uuid;
     END IF;
 
     SELECT count(*), count(DISTINCT day_number), min(day_number), max(day_number)
