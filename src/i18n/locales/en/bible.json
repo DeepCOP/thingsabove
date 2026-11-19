@@ -1,5 +1,8 @@
 {
   "all": "All",
+  "preferencesSyncError": "Your Bible preferences could not be synced. Changes are saved on this device and will retry automatically.",
+  "preferredVersionFallback": "Your preferred version is not available to read on this device right now. Using {{version}} temporarily. Your preference is unchanged.",
+  "managePreferredVersion": "Manage preferred version",
   "offline": "Offline",
   "online": "Online",
   "downloaded": "Downloaded",

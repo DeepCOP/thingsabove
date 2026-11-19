@@ -1293,6 +1293,7 @@ export type Database = {
       };
       profiles: {
         Row: {
+          preferred_bible_version_id: string | null;
           app_version: string | null;
           avatar_url: string | null;
           bio: string | null;
@@ -1316,6 +1317,7 @@ export type Database = {
           year_believed: number | null;
         };
         Insert: {
+          preferred_bible_version_id?: string | null;
           app_version?: string | null;
           avatar_url?: string | null;
           bio?: string | null;
@@ -1339,6 +1341,7 @@ export type Database = {
           year_believed?: number | null;
         };
         Update: {
+          preferred_bible_version_id?: string | null;
           app_version?: string | null;
           avatar_url?: string | null;
           bio?: string | null;
@@ -1367,6 +1370,20 @@ export type Database = {
             columns: ['church_id'];
             isOneToOne: false;
             referencedRelation: 'churches';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      user_bible_versions: {
+        Row: { user_id: string; version_id: string; created_at: string };
+        Insert: { user_id: string; version_id: string; created_at?: string };
+        Update: { user_id?: string; version_id?: string; created_at?: string };
+        Relationships: [
+          {
+            foreignKeyName: 'user_bible_versions_user_id_fkey';
+            columns: ['user_id'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
             referencedColumns: ['id'];
           },
         ];
@@ -1783,6 +1800,15 @@ export type Database = {
       };
     };
     Functions: {
+      sync_bible_preferences: {
+        Args: {
+          p_user_id: string;
+          p_preferred_version_id?: string;
+          p_added_version_ids?: string[];
+          p_removed_version_ids?: string[];
+        };
+        Returns: Json;
+      };
       accept_church_invite: {
         Args: { p_church_id: string };
         Returns: undefined;

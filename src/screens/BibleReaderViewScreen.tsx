@@ -43,8 +43,18 @@ export default function BibleReaderView({ onScroll }: { onScroll: (...args: any[
   const { width: screenWidth, height: screenHeight } = useWindowDimensions();
 
   const router = useRouter();
-  const { adapter, books, version, versionLabel, loadingVersionId, readerError, retryReader } =
-    useBible();
+  const {
+    adapter,
+    books,
+    version,
+    versionLabel,
+    loadingVersionId,
+    readerError,
+    retryReader,
+    preferredVersionId,
+    preferencesReady,
+    versionsCatalogLoading,
+  } = useBible();
   const contextMenuStyle = useMemo(() => {
     const menuWidth = 220;
     const horizontalMargin = 10;
@@ -321,6 +331,23 @@ export default function BibleReaderView({ onScroll }: { onScroll: (...args: any[
           </View>
 
           {/* VERSES */}
+          {preferencesReady &&
+          !loadingVersionId &&
+          !versionsCatalogLoading &&
+          preferredVersionId !== version ? (
+            <View className="gap-3 py-4">
+              <Text className="text-center text-gray-500 dark:text-gray-400">
+                {t('preferredVersionFallback', { version: versionLabel })}
+              </Text>
+              <TouchableOpacity
+                accessibilityRole="button"
+                onPress={() => router.push('/app/bible/versions')}>
+                <Text className="text-center font-semibold text-blue-600 dark:text-blue-400">
+                  {t('managePreferredVersion')}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          ) : null}
           {loading ? (
             <ActivityIndicator accessibilityLabel={t('loadingChapter')} className="my-6" />
           ) : readingError ? (
