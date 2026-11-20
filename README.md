@@ -131,6 +131,34 @@ eas submit -p android --profile production
 eas submit -p ios --profile production
 ```
 
+## EAS Update (over-the-air)
+
+JS-only changes ship to installed apps without a store build, including changes to
+`EXPO_PUBLIC_*` values such as the Supabase publishable key (they are inlined into the
+JS bundle). Apps check for an update on launch, download it in the background and apply
+it on the next cold start, with no prompt.
+
+```
+eas update --channel production --environment production --message "Describe the change"
+eas update --channel preview --environment preview --message "Describe the change"
+```
+
+- `--environment` makes the bundle use the EAS environment variables, the same values the
+  store build used. Without it, the local `.env` is used.
+- Updates only reach builds with the same runtime version (`runtimeVersion.policy:
+  fingerprint`). Any native change (new native package, config plugin, app config change,
+  Expo SDK upgrade) produces a new fingerprint and needs a new store build.
+
+### Rotating the Supabase publishable key
+
+1. In Supabase (Settings -> API Keys), create a new publishable key. Keep the old one active.
+2. Update `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY` in the `preview` and `production` EAS
+   environments (`eas env:update`) and in `.env` / the web host.
+3. Publish an update to both channels (commands above).
+4. Wait until most users have relaunched the app (check adoption under Updates in the EAS
+   dashboard), then revoke the old key. Users still on the old bundle lose access once it
+   is revoked.
+
 ## Supabase Setup
 
 1. Create a Supabase project.

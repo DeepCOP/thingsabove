@@ -1,5 +1,7 @@
 const { version } = require('./package.json');
 
+const easProjectId = 'de7e88d0-085e-40a2-90e9-c481ffaac58c';
+
 const androidAppRoutes = [
   '/PlansTab',
   '/CommunityTab',
@@ -54,6 +56,16 @@ export default ({ config }) => ({
     scheme: 'thingsabove',
     userInterfaceStyle: 'automatic',
     newArchEnabled: true,
+
+    runtimeVersion: {
+      policy: 'fingerprint',
+    },
+    updates: {
+      url: `https://u.expo.dev/${easProjectId}`,
+      // Check on every launch, download in the background, apply on next cold start.
+      checkAutomatically: 'ON_LOAD',
+      fallbackToCacheTimeout: 0,
+    },
 
     ios: {
       supportsTablet: true,
@@ -168,7 +180,7 @@ export default ({ config }) => ({
     extra: {
       router: {},
       eas: {
-        projectId: 'de7e88d0-085e-40a2-90e9-c481ffaac58c',
+        projectId: easProjectId,
       },
     },
   },
