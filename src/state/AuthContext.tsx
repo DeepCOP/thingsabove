@@ -40,20 +40,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     let active = true;
     let receivedAuthEvent = false;
 
-    const loadInitialSession = async () => {
-      const { data, error } = await supabase.auth.getSession();
-      let nextSession = data.session ?? null;
-      let offline = false;
+    // An auth event that arrived meanwhile is newer than anything loaded here.
+    const isStale = () => !active || receivedAuthEvent;
 
-      if (!nextSession && error && isAuthRetryableFetchError(error)) {
-        nextSession = await readStoredSession();
-        offline = nextSession !== null;
+    const loadInitialSession = async () => {
+      const storedSession = await readStoredSession();
+      if (isStale()) return;
+      if (storedSession) {
+        setSession(storedSession);
+        setLoading(false);
       }
 
-      // An auth event that arrived meanwhile is newer than this result.
-      if (!active || receivedAuthEvent) return;
-      setSession(nextSession);
-      setIsOfflineSession(offline);
+      const { data, error } = await supabase.auth.getSession();
+      if (isStale()) return;
+
+      if (!data.session && error && isAuthRetryableFetchError(error)) {
+        // Offline with an expired token: keep the stored session.
+        setIsOfflineSession(storedSession !== null);
+        return;
+      }
+
+      setSession(data.session ?? null);
+      setIsOfflineSession(false);
     };
 
     loadInitialSession().finally(() => {
