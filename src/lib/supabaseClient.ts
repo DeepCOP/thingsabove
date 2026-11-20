@@ -1,6 +1,6 @@
 import { Database } from '@/src/types/supabase.gen.types';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { createClient } from '@supabase/supabase-js';
+import { createClient, Session } from '@supabase/supabase-js';
 import * as aesjs from 'aes-js';
 import * as SecureStore from 'expo-secure-store';
 import 'react-native-get-random-values';
@@ -63,11 +63,27 @@ if (!supabaseUrl || !supabasePublishableKey) {
   throw new Error('Missing Supabase environment variables');
 }
 
+const authStorage = new LargeSecureStore();
+
+const authStorageKey = `sb-${new URL(supabaseUrl.trim()).hostname.split('.')[0]}-auth-token`;
+
 export const supabase = createClient<Database>(supabaseUrl, supabasePublishableKey, {
   auth: {
-    storage: new LargeSecureStore(),
+    storage: authStorage,
+    storageKey: authStorageKey,
     autoRefreshToken: true,
     persistSession: true,
     detectSessionInUrl: false,
   },
 });
+
+export async function readStoredSession(): Promise<Session | null> {
+  try {
+    const raw = await authStorage.getItem(authStorageKey);
+    if (!raw) return null;
+    const session = JSON.parse(raw) as Session;
+    return session?.access_token && session?.refresh_token && session?.user ? session : null;
+  } catch {
+    return null;
+  }
+}
