@@ -1,0 +1,42 @@
+name: OTA Update (Production)
+
+# Run by hand once the changes have been reviewed and QA'd on preview. Ships the
+# given commit to production over the air. The bundle is rebuilt with the
+# production EAS environment, because preview uses a different Supabase project.
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: Commit SHA on main that passed QA on preview (shown in the preview update message)
+        required: true
+
+concurrency:
+  group: ota-production
+  cancel-in-progress: false
+
+jobs:
+  ota_production:
+    runs-on: ubuntu-latest
+    # Add required reviewers to this environment in the repo settings to gate releases.
+    environment: production
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.ref }}
+          fetch-depth: 0
+
+      - name: Check the commit is on main
+        env:
+          REF: ${{ inputs.ref }}
+        run: |
+          if ! git merge-base --is-ancestor HEAD origin/main; then
+            echo "::error::$REF is not on main. Only merged, QA'd commits can ship to production."
+            exit 1
+          fi
+
+      - uses: ./.github/actions/ota-update
+        with:
+          expo-token: ${{ secrets.EXPO_TOKEN }}
+          profile: production

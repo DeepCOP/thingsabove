@@ -1,0 +1,50 @@
+name: OTA Update
+description: Check that this commit's fingerprint matches an existing EAS build, then publish an EAS Update
+
+inputs:
+  expo-token:
+    description: Expo token for EAS authentication
+    required: true
+  profile:
+    description: EAS build profile, channel and environment (preview or production)
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Setup Node
+      uses: actions/setup-node@v7
+      with:
+        node-version: '24'
+
+    - name: Setup PNPM
+      uses: pnpm/action-setup@v6
+      with:
+        version: 10
+
+    # Fingerprints include autolinked native modules, so node_modules must match the build.
+    - name: Install dependencies
+      shell: bash
+      run: pnpm install --frozen-lockfile
+
+    - name: Setup EAS
+      uses: expo/expo-github-action@v9
+      with:
+        eas-version: latest
+        token: ${{ inputs.expo-token }}
+        packager: pnpm
+
+    - name: Check fingerprints
+      shell: bash
+      run: bash "$GITHUB_ACTION_PATH/check-fingerprints.sh" "$PROFILE"
+      env:
+        PROFILE: ${{ inputs.profile }}
+
+    - name: Publish update
+      shell: bash
+      env:
+        PROFILE: ${{ inputs.profile }}
+      run: |
+        message="$(git log -1 --pretty=%s) ($(git rev-parse --short HEAD))"
+        eas update --channel "$PROFILE" --environment "$PROFILE" --message "$message" --non-interactive
+        echo "Published \`$PROFILE\` update: $message" >> "$GITHUB_STEP_SUMMARY"

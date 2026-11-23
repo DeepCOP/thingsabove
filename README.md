@@ -138,23 +138,45 @@ JS-only changes ship to installed apps without a store build, including changes 
 JS bundle). Apps check for an update on launch, download it in the background and apply
 it on the next cold start, with no prompt.
 
+Updates only reach builds with the same runtime version (`runtimeVersion.policy:
+fingerprint`). Any native change (new native package, config plugin, app config or
+`eas.json` change, Expo SDK upgrade) produces a new fingerprint and needs a new store
+build. App version bumps don't (see `fingerprint.config.js`).
+
+### Release process
+
+1. **QA (automatic).** Every merge to `main` runs
+   [OTA Update (Preview)](.github/workflows/ota-preview.yml). It checks that the commit's
+   fingerprint matches a finished `preview` build for both platforms, then publishes the
+   update to the `preview` channel (TestFlight / Play testing). The update message ends
+   with the commit SHA.
+   - If the fingerprint doesn't match, the run fails without publishing. The job summary
+     shows what changed since the last build. Push a beta tag to make a new `preview`
+     build; later merges then ship over the air again.
+2. **Production (manual).** Once the changes are reviewed and QA'd on preview, run
+   [OTA Update (Production)](.github/workflows/ota-production.yml) from the Actions tab
+   with the QA'd commit SHA. It does the same fingerprint check against `production`
+   builds, then publishes to the `production` channel. The bundle is rebuilt with the
+   production EAS environment, since preview uses a different Supabase project. Only
+   commits on `main` are accepted.
+
+To publish by hand instead:
+
 ```
-eas update --channel production --environment production --message "Describe the change"
 eas update --channel preview --environment preview --message "Describe the change"
+eas update --channel production --environment production --message "Describe the change"
 ```
 
-- `--environment` makes the bundle use the EAS environment variables, the same values the
-  store build used. Without it, the local `.env` is used.
-- Updates only reach builds with the same runtime version (`runtimeVersion.policy:
-  fingerprint`). Any native change (new native package, config plugin, app config change,
-  Expo SDK upgrade) produces a new fingerprint and needs a new store build.
+`--environment` makes the bundle use the EAS environment variables, the same values the
+store build used. Without it, the local `.env` is used.
 
 ### Rotating the Supabase publishable key
 
 1. In Supabase (Settings -> API Keys), create a new publishable key. Keep the old one active.
 2. Update `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY` in the `preview` and `production` EAS
    environments (`eas env:update`) and in `.env` / the web host.
-3. Publish an update to both channels (commands above).
+3. Publish an update to both channels: merge a commit to `main` (or re-run the latest
+   preview workflow), then run the production workflow.
 4. Wait until most users have relaunched the app (check adoption under Updates in the EAS
    dashboard), then revoke the old key. Users still on the old bundle lose access once it
    is revoked.
