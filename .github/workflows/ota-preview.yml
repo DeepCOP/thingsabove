@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - eas-update # TEMP: remove before merging
 
 concurrency:
   group: ota-preview
