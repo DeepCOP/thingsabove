@@ -87,3 +87,11 @@ export async function readStoredSession(): Promise<Session | null> {
     return null;
   }
 }
+
+export async function clearStoredSession(): Promise<void> {
+  await Promise.all(
+    [authStorageKey, `${authStorageKey}-code-verifier`, `${authStorageKey}-user`].map((key) =>
+      authStorage.removeItem(key).catch(() => undefined),
+    ),
+  );
+}

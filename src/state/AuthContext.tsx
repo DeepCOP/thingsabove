@@ -1,4 +1,4 @@
-import { readStoredSession, supabase } from '@/src/lib/supabaseClient';
+import { clearStoredSession, readStoredSession, supabase } from '@/src/lib/supabaseClient';
 import { isAuthRetryableFetchError, Session } from '@supabase/supabase-js';
 import { createContext, useContext, useEffect, useState } from 'react';
 import { clearPushNotificationSetup } from '../api/mutations';
@@ -7,7 +7,6 @@ type AuthContextType = {
   session: Session | null;
   loading: boolean;
   isGuest: boolean;
-  isOfflineSession: boolean;
   signOut: () => Promise<void>;
 };
 
@@ -15,13 +14,11 @@ const AuthContext = createContext<AuthContextType>({
   session: null,
   loading: true,
   isGuest: true,
-  isOfflineSession: false,
   signOut: () => Promise.resolve(),
 });
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
-  const [isOfflineSession, setIsOfflineSession] = useState(false);
   const [loading, setLoading] = useState(true);
 
   const isGuest = !session;
@@ -33,17 +30,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     } catch {
     } finally {
-      await supabase.auth.signOut();
+      const { error } = await supabase.auth.signOut();
+
+      if (error && isAuthRetryableFetchError(error)) {
+        await clearStoredSession();
+        setSession(null);
+      }
     }
   };
+
   useEffect(() => {
     let active = true;
     let receivedAuthEvent = false;
 
-    // An auth event that arrived meanwhile is newer than anything loaded here.
-    const isStale = () => !active || receivedAuthEvent;
-
     const loadInitialSession = async () => {
+      const isStale = () => !active || receivedAuthEvent;
+
       const storedSession = await readStoredSession();
       if (isStale()) return;
       if (storedSession) {
@@ -54,14 +56,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const { data, error } = await supabase.auth.getSession();
       if (isStale()) return;
 
-      if (!data.session && error && isAuthRetryableFetchError(error)) {
-        // Offline with an expired token: keep the stored session.
-        setIsOfflineSession(storedSession !== null);
-        return;
-      }
+      if (!data.session && error && isAuthRetryableFetchError(error)) return;
 
       setSession(data.session ?? null);
-      setIsOfflineSession(false);
     };
 
     loadInitialSession().finally(() => {
@@ -72,7 +69,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (event === 'INITIAL_SESSION') return;
       receivedAuthEvent = true;
       setSession(nextSession);
-      setIsOfflineSession(false);
     });
 
     return () => {
@@ -82,7 +78,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ session, loading, isGuest, isOfflineSession, signOut }}>
+    <AuthContext.Provider value={{ session, loading, isGuest, signOut }}>
       {children}
     </AuthContext.Provider>
   );
