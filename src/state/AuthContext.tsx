@@ -1,5 +1,5 @@
-import { supabase } from '@/src/lib/supabaseClient';
-import { Session } from '@supabase/supabase-js';
+import { clearStoredSession, readStoredSession, supabase } from '@/src/lib/supabaseClient';
+import { isAuthRetryableFetchError, Session } from '@supabase/supabase-js';
 import { createContext, useContext, useEffect, useState } from 'react';
 import { clearPushNotificationSetup } from '../api/mutations';
 
@@ -30,20 +30,51 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     } catch {
     } finally {
-      await supabase.auth.signOut();
+      const { error } = await supabase.auth.signOut();
+
+      if (error && isAuthRetryableFetchError(error)) {
+        await clearStoredSession();
+        setSession(null);
+      }
     }
   };
+
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
+    let active = true;
+    let receivedAuthEvent = false;
+
+    const loadInitialSession = async () => {
+      const isStale = () => !active || receivedAuthEvent;
+
+      const storedSession = await readStoredSession();
+      if (isStale()) return;
+      if (storedSession) {
+        setSession(storedSession);
+        setLoading(false);
+      }
+
+      const { data, error } = await supabase.auth.getSession();
+      if (isStale()) return;
+
+      if (!data.session && error && isAuthRetryableFetchError(error)) return;
+
       setSession(data.session ?? null);
-      setLoading(false);
+    };
+
+    loadInitialSession().finally(() => {
+      if (active) setLoading(false);
     });
 
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
+    const { data: listener } = supabase.auth.onAuthStateChange((event, nextSession) => {
+      if (event === 'INITIAL_SESSION') return;
+      receivedAuthEvent = true;
+      setSession(nextSession);
     });
 
-    return () => listener.subscription.unsubscribe();
+    return () => {
+      active = false;
+      listener.subscription.unsubscribe();
+    };
   }, []);
 
   return (
