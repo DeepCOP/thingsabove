@@ -12,5 +12,6 @@ module.exports = {
     SourceSkips.ExpoConfigVersions |
     // .gitignore only matters for checked-in native folders; ios/ and android/
     // are generated at build time here.
-    SourceSkips.GitIgnore,
+    SourceSkips.GitIgnore |
+    SourceSkips.ExpoConfigExtraSection,
 };

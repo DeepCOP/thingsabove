@@ -1,4 +1,17 @@
+const { execSync } = require('child_process');
 const { version } = require('./package.json');
+
+function getGitCommit() {
+  // Set on EAS Build workers.
+  if (process.env.EAS_BUILD_GIT_COMMIT_HASH) return process.env.EAS_BUILD_GIT_COMMIT_HASH;
+  try {
+    return execSync('git rev-parse HEAD', { stdio: ['ignore', 'pipe', 'ignore'] })
+      .toString()
+      .trim();
+  } catch {
+    return undefined;
+  }
+}
 
 const easProjectId = 'de7e88d0-085e-40a2-90e9-c481ffaac58c';
 
@@ -178,6 +191,7 @@ export default ({ config }) => ({
     owner: 'things-above',
 
     extra: {
+      gitCommit: getGitCommit(),
       router: {},
       eas: {
         projectId: easProjectId,
