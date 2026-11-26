@@ -1,4 +1,19 @@
+const { execSync } = require('child_process');
 const { version } = require('./package.json');
+
+function getGitCommit() {
+  // Set on EAS Build workers.
+  if (process.env.EAS_BUILD_GIT_COMMIT_HASH) return process.env.EAS_BUILD_GIT_COMMIT_HASH;
+  try {
+    return execSync('git rev-parse HEAD', { stdio: ['ignore', 'pipe', 'ignore'] })
+      .toString()
+      .trim();
+  } catch {
+    return undefined;
+  }
+}
+
+const easProjectId = 'de7e88d0-085e-40a2-90e9-c481ffaac58c';
 
 const androidAppRoutes = [
   '/PlansTab',
@@ -54,6 +69,16 @@ export default ({ config }) => ({
     scheme: 'thingsabove',
     userInterfaceStyle: 'automatic',
     newArchEnabled: true,
+
+    runtimeVersion: {
+      policy: 'fingerprint',
+    },
+    updates: {
+      url: `https://u.expo.dev/${easProjectId}`,
+      // Check on every launch, download in the background, apply on next cold start.
+      checkAutomatically: 'ON_LOAD',
+      fallbackToCacheTimeout: 0,
+    },
 
     ios: {
       supportsTablet: true,
@@ -166,9 +191,10 @@ export default ({ config }) => ({
     owner: 'things-above',
 
     extra: {
+      gitCommit: getGitCommit(),
       router: {},
       eas: {
-        projectId: 'de7e88d0-085e-40a2-90e9-c481ffaac58c',
+        projectId: easProjectId,
       },
     },
   },

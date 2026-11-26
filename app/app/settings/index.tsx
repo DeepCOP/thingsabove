@@ -33,6 +33,9 @@ export default function NotificationSettingsScreen() {
         Constants.expoConfig?.android?.versionCode ??
         t('unknown'),
     );
+  // Commit of the running JS bundle (from the OTA update when one is applied).
+  const gitCommit = Constants.expoConfig?.extra?.gitCommit;
+  const revision = typeof gitCommit === 'string' ? gitCommit.slice(0, 7) : t('unknown');
 
   const handleToggleDailyEncouragement = async (nextValue: boolean) => {
     // Only when enabling
@@ -133,9 +136,15 @@ export default function NotificationSettingsScreen() {
       <View className="mt-8">
         <Text className="text-lg font-semibold dark:text-white mb-3">{t('about')}</Text>
 
-        <View className="py-3 border-b border-gray-200 dark:border-neutral-800">
-          <Text className="dark:text-white">
-            {t('appVersion', { version: appVersion, build: buildNumber })}
+        <View className="flex-row items-center justify-between py-3 ">
+          <Text className="text-gray-500 dark:text-gray-400">{t('version')}</Text>
+          <Text className="dark:text-white">{`${appVersion} (${buildNumber})`}</Text>
+        </View>
+
+        <View className="flex-row items-center justify-between py-3 ">
+          <Text className="text-gray-500 dark:text-gray-400">{t('revision')}</Text>
+          <Text selectable className="dark:text-white">
+            {revision}
           </Text>
         </View>
       </View>
