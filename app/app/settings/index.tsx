@@ -136,12 +136,12 @@ export default function NotificationSettingsScreen() {
       <View className="mt-8">
         <Text className="text-lg font-semibold dark:text-white mb-3">{t('about')}</Text>
 
-        <View className="flex-row items-center justify-between py-3 border-b border-gray-200 dark:border-neutral-800">
+        <View className="flex-row items-center justify-between py-3 ">
           <Text className="text-gray-500 dark:text-gray-400">{t('version')}</Text>
           <Text className="dark:text-white">{`${appVersion} (${buildNumber})`}</Text>
         </View>
 
-        <View className="flex-row items-center justify-between py-3 border-b border-gray-200 dark:border-neutral-800">
+        <View className="flex-row items-center justify-between py-3 ">
           <Text className="text-gray-500 dark:text-gray-400">{t('revision')}</Text>
           <Text selectable className="dark:text-white">
             {revision}
