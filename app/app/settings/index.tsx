@@ -5,6 +5,7 @@ import LanguageSelector from '@/src/components/LanguageSelector';
 import { useNotificationSettings } from '@/src/hooks/useNotificationSetting';
 import { registerForPushNotificationsAsync } from '@/src/hooks/usePushNotifications';
 import { openStoreReviewPage } from '@/src/lib/storeReview';
+import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '@/src/state/AuthContext';
 import { useAppStore } from '@/src/state/useAppStore';
 import * as Application from 'expo-application';
@@ -160,11 +161,21 @@ export default function NotificationSettingsScreen() {
         {Platform.OS !== 'web' ? (
           <TouchableOpacity
             onPress={handleRateApp}
-            className="flex-row items-center justify-between py-3 border-b border-gray-200 dark:border-neutral-800">
-            <View className="flex-1 pr-4">
-              <Text className="dark:text-white">{t('rateApp')}</Text>
-              <Text className="text-xs text-gray-500 mt-1">{t('rateAppDescription')}</Text>
+            activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityLabel={t('rateApp')}
+            accessibilityHint={t('rateAppDescription')}
+            className="mt-3 flex-row items-center rounded-xl border border-amber-200 bg-amber-50 px-4 py-4 dark:border-amber-900/60 dark:bg-amber-950/30">
+            <View className="h-10 w-10 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-900/50">
+              <Ionicons name="star" size={20} color="#f59e0b" />
             </View>
+            <View className="flex-1 px-3">
+              <Text className="font-semibold text-gray-900 dark:text-white">{t('rateApp')}</Text>
+              <Text className="mt-1 text-xs text-gray-600 dark:text-gray-400">
+                {t('rateAppDescription')}
+              </Text>
+            </View>
+            <Ionicons name="chevron-forward" size={18} color="#9ca3af" />
           </TouchableOpacity>
         ) : null}
       </View>
