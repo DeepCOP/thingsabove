@@ -4,12 +4,13 @@ import LoadingSpinner from '@/src/components/LoadingSpinner';
 import LanguageSelector from '@/src/components/LanguageSelector';
 import { useNotificationSettings } from '@/src/hooks/useNotificationSetting';
 import { registerForPushNotificationsAsync } from '@/src/hooks/usePushNotifications';
+import { openStoreReviewPage } from '@/src/lib/storeReview';
 import { useAuth } from '@/src/state/AuthContext';
 import { useAppStore } from '@/src/state/useAppStore';
 import * as Application from 'expo-application';
 import Constants from 'expo-constants';
 import { useState } from 'react';
-import { Alert, ScrollView, Switch, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, Platform, ScrollView, Switch, Text, TouchableOpacity, View } from 'react-native';
 
 export default function NotificationSettingsScreen() {
   const { t } = useTranslation('app');
@@ -70,6 +71,14 @@ export default function NotificationSettingsScreen() {
       Alert.alert(t('error'), t('deleteAccountError'));
     } finally {
       setDeletingAccount(false);
+    }
+  };
+
+  const handleRateApp = async () => {
+    try {
+      await openStoreReviewPage();
+    } catch {
+      Alert.alert(t('error'), t('rateAppError'));
     }
   };
 
@@ -147,6 +156,17 @@ export default function NotificationSettingsScreen() {
             {revision}
           </Text>
         </View>
+
+        {Platform.OS !== 'web' ? (
+          <TouchableOpacity
+            onPress={handleRateApp}
+            className="flex-row items-center justify-between py-3 border-b border-gray-200 dark:border-neutral-800">
+            <View className="flex-1 pr-4">
+              <Text className="dark:text-white">{t('rateApp')}</Text>
+              <Text className="text-xs text-gray-500 mt-1">{t('rateAppDescription')}</Text>
+            </View>
+          </TouchableOpacity>
+        ) : null}
       </View>
 
       <View className="mt-8">

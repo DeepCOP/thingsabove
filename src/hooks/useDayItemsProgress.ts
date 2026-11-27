@@ -4,6 +4,7 @@ import { fetchDayItems } from '@/src/api/queries';
 import { DayItemsProgress, DayItemType, PlanProgress } from '@/src/types/types';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { invalidateGroupProgress } from '../lib/queryInvalidation';
+import { onPlanDayCompleted } from '../lib/storeReview';
 
 interface Params {
   user_id: string;
@@ -135,7 +136,14 @@ export function useDayItemsProgress({ user_id, plan_id, progress_id, day_id, gro
         dayItemsKey,
         previousDayItems,
         previousPlanProgress,
+        dayJustCompleted: !isDayComplete(previousDayItems) && isDayComplete(nextDayItems),
+        mutatedAt: Date.now(),
       };
+    },
+    onSuccess: (_data, _variables, context) => {
+      if (context?.dayJustCompleted) {
+        onPlanDayCompleted(`${progress_id}:${day_id}`, context.mutatedAt);
+      }
     },
     onError: (error, _variables, context) => {
       if (!context) return;
@@ -198,7 +206,15 @@ export function useDayItemsProgress({ user_id, plan_id, progress_id, day_id, gro
         dayItemsKey,
         previousDayItems,
         previousPlanProgress,
+        targetDayId,
+        dayJustCompleted: variables.completed && !isDayComplete(previousDayItems),
+        mutatedAt: Date.now(),
       };
+    },
+    onSuccess: (_data, _variables, context) => {
+      if (context?.dayJustCompleted) {
+        onPlanDayCompleted(`${progress_id}:${context.targetDayId}`, context.mutatedAt);
+      }
     },
     onError: (error, _variables, context) => {
       console.error('Error toggling item completion:', error);
