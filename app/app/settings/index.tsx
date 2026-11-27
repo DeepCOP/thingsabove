@@ -4,12 +4,14 @@ import LoadingSpinner from '@/src/components/LoadingSpinner';
 import LanguageSelector from '@/src/components/LanguageSelector';
 import { useNotificationSettings } from '@/src/hooks/useNotificationSetting';
 import { registerForPushNotificationsAsync } from '@/src/hooks/usePushNotifications';
+import { openStoreReviewPage } from '@/src/lib/storeReview';
+import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '@/src/state/AuthContext';
 import { useAppStore } from '@/src/state/useAppStore';
 import * as Application from 'expo-application';
 import Constants from 'expo-constants';
 import { useState } from 'react';
-import { Alert, ScrollView, Switch, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, Platform, ScrollView, Switch, Text, TouchableOpacity, View } from 'react-native';
 
 export default function NotificationSettingsScreen() {
   const { t } = useTranslation('app');
@@ -70,6 +72,14 @@ export default function NotificationSettingsScreen() {
       Alert.alert(t('error'), t('deleteAccountError'));
     } finally {
       setDeletingAccount(false);
+    }
+  };
+
+  const handleRateApp = async () => {
+    try {
+      await openStoreReviewPage();
+    } catch {
+      Alert.alert(t('error'), t('rateAppError'));
     }
   };
 
@@ -147,6 +157,27 @@ export default function NotificationSettingsScreen() {
             {revision}
           </Text>
         </View>
+
+        {Platform.OS !== 'web' ? (
+          <TouchableOpacity
+            onPress={handleRateApp}
+            activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityLabel={t('rateApp')}
+            accessibilityHint={t('rateAppDescription')}
+            className="mt-3 flex-row items-center rounded-xl border border-amber-200 bg-amber-50 px-4 py-4 dark:border-amber-900/60 dark:bg-amber-950/30">
+            <View className="h-10 w-10 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-900/50">
+              <Ionicons name="star" size={20} color="#f59e0b" />
+            </View>
+            <View className="flex-1 px-3">
+              <Text className="font-semibold text-gray-900 dark:text-white">{t('rateApp')}</Text>
+              <Text className="mt-1 text-xs text-gray-600 dark:text-gray-400">
+                {t('rateAppDescription')}
+              </Text>
+            </View>
+            <Ionicons name="chevron-forward" size={18} color="#9ca3af" />
+          </TouchableOpacity>
+        ) : null}
       </View>
 
       <View className="mt-8">
